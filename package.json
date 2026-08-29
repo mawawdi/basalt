@@ -1,0 +1,41 @@
+{
+  "name": "basalt",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "basalt": "bin/basalt.js"
+  },
+  "scripts": {
+    "start": "npm run build --silent && node bin/basalt.js --help",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "runtime-build:check": "node scripts/runtime-build-manifest.mjs --check",
+    "authoring:anti-leak": "node scripts/check-authoring-generality.mjs",
+    "visual:architecture:check": "node scripts/check-visual-architecture.mjs",
+    "visual:assets:index": "node scripts/index-kenney-assets.mjs",
+    "visual:catalog:inventory": "node scripts/build-catalog-inventory.mjs",
+    "visual:catalog:measure": "node scripts/measure-catalog-structure.mjs",
+    "asset-adaptation:semantics": "PYTHONDONTWRITEBYTECODE=1 \"/Applications/Blender.app/Contents/MacOS/Blender\" --background --factory-startup --disable-autoexec --offline-mode --python-exit-code 73 --python workers/asset-adaptation/test_worker_semantics.py",
+    "docs:check": "node scripts/check-docs.mjs",
+    "rojo:check": "node scripts/check-rojo-builds.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.json && node scripts/copy-blender-worker.mjs && node scripts/runtime-build-manifest.mjs --write",
+    "test": "npm run format:check && npm run lint && npm run docs:check && npm run authoring:anti-leak && npm run visual:architecture:check && npm run rojo:check && npm run runtime-build:check && node --test dist/test/world-compiler.test.js dist/test/world-family-resolver.test.js dist/test/hierarchical-world.test.js dist/test/studio-bridge.test.js dist/test/neural-family-factory.test.js dist/test/basalt-constraints.test.js && npm run plugin:test",
+    "plugin:test": "find plugin/src -name '*.luau' -print0 | xargs -0 luau-compile --only-parse && node scripts/check-plugin-ui.mjs",
+    "plugin:build": "rojo build plugin/default.project.json -o \"$HOME/Documents/Roblox/Plugins/BasaltStudioPlugin.rbxmx\"",
+    "build:all": "npm run build && npm run plugin:build"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@mermaid-js/mermaid-cli": "11.12.0",
+    "@types/node": "^22.20.1",
+    "eslint": "10.9.1",
+    "globals": "17.12.0",
+    "prettier": "3.9.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "8.69.0"
+  },
+  "dependencies": {
+    "zod": "4.5.4"
+  }
+}

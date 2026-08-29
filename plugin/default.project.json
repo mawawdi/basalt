@@ -1,0 +1,7 @@
+{
+  "name": "BasaltStudioPlugin",
+  "tree": {
+    "$path": "src/Main.server.luau",
+    "Basalt": { "$path": "src/Basalt" }
+  }
+}
