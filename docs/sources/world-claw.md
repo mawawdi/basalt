@@ -1,6 +1,6 @@
 # WorldClaw: Agentic 3D Open-World Generation at Scale
 
-This Markdown mirror is regenerated from the authoritative [WorldClaw PDF](world-claw.pdf).
+This Markdown mirror is regenerated from the authoritative [WorldClaw PDF](world-claw.md).
 The PDF should be used when figures, page layout, or visual details matter. The extracted text
 below is provided for searchable research context and is not a separate source of authority.
 

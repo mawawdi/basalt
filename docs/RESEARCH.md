@@ -16,7 +16,7 @@ Current architecture and product decisions live in
   bounded retrieval, family hints, and bulk population complexity.
 - [Modular world compilation](research/modular-world-compilation.md) — terrain,
   socketed kits, shape grammars, and surface-aware assembly.
-- [WorldClaw source](sources/world-claw.pdf) — global-to-regional planning,
+- [WorldClaw source](sources/world-claw.md) — global-to-regional planning,
   composition proposals, camera calibration, and localized repair.
 
 ## Evidence policy

@@ -20,7 +20,7 @@ The governing documents are:
 - [docs/EVALS.md](docs/EVALS.md) — evidence and claim semantics.
 - [docs/ROADMAP.md](docs/ROADMAP.md) — M1–M5 milestones.
 - [docs/RESEARCH.md](docs/RESEARCH.md) — research index.
-- [docs/sources/world-claw.pdf](docs/sources/world-claw.pdf) — WorldClaw source.
+- [docs/sources/world-claw.md](docs/sources/world-claw.md) — WorldClaw source.
 
 ## What has been implemented
 
