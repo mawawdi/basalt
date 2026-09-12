@@ -71,13 +71,13 @@ export function parseAuthoredFamilyManifest(value: unknown): AuthoredFamilyManif
   return manifest;
 }
 
-export interface KindAdmissionViolation {
+export interface SupportEvidenceViolation {
   readonly assetId?: string;
   readonly variantName?: string;
   readonly reason: string;
 }
 
-export interface KindAdmissionMember {
+export interface KindEvidenceMember {
   readonly assetId: string;
   readonly variantName: string;
   readonly boundsStuds: readonly [number, number, number];
@@ -91,17 +91,15 @@ export interface KindAdmissionMember {
 }
 
 /**
- * Admission gate: kind, not size. Every member must carry measured support
- * evidence; the members must cohere as one scale-free kind (miniature and
- * landscape variants of one shape cohere); and the declared role's default
- * treatment must be physically realizable for the largest member (coverage
- * formula). Absolute size never admits or rejects on its own.
+ * Blocking admission gate: every member must carry measured support
+ * evidence. Authorial grouping is never rejected here; kind coherence and
+ * treatment coverage are measured by measureKindFamilyDiagnostics and
+ * recorded, never used to split or refuse a declaration.
  */
-export function findKindAdmissionViolations(
-  handle: string,
-  members: readonly KindAdmissionMember[],
-): KindAdmissionViolation[] {
-  const violations: KindAdmissionViolation[] = [];
+export function findSupportEvidenceViolations(
+  members: readonly KindEvidenceMember[],
+): SupportEvidenceViolation[] {
+  const violations: SupportEvidenceViolation[] = [];
   for (const member of members) {
     if (member.primaryContact === "bottom") continue;
     violations.push({
@@ -112,6 +110,40 @@ export function findKindAdmissionViolations(
         `(primaryContact ${member.primaryContact}); placeable families require bottom support`,
     });
   }
+  return violations;
+}
+
+export interface KindCoherenceDiagnostic {
+  readonly threshold: number;
+  readonly medoidAssetId: string | null;
+  readonly outlierVariants: readonly string[];
+}
+
+export interface KindCoverageDiagnostic {
+  readonly spatialRole: string;
+  readonly maxPerHectare: number;
+  readonly largestExtentStuds: number;
+  readonly demandStuds2: number;
+  readonly hectareStuds2: number;
+  readonly exceedsHectare: boolean;
+}
+
+export interface KindFamilyDiagnostics {
+  readonly coherence: KindCoherenceDiagnostic;
+  readonly coverage: KindCoverageDiagnostic;
+}
+
+/**
+ * Recorded kind evidence for one authorial family: medoid-star coherence
+ * outliers against KIND_COHERENCE_THRESHOLD (miniature and landscape
+ * variants of one shape cohere; outliers do not) and the declared role's
+ * treatment coverage for the largest member. Informative only; the seal
+ * admits the declaration regardless.
+ */
+export function measureKindFamilyDiagnostics(
+  handle: string,
+  members: readonly KindEvidenceMember[],
+): KindFamilyDiagnostics {
   const evidence: ProposalAssetEvidence[] = members.map((member) => ({
     assetId: member.assetId,
     boundsStuds: member.boundsStuds,
@@ -125,32 +157,28 @@ export function findKindAdmissionViolations(
   }));
   const coherence = checkSiblingCoherence(evidence);
   const byId = new Map(members.map((member) => [member.assetId, member]));
-  for (const assetId of coherence.outliers) {
-    const member = byId.get(assetId)!;
-    violations.push({
-      assetId,
-      variantName: member.variantName,
-      reason:
-        `${member.variantName} sits outside the declaration kind coherence radius ` +
-        `(${KIND_COHERENCE_THRESHOLD}) from the medoid; it is not the declared kind`,
-    });
-  }
   const parsed = parseFamilyHandle(handle);
   const density = ROLE_DENSITY_DEFAULTS[parsed.spatialRole];
   const clearance = ROLE_CLEARANCE_DEFAULTS[parsed.spatialRole];
-  if (density.max_per_hectare > 0 && members.length > 0) {
-    const extent = Math.max(
-      ...members.map((member) => Math.max(member.boundsStuds[0], member.boundsStuds[2])),
-    );
-    const cell = (extent + 2 * clearance) ** 2;
-    const demand = density.max_per_hectare * cell;
-    if (demand > HECTARE_STUDS2)
-      violations.push({
-        reason:
-          `declared ${parsed.spatialRole} treatment scatters ${density.max_per_hectare}/ha ` +
-          `but the largest member spans ${extent.toFixed(2)} studs: coverage demand ` +
-          `${demand.toFixed(0)} exceeds one hectare (${HECTARE_STUDS2.toFixed(0)} square studs)`,
-      });
-  }
-  return violations;
+  const extent =
+    members.length > 0
+      ? Math.max(...members.map((member) => Math.max(member.boundsStuds[0], member.boundsStuds[2])))
+      : 0;
+  const demand =
+    density.max_per_hectare > 0 ? density.max_per_hectare * (extent + 2 * clearance) ** 2 : 0;
+  return {
+    coherence: {
+      threshold: KIND_COHERENCE_THRESHOLD,
+      medoidAssetId: coherence.medoidAssetId,
+      outlierVariants: coherence.outliers.map((assetId) => byId.get(assetId)!.variantName),
+    },
+    coverage: {
+      spatialRole: parsed.spatialRole,
+      maxPerHectare: density.max_per_hectare,
+      largestExtentStuds: extent,
+      demandStuds2: demand,
+      hectareStuds2: HECTARE_STUDS2,
+      exceedsHectare: demand > HECTARE_STUDS2,
+    },
+  };
 }

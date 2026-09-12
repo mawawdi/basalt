@@ -127,6 +127,7 @@ async function main() {
       renderablesWithValidCollisionBindings: 0,
       trimMappingsRejectedByEnergy: 0,
       incompleteCandidates: assets.length,
+      kindFamilyDiagnostics: [],
     },
   });
   await mkdir(dirname(outputPath), { recursive: true, mode: 0o700 });

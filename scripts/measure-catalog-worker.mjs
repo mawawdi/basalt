@@ -93,7 +93,20 @@ function emptyCollisionEvidence() {
   };
 }
 
-async function measureAsset(asset, modules) {
+function resolveSourceUnits(sourceManifest) {
+  const unitsByPath = new Map();
+  for (const packageEntry of sourceManifest.packages ?? []) {
+    for (const file of packageEntry.files ?? []) {
+      const units = file.metersPerSourceUnit;
+      if (!Number.isFinite(units) || units <= 0)
+        throw new Error(`Source file lacks valid metersPerSourceUnit: ${file.relativePath}`);
+      unitsByPath.set(file.relativePath, units);
+    }
+  }
+  return unitsByPath;
+}
+
+async function measureAsset(asset, modules, sourceUnits) {
   const {
     quantizeQ32_32,
     inspectGlb,
@@ -121,9 +134,12 @@ async function measureAsset(asset, modules) {
     maximumTexturePixels: 64 * 4096 * 4096,
     assetUnitsToStuds: 1,
   });
+  const unitScaleMeters = sourceUnits.get(asset.source.relativePath);
+  if (!Number.isFinite(unitScaleMeters) || unitScaleMeters <= 0)
+    throw new Error(`Unregistered source units: ${asset.source.relativePath}`);
   const rawMesh = mergeMeshes(inspectGlbMeshes(bytes));
   const normalized = normalizeSource(
-    { nodes: [{ meshIndex: 0 }], meshes: [rawMesh] },
+    { nodes: [{ meshIndex: 0 }], meshes: [rawMesh], unitScaleMeters },
     { pivotPolicy: "bottom_center_obb" },
   );
   const rebased = rebaseAssetPivot(normalized.meshes[0], "bottom_center_obb");
@@ -262,10 +278,17 @@ async function main() {
     rebaseAssetPivot,
     measureGeometry,
   };
+  const sourceUnits = resolveSourceUnits(
+    JSON.parse(await readFile(resolve(repositoryRoot, "registry/source-manifest.json"), "utf8")),
+  );
+  for (const asset of workerData.assets) {
+    if (!sourceUnits.has(asset.source.relativePath))
+      throw new Error(`Unregistered source units: ${asset.source.relativePath}`);
+  }
   const results = [];
   for (const asset of workerData.assets) {
     try {
-      results.push(await measureAsset(asset, modules));
+      results.push(await measureAsset(asset, modules, sourceUnits));
     } catch (error) {
       results.push({
         assetId: asset.record.assetId,

@@ -98,10 +98,10 @@ export const KIND_COHERENCE_THRESHOLD = 3.0;
 /**
  * Proposer cohort diameter (complete linkage): every pair inside a cohort
  * sits within this distance, so cohorts are bounded blobs for review.
- * Stays at or below KIND_COHERENCE_THRESHOLD so every proposed cohort
- * seals under medoid-star admission; stable across 2.0-2.5 on the starter
- * catalog (58 cohorts, largest 62, split flagged over 16 for review
- * splitting). Pinned so reruns are byte-identical.
+ * Stays at or below KIND_COHERENCE_THRESHOLD so proposed cohorts carry no
+ * coherence flags; stable across 2.0-2.5 on the starter catalog (58
+ * cohorts, largest 62, split flagged over 16 for review splitting).
+ * Pinned so reruns are byte-identical.
  */
 export const PROPOSAL_CLUSTER_THRESHOLD = 2.5;
 

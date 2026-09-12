@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import {
   buildAuthoredAssetFamilyRevision,
   buildMountSocket,
-  findKindAdmissionViolations,
+  findSupportEvidenceViolations,
+  measureKindFamilyDiagnostics,
   parseAuthoredFamilyManifest,
-  type KindAdmissionMember,
+  type KindEvidenceMember,
 } from "../packages/catalog-intelligence/src/index.js";
 import { catalogAssetRecordSchema, dequantizeQ32_32 } from "../packages/basalt-types/src/index.js";
 
@@ -91,8 +92,8 @@ test("authored family sealing is deterministic and content addressed", () => {
 
 function kindMember(
   assetId: string,
-  partial: Partial<KindAdmissionMember> = {},
-): KindAdmissionMember {
+  partial: Partial<KindEvidenceMember> = {},
+): KindEvidenceMember {
   return {
     assetId,
     variantName: assetId,
@@ -108,48 +109,46 @@ function kindMember(
   };
 }
 
-test("kind admission flags members without support evidence", () => {
+test("support gate flags members without support evidence", () => {
   const floating = kindMember("floating", { primaryContact: "unknown" });
-  const violations = findKindAdmissionViolations("foliage/canopy/stylized_low_poly/test_canopy", [
-    floating,
-  ]);
+  const violations = findSupportEvidenceViolations([floating]);
   assert.equal(violations.length, 1);
   assert.equal(violations[0]!.assetId, "floating");
   assert.match(violations[0]!.reason, /no measured support evidence/);
 });
 
-test("kind admission flags incoherent siblings", () => {
+test("kind diagnostics record incoherent siblings without blocking", () => {
   const blade = kindMember("blade", { boundsStuds: [0.8, 3.2, 0.2] });
   const slab = kindMember("slab", { boundsStuds: [20, 1, 20] });
-  const violations = findKindAdmissionViolations("geology/foundation/stylized_low_poly/mixed", [
+  const diagnostics = measureKindFamilyDiagnostics("geology/foundation/stylized_low_poly/mixed", [
     blade,
     slab,
   ]);
-  assert.equal(violations.length, 1);
-  assert.match(violations[0]!.reason, /outside the declaration kind coherence radius/);
+  assert.deepEqual(diagnostics.coherence.outlierVariants, ["slab"]);
+  assert.equal(diagnostics.coherence.medoidAssetId, "blade");
+  assert.deepEqual(findSupportEvidenceViolations([blade, slab]), []);
 });
 
-test("kind admission coheres miniature and landscape variants of one shape", () => {
+test("kind diagnostics cohere miniature and landscape variants of one shape", () => {
   const miniature = kindMember("miniature", { boundsStuds: [0.8, 1, 0.8] });
   const landscape = kindMember("landscape", { boundsStuds: [8, 10, 8] });
-  assert.deepEqual(
-    findKindAdmissionViolations("foliage/canopy/stylized_low_poly/test_canopy", [
-      miniature,
-      landscape,
-    ]),
-    [],
-  );
+  const diagnostics = measureKindFamilyDiagnostics("foliage/canopy/stylized_low_poly/test_canopy", [
+    miniature,
+    landscape,
+  ]);
+  assert.deepEqual(diagnostics.coherence.outlierVariants, []);
 });
 
-test("kind admission rejects treatment the members cannot realize", () => {
+test("kind diagnostics record treatment the members cannot realize", () => {
   const huge = kindMember("huge", { boundsStuds: [30, 30, 30] });
-  const violations = findKindAdmissionViolations("props/clutter/rustic_iron/specks", [huge]);
-  assert.equal(violations.length, 1);
-  assert.match(violations[0]!.reason, /coverage demand .* exceeds one hectare/);
-  assert.deepEqual(
-    findKindAdmissionViolations("geology/foundation/stylized_low_poly/blocks", [huge]),
-    [],
-  );
+  const clutter = measureKindFamilyDiagnostics("props/clutter/rustic_iron/specks", [huge]);
+  assert.equal(clutter.coverage.exceedsHectare, true);
+  assert.ok(clutter.coverage.demandStuds2 > clutter.coverage.hectareStuds2);
+  const foundation = measureKindFamilyDiagnostics("geology/foundation/stylized_low_poly/blocks", [
+    huge,
+  ]);
+  assert.equal(foundation.coverage.exceedsHectare, false);
+  assert.deepEqual(findSupportEvidenceViolations([huge]), []);
 });
 
 const trimBand = {
@@ -289,10 +288,13 @@ test("seal rejects trim mappings outside declared bands", () => {
   );
 });
 
-test("kind admission passes coherent supported members under realizable treatment", () => {
+test("support gate passes coherent supported members under realizable treatment", () => {
   const members = [
     kindMember("cube_a", { boundsStuds: [3, 3, 3] }),
     kindMember("cube_b", { boundsStuds: [3.2, 2.8, 3.1] }),
   ];
-  assert.deepEqual(findKindAdmissionViolations("props/clutter/rustic_iron/specks", members), []);
+  assert.deepEqual(findSupportEvidenceViolations(members), []);
+  const diagnostics = measureKindFamilyDiagnostics("props/clutter/rustic_iron/specks", members);
+  assert.deepEqual(diagnostics.coherence.outlierVariants, []);
+  assert.equal(diagnostics.coverage.exceedsHectare, false);
 });

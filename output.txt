@@ -303,15 +303,15 @@ SM_Bld_Apartment_Stairs_01_Collision.glb | architecture/connector/stylized_low_p
 SM_Bld_Apartment_Stairs_02_Collision.glb | architecture/connector/stylized_low_poly/apartment_stairs#collision | [QUARANTINE: collision_proxy_companion]
 SM_Bld_Apartment_Stairs_Corner_01_Collision.glb | architecture/connector/stylized_low_poly/apartment_stairs#collision | [QUARANTINE: collision_proxy_companion]
 SM_Env_Sidewalk_Construction_01_Collision.glb | infrastructure/connector/stylized_low_poly/sidewalks#collision | [QUARANTINE: collision_proxy_companion]
-SM_Veh_Car_Ambo_01.glb | industrial/focal_insert/stylized_low_poly/emergency_vehicles#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Car_Sedan_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Car_Muscle_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Car_Van_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Car_Ambo_01.glb | industrial/focal_insert/stylized_low_poly/emergency_vehicles#medium | Sealed Family Member
+SM_Veh_Car_Sedan_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | Sealed Family Member
+SM_Veh_Car_Muscle_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | Sealed Family Member
+SM_Veh_Car_Van_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | Sealed Family Member
 SM_Veh_Steering_Wheel_01.glb | props/clutter/stylized_low_poly/car_steering_wheels#short | Eligible Cohort
-SM_Veh_Car_Taxi_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Car_Medium_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Car_Police_01.glb | industrial/focal_insert/stylized_low_poly/emergency_vehicles#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Car_Small_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#short | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Car_Taxi_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | [QUARANTINE: missing_texture_evidence]
+SM_Veh_Car_Medium_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#medium | Sealed Family Member
+SM_Veh_Car_Police_01.glb | industrial/focal_insert/stylized_low_poly/emergency_vehicles#medium | Sealed Family Member
+SM_Veh_Car_Small_01.glb | industrial/focal_insert/stylized_low_poly/civilian_cars#short | [QUARANTINE: missing_texture_evidence]
 SM_Wep_MusketPistol_01_Separate.glb | props/focal_insert/stylized_low_poly/musket_pistols#short | Sealed Family Member
 SM_Prop_Crate_04.glb | props/clutter/stylized_low_poly/crates#medium | Sealed Family Member
 SM_Prop_Crate_05.glb | props/clutter/stylized_low_poly/crates#medium | Sealed Family Member
@@ -325,8 +325,8 @@ SM_Prop_Crate_03.glb | props/clutter/stylized_low_poly/crates#medium | Sealed Fa
 SM_Wep_MusketPistol_04.glb | props/focal_insert/stylized_low_poly/musket_pistols#medium | Sealed Family Member
 SM_Wep_MusketPistol_DoubleBarrel_02_Separate.glb | props/focal_insert/stylized_low_poly/double_barrel_musket_pistols#short | Sealed Family Member
 SM_Wep_MusketPistol_05.glb | props/focal_insert/stylized_low_poly/musket_pistols#medium | Sealed Family Member
-SM_Veh_Boat_Warship_01_Hull_Upsized_Pirate.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Boat_Warship_01_Hull.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Boat_Warship_01_Hull_Upsized_Pirate.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | Sealed Family Member
+SM_Veh_Boat_Warship_01_Hull.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | Sealed Family Member
 SM_Env_Tree_01.glb | foliage/canopy/stylized_low_poly/tree_variants#tall | Sealed Family Member
 SM_Wep_MusketPistol_02.glb | props/focal_insert/stylized_low_poly/musket_pistols#medium | Sealed Family Member
 SM_Env_PalmTree_Tall_02.glb | foliage/canopy/stylized_low_poly/palm_trees#tall | Sealed Family Member
@@ -747,24 +747,24 @@ SM_Bld_Shanty_Preset_05_Collision.glb | architecture/foundation/stylized_low_pol
 SM_Bld_Rickety_Dock_01_Collision.glb | architecture/connector/stylized_low_poly/rickety_docks#collision | [QUARANTINE: collision_proxy_companion]
 SM_Bld_Shanty_Preset_01_Collision.glb | architecture/foundation/stylized_low_poly/shanty_buildings#collision | [QUARANTINE: collision_proxy_companion]
 SM_Veh_Boat_Warship_01_Hull_Pirate_Collision.glb | infrastructure/connector/stylized_low_poly/warship_hulls#collision | [QUARANTINE: collision_proxy_companion]
-SM_Veh_Boat_Medium_01_Hull_Pirate.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Boat_Small_01_Hull.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#short | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Boat_Small_01_Hull_Pirate.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#short | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Veh_Boat_Large_01_Hull_Pirate.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#tall | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Boat_Medium_01_Hull_Pirate.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#medium | Sealed Family Member
+SM_Veh_Boat_Small_01_Hull.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#short | Sealed Family Member
+SM_Veh_Boat_Small_01_Hull_Pirate.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#short | Sealed Family Member
+SM_Veh_Veh_Boat_Large_01_Hull_Pirate.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#tall | Sealed Family Member
 SM_Flag_British_01.glb | props/barrier/stylized_low_poly/cloth_flags#straight | Eligible Cohort
 SM_Veh_Extra_Barrel_01.glb | props/clutter/stylized_low_poly/barrels#medium | Eligible Cohort
-SM_Veh_Boat_Rowing_01_Hull_Pirate.glb | industrial/focal_insert/stylized_low_poly/rowing_boats#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Boat_Rowing_01_Hull_Pirate.glb | industrial/focal_insert/stylized_low_poly/rowing_boats#medium | Sealed Family Member
 SM_Veh_Extra_Barrels_01.glb | props/clutter/stylized_low_poly/barrels#cluster | Eligible Cohort
 SM_Veh_Extra_Cargo_01.glb | props/clutter/stylized_low_poly/cargo_loads#cluster | Eligible Cohort
-SM_Veh_Boat_Medium_01_Hull.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Boat_Medium_01_Hull.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#medium | Sealed Family Member
 SM_Flag_Pirate_04.glb | props/barrier/stylized_low_poly/cloth_flags#straight | Eligible Cohort
 SM_Flag_Spanish_01.glb | props/barrier/stylized_low_poly/cloth_flags#straight | Eligible Cohort
 SM_Flag_Pirate_02.glb | props/barrier/stylized_low_poly/cloth_flags#straight | Eligible Cohort
 SM_Veh_Extra_Gun_01_Pirate.glb | props/clutter/stylized_low_poly/mounted_ship_guns#short | Eligible Cohort
 SM_Flag_Pirate_03.glb | props/barrier/stylized_low_poly/cloth_flags#straight | Eligible Cohort
 SM_Flag_Pirate_01.glb | props/barrier/stylized_low_poly/cloth_flags#straight | Eligible Cohort
-SM_Veh_Boat_Rowing_01_Hull.glb | industrial/focal_insert/stylized_low_poly/rowing_boats#medium | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Veh_Boat_Large_01_Hull.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#tall | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Boat_Rowing_01_Hull.glb | industrial/focal_insert/stylized_low_poly/rowing_boats#medium | Sealed Family Member
+SM_Veh_Veh_Boat_Large_01_Hull.glb | industrial/focal_insert/stylized_low_poly/boat_hulls#tall | Sealed Family Member
 SM_Veh_Extra_Gun_01.glb | props/clutter/stylized_low_poly/mounted_ship_guns#short | Eligible Cohort
 SM_Item_Map_Attachment_01.glb | props/clutter/stylized_low_poly/nautical_maps#cluster | Eligible Cohort
 SM_Item_Bag_02.glb | props/clutter/stylized_low_poly/item_bags#short | Eligible Cohort
@@ -838,18 +838,18 @@ SM_Wep_Cutlass_04.glb | props/focal_insert/stylized_low_poly/cutlasses#medium | 
 SM_Env_Tree_Vines_04.glb | foliage/canopy/stylized_low_poly/tree_vines#straight | [QUARANTINE: socket_payload_hanging_epiphyte]
 SM_Prop_Barrel_04.glb | props/clutter/stylized_low_poly/barrels#medium | Sealed Family Member
 SM_Prop_Billboard_Sign_06.glb | props/barrier/stylized_low_poly/billboard_signs#straight | Sealed Family Member
-SM_Veh_Boat_Warship_01_Hull_Upsized.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
-SM_Veh_Boat_Warship_01_Hull_Pirate.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Boat_Warship_01_Hull_Upsized.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | Sealed Family Member
+SM_Veh_Boat_Warship_01_Hull_Pirate.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | Sealed Family Member
 SM_Prop_Billboard_Sign_07.glb | props/barrier/stylized_low_poly/billboard_signs#straight | Sealed Family Member
 SM_Env_Rock_Large_01.glb | geology/foundation/stylized_low_poly/large_rocks#straight | Sealed Family Member
 SM_Env_Rock_Large_03.glb | geology/foundation/stylized_low_poly/large_rocks#straight | Sealed Family Member
 SM_Prop_Billboard_Sign_05.glb | props/barrier/stylized_low_poly/billboard_signs#straight | Sealed Family Member
-SM_Veh_Boat_Warship_01_Hull_Bare.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Boat_Warship_01_Hull_Bare.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | Sealed Family Member
 SM_Wep_MusketPistol_02_Separate.glb | props/focal_insert/stylized_low_poly/musket_pistols#short | Sealed Family Member
 SM_Prop_Billboard_Sign_04.glb | props/barrier/stylized_low_poly/billboard_signs#straight | Sealed Family Member
 SM_Env_Rock_Large_02.glb | geology/foundation/stylized_low_poly/large_rocks#straight | Sealed Family Member
 SM_Wep_MusketPistol_05_Separate.glb | props/focal_insert/stylized_low_poly/musket_pistols#short | Sealed Family Member
-SM_Veh_Boat_Warship_01_Hull_Pirate_Bare.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | [QUARANTINE: vehicle_macro_scale_exceeds_m2_bounds]
+SM_Veh_Boat_Warship_01_Hull_Pirate_Bare.glb | infrastructure/connector/stylized_low_poly/warship_hulls#tall | Sealed Family Member
 SM_Env_Rock_Large_06.glb | geology/foundation/stylized_low_poly/large_rocks#straight | Sealed Family Member
 SM_Wep_MusketPistol_DoubleBarrel_01.glb | props/focal_insert/stylized_low_poly/double_barrel_musket_pistols#medium | Sealed Family Member
 SM_Env_Rock_Large_07.glb | geology/foundation/stylized_low_poly/large_rocks#straight | Sealed Family Member

@@ -74,7 +74,7 @@ and Studio import/play criteria without fixture-specific code in Basalt core.
 
 The deterministic compiler and connector contracts are implemented. The current
 trusted-source slice materializes the starter archives under one bounded
-`registry/starter-assets` root and declares 275 authored
+`registry/starter-assets` root and declares 235 authored
 cohorts (774 members, all sealed, 89 quarantined with reasons, 0
 untriaged) with canonical taxonomy handles in
 `registry/family-manifest.json`. Source folders mirror the
@@ -86,7 +86,7 @@ run without model calls.
 
 The palette/region slice is complete: per-record admission is stamped at
 measure time (692 locally qualified, 171 incomplete, 0 pending among
-measured) and enforced by both resolvers (222 of 275 families
+measured) and enforced by both resolvers (187 of 235 families
 retrievable); one shared 128-band trim sheet is authored from sealed
 measurements and re-sealed (703 member mappings, 71 energy rejections, 0
 pending trim hashes); `visual:catalog:palette` resolves a region brief to a
@@ -97,6 +97,9 @@ bridge enqueue; registry misses record explore requirements and queue
 focal-insert factory batches (no model calls), and oversize misses fail
 closed naming the procedural route. Unadmitted members stay out of
 retrieval until their geometry or texture evidence is repaired.
+Authorial grouping is never rejected at seal: kind coherence and
+treatment coverage are recorded diagnostics (28 and 13 flagged
+families), and only missing support evidence blocks.
 
 The next evidence-producing task is RANSAC socket extraction and clipping
 for the sealed cohorts, then region-aware route/road assembly, then the

@@ -7,6 +7,7 @@ import {
   transformNormal,
   transformPoint,
 } from "./geometry.js";
+import { STUD_METERS } from "../../basalt-types/src/index.js";
 
 export interface RawSceneNode {
   readonly name?: string;
@@ -69,11 +70,18 @@ export function accumulateNodeWorldMatrices(nodes: readonly RawSceneNode[]): rea
   return result;
 }
 
+export function calculateStudConversion(
+  metersPerSourceUnit: number,
+  targetStudMeters: number = STUD_METERS,
+): number {
+  return metersPerSourceUnit / targetStudMeters;
+}
+
 export function normalizeSource(
   source: RawAssetSource,
   policy: NormalizationPolicy = {},
 ): NormalizedAsset {
-  const targetStudMeters = policy.targetStudMeters ?? 0.28;
+  const targetStudMeters = policy.targetStudMeters ?? STUD_METERS;
   const metersPerSourceUnit = source.unitScaleMeters ?? 1;
   if (!Number.isFinite(metersPerSourceUnit) || metersPerSourceUnit <= 0)
     throw new Error("Source unit scale must be finite and positive");
@@ -87,10 +95,11 @@ export function normalizeSource(
     const world = nodeWorldMatrices[index]!;
     return [{ mesh, world }];
   });
-  // Direct unit conversion. Source geometry keeps its authored size: rescaling
-  // every asset toward avatar height destroys the metric truth that role
-  // bounds, budgets, and placement depend on.
-  const conversion = metersPerSourceUnit / targetStudMeters;
+  // Direct unit conversion. Source geometry keeps its authored size: the
+  // per-source metersPerSourceUnit carries the true unit convention (meters,
+  // decimeters, or centimeters per the FBX oracle), so converting through it
+  // preserves the metric truth that budgets and placement depend on.
+  const conversion = calculateStudConversion(metersPerSourceUnit, targetStudMeters);
   const meshes = unscaledMeshes.map(({ mesh, world }): NormalizedMesh => ({
     vertices: mesh.vertices.map((point) => {
       const transformed = transformPoint(world, point);

@@ -20,16 +20,16 @@ Asset resolution is a three-stage pipeline with no retrieval step:
    its semantic handle, treatment role, member assets, surface affinities, and
    socket grammar. Declarations are the only source of family membership.
 2. **Measure.** The catalog worker measures every declared asset (metric
-   bounds, topology, material/PBR evidence, support/contact, collision facts)
-   and checks kind admission under section 4.
-3. **Seal.** A family seals when every declared member is measured,
-   supported, kind-coherent, and treatment-compatible. Sealing mints the
-   content-addressed family ID (section 5) and freezes the family card
-   (section 6).
+   bounds, topology, material/PBR evidence, support/contact, collision facts),
+   checks support evidence, and records kind diagnostics under section 4.
+3. **Seal.** A family seals when every declared member is measured and
+   supported. Sealing mints the content-addressed family ID (section 5)
+   and freezes the family card (section 6); kind-coherence and
+   treatment-coverage findings ride along as recorded diagnostics.
 
 There is no fuzzy matching, no similarity ranking, and no discovery of
 families from directory contents. Undeclared assets, unmeasured assets, and
-members that fail kind admission keep the family `incomplete` with a
+members without support evidence keep the family `incomplete` with a
 recorded reason; they never silently join a sealed family. Absolute size
 never admits or rejects on its own: a miniature and a landscape variant of
 one shape belong to one kind.
@@ -102,30 +102,33 @@ demand more archetypes for a given requirement through `min_archetype_count`
 
 ## 4. Kind Admission and Treatment
 
-Membership is gated by kind, never by absolute size. The seal
-(`findKindAdmissionViolations` in
-`packages/catalog-intelligence/src/authored-families.ts`) checks three
-things; any violation leaves the family `incomplete` with a recorded
-reason:
+Authorial grouping is never rejected: the seal admits the declaration
+the author wrote. The only blocking gate is measured support evidence
+(`findSupportEvidenceViolations` in
+`packages/catalog-intelligence/src/authored-families.ts`): every member
+must carry measured bottom-support evidence (`primaryContact ===
+"bottom"`), because the worker measures support in one direction today
+and bottom contact is the only support signal a placeable family can
+stand on. Members without it leave the family `incomplete` with a
+recorded reason.
 
-1. **Support.** Every member must carry measured bottom-support evidence
-   (`primaryContact === "bottom"`). The worker measures support in one
-   direction today, so bottom contact is the only support signal a
-   placeable family can stand on.
-2. **Sibling coherence.** Members must cohere as one scale-free kind:
-   every member sits within `KIND_COHERENCE_THRESHOLD = 3.0` of the
-   declaration medoid under `siblingCoherenceDistance`, which compares
-   aspect ratios, submesh structure, topology band, contact, and
-   material overlap — never absolute size or triangle count. A
-   miniature and a landscape variant of one shape cohere; a blade
-   declared beside a slab does not. The threshold coheres the nine
-   dissolved starter families whole (worst medoid radius 2.959).
-3. **Treatment compatibility.** The handle's role selects a density and
-   clearance preset, and the seal validates the preset is physically
-   realizable for the largest member: `max_per_hectare × (extent + 2 ×
-clearance)²` must fit one hectare (`HECTARE_STUDS2`). A treatment
-   the members cannot realize is rejected with figures; zero-density
-   (hand-placed) treatments pass vacuously.
+Kind fit is measured, not gated
+(`measureKindFamilyDiagnostics`, recorded per family in
+`diagnostics.kindFamilyDiagnostics`), in two dimensions:
+
+1. **Sibling coherence.** Medoid-star outliers beyond
+   `KIND_COHERENCE_THRESHOLD = 3.0` under
+   `siblingCoherenceDistance`, which compares aspect ratios, submesh
+   structure, topology band, contact, and material overlap — never
+   absolute size or triangle count. A miniature and a landscape
+   variant of one shape cohere; a blade declared beside a slab is
+   flagged, not split.
+2. **Treatment compatibility.** The handle's role selects a density
+   and clearance preset, and the seal records whether the preset is
+   physically realizable for the largest member: `max_per_hectare ×
+(extent + 2 × clearance)²` against one hectare
+   (`HECTARE_STUDS2`). An unrealizable treatment is reported with
+   figures; the declaration still seals.
 
 Treatment presets (density per hectare from `ROLE_DENSITY_DEFAULTS`,
 exclusion radius from `ROLE_CLEARANCE_DEFAULTS`):
@@ -207,8 +210,8 @@ archetypes sorted by variant token with token-plus-bounds pairs, surfaces
 sorted, density as a pair, sockets reduced to elevation step plus sorted
 compatible groups. There is no universal byte envelope — payload size is
 a measured property of the sealed menu, and planners that need a smaller
-menu seal a smaller one. (No families are sealed at this writing; the
-starter catalog is being re-declared under kind admission.)
+menu seal a smaller one. (235 starter families sealed; kind diagnostics
+ride along for 40 of them.)
 
 The world plan consumes the menu in two branches:
 
@@ -232,13 +235,13 @@ sealed inventory:
 1. Declarations name each family's handle, treatment role, members,
    affinities, and socket grammar. No declaration, no family — undeclared
    assets on disk are invisible to the seal.
-2. The worker measures each member and checks kind admission
-   (section 4), trim-band coverage where trim sheets are declared, and
-   socket-grammar conformance where sockets are declared.
+2. The worker measures each member, checks support evidence, records
+   kind diagnostics (section 4), trim-band coverage where trim sheets
+   are declared, and socket-grammar conformance where sockets are
+   declared.
 3. Sealed families land in the catalog inventory with their cards;
-   families with unmeasured, unsupported, incoherent, or
-   treatment-incompatible members land `incomplete` with per-member
-   reasons.
+   families with unmeasured or unsupported members land `incomplete`
+   with per-member reasons.
 
 `npm run visual:catalog:measure` rebuilds the inventory; the worker reports
 a rejection count alongside acceptances so missing evidence is visible as a
@@ -259,30 +262,46 @@ for grouping.
 
 ## 9. Scale Truth and Quarantine
 
-Catalog measurements are metric. GLB sources declare meters by format
-spec, and the pipeline parses them as meters directly: true-scale assets
-measure true. No per-source scale evidence exists anywhere in the
-pipeline — not in code, not in the source manifest, not in node
-transforms — so there is nothing to reinterpret a misscaled export with;
-scale-incoherent files quarantine as corrupt. Studs convert at the single
-constant `STUD_METERS = 0.28`.
+Catalog measurements are metric, anchored to the canonical avatar
+reference: `STUD_METERS = 0.28`, so a standard avatar stands 5 studs
+(1.4 m) and `ScaleCharacter.glb` (a 1.8798 m human) measures 6.71
+studs. Every source file declares its authored unit convention in
+`metersPerSourceUnit` on the source manifest: the FBX oracle (binary
+vertex extents against real-world scale, corroborated by a Blender
+metric import) proves the corpus mixes meters, decimeters, and
+centimeters while every FBX falsely declares `UnitScaleFactor 1.0`,
+so the declaration — not the format default — is the unit truth.
+GLB node transforms are applied exactly as exported. Studs convert
+per source file as `metersPerSourceUnit / STUD_METERS`.
 
-The starter baseline holds 863 assets: 774 declared in 275 sealed
-families, 89 quarantined with recorded reasons, 0 untriaged.
+The starter baseline holds 863 assets: 794 declared in 240 sealed
+families, 69 quarantined with recorded reasons, 0 untriaged. The seal
+records kind diagnostics for 38 families (28 with coherence outliers,
+10 exceeding treatment coverage).
 Quarantine reasons must follow the current admission model — every
 bounds-driven reason was voided when kind admission landed, and the
 affected assets re-entered review. Standing reasons are
 kind-independent:
 
-- 41 non-renderable `_Collision` companions with scale-incoherent
-  geometry (low-triangle meshes at km-scale spans) that pairing gates
-  cannot bind.
-- 22 vehicles confined pending the vehicle-scope decision (held, not
-  rejected).
+- 41 non-renderable `_Collision` companions authored in centimeters;
+  they coincide spatially with their meter-scale visual twins after
+  conversion, and binding still requires the shape, watertight, and
+  convex gates.
 - 26 authorial rejects adopted from the output.txt family map:
   sky/backdrop meshes and volumetric clouds, macro ocean planes,
   detached tree crowns and hanging epiphytes with no mounting
   consumer, and one scale-anomaly organic asset.
+- 2 cars removed from `civilian_cars` for missing texture evidence,
+  which no repair can supply.
+
+The vehicles left quarantine when the per-source unit fix seated them
+true (5.2 m cars, 5–36 m boats, 40–60 m warships) and now stand
+declared in 5 sealed families (civilian_cars, emergency_vehicles,
+boat_hulls, rowing_boats, warship_hulls) with all 20 members locally
+qualified after surgical topology repair (degenerate, duplicate, and
+hidden-fin tri deletion with exact bounds preservation). The 2
+textureless cars were removed back to quarantine: missing texture
+evidence is unrepairable.
 
 These assets wait under `_pending`. Quarantine is a first-class outcome:
 `eligible`, `rejected`, and `incomplete` are the only local gate verdicts,

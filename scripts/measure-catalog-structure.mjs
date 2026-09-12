@@ -112,7 +112,7 @@ async function main() {
     pathToFileURL(resolve(repositoryRoot, "dist/packages/catalog-intelligence/src/family-cards.js"))
       .href
   );
-  const { findKindAdmissionViolations } = await import(
+  const { findSupportEvidenceViolations, measureKindFamilyDiagnostics } = await import(
     pathToFileURL(
       resolve(repositoryRoot, "dist/packages/catalog-intelligence/src/authored-families.js"),
     ).href
@@ -186,6 +186,7 @@ async function main() {
 
   let trimMappingsRejectedByEnergy = 0;
   const sealedRevisions = [];
+  const flaggedKindFamilies = [];
   const sealEvidenceFor = (declaration) => {
     const evidence = {};
     if (declaration.trimBands?.length) {
@@ -235,31 +236,39 @@ async function main() {
         reason:
           "A declared family member lacks measured render geometry or is a collision companion",
       };
-    const violations = findKindAdmissionViolations(
-      declaration.handle,
-      declaration.members.map((member) => {
-        const asset = assetsById.get(member.assetId);
-        const measurement = asset.measurement;
-        return {
-          assetId: member.assetId,
-          variantName: member.variantName,
-          boundsStuds: measurement.boundsStuds,
-          triangleCount: measurement.triangleCount,
-          submeshCount: measurement.submeshCount,
-          primaryContact: measurement.primaryContact,
-          hasManifoldTopology: measurement.hasManifoldTopology,
-          topologicalGenus: measurement.topologicalGenus,
-          materialAppearanceHashes: measurement.materialAppearanceHashes ?? [],
-          sourceFileHash: asset.record.sourceFileHash,
-        };
-      }),
-    );
+    const kindMembers = declaration.members.map((member) => {
+      const asset = assetsById.get(member.assetId);
+      const measurement = asset.measurement;
+      return {
+        assetId: member.assetId,
+        variantName: member.variantName,
+        boundsStuds: measurement.boundsStuds,
+        triangleCount: measurement.triangleCount,
+        submeshCount: measurement.submeshCount,
+        primaryContact: measurement.primaryContact,
+        hasManifoldTopology: measurement.hasManifoldTopology,
+        topologicalGenus: measurement.topologicalGenus,
+        materialAppearanceHashes: measurement.materialAppearanceHashes ?? [],
+        sourceFileHash: asset.record.sourceFileHash,
+      };
+    });
+    const violations = findSupportEvidenceViolations(kindMembers);
     if (violations.length > 0)
       return {
         ...declaration,
         status: "incomplete",
-        reason: `Kind admission violations: ${violations.map((violation) => violation.reason).join("; ")}`,
+        reason: `Support evidence violations: ${violations.map((violation) => violation.reason).join("; ")}`,
       };
+    const kindDiagnostics = measureKindFamilyDiagnostics(declaration.handle, kindMembers);
+    if (
+      kindDiagnostics.coherence.outlierVariants.length > 0 ||
+      kindDiagnostics.coverage.exceedsHectare
+    )
+      flaggedKindFamilies.push({
+        familyName: declaration.familyName,
+        coherenceOutlierVariants: [...kindDiagnostics.coherence.outlierVariants],
+        coverageExceedsHectare: kindDiagnostics.coverage.exceedsHectare,
+      });
     const revision = buildAuthoredAssetFamilyRevision(
       { ...declaration, status: "declared" },
       declaration.members.map((member) => assetsById.get(member.assetId).record),
@@ -308,11 +317,14 @@ async function main() {
       renderablesWithValidCollisionBindings: pairing.bindings.length,
       trimMappingsRejectedByEnergy,
       incompleteCandidates: incompleteCandidateCount,
+      kindFamilyDiagnostics: flaggedKindFamilies.sort((left, right) =>
+        left.familyName.localeCompare(right.familyName),
+      ),
     },
   });
   await writeFile(inventoryPath, `${stableJson(sealed)}\n`, { encoding: "utf8", mode: 0o600 });
   process.stdout.write(
-    `${JSON.stringify({ inventory: inventoryPath, measured: inventory.assets.filter((asset) => asset.measurement.status === "measured").length, declaredFamilies: familyDeclarations.length, sealedFamilies: families.length, incompleteCandidates: incompleteCandidateCount, collisionBindings: pairing.bindings.length, collisionDiagnostics: pairing.diagnostics.length, failures: failures.length }, null, 2)}\n`,
+    `${JSON.stringify({ inventory: inventoryPath, measured: inventory.assets.filter((asset) => asset.measurement.status === "measured").length, declaredFamilies: familyDeclarations.length, sealedFamilies: families.length, incompleteCandidates: incompleteCandidateCount, collisionBindings: pairing.bindings.length, collisionDiagnostics: pairing.diagnostics.length, kindCoherenceFlagged: flaggedKindFamilies.filter((entry) => entry.coherenceOutlierVariants.length > 0).length, kindCoverageExceeded: flaggedKindFamilies.filter((entry) => entry.coverageExceedsHectare).length, failures: failures.length }, null, 2)}\n`,
   );
 }
 

@@ -186,6 +186,17 @@ export const catalogInventoryManifestSchema = z
         renderablesWithValidCollisionBindings: z.number().int().nonnegative(),
         trimMappingsRejectedByEnergy: z.number().int().nonnegative(),
         incompleteCandidates: z.number().int().nonnegative(),
+        kindFamilyDiagnostics: z
+          .array(
+            z
+              .object({
+                familyName: z.string().min(1).max(128),
+                coherenceOutlierVariants: z.array(z.string().min(1).max(160)).max(4096),
+                coverageExceedsHectare: z.boolean(),
+              })
+              .strict(),
+          )
+          .max(20_000),
       })
       .strict(),
     hash: hashSchema,
