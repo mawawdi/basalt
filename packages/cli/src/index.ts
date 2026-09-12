@@ -1,5 +1,8 @@
+import { readFileSync, statSync } from "node:fs";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import type { AssetFamilyRevision } from "../../basalt-types/src/index.js";
+import type { CatalogAssetEnvelope } from "../../catalog-intelligence/src/contracts.js";
 import {
   compileBasaltWorldFoundation,
   createBasaltWorldCompilerPlan,
@@ -8,10 +11,14 @@ import {
   summarizeBasaltWorld,
   assertWorldAssetFamilyRegistry,
   compileResolvedFamilyPopulationPlans,
+  type BasaltWorldFoundation,
   type WorldBiomeFamilyRequest,
   type WorldFamilyPopulationPlan,
+  type WorldPopulationArtifact,
 } from "../../world-compiler/src/index.js";
 import { stableJson } from "../../contracts/src/index.js";
+import { emitSceneExport } from "../../world-compiler/src/scene-export.js";
+import { assemblePlanRoads, type RoadAssembly } from "../../world-planning/src/roads.js";
 import { type WorldAssetFamilyRegistry } from "../../world-compiler/src/family-resolver.js";
 import {
   BasaltStudioBridge,
@@ -50,7 +57,7 @@ async function compileWorld(planPath: string | undefined, values: string[]): Pro
   const output = options.get("--output");
   if (!planPath || !output) {
     process.stderr.write(
-      "Usage: basalt world compile <world-plan.json> --output <world-build.json> [--families <family-plans.json> | --family-registry <registry.json> --family-requests <requests.json>] [--style-hash <sha256>] [--stage macro|meso|micro|partition] [--chunk-size <studs>]\n",
+      "Usage: basalt world compile <world-plan.json> --output <world-build.json> [--families <family-plans.json> | --family-registry <registry.json> --family-requests <requests.json>] [--style-hash <sha256>] [--stage macro|meso|micro|partition] [--chunk-size <studs>] [--export-dir <dir> [--inventory <source-inventory.json>] [--source-manifest <source-manifest.json>]]\n",
     );
     process.exitCode = 2;
     return;
@@ -75,9 +82,15 @@ async function compileWorld(planPath: string | undefined, values: string[]): Pro
       compilerPlan && stage !== "meso"
         ? populateBasaltWorld(foundation, compilerPlan, { chunkSize })
         : undefined;
+    const roads =
+      population && stage === "partition"
+        ? assemblePlanRoads(foundation.worldPlan.plan, foundation.worldPlan.surfaces, {
+            chunkSizeStuds: chunkSize,
+          })
+        : undefined;
     const emission =
       population && stage === "partition"
-        ? createBasaltWorldEmission(foundation, population, chunkSize)
+        ? createBasaltWorldEmission(foundation, population, chunkSize, roads ?? [])
         : undefined;
     const result = {
       kind: "BasaltWorldCompilation",
@@ -92,6 +105,7 @@ async function compileWorld(planPath: string | undefined, values: string[]): Pro
       },
       ...(compilerPlan ? { compilerPlan } : {}),
       ...(population ? { population } : {}),
+      ...(roads ? { roads } : {}),
       ...(emission ? { emission } : {}),
       summary: summarizeBasaltWorld({
         foundation,
@@ -99,6 +113,24 @@ async function compileWorld(planPath: string | undefined, values: string[]): Pro
       }),
     };
     await writeCanonicalJson(resolve(output), result);
+    const exportDir = options.get("--export-dir");
+    let exportedPayloads = 0;
+    if (exportDir) {
+      if (!population || !roads || stage !== "partition")
+        throw new Error("Scene export requires a populated partition compilation");
+      exportedPayloads = await writeSceneExport({
+        exportDir: resolve(exportDir),
+        foundation,
+        population,
+        roads,
+        inventoryPath: resolve(
+          options.get("--inventory") ?? ".basalt/catalog-cache/source-inventory.json",
+        ),
+        sourceManifestPath: resolve(
+          options.get("--source-manifest") ?? "registry/source-manifest.json",
+        ),
+      });
+    }
     process.stdout.write(
       `${JSON.stringify(
         {
@@ -108,6 +140,7 @@ async function compileWorld(planPath: string | undefined, values: string[]): Pro
           regionCount: foundation.regionIds.length,
           instanceCount: population?.instanceCount ?? 0,
           connectorChunkCount: emission?.chunks.length ?? 0,
+          ...(exportDir ? { exportDir: resolve(exportDir), exportedPayloads } : {}),
           stage,
         },
         null,
@@ -150,9 +183,19 @@ async function studioBridge(values: string[]): Promise<void> {
   }
   const manifestPath = options.get("--manifest");
   const revisionHash = options.get("--revision");
+  const exportDir = options.get("--export-dir");
+  const sidecarPath = options.get("--sidecar");
+  const materialMapPath = options.get("--material-map");
   if (!manifestPath || !revisionHash) {
     process.stderr.write(
-      "Usage: basalt studio bridge --manifest <world-emission.json> --revision <sha256> [--port <number>] [--discovery <path>]\n",
+      "Usage: basalt studio bridge --manifest <world-emission.json> --revision <sha256> [--export-dir <dir>] [--sidecar <sidecar.json>] [--material-map <material-map.json>] [--port <number>] [--discovery <path>]\n",
+    );
+    process.exitCode = 2;
+    return;
+  }
+  if ((sidecarPath ?? materialMapPath) && !exportDir) {
+    process.stderr.write(
+      "Basalt studio bridge: --sidecar and --material-map require --export-dir\n",
     );
     process.exitCode = 2;
     return;
@@ -160,6 +203,9 @@ async function studioBridge(values: string[]): Promise<void> {
   try {
     const bridge = new BasaltStudioBridge({ maxQueue: numberOption(options, "--max-queue", 4096) });
     bridge.enqueueManifest(await readJson(resolve(manifestPath)), revisionHash);
+    if (exportDir) await enqueueExportDir(bridge, resolve(exportDir));
+    if (sidecarPath) bridge.enqueueSidecar(await readJson(resolve(sidecarPath)));
+    if (materialMapPath) bridge.enqueueMaterialMap(await readJson(resolve(materialMapPath)));
     const port = numberOption(options, "--port", 8787);
     const server = createBasaltStudioBridgeServer(bridge, { port });
     const boundPort = await waitForBridgePort(server);
@@ -267,9 +313,76 @@ async function readJson(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8")) as unknown;
 }
 
+async function enqueueExportDir(bridge: BasaltStudioBridge, exportDir: string): Promise<void> {
+  const manifest = (await readJson(resolve(exportDir, "scene-manifest.json"))) as {
+    payloads: Array<{ contentHash: string; mediaType: string }>;
+  };
+  if (!Array.isArray(manifest?.payloads))
+    throw new Error(`Scene export manifest lists no payloads: ${exportDir}`);
+  const payloads = new Map<string, Uint8Array>();
+  for (const entry of manifest.payloads) {
+    const extension = entry.mediaType === "model/gltf-binary" ? "glb" : "bvx";
+    const path = resolve(exportDir, "payloads", `${entry.contentHash}.${extension}`);
+    try {
+      payloads.set(entry.contentHash, new Uint8Array(await readFile(path)));
+    } catch {
+      throw new Error(`Scene export is missing payload bytes: ${entry.contentHash}`);
+    }
+  }
+  bridge.enqueueSceneExport(manifest, payloads);
+}
+
 async function writeCanonicalJson(path: string, value: unknown): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, `${stableJson(value)}\n`, "utf8");
+}
+
+async function writeSceneExport(input: {
+  readonly exportDir: string;
+  readonly foundation: BasaltWorldFoundation;
+  readonly population: WorldPopulationArtifact;
+  readonly roads: readonly RoadAssembly[];
+  readonly inventoryPath: string;
+  readonly sourceManifestPath: string;
+}): Promise<number> {
+  const inventory = (await readJson(input.inventoryPath)) as {
+    families: AssetFamilyRevision[];
+    assets: CatalogAssetEnvelope[];
+  };
+  const sourceManifest = (await readJson(input.sourceManifestPath)) as {
+    packages: Array<{ files: Array<{ relativePath: string; metersPerSourceUnit: number }> }>;
+  };
+  const unitsByPath: Record<string, number> = {};
+  for (const pack of sourceManifest.packages)
+    for (const file of pack.files) unitsByPath[file.relativePath] = file.metersPerSourceUnit;
+  const repositoryRoot = resolve(".");
+  const { manifest, payloads } = emitSceneExport({
+    world: {
+      foundation: input.foundation,
+      microPopulation: input.population,
+      roadAssemblies: input.roads,
+    },
+    revisions: inventory.families,
+    assets: inventory.assets,
+    unitsByPath,
+    readSourceBytes: (relativePath) => {
+      const absolute = resolve(repositoryRoot, relativePath);
+      if (absolute !== repositoryRoot && !absolute.startsWith(`${repositoryRoot}/`))
+        throw new Error(`Source path escapes the repository: ${relativePath}`);
+      if (!statSync(absolute, { throwIfNoEntry: false })?.isFile())
+        throw new Error(`Source path is not a regular file: ${relativePath}`);
+      return new Uint8Array(readFileSync(absolute));
+    },
+  });
+  const payloadDir = resolve(input.exportDir, "payloads");
+  await mkdir(payloadDir, { recursive: true });
+  await writeCanonicalJson(resolve(input.exportDir, "scene-manifest.json"), manifest);
+  for (const entry of manifest.payloads) {
+    const bytes = payloads.get(entry.contentHash)!;
+    const extension = entry.mediaType === "model/gltf-binary" ? "glb" : "bvx";
+    await writeFile(resolve(payloadDir, `${entry.contentHash}.${extension}`), bytes);
+  }
+  return manifest.payloads.length;
 }
 
 function usage(): void {
@@ -281,7 +394,7 @@ function usage(): void {
       "  basalt world compile <world-plan.json> --output <world-build.json>",
       "    [--families <family-plans.json> | --family-registry <registry.json> --family-requests <requests.json>]",
       "    [--style-hash <sha256>] [--stage macro|meso|micro|partition] [--chunk-size <studs>]",
-      "  basalt studio bridge --manifest <world-emission.json> --revision <sha256> [--port <number>] [--discovery <path>]",
+      "  basalt studio bridge --manifest <world-emission.json> --revision <sha256> [--export-dir <dir>] [--sidecar <sidecar.json>] [--material-map <material-map.json>] [--port <number>] [--discovery <path>]",
       "",
       "The compiler emits deterministic terrain, family-level populations, and connector-sized chunk deltas.",
       "Gameplay scripts and whole-world DCC review are outside Basalt.",

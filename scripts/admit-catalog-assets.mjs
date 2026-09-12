@@ -4,6 +4,9 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
 
+/** Code-unit string order. Locale-aware comparison must never feed sealed output. */
+const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const inventoryPath = resolve(repositoryRoot, ".basalt/catalog-cache/source-inventory.json");
 const outputPath = resolve(
@@ -22,7 +25,7 @@ async function main() {
   assertCatalogInventoryIdentity(inventory);
   const candidates = inventory.assets
     .filter((asset) => asset.measurement.status === "measured" && asset.measurement.renderable)
-    .sort((left, right) => left.record.assetId.localeCompare(right.record.assetId));
+    .sort((left, right) => compareStrings(left.record.assetId, right.record.assetId));
   const entries = candidates.map((asset) => ({
     assetId: asset.record.assetId,
     sourceFileHash: asset.record.sourceFileHash,

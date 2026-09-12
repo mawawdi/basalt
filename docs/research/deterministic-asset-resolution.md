@@ -245,11 +245,32 @@ sealed inventory:
 
 `npm run visual:catalog:measure` rebuilds the inventory; the worker reports
 a rejection count alongside acceptances so missing evidence is visible as a
-number, not an absence. Trim-band energy minimization seats measured UV
+number, not an absence. Every ordering that feeds sealed output uses
+code-unit string comparison (`compareSpatialStrings` /
+`compareWorldStrings`); locale-aware collation never enters, since ICU
+rules can order identical inputs differently across runtimes.
+Per-image texel density is measured from bound base-color UV metrics
+(minimum p05 pixels-per-stud across bound materials, converted to
+pixels per meter); unbound or unmeasured images seal 0, the same
+unmeasured marker the asset-level density uses. Trim-band energy minimization seats measured UV
 coverage into the shared sheet; the objective weights are declared in the
 trim specification schema, not tuned per asset. Families with partial trim
 or socket evidence seal without those commitments and re-seal — under a new
 ID — when the measurements complete.
+
+Support sockets are extracted, not authored. A seeded RANSAC fit over
+bottom-contact triangles proposes one support plane per connected
+component; each fit clips its component's footprint to the inscribed
+circle bounded by the component's boundary segments (Q32.32-quantized)
+and registers one `mount_ID_XX` socket at the clipped centroid, where
+`ID` is the asset's global member index and `XX` the fit index. Zero-area fits (line/point contacts) still register:
+a degenerate contact is a real mounting fact, not missing evidence.
+Only `degenerate_footprint` refusals — bottom contact that admits no
+plane at all — stay socketless. The measured baseline registers
+sockets on 782 of 794 sealed archetypes; the 12 refusals are 11 weapon
+`_Separate` fragments (never props) plus one shipwreck hull. Two
+consecutive seal runs produce byte-identical inventory hashes, so
+socket extraction is deterministic.
 
 Review inputs are two separate artifacts. `visual:catalog:propose` emits
 evidence cohorts (shape, structure, support, material — never paths).
@@ -314,7 +335,7 @@ Behavioral claims in this document are covered by the repository gates,
 not by a paper validation suite:
 
 - `npm test` — taxonomy, family-card, authored-family, trim-sheet,
-  world-plan, and palette suites.
+  socket-extraction, world-plan, and palette suites.
 - `npm run catalog:layout:check` — folder-mirror invariant (section 2).
 - `npm run docs:check` — this document's links and structure.
 - `npm run plugin:build` plus the Rojo build — connector and place

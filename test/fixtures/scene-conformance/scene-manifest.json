@@ -1,0 +1,233 @@
+{
+  "abi": "basalt-scene-export@1",
+  "assets": [
+    {
+      "assetId": "asset_alpha",
+      "partHashes": ["1e93a948111175e4e81068b0e08a1c9d4c7492db0f07a1642d6f17cc54a63dfb"],
+      "pivotOffsetMeters": { "x": 0, "y": 0, "z": 0 },
+      "unitsToMeters": 1
+    },
+    {
+      "assetId": "asset_beta",
+      "partHashes": ["1e93a948111175e4e81068b0e08a1c9d4c7492db0f07a1642d6f17cc54a63dfb"],
+      "pivotOffsetMeters": { "x": 0, "y": 0, "z": 0 },
+      "unitsToMeters": 1
+    },
+    {
+      "assetId": "asset_gamma",
+      "partHashes": ["1e93a948111175e4e81068b0e08a1c9d4c7492db0f07a1642d6f17cc54a63dfb"],
+      "pivotOffsetMeters": { "x": 0, "y": 0, "z": 0 },
+      "unitsToMeters": 1
+    }
+  ],
+  "hash": "a413374f7a6a89b86fe1daff50b3f961cb11f2f9a54a023da9b1d7ef98da73e5",
+  "instances": [
+    {
+      "archetypeId": "FamilyGroundCover_archetype_2",
+      "assetId": "asset_gamma",
+      "chunkId": "chunk_0_0",
+      "familyId": "FamilyGroundCover",
+      "id": "instance_6d906a5c8f11967f3154853b",
+      "positionMeters": { "x": 6.809290718659759, "y": 0, "z": 7.612682481855154 },
+      "rotation": [0, 0.22668440975793072, 0, 0.9739682635346487],
+      "scale": 1.0561379679609413
+    },
+    {
+      "archetypeId": "FamilyGroundCover_archetype_0",
+      "assetId": "asset_alpha",
+      "chunkId": "chunk_0_-1",
+      "familyId": "FamilyGroundCover",
+      "id": "instance_8443e5bc58823deef8365fcc",
+      "positionMeters": { "x": 4.806863545998931, "y": 0, "z": -6.502709768526256 },
+      "rotation": [0, 0.23986229839204465, 0, 0.9708069209735197],
+      "scale": 0.9426391311042568
+    },
+    {
+      "archetypeId": "FamilyGroundCover_archetype_1",
+      "assetId": "asset_beta",
+      "chunkId": "chunk_-1_0",
+      "familyId": "FamilyGroundCover",
+      "id": "instance_a098ef4060dcc91837f8ad3e",
+      "positionMeters": { "x": -6.973216298595071, "y": 0, "z": 4.4637815544381745 },
+      "rotation": [0, 0.4667129477286246, 0, -0.8844088559158926],
+      "scale": 1.0473718997387615
+    },
+    {
+      "archetypeId": "FamilyGroundCover_archetype_0",
+      "assetId": "asset_alpha",
+      "chunkId": "chunk_-1_0",
+      "familyId": "FamilyGroundCover",
+      "id": "instance_b681c47ccd97d1d77e1decd0",
+      "positionMeters": { "x": -2.631048738397658, "y": 0, "z": 2.9422377269715074 },
+      "rotation": [0, 0.9870953235361193, 0, -0.16013376362630144],
+      "scale": 1.077130634597766
+    },
+    {
+      "archetypeId": "FamilyGroundCover_archetype_2",
+      "assetId": "asset_gamma",
+      "chunkId": "chunk_-1_-1",
+      "familyId": "FamilyGroundCover",
+      "id": "instance_ce71fa5a304ab2c43cfa6af0",
+      "positionMeters": { "x": -6.813071322441102, "y": 0, "z": -3.9911038806661967 },
+      "rotation": [0, 0.6976287902419579, 0, 0.7164593994257751],
+      "scale": 1.0325679258891773
+    }
+  ],
+  "kind": "BasaltSceneExport",
+  "materialIds": ["exportMaterial"],
+  "parts": [
+    {
+      "assetId": "asset_gamma",
+      "boundsSourceUnits": {
+        "maximum": { "x": 1, "y": 1, "z": 0 },
+        "minimum": { "x": 0, "y": 0, "z": 0 }
+      },
+      "byteLength": 620,
+      "contentHash": "1e93a948111175e4e81068b0e08a1c9d4c7492db0f07a1642d6f17cc54a63dfb",
+      "mediaType": "model/gltf-binary",
+      "nodeName": "triangleNode",
+      "pivotSourceUnits": { "x": 0, "y": 0, "z": 0 },
+      "triangleCount": 1
+    }
+  ],
+  "payloads": [
+    {
+      "byteLength": 1604,
+      "contentHash": "10a67724270c3b1c3a500cc6b7421b94c8cc31016fc76301c8acd9bdb195341d",
+      "mediaType": "application/x-basalt-voxels"
+    },
+    {
+      "byteLength": 620,
+      "contentHash": "1e93a948111175e4e81068b0e08a1c9d4c7492db0f07a1642d6f17cc54a63dfb",
+      "mediaType": "model/gltf-binary"
+    }
+  ],
+  "placementConvention": {
+    "handedness": "right-handed",
+    "instanceComposition": "T(positionMeters).R(rotationQuaternion).S(uniformScale).T(-pivotOffsetMeters).S(unitsToMeters)",
+    "lengthUnit": "meter",
+    "upAxis": "+Y"
+  },
+  "populationHash": "39e3e97085f890e534cb1e1ad615812da8528c99303e16f9a2e34926965758b7",
+  "roads": [
+    {
+      "routeId": "exportRoute",
+      "segments": [
+        {
+          "boundsMeters": {
+            "maximum": { "x": 0, "y": 0, "z": 0.8400000000000001 },
+            "minimum": { "x": -5.6000000000000005, "y": 0, "z": -0.8400000000000001 }
+          },
+          "chunkId": "chunk_-1_0",
+          "dominantRegionId": "exportRegion",
+          "endStationMeters": 5.6000000000000005,
+          "id": "road_cdc78e980fc603f25fa05f03",
+          "materialId": "exportMaterial",
+          "startStationMeters": 0,
+          "vertices": [
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": -5.6000000000000005, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": -5.6000000000000005, "y": 0, "z": 0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": -3.733333244323731, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": -3.733333244323731, "y": 0, "z": 0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": -1.8666666221618655, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": -1.8666666221618655, "y": 0, "z": 0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 0, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 0, "y": 0, "z": 0.8400000000000001 }
+            }
+          ]
+        },
+        {
+          "boundsMeters": {
+            "maximum": { "x": 5.6000000000000005, "y": 0, "z": 0.8400000000000001 },
+            "minimum": { "x": -1.8666666221618655, "y": 0, "z": -0.8400000000000001 }
+          },
+          "chunkId": "chunk_0_0",
+          "dominantRegionId": "exportRegion",
+          "endStationMeters": 11.200000000000001,
+          "id": "road_760312318e649d905c71c637",
+          "materialId": "exportMaterial",
+          "startStationMeters": 3.7333335113525394,
+          "vertices": [
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": -1.8666666221618655, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": -1.8666666221618655, "y": 0, "z": 0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 0, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 0, "y": 0, "z": 0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 1.8666666221618655, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 1.8666666221618655, "y": 0, "z": 0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 3.733333244323731, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 3.733333244323731, "y": 0, "z": 0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 5.6000000000000005, "y": 0, "z": -0.8400000000000001 }
+            },
+            {
+              "normal": { "x": 0, "y": 1, "z": 0 },
+              "position": { "x": 5.6000000000000005, "y": 0, "z": 0.8400000000000001 }
+            }
+          ]
+        }
+      ],
+      "surfaceId": "exportTerrain",
+      "widthMeters": 1.6800000000000002
+    }
+  ],
+  "studMeters": 0.28,
+  "terrain": [
+    {
+      "cellSizeMeters": 1.12,
+      "dimensions": [16, 1, 16],
+      "materials": ["exportMaterial"],
+      "originMeters": { "x": -8.96, "y": -1.12, "z": -8.96 },
+      "surfaceId": "exportTerrain",
+      "voxelHash": "10a67724270c3b1c3a500cc6b7421b94c8cc31016fc76301c8acd9bdb195341d"
+    }
+  ],
+  "worldPlanHash": "c7b82295d26072bfc9957a29f55477f1425fd5d1ac105f6ec4ae3e9898a0366d"
+}

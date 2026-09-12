@@ -1,3 +1,4 @@
+import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 import { computeVoxelVolumeInclusion } from "../../asset-inspection/src/voxel.js";
 import type { NormalizedMesh } from "../../asset-inspection/src/geometry.js";
 
@@ -75,7 +76,7 @@ export function pairCollisionCompanions(
   const bindings: CollisionBinding[] = [];
   const diagnostics: CollisionPairDiagnostic[] = [];
   for (const collision of [...collisionCandidates].sort((left, right) =>
-    left.assetId.localeCompare(right.assetId),
+    compareSpatialStrings(left.assetId, right.assetId),
   )) {
     const targetStem = companionTargetStem(collision.sourcePath);
     const exact = (renderByStem.get(targetStem) ?? []).filter(
@@ -155,7 +156,9 @@ export function pairCollisionCompanions(
     }
   }
   return {
-    bindings: bindings.sort((left, right) => left.renderAssetId.localeCompare(right.renderAssetId)),
+    bindings: bindings.sort((left, right) =>
+      compareSpatialStrings(left.renderAssetId, right.renderAssetId),
+    ),
     renderCandidates: renderCandidates.filter((candidate) => !usedRenderIds.has(candidate.assetId)),
     collisionCandidates,
     diagnostics,

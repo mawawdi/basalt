@@ -173,3 +173,63 @@ test("family distributions resolve through the shared surface relation solver", 
   assert.equal(solved[0]!.surfaceId, "relationSurface");
   assert.equal(solved[0]!.position.y, 0);
 });
+
+test("route clearance uses the shared segment corridor, not sparse points", () => {
+  const plan = productionWorldPlanFixture({
+    sceneId: "clearanceScene",
+    regionId: "clearanceRegion",
+    surfaceId: "clearanceSurface",
+    routeId: "clearanceRoute",
+    anchorId: "clearanceAnchor",
+    cameraId: "clearanceCamera",
+    materialId: "clearanceMaterial",
+    name: "Clearance fixture",
+  });
+  const foundation = compileBasaltWorldFoundation(plan);
+  const routes = foundation.worldPlan.plan.routes.map((route) => ({
+    id: route.id,
+    points: route.points,
+    width: route.width,
+  }));
+  const relations = [
+    {
+      kind: "maintain_clearance" as const,
+      proposalIds: ["clearancePlacement"],
+      routeId: "clearanceRoute",
+      clearance: 0,
+    },
+  ];
+  assert.throws(
+    () =>
+      solveWorldRelations({
+        surfaces: foundation.worldPlan.surfaces,
+        regions: foundation.worldPlan.plan.regions,
+        routes,
+        distributions: [
+          {
+            kind: "single" as const,
+            id: "clearancePlacement",
+            surfaceId: "clearanceSurface",
+            at: { u: 0, v: 0 },
+          },
+        ],
+        relations,
+      }),
+    /route clearance/,
+  );
+  const solved = solveWorldRelations({
+    surfaces: foundation.worldPlan.surfaces,
+    regions: foundation.worldPlan.plan.regions,
+    routes,
+    distributions: [
+      {
+        kind: "single" as const,
+        id: "clearancePlacement",
+        surfaceId: "clearanceSurface",
+        at: { u: 0, v: 12 },
+      },
+    ],
+    relations,
+  });
+  assert.equal(solved.length, 1);
+});

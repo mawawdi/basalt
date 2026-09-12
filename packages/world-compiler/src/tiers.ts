@@ -1,4 +1,5 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
+import { assemblePlanRoads, type RoadAssembly } from "../../world-planning/src/roads.js";
 import type { WorldBiomeFamilyRequest } from "./family-resolver.js";
 import {
   compileBasaltWorldFoundation,
@@ -25,6 +26,7 @@ export interface BasaltHierarchicalWorld {
   readonly foundation: BasaltWorldFoundation;
   readonly mesoPlan?: WorldCompilerPlan;
   readonly microPopulation?: WorldPopulationArtifact;
+  readonly roadAssemblies?: readonly RoadAssembly[];
   readonly partitionEmission?: BasaltWorldEmissionManifest;
   readonly hash: string;
 }
@@ -72,13 +74,16 @@ export function compileHierarchicalWorld(
     mesoPlan && stage !== "meso"
       ? populateBasaltWorld(foundation, mesoPlan, input.population)
       : undefined;
+  const chunkSize = input.chunkSize ?? input.population?.chunkSize ?? 128;
+  const roadAssemblies =
+    microPopulation && stage === "partition"
+      ? assemblePlanRoads(foundation.worldPlan.plan, foundation.worldPlan.surfaces, {
+          chunkSizeStuds: chunkSize,
+        })
+      : undefined;
   const partitionEmission =
     microPopulation && stage === "partition"
-      ? createBasaltWorldEmission(
-          foundation,
-          microPopulation,
-          input.chunkSize ?? input.population?.chunkSize ?? 128,
-        )
+      ? createBasaltWorldEmission(foundation, microPopulation, chunkSize, roadAssemblies ?? [])
       : undefined;
   const material = {
     kind: "BasaltHierarchicalWorld" as const,
@@ -93,6 +98,9 @@ export function compileHierarchicalWorld(
     },
     ...(mesoPlan ? { mesoPlanHash: mesoPlan.hash } : {}),
     ...(microPopulation ? { microPopulationHash: microPopulation.hash } : {}),
+    ...(roadAssemblies
+      ? { roadAssemblyHash: contentHash(stableJson(roadAssemblies.map((road) => road.hash))) }
+      : {}),
     ...(partitionEmission ? { partitionEmissionHash: partitionEmission.hash } : {}),
   };
   return {
@@ -101,6 +109,7 @@ export function compileHierarchicalWorld(
     foundation,
     ...(mesoPlan ? { mesoPlan } : {}),
     ...(microPopulation ? { microPopulation } : {}),
+    ...(roadAssemblies ? { roadAssemblies } : {}),
     ...(partitionEmission ? { partitionEmission } : {}),
     hash: contentHash(stableJson(material)),
   };

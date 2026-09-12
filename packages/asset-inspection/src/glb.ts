@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
+import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 import type { NormalizedMesh } from "./geometry.js";
 
 const GLB_MAGIC = 0x46546c67;
@@ -300,6 +301,8 @@ export interface GlbInspectionReport {
     };
     /** Exact embedded base-color image area when that channel is textured. */
     baseColorTexturePixels?: number;
+    /** Content hash of the bound base-color image when that channel is textured. */
+    baseColorImageSha256?: string;
   }>;
   nodes: GlbNodeReport[];
   extensions: string[];
@@ -814,7 +817,7 @@ export function inspectGlbAssetContactPatches(
         ]),
       ] as GlbAssetContactPatch["contactSamples"],
     }))
-    .sort((left, right) => stableJson(left).localeCompare(stableJson(right)))
+    .sort((left, right) => compareSpatialStrings(stableJson(left), stableJson(right)))
     .filter(({ polygon }) => {
       const first = polygon[0]!;
       const second = polygon[1]!;
@@ -915,7 +918,7 @@ function inspectGlbDirectionalTopology(
         [polygon[2], polygon[0], polygon[1]] as GlbCollisionSupportPatch["polygon"],
       ];
       const canonicalPolygon = [...rotations].sort((left, right) =>
-        stableJson(left).localeCompare(stableJson(right)),
+        compareSpatialStrings(stableJson(left), stableJson(right)),
       )[0]!;
       const patch = { polygon: canonicalPolygon, normal } satisfies GlbCollisionSupportPatch;
       retained.set(stableJson(patch), patch);
@@ -925,7 +928,7 @@ function inspectGlbDirectionalTopology(
   }
   return {
     patches: [...retained.values()].sort((left, right) =>
-      stableJson(left).localeCompare(stableJson(right)),
+      compareSpatialStrings(stableJson(left), stableJson(right)),
     ),
     points: worldPoints,
   };
@@ -984,7 +987,7 @@ function fallbackContactProxy(
       [polygon[1], polygon[2], polygon[0]],
       [polygon[2], polygon[0], polygon[1]],
     ] as GlbAssetContactPatch["polygon"][]
-  ).sort((left, right) => stableJson(left).localeCompare(stableJson(right)))[0]!;
+  ).sort((left, right) => compareSpatialStrings(stableJson(left), stableJson(right)))[0]!;
   return [
     {
       polygon: canonicalPolygon,
@@ -1247,7 +1250,7 @@ export function inspectGlb(
             assetUnitsToStuds,
           ),
         )
-        .sort((left, right) => left.materialName.localeCompare(right.materialName)),
+        .sort((left, right) => compareSpatialStrings(left.materialName, right.materialName)),
       worldMatrix,
       ...(nodeBounds ? { bounds: nodeBounds } : {}),
     });
@@ -1300,6 +1303,14 @@ export function inspectGlb(
         ...(() => {
           const pixels = baseColorTexturePixels(gltf, imageReports, entry);
           return pixels === undefined ? {} : { baseColorTexturePixels: pixels };
+        })(),
+        ...(() => {
+          const image = referencedTextureImage(
+            gltf,
+            imageReports,
+            entry.pbrMetallicRoughness?.baseColorTexture,
+          );
+          return image === undefined ? {} : { baseColorImageSha256: image.sha256 };
         })(),
       };
     }),

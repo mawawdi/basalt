@@ -4,6 +4,9 @@ import { lstat, mkdir, readFile, readdir, rename, unlink, writeFile } from "node
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/** Code-unit string order. Locale-aware comparison must never feed sealed output. */
+const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
 const scriptPath = fileURLToPath(import.meta.url);
 const root = resolve(dirname(scriptPath), "..");
 const outputPath = resolve(root, "dist/runtime-build-manifest.json");
@@ -39,7 +42,7 @@ async function sourceFiles() {
   const files = [...fixedInputs];
   async function visit(directory) {
     const entries = await readdir(directory, { withFileTypes: true });
-    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+    for (const entry of entries.sort((left, right) => compareStrings(left.name, right.name))) {
       const absolute = join(directory, entry.name);
       if (entry.isSymbolicLink())
         throw new Error(`Runtime build input must not be a symlink: ${absolute}`);

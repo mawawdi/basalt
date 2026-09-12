@@ -4,6 +4,9 @@ import { lstat, mkdir, readFile, realpath, readdir, writeFile } from "node:fs/pr
 import { basename, dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/** Code-unit string order. Locale-aware comparison must never feed sealed output. */
+const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const trustedRoot = resolve(repositoryRoot, "registry");
 const manifestPath = resolve(trustedRoot, "source-manifest.json");
@@ -112,7 +115,7 @@ async function filesUnder(root) {
     }
   };
   await visit(root);
-  return output.sort((left, right) => left.localeCompare(right));
+  return output.sort((left, right) => compareStrings(left, right));
 }
 
 async function main() {
@@ -175,7 +178,7 @@ async function main() {
   packages.push(packageEntry);
   manifest = {
     ...manifest,
-    packages: packages.sort((left, right) => left.packageId.localeCompare(right.packageId)),
+    packages: packages.sort((left, right) => compareStrings(left.packageId, right.packageId)),
   };
   await mkdir(trustedRoot, { recursive: true, mode: 0o700 });
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, {

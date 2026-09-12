@@ -6,6 +6,7 @@ import {
   type TerrainFieldArtifact,
   type WorldVector3,
 } from "./contracts.js";
+import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
 
 export interface SurfaceCoordinate {
@@ -127,9 +128,9 @@ export class PlacementSurfaceIndex {
       stableJson({
         terrainFields: [...this.terrain.values()]
           .map((field) => ({ surfaceId: field.surfaceId, hash: field.hash }))
-          .sort((left, right) => left.surfaceId.localeCompare(right.surfaceId)),
+          .sort((left, right) => compareSpatialStrings(left.surfaceId, right.surfaceId)),
         constructedSurfaces: [...this.constructed.values()].sort((left, right) =>
-          left.id.localeCompare(right.id),
+          compareSpatialStrings(left.id, right.id),
         ),
       }),
     );

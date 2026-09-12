@@ -2,13 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   buildAuthoredAssetFamilyRevision,
-  buildMountSocket,
+  buildMountSockets,
   findSupportEvidenceViolations,
   measureKindFamilyDiagnostics,
   parseAuthoredFamilyManifest,
   type KindEvidenceMember,
 } from "../packages/catalog-intelligence/src/index.js";
-import { catalogAssetRecordSchema, dequantizeQ32_32 } from "../packages/basalt-types/src/index.js";
+import {
+  catalogAssetRecordSchema,
+  dequantizeQ32_32,
+  quantizeQ32_32,
+} from "../packages/basalt-types/src/index.js";
 
 const hash = "a".repeat(64);
 
@@ -183,31 +187,95 @@ test("authored declarations reject malformed trim bands", () => {
   );
 });
 
-test("mount sockets sit at bottom center with contact-derived radius", () => {
-  const socket = buildMountSocket({
+test("mount sockets follow the fitted support plane", () => {
+  const [socket] = buildMountSockets({
     variantName: "Tall Palm!",
-    boundsMin: { x: "0", y: "0", z: "0" },
-    boundsMax: { x: "8589934592", y: "8589934592", z: "8589934592" },
-    contactAreaStuds2: 1,
+    supportPlaneFits: [
+      {
+        normalQ32_32: { x: "0", y: "4294967296", z: "0" },
+        originQ32_32: { x: "4294967296", y: "0", z: "8589934592" },
+        boundaryRadiusStuds: 0.5,
+        inlierCount: 12,
+        pointCount: 12,
+      },
+    ],
   });
-  assert.equal(socket.socketId, "mount_Tall_Palm_");
-  assert.equal(socket.role, "mount");
-  assert.equal(socket.polarity, "Neutral");
-  assert.deepEqual(socket.localOrigin, { x: "4294967296", y: "0", z: "4294967296" });
-  const radius = dequantizeQ32_32(socket.boundaryRadius);
-  assert.ok(Math.abs(radius * radius * Math.PI - 1) < 1e-9);
+  assert.equal(socket!.socketId, "mount_Tall_Palm__01");
+  assert.equal(socket!.role, "mount");
+  assert.equal(socket!.polarity, "Neutral");
+  assert.deepEqual(socket!.localOrigin, { x: "4294967296", y: "0", z: "8589934592" });
+  assert.deepEqual(socket!.normal, { x: "0", y: "4294967296", z: "0" });
+  assert.deepEqual(socket!.upVector, { x: "0", y: "0", z: "4294967296" });
+  assert.equal(dequantizeQ32_32(socket!.boundaryRadius), 0.5);
+});
+
+test("mount sockets index uniformly across feet", () => {
+  const fit = {
+    normalQ32_32: { x: "0", y: "4294967296", z: "0" },
+    originQ32_32: { x: "0", y: "0", z: "0" },
+    boundaryRadiusStuds: 1,
+    inlierCount: 4,
+    pointCount: 8,
+  };
+  const sockets = buildMountSockets({ variantName: "chair", supportPlaneFits: [fit, fit] });
+  assert.deepEqual(
+    sockets.map((socket) => socket.socketId),
+    ["mount_chair_01", "mount_chair_02"],
+  );
+});
+
+test("mount sockets project up onto tilted support planes", () => {
+  const [socket] = buildMountSockets({
+    variantName: "ramp",
+    supportPlaneFits: [
+      {
+        normalQ32_32: {
+          x: "0",
+          y: quantizeQ32_32(Math.SQRT1_2),
+          z: quantizeQ32_32(Math.SQRT1_2),
+        },
+        originQ32_32: { x: "0", y: "0", z: "0" },
+        boundaryRadiusStuds: 1,
+        inlierCount: 4,
+        pointCount: 4,
+      },
+    ],
+  });
+  const up = {
+    x: dequantizeQ32_32(socket!.upVector.x),
+    y: dequantizeQ32_32(socket!.upVector.y),
+    z: dequantizeQ32_32(socket!.upVector.z),
+  };
+  assert.ok(Math.abs(up.x - 0) < 1e-9);
+  assert.ok(Math.abs(up.y + Math.SQRT1_2) < 1e-9);
+  assert.ok(Math.abs(up.z - Math.SQRT1_2) < 1e-9);
 });
 
 test("mount sockets reject missing contact evidence", () => {
+  const fit = {
+    normalQ32_32: { x: "0", y: "4294967296", z: "0" },
+    originQ32_32: { x: "0", y: "0", z: "0" },
+    boundaryRadiusStuds: 0,
+    inlierCount: 0,
+    pointCount: 4,
+  };
+  assert.throws(
+    () => buildMountSockets({ variantName: "floater", supportPlaneFits: [fit] }),
+    /positively clipped/,
+  );
   assert.throws(
     () =>
-      buildMountSocket({
+      buildMountSockets({
         variantName: "floater",
-        boundsMin: { x: "0", y: "0", z: "0" },
-        boundsMax: { x: "8589934592", y: "8589934592", z: "8589934592" },
-        contactAreaStuds2: 0,
+        supportPlaneFits: [
+          {
+            ...fit,
+            boundaryRadiusStuds: 1,
+            normalQ32_32: { x: "0", y: "0", z: "0" },
+          },
+        ],
       }),
-    /contact evidence/,
+    /nonzero.*normal/,
   );
 });
 
@@ -239,12 +307,19 @@ test("seal embeds trim mappings and mount sockets with grammar identity", () => 
     targetTexelDensityPxPerMeter: "2199023255552",
     maxDistortionEnergy: "1",
   };
+  const fit = {
+    normalQ32_32: { x: "0", y: "4294967296", z: "0" },
+    originQ32_32: { x: "0", y: "0", z: "0" },
+    boundaryRadiusStuds: 1,
+    inlierCount: 4,
+    pointCount: 4,
+  };
   const revision = buildAuthoredAssetFamilyRevision(declaration, assets, {
     trimMappings: [mapping],
     mountContacts: {
-      asset_0: { contactAreaStuds2: 1 },
-      asset_1: { contactAreaStuds2: 1 },
-      asset_2: { contactAreaStuds2: 1 },
+      asset_0: { supportPlaneFits: [fit] },
+      asset_1: { supportPlaneFits: [fit] },
+      asset_2: { supportPlaneFits: [fit] },
     },
   });
   assert.deepEqual(revision.trimMappings, [mapping]);

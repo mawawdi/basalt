@@ -5,6 +5,7 @@ import {
   SPATIAL_ROLES,
   type SpatialRole,
 } from "../../basalt-types/src/index.js";
+import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 
 /**
  * Evidence-driven family cohort proposals. Every input is measured geometry,
@@ -122,7 +123,7 @@ export function checkSiblingCoherence(
   threshold: number = KIND_COHERENCE_THRESHOLD,
   weights: SiblingCoherenceWeights = {},
 ): SiblingCoherenceVerdict {
-  const ordered = [...assets].sort((a, b) => a.assetId.localeCompare(b.assetId));
+  const ordered = [...assets].sort((a, b) => compareSpatialStrings(a.assetId, b.assetId));
   if (ordered.length === 0) return { outliers: [], medoidAssetId: null };
   const frequency = new Map<string, number>();
   for (const asset of ordered)
@@ -157,7 +158,7 @@ export function checkSiblingCoherence(
   const outliers: string[] = [];
   for (let i = 0; i < size; i += 1)
     if (matrix[medoid * size + i]! > threshold) outliers.push(ordered[i]!.assetId);
-  outliers.sort((a, b) => a.localeCompare(b));
+  outliers.sort((a, b) => compareSpatialStrings(a, b));
   return { outliers, medoidAssetId: ordered[medoid]!.assetId };
 }
 
@@ -171,7 +172,7 @@ export function clusterSiblings(
   threshold: number = PROPOSAL_CLUSTER_THRESHOLD,
   weights: SiblingCoherenceWeights = {},
 ): string[][] {
-  const ordered = [...assets].sort((a, b) => a.assetId.localeCompare(b.assetId));
+  const ordered = [...assets].sort((a, b) => compareSpatialStrings(a.assetId, b.assetId));
   const frequency = new Map<string, number>();
   for (const asset of ordered)
     for (const hash of new Set(asset.materialAppearanceHashes))
@@ -194,8 +195,8 @@ export function clusterSiblings(
   pairs.sort(
     (a, b) =>
       a.distance - b.distance ||
-      ordered[a.left]!.assetId.localeCompare(ordered[b.left]!.assetId) ||
-      ordered[a.right]!.assetId.localeCompare(ordered[b.right]!.assetId),
+      compareSpatialStrings(ordered[a.left]!.assetId, ordered[b.left]!.assetId) ||
+      compareSpatialStrings(ordered[a.right]!.assetId, ordered[b.right]!.assetId),
   );
   const parent = ordered.map((_, index) => index);
   const members = ordered.map((_, index) => [index]);
@@ -225,10 +226,12 @@ export function clusterSiblings(
   for (let i = 0; i < size; i += 1) {
     if (parent[i] !== i || members[i]!.length === 0) continue;
     clusters.push(
-      members[i]!.map((index) => ordered[index]!.assetId).sort((a, b) => a.localeCompare(b)),
+      members[i]!.map((index) => ordered[index]!.assetId).sort((a, b) =>
+        compareSpatialStrings(a, b),
+      ),
     );
   }
-  clusters.sort((a, b) => a[0]!.localeCompare(b[0]!));
+  clusters.sort((a, b) => compareSpatialStrings(a[0]!, b[0]!));
   return clusters;
 }
 
@@ -338,7 +341,7 @@ export function proposeFamilyCohorts(
     const maxExtent = Math.max(maxBounds[0]!, maxBounds[2]!);
     cohorts.push({
       cohortId: "",
-      members: [...members].sort((a, b) => a.localeCompare(b)),
+      members: [...members].sort((a, b) => compareSpatialStrings(a, b)),
       aspectCentroid: [a1 / members.length, a2 / members.length],
       sizeRange: {
         minBounds: minBounds as [number, number, number],
@@ -348,12 +351,12 @@ export function proposeFamilyCohorts(
       splitCandidate: members.length > 16,
     });
   }
-  cohorts.sort((a, b) => a.members[0]!.localeCompare(b.members[0]!));
+  cohorts.sort((a, b) => compareSpatialStrings(a.members[0]!, b.members[0]!));
   const numbered = cohorts.map((proposal, index) => ({
     ...proposal,
     cohortId: `cohort_${String(index + 1).padStart(3, "0")}`,
   }));
-  singletons.sort((a, b) => a.localeCompare(b));
-  excluded.sort((a, b) => a.assetId.localeCompare(b.assetId));
+  singletons.sort((a, b) => compareSpatialStrings(a, b));
+  excluded.sort((a, b) => compareSpatialStrings(a.assetId, b.assetId));
   return { cohorts: numbered, singletons, excluded };
 }

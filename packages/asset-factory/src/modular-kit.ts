@@ -4,7 +4,7 @@ import {
   type SocketContract as CanonicalSocketContract,
 } from "../../basalt-types/src/index.js";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { entityId, hashSchema } from "../../spatial-core/src/primitives.js";
+import { compareSpatialStrings, entityId, hashSchema } from "../../spatial-core/src/primitives.js";
 import {
   CONSTRUCTED_PLACEMENT_SURFACE_KINDS,
   CONSTRUCTED_SURFACE_SCHEMA,
@@ -250,7 +250,7 @@ const assemblyRecipeMaterial = z
         message: "Assembly component IDs must be unique",
       });
     const canonical = [...value.socketedComponents].sort((left, right) =>
-      left.componentId.localeCompare(right.componentId),
+      compareSpatialStrings(left.componentId, right.componentId),
     );
     if (stableJson(canonical) !== stableJson(value.socketedComponents))
       context.addIssue({
@@ -268,7 +268,7 @@ export function sealAssemblyRecipe(input: z.input<typeof assemblyRecipeMaterial>
   const material = assemblyRecipeMaterial.parse({
     ...input,
     socketedComponents: [...input.socketedComponents].sort((left, right) =>
-      left.componentId.localeCompare(right.componentId),
+      compareSpatialStrings(left.componentId, right.componentId),
     ),
   });
   return Object.freeze({ ...material, hash: contentHash(stableJson(material)) });

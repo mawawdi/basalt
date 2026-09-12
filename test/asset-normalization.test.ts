@@ -6,7 +6,7 @@ import {
 } from "../packages/asset-inspection/src/index.js";
 import { normalizeSceneGraph, rebaseAssetPivot } from "../packages/prepared-asset/src/index.js";
 
-test("normalization accumulates nested transforms and maps glTF +Z to engine -Z", () => {
+test("normalization accumulates nested transforms and preserves the source frame", () => {
   const matrices = accumulateNodeWorldMatrices([
     { translation: [1, 0, 0] },
     { parentIndex: 0, translation: [2, 0, 0], meshIndex: 0 },
@@ -28,7 +28,8 @@ test("normalization accumulates nested transforms and maps glTF +Z to engine -Z"
     },
     { pivotPolicy: "volumetric_center" },
   );
-  assert.equal(normalized.meshes[0]!.vertices[0]!.z, -2 / 0.28);
+  assert.equal(normalized.meshes[0]!.vertices[0]!.z, 2 / 0.28);
+  assert.deepEqual(normalized.meshes[0]!.triangles, [[0, 1, 2]]);
 });
 
 test("normalization converts source meters directly without avatar-height targeting", () => {

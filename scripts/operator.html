@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Basalt slice operator</title>
+    <style>
+      :root {
+        --ink: #1c1a17;
+        --muted: #5c5852;
+        --line: #ddd8d0;
+        --paper: #ffffff;
+        --wash: #f4f1ec;
+        --ok: #1e7e34;
+        --bad: #b3261e;
+        --busy: #8a6d00;
+      }
+      body {
+        margin: 0;
+        background: var(--wash);
+        color: var(--ink);
+        font:
+          14px/1.5 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Helvetica,
+          sans-serif;
+      }
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 28px 20px 60px;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 4px;
+      }
+      p.sub {
+        margin: 0 0 20px;
+        color: var(--muted);
+      }
+      section {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px 18px;
+        margin-bottom: 14px;
+      }
+      section h2 {
+        font-size: 15px;
+        margin: 0 0 10px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      input[type="text"],
+      input:not([type]) {
+        font: inherit;
+        padding: 6px 9px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        width: 170px;
+      }
+      button {
+        font: inherit;
+        padding: 7px 14px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--ink);
+        color: #fff;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: var(--paper);
+        color: var(--ink);
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .step {
+        display: flex;
+        gap: 12px;
+        align-items: baseline;
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .step:first-of-type {
+        border-top: none;
+      }
+      .step .name {
+        width: 130px;
+        flex: none;
+        font-weight: 600;
+      }
+      .step .detail {
+        flex: 1;
+        color: var(--muted);
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .pill {
+        flex: none;
+        font-size: 12px;
+        padding: 2px 10px;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .pill.running {
+        color: var(--busy);
+        border-color: var(--busy);
+      }
+      .pill.done {
+        color: var(--ok);
+        border-color: var(--ok);
+      }
+      .pill.error {
+        color: var(--bad);
+        border-color: var(--bad);
+      }
+      #log {
+        background: #14120f;
+        color: #e8e2d6;
+        border-radius: 8px;
+        padding: 12px 14px;
+        height: 260px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        font:
+          12px/1.55 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      ol.checklist {
+        margin: 6px 0 0;
+        padding-left: 22px;
+      }
+      ol.checklist li {
+        margin-bottom: 6px;
+      }
+      code {
+        font:
+          12px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        background: var(--wash);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Basalt slice operator</h1>
+      <p class="sub">
+        Palette, compile, upload, bridge — everything lands in <code>.basalt/slice</code>. The API
+        key is read from the repo-root <code>.env</code> and never shown here.
+      </p>
+
+      <section>
+        <h2>Configuration</h2>
+        <div class="row">
+          <label
+            >Creator user id <input id="creatorUserId" type="text" inputmode="numeric"
+          /></label>
+          <label>
+            Terrain material
+            <input id="robloxMaterial" type="text" list="materials" />
+            <datalist id="materials">
+              <option>Sand</option>
+              <option>Grass</option>
+              <option>Rock</option>
+              <option>Ground</option>
+              <option>Asphalt</option>
+              <option>Concrete</option>
+            </datalist>
+          </label>
+          <label><input id="includeIncomplete" type="checkbox" /> include open meshes</label>
+          <span id="apiKey" class="pill">key?</span>
+          <button id="save" class="secondary">Save</button>
+          <button id="runAll">Run all</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Pipeline</h2>
+        <div id="steps"></div>
+      </section>
+
+      <section>
+        <h2>State</h2>
+        <div id="state" class="row"></div>
+      </section>
+
+      <section>
+        <h2>Studio capture</h2>
+        <ol class="checklist">
+          <li>
+            Empty baseplate, plugin installed, Studio API access enabled. Start the bridge above.
+          </li>
+          <li>Click the Basalt toolbar button until Output says “no pending chunk transaction”.</li>
+          <li>Save, close, reopen, press Play.</li>
+          <li>Report: props visible, terrain, road ribbons, textured or flat, any warnings.</li>
+        </ol>
+      </section>
+
+      <h2 style="font-size: 15px">Log</h2>
+      <div id="log"></div>
+    </main>
+
+    <script>
+      const STEPS = [
+        ["palette", "Palette", "Resolve the brief to a family registry."],
+        ["compile", "Compile", "Build the world and emit the scene export."],
+        ["upload", "Upload", "Upload mesh parts; reuses bindings when bytes match."],
+        ["bridge-files", "Bridge files", "Write the material map and emission manifest."],
+        ["bridge-start", "Bridge", "Serve the export on :8787 for the connector."],
+      ];
+      const stepsEl = document.getElementById("steps");
+      for (const [id, name, hint] of STEPS) {
+        const row = document.createElement("div");
+        row.className = "step";
+        row.innerHTML = `<span class="name">${name}</span><span class="pill" id="pill-${id}">pending</span><span class="detail" id="detail-${id}">${hint}</span>`;
+        const button = document.createElement("button");
+        button.textContent = "Run";
+        button.className = "secondary";
+        button.onclick = () => run(id);
+        row.appendChild(button);
+        if (id === "bridge-start") {
+          const stop = document.createElement("button");
+          stop.textContent = "Stop";
+          stop.className = "secondary";
+          stop.onclick = async () => {
+            await fetch("/api/bridge/stop", { method: "POST" });
+            refresh();
+          };
+          row.appendChild(stop);
+        }
+        stepsEl.appendChild(row);
+      }
+
+      async function run(id) {
+        const response = await fetch(`/api/run/${id}`, { method: "POST" });
+        if (!response.ok) {
+          const body = await response.json();
+          document.getElementById(`detail-${id}`).textContent = body.error || "failed";
+          document.getElementById(`pill-${id}`).textContent = "error";
+          document.getElementById(`pill-${id}`).className = "pill error";
+        }
+        refresh();
+      }
+
+      document.getElementById("runAll").onclick = async () => {
+        for (const [id] of STEPS) {
+          if (id === "bridge-start") continue;
+          await run(id);
+          for (;;) {
+            await new Promise((done) => setTimeout(done, 1500));
+            const status = await (await fetch("/api/status")).json();
+            const state = (status.steps[id] || {}).status;
+            if (state === "done") break;
+            if (state === "error") return;
+          }
+        }
+        await run("bridge-start");
+      };
+
+      document.getElementById("save").onclick = async () => {
+        await fetch("/api/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            creatorUserId: document.getElementById("creatorUserId").value,
+            robloxMaterial: document.getElementById("robloxMaterial").value,
+            includeIncomplete: document.getElementById("includeIncomplete").checked,
+          }),
+        });
+        refresh();
+      };
+
+      let logNext = 0;
+      async function refresh() {
+        const status = await (await fetch("/api/status")).json();
+        document.getElementById("creatorUserId").value = status.config.creatorUserId;
+        document.getElementById("robloxMaterial").value = status.config.robloxMaterial;
+        document.getElementById("includeIncomplete").checked = status.config.includeIncomplete;
+        const key = document.getElementById("apiKey");
+        key.textContent = status.apiKeySet ? "key set" : "key missing";
+        key.className = `pill ${status.apiKeySet ? "done" : "error"}`;
+        for (const [id] of STEPS) {
+          const state = status.steps[id] || { status: "pending", detail: "" };
+          const pill = document.getElementById(`pill-${id}`);
+          pill.textContent = state.status;
+          pill.className = `pill ${state.status}`;
+          if (state.detail) document.getElementById(`detail-${id}`).textContent = state.detail;
+        }
+        const parts = [];
+        if (status.exportHash) parts.push(`export ${status.exportHash.slice(0, 12)}`);
+        if (status.instanceCount !== undefined)
+          parts.push(`${status.instanceCount} instances / ${status.partCount} parts`);
+        if (status.sidecarBindings !== undefined)
+          parts.push(`${status.sidecarBindings} sidecar bindings`);
+        parts.push(
+          status.bridge.running
+            ? `bridge up, ${status.bridge.pendingTransactions} pending`
+            : "bridge down",
+        );
+        document.getElementById("state").textContent = parts.join(" · ");
+        const logResponse = await (await fetch(`/api/log?since=${logNext}`)).json();
+        if (logResponse.chunk) {
+          const logEl = document.getElementById("log");
+          logEl.textContent += logResponse.chunk;
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+        logNext = logResponse.next;
+      }
+      refresh();
+      setInterval(refresh, 2000);
+    </script>
+  </body>
+</html>

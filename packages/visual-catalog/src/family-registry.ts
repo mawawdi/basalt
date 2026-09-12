@@ -1,4 +1,5 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
+import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 import {
   assetFamilyRevisionSchema,
   familyCardSchema,
@@ -26,10 +27,10 @@ export function sealVisualFamilyRegistry(
 ): VisualFamilyRegistry {
   const canonicalFamilies = families
     .map((family) => assetFamilyRevisionSchema.parse(family))
-    .sort((left, right) => left.familyId.localeCompare(right.familyId));
+    .sort((left, right) => compareSpatialStrings(left.familyId, right.familyId));
   const canonicalCards = cards
     .map((card) => familyCardSchema.parse(card))
-    .sort((left, right) => left.fid.localeCompare(right.fid));
+    .sort((left, right) => compareSpatialStrings(left.fid, right.fid));
   if (new Set(canonicalFamilies.map((family) => family.familyId)).size !== canonicalFamilies.length)
     throw new Error("Visual family registry family IDs must be unique");
   if (new Set(canonicalCards.map((card) => card.fid)).size !== canonicalCards.length)

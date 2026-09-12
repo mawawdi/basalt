@@ -9,6 +9,9 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
 
+/** Code-unit string order. Locale-aware comparison must never feed sealed output. */
+const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const proposalsPath = resolve(repositoryRoot, ".basalt/catalog-cache/family-proposals.json");
 const outputPath = resolve(repositoryRoot, ".basalt/catalog-cache/review-hints.json");
@@ -47,20 +50,20 @@ async function main() {
       cohortId: cohort.cohortId,
       memberCount: cohort.members.length,
       groups: [...groups.entries()]
-        .sort(([a], [b]) => a.localeCompare(b))
+        .sort(([a], [b]) => compareStrings(a, b))
         .map(([label, assetIds]) => ({
           label,
           memberCount: assetIds.length,
-          members: [...assetIds].sort((a, b) => a.localeCompare(b)),
+          members: [...assetIds].sort((a, b) => compareStrings(a, b)),
         })),
     });
   }
   const mergeCandidates = [...stemCohorts.entries()]
     .filter(([, cohortIds]) => new Set(cohortIds).size > 1)
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => compareStrings(a, b))
     .map(([label, cohortIds]) => ({
       label,
-      cohortIds: [...new Set(cohortIds)].sort((a, b) => a.localeCompare(b)),
+      cohortIds: [...new Set(cohortIds)].sort((a, b) => compareStrings(a, b)),
     }));
   const hints = {
     kind: "BasaltReviewHints",

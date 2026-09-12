@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { entityId, hashSchema } from "../../spatial-core/src/primitives.js";
+import { compareSpatialStrings, entityId, hashSchema } from "../../spatial-core/src/primitives.js";
 import { REFERENCE_IMAGE_BINARY_ARTIFACT_SCHEMA } from "./references.js";
 import {
   FLUX2_KLEIN_4B_PRODUCER,
@@ -245,7 +245,7 @@ export function selectRegionComposition(
       const latencyDelta = left.candidate.elapsedMs - right.candidate.elapsedMs;
       return latencyDelta !== 0
         ? latencyDelta
-        : candidateKey(left.candidate).localeCompare(candidateKey(right.candidate));
+        : compareSpatialStrings(candidateKey(left.candidate), candidateKey(right.candidate));
     });
   const acceptedKeys = new Set(eligible.map(({ candidate }) => candidateKey(candidate)));
   const excludedCandidateKeys = value.candidates

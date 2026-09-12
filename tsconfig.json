@@ -43,6 +43,7 @@
     "test/world-factory-dispatch.test.ts",
     "test/hierarchical-world.test.ts",
     "test/studio-bridge.test.ts",
+    "test/studio-bridge-cli.test.ts",
     "test/neural-family-factory.test.ts",
     "test/basalt-constraints.test.ts",
     "test/basalt-types.test.ts",
@@ -53,7 +54,10 @@
     "test/authored-families.test.ts",
     "test/family-cards.test.ts",
     "test/family-proposals.test.ts",
-    "test/trim-sheet.test.ts"
+    "test/trim-sheet.test.ts",
+    "test/socket-extraction.test.ts",
+    "test/road-assembly.test.ts",
+    "test/scene-export.test.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

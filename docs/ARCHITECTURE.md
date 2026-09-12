@@ -144,6 +144,31 @@ The Luau connector returns an unsigned observation because it cannot own the
 host hash implementation; the bridge validates that observation and seals the
 canonical readback before advancing the queue.
 
+### Engine-neutral scene export and lowering adapters
+
+The compiler's final artifact is the engine-neutral scene export: a sealed
+manifest (instances with placements, assets, mesh parts, terrain voxel fields,
+road ribbons, material bindings) plus a content-addressed payload store keyed
+by sha256. Placements are meters, Y-up, right-handed, with the instance
+composition sealed in the manifest. Sealed records carry content hashes and
+placements only — never engine handles. Mesh-part bounds keep their recorded
+source-unit span with the asset's `unitsToMeters` as the recorded converter;
+no adapter pre-converts them. Each part also records its node origin, so
+adapters verify imported pivots instead of assuming them.
+
+Each engine owns a lowering adapter and two adapter-owned docs served by the
+bridge: the upload sidecar (content-hash to engine asset id) and the material
+map (open-vocabulary material id to engine material). Both must bind the exact
+enqueued export hash. The Roblox adapter lowers in fixed order — MeshParts from
+sidecar ids plus sealed TRS, collision proxies, `WriteVoxels` terrain over
+cell-aligned 4-stud grids, road ribbons as constructed parts — and observes
+constructed geometry, never echoed ids. It verifies the measured server
+import map per model (uniform scale, pivots on the flipped recorded center,
+identity rotations), compensates the flip at placement, and fails closed
+past tolerance. Unity, Unreal, and a future
+native renderer consume the same manifest and GLB payloads through their own
+adapters; a byte-locked conformance fixture pins the shared contract.
+
 ## Package boundary
 
 The world compiler's active packages are:

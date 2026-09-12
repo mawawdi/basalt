@@ -225,6 +225,8 @@ function admissionEnvelope(record: CatalogAssetRecord): CatalogAssetEnvelope {
       supportedSurfaceKinds: ["terrain"],
       primaryContact: "bottom",
       bottomContactAreaStuds2: 4,
+      supportPlaneFits: [],
+      supportPlaneRefusal: "no_patches",
       surfaceAreaStuds2: 24,
       texelDensityPixelsPerStud: 8,
       topologicalGenus: 0,

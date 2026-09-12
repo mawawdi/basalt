@@ -6,6 +6,7 @@ export const BASALT_WORLD_TRANSACTION_ABI = "basalt-world-transaction@1" as cons
 export const BASALT_WORLD_READBACK_ABI = "basalt-world-readback@1" as const;
 export const MAX_WORLD_CHUNKS_PER_MANIFEST = 4096 as const;
 export const MAX_WORLD_INSTANCES_PER_CHUNK = 65_536 as const;
+export const MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK = 16_384 as const;
 
 export type BasaltWorldBounds = Readonly<{
   minimum: Readonly<{ x: number; y: number; z: number }>;
@@ -21,6 +22,7 @@ export interface BasaltWorldChunkDelta {
   readonly populationHash: Hash;
   readonly surfaceIds: readonly string[];
   readonly instanceIds: readonly string[];
+  readonly roadSegmentIds: readonly string[];
   readonly bounds: BasaltWorldBounds;
   readonly transactionId: string;
   readonly hash: Hash;
@@ -47,6 +49,7 @@ export interface BasaltWorldChunkTransaction {
   readonly chunkHash: Hash;
   readonly chunkId: string;
   readonly instanceIds: readonly string[];
+  readonly roadSegmentIds: readonly string[];
   readonly phase: BasaltWorldTransactionPhase;
   readonly expectedRevisionHash: Hash;
   readonly payloadHash: Hash;
@@ -61,6 +64,7 @@ export interface BasaltWorldReadback {
   readonly phase: "preflighted" | "applied" | "committed" | "rolled_back";
   readonly observedRevisionHash: Hash;
   readonly observedInstanceIds: readonly string[];
+  readonly observedRoadSegmentIds: readonly string[];
   readonly hash: Hash;
 }
 
@@ -73,6 +77,7 @@ export interface BasaltWorldReadbackObservation {
   readonly phase: BasaltWorldReadback["phase"];
   readonly observedRevisionHash: Hash;
   readonly observedInstanceIds: readonly string[];
+  readonly observedRoadSegmentIds: readonly string[];
 }
 
 export type BasaltStudioMessage =
@@ -103,6 +108,13 @@ export function assertBasaltWorldReadbackObservation(
   const observedInstanceIds = canonicalIds(observation.observedInstanceIds, "observedInstanceIds");
   if (stableJson(observedInstanceIds) !== stableJson(observation.observedInstanceIds))
     throw new Error("Basalt readback observation IDs must be canonical");
+  const observedRoadSegmentIds = canonicalIds(
+    observation.observedRoadSegmentIds,
+    "observedRoadSegmentIds",
+    MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK,
+  );
+  if (stableJson(observedRoadSegmentIds) !== stableJson(observation.observedRoadSegmentIds))
+    throw new Error("Basalt readback observation road IDs must be canonical");
   return observation;
 }
 
@@ -111,7 +123,7 @@ export function createBasaltWorldTransaction(input: {
   readonly worldPlanHash: Hash;
   readonly chunk: Pick<
     BasaltWorldChunkDelta,
-    "chunkId" | "worldPlanHash" | "hash" | "transactionId" | "instanceIds"
+    "chunkId" | "worldPlanHash" | "hash" | "transactionId" | "instanceIds" | "roadSegmentIds"
   >;
   readonly phase: BasaltWorldTransactionPhase;
   readonly expectedRevisionHash: Hash;
@@ -126,6 +138,11 @@ export function createBasaltWorldTransaction(input: {
     chunkHash: requireHash(input.chunk.hash, "chunkHash"),
     chunkId: requireId(input.chunk.chunkId, "chunkId"),
     instanceIds: canonicalIds(input.chunk.instanceIds, "instanceIds"),
+    roadSegmentIds: canonicalIds(
+      input.chunk.roadSegmentIds,
+      "roadSegmentIds",
+      MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK,
+    ),
     phase: input.phase,
     expectedRevisionHash: requireHash(input.expectedRevisionHash, "expectedRevisionHash"),
     payloadHash: requireHash(input.payloadHash ?? input.chunk.hash, "payloadHash"),
@@ -140,9 +157,15 @@ export function createBasaltWorldReadback(input: {
   readonly phase: BasaltWorldReadback["phase"];
   readonly observedRevisionHash: Hash;
   readonly observedInstanceIds: readonly string[];
+  readonly observedRoadSegmentIds: readonly string[];
 }): BasaltWorldReadback {
   assertBasaltWorldTransaction(input.transaction);
   const observedInstanceIds = canonicalIds(input.observedInstanceIds, "observedInstanceIds");
+  const observedRoadSegmentIds = canonicalIds(
+    input.observedRoadSegmentIds,
+    "observedRoadSegmentIds",
+    MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK,
+  );
   const material = {
     kind: "BasaltWorldReadback" as const,
     abi: BASALT_WORLD_READBACK_ABI,
@@ -151,6 +174,7 @@ export function createBasaltWorldReadback(input: {
     phase: input.phase,
     observedRevisionHash: requireHash(input.observedRevisionHash, "observedRevisionHash"),
     observedInstanceIds,
+    observedRoadSegmentIds,
   };
   return { ...material, hash: contentHash(stableJson(material)) };
 }
@@ -160,6 +184,7 @@ export function reconcileBasaltWorldReadback(
   transactionInput: unknown,
   readbackInput: unknown,
   expectedInstanceIds: readonly string[],
+  expectedRoadSegmentIds: readonly string[],
 ): void {
   const transaction = assertBasaltWorldTransaction(transactionInput);
   const readback = assertBasaltWorldReadback(readbackInput);
@@ -170,6 +195,13 @@ export function reconcileBasaltWorldReadback(
   const expected = canonicalIds(expectedInstanceIds, "expectedInstanceIds");
   if (stableJson(expected) !== stableJson(readback.observedInstanceIds))
     throw new Error("Basalt Studio readback instance set differs from the chunk delta");
+  const expectedRoads = canonicalIds(
+    expectedRoadSegmentIds,
+    "expectedRoadSegmentIds",
+    MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK,
+  );
+  if (stableJson(expectedRoads) !== stableJson(readback.observedRoadSegmentIds))
+    throw new Error("Basalt Studio readback road set differs from the chunk delta");
 }
 
 export function assertBasaltWorldTransaction(value: unknown): BasaltWorldChunkTransaction {
@@ -192,6 +224,13 @@ export function assertBasaltWorldTransaction(value: unknown): BasaltWorldChunkTr
   const instanceIds = canonicalIds(transaction.instanceIds, "instanceIds");
   if (stableJson(instanceIds) !== stableJson(transaction.instanceIds))
     throw new Error("Basalt transaction instance IDs must be canonical");
+  const roadSegmentIds = canonicalIds(
+    transaction.roadSegmentIds,
+    "roadSegmentIds",
+    MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK,
+  );
+  if (stableJson(roadSegmentIds) !== stableJson(transaction.roadSegmentIds))
+    throw new Error("Basalt transaction road segment IDs must be canonical");
   const { hash, ...material } = transaction;
   if (hash !== contentHash(stableJson(material)))
     throw new Error("Basalt world transaction hash mismatch");
@@ -214,14 +253,25 @@ export function assertBasaltWorldReadback(value: unknown): BasaltWorldReadback {
   const observedInstanceIds = canonicalIds(readback.observedInstanceIds, "observedInstanceIds");
   if (stableJson(observedInstanceIds) !== stableJson(readback.observedInstanceIds))
     throw new Error("Basalt readback instance IDs must be canonical");
+  const observedRoadSegmentIds = canonicalIds(
+    readback.observedRoadSegmentIds,
+    "observedRoadSegmentIds",
+    MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK,
+  );
+  if (stableJson(observedRoadSegmentIds) !== stableJson(readback.observedRoadSegmentIds))
+    throw new Error("Basalt readback road segment IDs must be canonical");
   const { hash, ...material } = readback;
   if (hash !== contentHash(stableJson(material)))
     throw new Error("Basalt world readback hash mismatch");
   return readback;
 }
 
-function canonicalIds(values: readonly string[], label: string): string[] {
-  if (!Array.isArray(values) || values.length > MAX_WORLD_INSTANCES_PER_CHUNK)
+function canonicalIds(
+  values: readonly string[],
+  label: string,
+  max: number = MAX_WORLD_INSTANCES_PER_CHUNK,
+): string[] {
+  if (!Array.isArray(values) || values.length > max)
     throw new Error(`Basalt ${label} exceeds its bound`);
   const ids = [...values];
   if (!ids.every(isId) || new Set(ids).size !== ids.length)

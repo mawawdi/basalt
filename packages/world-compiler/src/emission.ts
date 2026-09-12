@@ -1,4 +1,5 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
+import type { RoadAssembly, RoadSegment } from "../../world-planning/src/roads.js";
 import type { BasaltWorldFoundation } from "./index.js";
 import { worldEntityId, worldHash, compareWorldStrings } from "./primitives.js";
 import type { WorldPopulationArtifact } from "./contracts.js";
@@ -12,6 +13,7 @@ export interface BasaltWorldChunkDelta {
   readonly populationHash: string;
   readonly surfaceIds: readonly string[];
   readonly instanceIds: readonly string[];
+  readonly roadSegmentIds: readonly string[];
   readonly bounds: {
     readonly minimum: { readonly x: number; readonly y: number; readonly z: number };
     readonly maximum: { readonly x: number; readonly y: number; readonly z: number };
@@ -38,13 +40,38 @@ export function createBasaltWorldEmission(
   foundation: BasaltWorldFoundation,
   population: WorldPopulationArtifact,
   chunkSize = 128,
+  roads: readonly RoadAssembly[] = [],
 ): BasaltWorldEmissionManifest {
   if (!Number.isFinite(chunkSize) || chunkSize <= 0) throw new Error("Chunk size must be positive");
   if (population.worldPlanHash !== foundation.worldPlanHash)
     throw new Error("Population artifact belongs to a different world plan");
-  const chunks = population.chunks
-    .map((chunk) => {
-      const instances = [...chunk.instances].sort((a, b) => compareWorldStrings(a.id, b.id));
+  for (const road of roads) {
+    if (!foundation.routeIds.includes(road.routeId))
+      throw new Error(`Road assembly belongs to a different world plan: ${road.routeId}`);
+    if (!foundation.worldPlan.surfaces.has(road.surfaceId))
+      throw new Error(`Road assembly references an unknown surface: ${road.surfaceId}`);
+  }
+  const records = new Map<
+    string,
+    {
+      instances: WorldPopulationArtifact["chunks"][number]["instances"];
+      roadSegments: RoadSegment[];
+    }
+  >();
+  for (const chunk of population.chunks)
+    records.set(chunk.chunkId, { instances: [...chunk.instances], roadSegments: [] });
+  for (const road of roads)
+    for (const segment of road.segments) {
+      const record = records.get(segment.chunkId) ?? { instances: [], roadSegments: [] };
+      record.roadSegments.push(segment);
+      records.set(segment.chunkId, record);
+    }
+  const chunks = [...records.entries()]
+    .map(([chunkId, record]) => {
+      const instances = [...record.instances].sort((a, b) => compareWorldStrings(a.id, b.id));
+      const roadSegmentIds = record.roadSegments
+        .map((segment) => segment.id)
+        .sort(compareWorldStrings);
       const minimum = {
         x: Number.POSITIVE_INFINITY,
         y: Number.POSITIVE_INFINITY,
@@ -63,8 +90,16 @@ export function createBasaltWorldEmission(
         maximum.y = Math.max(maximum.y, instance.position.y);
         maximum.z = Math.max(maximum.z, instance.position.z);
       }
-      if (instances.length === 0) {
-        const [xText, zText] = chunk.chunkId.replace(/^chunk_/, "").split("_");
+      for (const segment of record.roadSegments) {
+        minimum.x = Math.min(minimum.x, segment.bounds.minimum.x);
+        minimum.y = Math.min(minimum.y, segment.bounds.minimum.y);
+        minimum.z = Math.min(minimum.z, segment.bounds.minimum.z);
+        maximum.x = Math.max(maximum.x, segment.bounds.maximum.x);
+        maximum.y = Math.max(maximum.y, segment.bounds.maximum.y);
+        maximum.z = Math.max(maximum.z, segment.bounds.maximum.z);
+      }
+      if (instances.length === 0 && record.roadSegments.length === 0) {
+        const [xText, zText] = chunkId.replace(/^chunk_/, "").split("_");
         const x = Number(xText) * chunkSize;
         const z = Number(zText) * chunkSize;
         minimum.x = x;
@@ -82,11 +117,12 @@ export function createBasaltWorldEmission(
         .sort(compareWorldStrings);
       const material = {
         kind: "BasaltWorldChunkDelta" as const,
-        chunkId: chunk.chunkId,
+        chunkId,
         worldPlanHash: foundation.worldPlanHash,
         populationHash: population.hash,
         surfaceIds,
         instanceIds: instances.map((instance) => instance.id),
+        roadSegmentIds,
         bounds: { minimum, maximum },
       };
       const hash = contentHash(stableJson(material));

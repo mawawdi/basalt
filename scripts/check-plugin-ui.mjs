@@ -4,6 +4,9 @@ import { promisify } from "node:util";
 import { readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+/** Code-unit string order. Locale-aware comparison must never feed sealed output. */
+const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
 const run = promisify(execFile);
 const root = resolve(new URL("..", import.meta.url).pathname);
 const pluginRoot = resolve(root, "plugin/src");
@@ -11,7 +14,7 @@ const pluginRoot = resolve(root, "plugin/src");
 async function walk(directory) {
   const files = [];
   for (const entry of (await readdir(directory, { withFileTypes: true })).sort((a, b) =>
-    a.name.localeCompare(b.name),
+    compareStrings(a.name, b.name),
   )) {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) files.push(...(await walk(path)));

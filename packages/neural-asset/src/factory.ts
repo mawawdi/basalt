@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { entityId, hashSchema } from "../../spatial-core/src/primitives.js";
+import { compareSpatialStrings, entityId, hashSchema } from "../../spatial-core/src/primitives.js";
 import { NEURAL_PROVIDER_IDS, type NeuralProviderId } from "./execution.js";
 import { MAX_NEURAL_ASSET_BOUND_STUDS } from "../../asset-factory/src/contracts.js";
 
@@ -72,7 +72,9 @@ const batchMaterial = z
   })
   .strict()
   .superRefine((value, context) => {
-    const ordered = [...value.jobs].sort((left, right) => left.hash.localeCompare(right.hash));
+    const ordered = [...value.jobs].sort((left, right) =>
+      compareSpatialStrings(left.hash, right.hash),
+    );
     if (stableJson(ordered) !== stableJson(value.jobs))
       context.addIssue({
         code: "custom",
@@ -106,7 +108,7 @@ export function sealNeuralFamilyFactoryBatch(input: {
   readonly styleContractHash: string;
   readonly jobs: readonly NeuralFamilyFactoryJob[];
 }): NeuralFamilyFactoryBatch {
-  const jobs = [...input.jobs].sort((left, right) => left.hash.localeCompare(right.hash));
+  const jobs = [...input.jobs].sort((left, right) => compareSpatialStrings(left.hash, right.hash));
   const material = batchMaterial.parse({
     kind: "NeuralFamilyFactoryBatch",
     abi: NEURAL_FAMILY_FACTORY_BATCH_ABI,

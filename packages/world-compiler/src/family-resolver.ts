@@ -171,7 +171,8 @@ export function resolveCanonicalAssetFamilies(input: {
   return candidates
     .sort(
       (left, right) =>
-        right.score - left.score || left.revision.familyId.localeCompare(right.revision.familyId),
+        right.score - left.score ||
+        compareWorldStrings(left.revision.familyId, right.revision.familyId),
     )
     .slice(0, limit);
 }

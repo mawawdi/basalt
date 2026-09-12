@@ -109,10 +109,13 @@ function resolveSourceUnits(sourceManifest) {
 async function measureAsset(asset, modules, sourceUnits) {
   const {
     quantizeQ32_32,
+    STUD_METERS,
     inspectGlb,
     inspectGlbMeshes,
     inspectGlbTopology,
     inspectGlbAssetContactPatches,
+    fitSupportPlane,
+    seedFromAssetId,
     packGltfToGlb,
     normalizeSource,
     rebaseAssetPivot,
@@ -171,11 +174,29 @@ async function measureAsset(asset, modules, sourceUnits) {
   const pbrChannels = [
     ...new Set(report.materials.flatMap((material) => material.pbrChannels)),
   ].sort();
+  // Per-image texel density is measured, never assumed: each image takes the
+  // minimum p05 pixels-per-stud across the UV metrics of the materials bound
+  // to it, converted to pixels per meter. Unbound or unmeasured images seal 0,
+  // the same unmeasured marker the asset-level density uses.
+  const imageByMaterial = new Map(
+    report.materials
+      .filter((material) => material.baseColorImageSha256 !== undefined)
+      .map((material) => [material.name, material.baseColorImageSha256]),
+  );
+  const densityByImage = new Map();
+  for (const node of report.nodes)
+    for (const metric of node.uvMetrics ?? []) {
+      const sha = imageByMaterial.get(metric.materialName);
+      if (sha === undefined) continue;
+      const prior = densityByImage.get(sha);
+      const candidate = metric.pixelsPerStud.p05;
+      if (prior === undefined || candidate < prior) densityByImage.set(sha, candidate);
+    }
   const textureFacts = report.images.map((image) => ({
     width: image.width,
     height: image.height,
     format: "PNG_PBR",
-    texelDensityPxPerMeter: quantizeQ32_32(512),
+    texelDensityPxPerMeter: quantizeQ32_32((densityByImage.get(image.sha256) ?? 0) / STUD_METERS),
     channelHash: image.sha256,
   }));
   // Contact polygons arrive in asset units; areas convert by the square of the
@@ -192,6 +213,23 @@ async function measureAsset(asset, modules, sourceUnits) {
     ) * areaToStuds2;
   const surfaceAreaStuds2 =
     report.nodes.reduce((total, node) => total + (node.surfaceArea ?? 0), 0) * areaToStuds2;
+  // RANSAC support-plane fit runs on studs-space contact vertices; the fit is
+  // the socket evidence the seal consumes, and refusals carry reasons.
+  const supportPlaneResult = (() => {
+    if (bottomPatches.length === 0) return { status: "refused", reason: "no_patches" };
+    const rate = normalized.studsPerSourceUnit;
+    return fitSupportPlane(
+      bottomPatches.map((patch) => ({
+        polygon: patch.polygon.map((point) => ({
+          x: point.x * rate,
+          y: point.y * rate,
+          z: point.z * rate,
+        })),
+      })),
+      seedFromAssetId(asset.record.assetId),
+    );
+  })();
+  const supportPlaneFits = supportPlaneResult.status === "fit" ? supportPlaneResult.fits : [];
   return {
     assetId: asset.record.assetId,
     mesh: rebased.mesh,
@@ -223,6 +261,23 @@ async function measureAsset(asset, modules, sourceUnits) {
         bottomPatches.length > 0 ? ["floor", "platform", "ramp", "roof", "terrain"] : [],
       primaryContact: bottomPatches.length > 0 ? "bottom" : "unknown",
       bottomContactAreaStuds2,
+      supportPlaneFits: supportPlaneFits.map((fit) => ({
+        normalQ32_32: {
+          x: quantizeQ32_32(fit.normal.x),
+          y: quantizeQ32_32(fit.normal.y),
+          z: quantizeQ32_32(fit.normal.z),
+        },
+        originQ32_32: {
+          x: quantizeQ32_32(fit.origin.x),
+          y: quantizeQ32_32(fit.origin.y),
+          z: quantizeQ32_32(fit.origin.z),
+        },
+        boundaryRadiusStuds: fit.boundaryRadiusStuds,
+        inlierCount: fit.inlierCount,
+        pointCount: fit.pointCount,
+      })),
+      supportPlaneRefusal:
+        supportPlaneResult.status === "refused" ? supportPlaneResult.reason : null,
       surfaceAreaStuds2,
       texelDensityPixelsPerStud: (() => {
         const minimum = report.nodes
@@ -249,7 +304,7 @@ async function measureAsset(asset, modules, sourceUnits) {
 
 async function main() {
   const [
-    { quantizeQ32_32 },
+    { quantizeQ32_32, STUD_METERS },
     inspection,
     { normalizeSource },
     { rebaseAssetPivot },
@@ -273,6 +328,7 @@ async function main() {
   ]);
   const modules = {
     quantizeQ32_32,
+    STUD_METERS,
     ...inspection,
     normalizeSource,
     rebaseAssetPivot,

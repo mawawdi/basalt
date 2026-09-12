@@ -6,6 +6,9 @@ import { Worker } from "node:worker_threads";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
 
+/** Code-unit string order. Locale-aware comparison must never feed sealed output. */
+const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const inventoryPath = resolve(repositoryRoot, ".basalt/catalog-cache/source-inventory.json");
 
@@ -211,9 +214,13 @@ async function main() {
       const mountContacts = {};
       for (const member of declaration.members) {
         const measurement = assetsById.get(member.assetId).measurement;
-        if (measurement.primaryContact === "bottom" && measurement.bottomContactAreaStuds2 > 0)
+        if (
+          measurement.primaryContact === "bottom" &&
+          Array.isArray(measurement.supportPlaneFits) &&
+          measurement.supportPlaneFits.length > 0
+        )
           mountContacts[member.assetId] = {
-            contactAreaStuds2: measurement.bottomContactAreaStuds2,
+            supportPlaneFits: measurement.supportPlaneFits,
           };
       }
       evidence.mountContacts = mountContacts;
@@ -318,7 +325,7 @@ async function main() {
       trimMappingsRejectedByEnergy,
       incompleteCandidates: incompleteCandidateCount,
       kindFamilyDiagnostics: flaggedKindFamilies.sort((left, right) =>
-        left.familyName.localeCompare(right.familyName),
+        compareStrings(left.familyName, right.familyName),
       ),
     },
   });

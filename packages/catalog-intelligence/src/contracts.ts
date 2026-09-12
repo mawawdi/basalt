@@ -93,6 +93,22 @@ const measuredEvidenceSchema = z
     supportedSurfaceKinds: z.array(CATALOG_SURFACE_KIND_SCHEMA).max(7),
     primaryContact: z.enum(["bottom", "lateral_wall", "top_ceiling", "socket_only", "unknown"]),
     bottomContactAreaStuds2: finite.nonnegative(),
+    supportPlaneFits: z
+      .array(
+        z
+          .object({
+            normalQ32_32: q32Vector3,
+            originQ32_32: q32Vector3,
+            boundaryRadiusStuds: finite.nonnegative(),
+            inlierCount: z.number().int().nonnegative(),
+            pointCount: z.number().int().nonnegative(),
+          })
+          .strict(),
+      )
+      .max(1024),
+    supportPlaneRefusal: z
+      .enum(["no_patches", "sparse_points", "no_plane", "degenerate_footprint"])
+      .nullable(),
     surfaceAreaStuds2: finite.nonnegative(),
     texelDensityPixelsPerStud: finite.nonnegative(),
     topologicalGenus: z.number().int(),

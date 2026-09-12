@@ -8,6 +8,9 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
 
+/** Code-unit string order. Locale-aware comparison must never feed sealed output. */
+const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const inventoryPath = resolve(repositoryRoot, ".basalt/catalog-cache/source-inventory.json");
 const quarantinePath = resolve(repositoryRoot, "registry/quarantine.json");
@@ -62,10 +65,10 @@ async function main() {
     byHash.get(hash).push(asset);
   }
   const duplicateFlags = [];
-  for (const [hash, group] of [...byHash.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [hash, group] of [...byHash.entries()].sort(([a], [b]) => compareStrings(a, b))) {
     if (group.length < 2) continue;
     const ordered = [...group].sort((a, b) =>
-      a.source.relativePath.localeCompare(b.source.relativePath),
+      compareStrings(a.source.relativePath, b.source.relativePath),
     );
     for (const asset of ordered.slice(1))
       duplicateFlags.push({
@@ -108,7 +111,7 @@ async function main() {
     `Family proposals: ${eligible.length} eligible assets -> ${detailed.length} cohorts, ${duplicateFlags.length} duplicate flags, ${singletons.length} singletons, ${excluded.length} excluded`,
   ];
   const bySize = [...detailed].sort(
-    (a, b) => b.members.length - a.members.length || a.cohortId.localeCompare(b.cohortId),
+    (a, b) => b.members.length - a.members.length || compareStrings(a.cohortId, b.cohortId),
   );
   const fmt = (bounds) => bounds.map((v) => v.toFixed(1)).join("x");
   for (const cohort of bySize)

@@ -1,4 +1,5 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
+import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 import {
   TERRAIN_FIELD_ABI,
   TERRAIN_FIELD_ARTIFACT_SCHEMA,
@@ -148,10 +149,12 @@ export function bindTerrainStyleOverlay(input: {
 /** Canonicalize only declaration sets; ordered height operations and polygon paths stay ordered. */
 export function canonicalTerrainPlan(input: unknown): TerrainPlan {
   const plan = structuredClone(TERRAIN_PLAN_SCHEMA.parse(input));
-  plan.regions.sort((left, right) => left.regionId.localeCompare(right.regionId));
+  plan.regions.sort((left, right) => compareSpatialStrings(left.regionId, right.regionId));
   for (const region of plan.regions) {
-    region.noiseLayers.sort((left, right) => left.id.localeCompare(right.id));
-    region.materialWeights.sort((left, right) => left.materialId.localeCompare(right.materialId));
+    region.noiseLayers.sort((left, right) => compareSpatialStrings(left.id, right.id));
+    region.materialWeights.sort((left, right) =>
+      compareSpatialStrings(left.materialId, right.materialId),
+    );
   }
   return TERRAIN_PLAN_SCHEMA.parse(plan);
 }
@@ -563,6 +566,8 @@ export interface RouteSurfaceProfileSample {
   readonly position: WorldVector3;
   readonly normal: WorldVector3;
   readonly surfaceSlopeDegrees: number;
+  readonly regionWeights: Readonly<Record<string, number>>;
+  readonly materialWeights: Readonly<Record<string, number>>;
 }
 
 export interface RouteGradeReport {
@@ -621,6 +626,8 @@ export function compileRouteSurfaceProfile(
         position: canonicalRouteVector(sampled.position),
         normal: canonicalRouteVector(sampled.normal),
         surfaceSlopeDegrees: f32(sampled.slopeDegrees),
+        regionWeights: { ...sampled.regionWeights },
+        materialWeights: { ...sampled.materialWeights },
       });
       if (samples.length > MAXIMUM_ROUTE_PROFILE_SAMPLES)
         throw new Error(
@@ -690,7 +697,9 @@ function materialsAt(
         (totals.get(material.materialId) ?? 0) + regionWeight * (material.weight / materialTotal),
       );
   }
-  const entries = [...totals.entries()].sort(([left], [right]) => left.localeCompare(right));
+  const entries = [...totals.entries()].sort(([left], [right]) =>
+    compareSpatialStrings(left, right),
+  );
   return normalizedRecord(
     entries.map(([id]) => id),
     entries.map(([, value]) => value),

@@ -1,5 +1,6 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
 import { createMurmurHash3Random } from "../../spatial-core/src/primitives.js";
+import { isPointInRouteCorridor } from "../../world-planning/src/roads.js";
 import type { PlacementSurfaceSample } from "../../world-planning/src/surfaces.js";
 import {
   sealWorldPopulationArtifact,
@@ -8,6 +9,7 @@ import {
   type WorldPopulationInstance,
 } from "./contracts.js";
 import type { BasaltWorldFoundation } from "./index.js";
+import { compareWorldStrings } from "./primitives.js";
 
 export interface BasaltPopulationOptions {
   readonly chunkSize?: number;
@@ -31,7 +33,9 @@ export function populateBasaltWorld(
     throw new Error("Population attempt budget must be a positive integer");
 
   const instances: WorldPopulationInstance[] = [];
-  for (const family of [...plan.familyPlans].sort((a, b) => a.familyId.localeCompare(b.familyId))) {
+  for (const family of [...plan.familyPlans].sort((a, b) =>
+    compareWorldStrings(a.familyId, b.familyId),
+  )) {
     const archetypeCount = family.archetypeCount ?? 1;
     const scaleRange = family.scaleRange ?? ([0.92, 1.08] as const);
     const excludedRegions = new Set(family.excludedRegionIds);
@@ -154,7 +158,7 @@ function allocateSurfaceCounts(
   let remaining = totalCount - floors.reduce((sum, value) => sum + value.floor, 0);
   for (const value of [...floors].sort(
     (left, right) =>
-      right.remainder - left.remainder || left.surfaceId.localeCompare(right.surfaceId),
+      right.remainder - left.remainder || compareWorldStrings(left.surfaceId, right.surfaceId),
   )) {
     if (remaining <= 0) break;
     value.floor += 1;
@@ -174,38 +178,8 @@ function isRouteExcluded(
     (route) =>
       routeIds.includes(route.id) &&
       route.surfaceId === surfaceId &&
-      routePolylineDistance2(route.points, point) <= (route.width / 2) ** 2,
+      isPointInRouteCorridor(route.points, route.width, point),
   );
-}
-
-function routePolylineDistance2(
-  points: readonly { x: number; y: number; z: number }[],
-  point: { x: number; y: number; z: number },
-): number {
-  let nearest = Number.POSITIVE_INFINITY;
-  for (let index = 1; index < points.length; index += 1) {
-    const first = points[index - 1]!;
-    const second = points[index]!;
-    const dx = second.x - first.x;
-    const dz = second.z - first.z;
-    const denominator = dx * dx + dz * dz;
-    const t =
-      denominator > 0
-        ? Math.max(
-            0,
-            Math.min(1, ((point.x - first.x) * dx + (point.z - first.z) * dz) / denominator),
-          )
-        : 0;
-    nearest = Math.min(
-      nearest,
-      distance2(point, {
-        x: first.x + t * dx,
-        y: first.y + t * (second.y - first.y),
-        z: first.z + t * dz,
-      }),
-    );
-  }
-  return nearest;
 }
 
 function distance2(

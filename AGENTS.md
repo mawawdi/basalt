@@ -75,4 +75,4 @@ documentation authority is split deliberately:
 - Use `.js` extensions in relative imports.
 - Name test files `*.test.ts`.
 
-- DO NOT USE SUBAGENTS.
+- DO NOT USE SUBAGENTS UNLESS TOLD TO DO SO.

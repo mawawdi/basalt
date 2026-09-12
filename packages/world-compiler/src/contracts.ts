@@ -92,7 +92,6 @@ export const WORLD_COMPILER_PLAN_SCHEMA = z
     styleContractHash: worldHash,
     stage: WORLD_COMPILER_STAGE_SCHEMA,
     familyPlans: z.array(WORLD_FAMILY_POPULATION_PLAN_SCHEMA).max(4096),
-    createdAt: z.string().datetime({ offset: true }),
   })
   .strict();
 export type WorldCompilerPlan = z.infer<typeof WORLD_COMPILER_PLAN_SCHEMA>;
@@ -151,7 +150,6 @@ export function sealWorldCompilerPlan(
     styleContractHash: input.styleContractHash,
     stage: input.stage,
     familyPlans,
-    createdAt: input.createdAt,
   };
   return WORLD_COMPILER_PLAN_SCHEMA.parse({
     ...material,

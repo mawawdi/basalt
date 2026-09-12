@@ -5,8 +5,10 @@ import {
   type WorldRegion,
   type WorldVector3,
 } from "../../world-planning/src/contracts.js";
+import { isPointInRouteCorridor } from "../../world-planning/src/roads.js";
 import { PlacementSurfaceIndex } from "../../world-planning/src/surfaces.js";
 import { createMurmurHash3Random } from "../../spatial-core/src/primitives.js";
+import { compareWorldStrings } from "./primitives.js";
 
 const finite = z.number().finite();
 const positive = finite.positive();
@@ -177,7 +179,7 @@ export function solveWorldRelations(
     for (const id of relation.proposalIds)
       if (!ids.has(id)) throw new Error(`Unknown placement proposal: ${id}`);
   const result: SolvedWorldPlacement[] = [];
-  for (const distribution of distributions.sort((a, b) => a.id.localeCompare(b.id))) {
+  for (const distribution of distributions.sort((a, b) => compareWorldStrings(a.id, b.id))) {
     const poses = expandDistribution(distribution);
     const scoped = relations.filter((relation) => relation.proposalIds.includes(distribution.id));
     for (const [ordinal, pose] of poses.entries()) {
@@ -222,7 +224,7 @@ export function solveWorldRelations(
       });
     }
   }
-  return result.sort((a, b) => a.id.localeCompare(b.id));
+  return result.sort((a, b) => compareWorldStrings(a.id, b.id));
 }
 
 function expandDistribution(value: WorldPlacementDistribution): Array<{ u: number; v: number }> {
@@ -296,12 +298,7 @@ function validateRelations(
         throw new Error(`Placement is outside region: ${relation.regionId}`);
     } else if (relation.kind === "maintain_clearance") {
       const route = input.routes?.find((candidate) => candidate.id === relation.routeId);
-      if (
-        route &&
-        route.points.some(
-          (point) => distance2D(position, point) < route.width / 2 + relation.clearance,
-        )
-      )
+      if (route && isPointInRouteCorridor(route.points, route.width, position, relation.clearance))
         throw new Error(`Placement violates route clearance: ${relation.routeId}`);
     } else if (relation.kind === "on_surface" && relation.surfaceId !== surfaceId)
       throw new Error(`Placement surface mismatch: ${relation.surfaceId}`);
@@ -362,9 +359,6 @@ function normalize(value: WorldVector3): WorldVector3 {
 }
 function tiltDegrees(value: WorldVector3): number {
   return (Math.acos(Math.max(-1, Math.min(1, normalize(value).y))) * 180) / Math.PI;
-}
-function distance2D(a: WorldVector3, b: WorldVector3): number {
-  return Math.hypot(a.x - b.x, a.z - b.z);
 }
 function insidePolygon(
   point: { u: number; v: number },

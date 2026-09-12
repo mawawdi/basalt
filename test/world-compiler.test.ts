@@ -54,15 +54,14 @@ test("Basalt family plans are deterministic and region-bound", () => {
     foundation,
     styleContractHash: contentHash("basalt-style"),
     familyPlans: [familyPlan()],
-    createdAt: "2026-09-11T00:00:00.000Z",
   });
   const second = createBasaltWorldCompilerPlan({
     foundation,
     styleContractHash: contentHash("basalt-style"),
     familyPlans: [{ ...familyPlan(), regionIds: ["basaltRegion"] }],
-    createdAt: "2026-09-11T00:00:00.000Z",
   });
   assert.deepEqual(first, second);
+  assert.ok(!("createdAt" in first), "sealed plans carry no wall-clock evidence");
   assert.throws(
     () =>
       createBasaltWorldCompilerPlan({
@@ -127,7 +126,6 @@ test("Basalt population resolves families against indexed surfaces", () => {
     foundation,
     styleContractHash: contentHash("basalt-style"),
     familyPlans: [familyPlan()],
-    createdAt: "2026-09-11T00:00:00.000Z",
   });
   const population = populateBasaltWorld(foundation, plan);
   assert.ok(population.instanceCount > 0);
@@ -146,7 +144,6 @@ test("Basalt lowers population into deterministic connector-sized transaction de
     foundation,
     styleContractHash: contentHash("basalt-style"),
     familyPlans: [familyPlan()],
-    createdAt: "2026-09-11T00:00:00.000Z",
   });
   const population = populateBasaltWorld(foundation, plan);
   const first = createBasaltWorldEmission(foundation, population, 64);

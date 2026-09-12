@@ -1,4 +1,5 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
+import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 import {
   computeFamilyMerkleId,
   sealAssetFamilyRevision,
@@ -8,11 +9,21 @@ import {
 } from "../../basalt-types/src/index.js";
 import { quantizeQ32_32 } from "../../basalt-types/src/fixed.js";
 import type { CatalogFamilyDeclaration } from "./contracts.js";
-import { buildMountSocket } from "./sockets.js";
+import { buildMountSockets } from "./sockets.js";
+
+export interface MountContactEvidence {
+  readonly supportPlaneFits: ReadonlyArray<{
+    readonly normalQ32_32: { readonly x: string; readonly y: string; readonly z: string };
+    readonly originQ32_32: { readonly x: string; readonly y: string; readonly z: string };
+    readonly boundaryRadiusStuds: number;
+    readonly inlierCount: number;
+    readonly pointCount: number;
+  }>;
+}
 
 export interface FamilySealEvidence {
   readonly trimMappings?: readonly TrimSheetMapping[];
-  readonly mountContacts?: Readonly<Record<string, { readonly contactAreaStuds2: number }>>;
+  readonly mountContacts?: Readonly<Record<string, MountContactEvidence>>;
 }
 
 export function buildAuthoredAssetFamilyRevision(
@@ -34,7 +45,7 @@ export function buildAuthoredAssetFamilyRevision(
     stableJson(
       resolvedRecords
         .map((record) => ({ assetId: record.assetId, collisionProxy: record.collisionProxy }))
-        .sort((left, right) => left.assetId.localeCompare(right.assetId)),
+        .sort((left, right) => compareSpatialStrings(left.assetId, right.assetId)),
     ),
   );
   const trimBands = [...(declaration.trimBands ?? [])];
@@ -54,28 +65,23 @@ export function buildAuthoredAssetFamilyRevision(
           }),
         )
       : contentHash(declaration.sharedTrimSheetAssetId);
-  const socketsByAssetId = new Map<string, ReturnType<typeof buildMountSocket>>();
+  const socketsByAssetId = new Map<string, ReturnType<typeof buildMountSockets>>();
   if (declaration.mountSockets)
     for (const member of declaration.members) {
       const contact = evidence.mountContacts?.[member.assetId];
-      if (!contact || !(contact.contactAreaStuds2 > 0)) continue;
-      const record = byId.get(member.assetId)!;
-      socketsByAssetId.set(
-        member.assetId,
-        buildMountSocket({
-          variantName: member.variantName,
-          boundsMin: record.boundingBox.min,
-          boundsMax: record.boundingBox.max,
-          contactAreaStuds2: contact.contactAreaStuds2,
-        }),
-      );
+      if (!contact || contact.supportPlaneFits.length === 0) continue;
+      const sockets = buildMountSockets({
+        variantName: member.variantName,
+        supportPlaneFits: contact.supportPlaneFits,
+      });
+      if (sockets.length > 0) socketsByAssetId.set(member.assetId, sockets);
     }
   const socketGrammarHash =
     socketsByAssetId.size > 0
       ? contentHash(
           stableJson(
             [...socketsByAssetId.entries()]
-              .sort(([left], [right]) => left.localeCompare(right))
+              .sort(([left], [right]) => compareSpatialStrings(left, right))
               .map(([assetId, socket]) => ({ assetId, socket })),
           ),
         )
@@ -109,10 +115,7 @@ export function buildAuthoredAssetFamilyRevision(
       selectionWeight: quantizeQ32_32(1 / declaration.members.length),
       metricScaleVarianceMin: "0",
       metricScaleVarianceMax: "0",
-      registeredSockets:
-        socketsByAssetId.get(member.assetId) !== undefined
-          ? [socketsByAssetId.get(member.assetId)!]
-          : [],
+      registeredSockets: [...(socketsByAssetId.get(member.assetId) ?? [])],
     })),
     compositeBoundingEnvelope: compositeEnvelope(resolvedRecords),
     globalStyleContractHash: styleHash,

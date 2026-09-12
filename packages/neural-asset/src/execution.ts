@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { hashSchema } from "../../spatial-core/src/primitives.js";
+import { compareSpatialStrings, hashSchema } from "../../spatial-core/src/primitives.js";
 
 export const NEURAL_WORKER_QUALIFICATION_ABI = "basalt-neural-worker-qualification@1" as const;
 export const NEURAL_ROUTE_ADMISSION_ABI = "basalt-neural-route-admission@1" as const;
@@ -440,7 +440,7 @@ export function claimNeuralExecutionBudget(
     maximumGpuSeconds: budget.maximumGpuSeconds,
     maximumPaidAttempts: budget.maximumPaidAttempts,
     claims: [...budget.claims, claim].sort((left, right) =>
-      left.requestHash.localeCompare(right.requestHash),
+      compareSpatialStrings(left.requestHash, right.requestHash),
     ),
   });
   return { status: "claimed", budget: next, claim };

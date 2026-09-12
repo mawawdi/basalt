@@ -18,6 +18,7 @@ export * from "./family-resolver.js";
 export * from "./catalog-adapter.js";
 export * from "./factory-dispatch.js";
 export * from "./emission.js";
+export * from "./scene-export.js";
 export * from "./tiers.js";
 export * from "./relations.js";
 
@@ -53,7 +54,6 @@ export function createBasaltWorldCompilerPlan(input: {
   readonly styleContractHash: string;
   readonly stage?: "macro" | "meso" | "micro" | "partition";
   readonly familyPlans: readonly WorldFamilyPopulationPlan[];
-  readonly createdAt?: string;
 }): WorldCompilerPlan {
   const regionIds = new Set(input.foundation.regionIds);
   for (const family of input.familyPlans)
@@ -65,7 +65,6 @@ export function createBasaltWorldCompilerPlan(input: {
     styleContractHash: input.styleContractHash,
     stage: input.stage ?? "meso",
     familyPlans: [...input.familyPlans],
-    createdAt: input.createdAt ?? new Date().toISOString(),
   });
 }
 

@@ -100,13 +100,17 @@ export function normalizeSource(
   // decimeters, or centimeters per the FBX oracle), so converting through it
   // preserves the metric truth that budgets and placement depend on.
   const conversion = calculateStudConversion(metersPerSourceUnit, targetStudMeters);
+  // Frame contract: normalized geometry keeps the source right-handed Y-up
+  // frame (node transform, then uniform unit scale). No reflection is ever
+  // applied: CFrames and engine placements cannot express mirroring, and a
+  // z-negation would invert triangle winding and mirror socket mounts.
   const meshes = unscaledMeshes.map(({ mesh, world }): NormalizedMesh => ({
     vertices: mesh.vertices.map((point) => {
       const transformed = transformPoint(world, point);
       return {
         x: transformed.x * conversion,
         y: transformed.y * conversion,
-        z: -transformed.z * conversion,
+        z: transformed.z * conversion,
       };
     }),
     triangles: mesh.triangles,
@@ -114,7 +118,7 @@ export function normalizeSource(
       ? {
           normals: mesh.normals.map((normal) => {
             const transformed = transformNormal(world, normal);
-            return { x: transformed.x, y: transformed.y, z: -transformed.z };
+            return { x: transformed.x, y: transformed.y, z: transformed.z };
           }),
         }
       : {}),
