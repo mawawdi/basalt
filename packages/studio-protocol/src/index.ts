@@ -7,8 +7,12 @@ export const BASALT_WORLD_READBACK_ABI = "basalt-world-readback@1" as const;
 export const MAX_WORLD_CHUNKS_PER_MANIFEST = 4096 as const;
 export const MAX_WORLD_INSTANCES_PER_CHUNK = 65_536 as const;
 export const MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK = 16_384 as const;
+export const MAX_WORLD_STAIRS_PER_CHUNK = 4096 as const;
+export const MAX_WORLD_PORTALS_PER_CHUNK = 4096 as const;
 export const MAX_WORLD_READBACK_VOXEL_SPOTS = 16_384 as const;
 export const MAX_WORLD_READBACK_IMPORT_FACTORS = 16_384 as const;
+export const MAX_WORLD_READBACK_STAIR_STEPS = 16_384 as const;
+export const MAX_WORLD_READBACK_PORTALS = 16_384 as const;
 
 export type BasaltWorldBounds = Readonly<{
   minimum: Readonly<{ x: number; y: number; z: number }>;
@@ -25,6 +29,8 @@ export interface BasaltWorldChunkDelta {
   readonly surfaceIds: readonly string[];
   readonly instanceIds: readonly string[];
   readonly roadSegmentIds: readonly string[];
+  readonly stairIds: readonly string[];
+  readonly portalIds: readonly string[];
   readonly bounds: BasaltWorldBounds;
   readonly transactionId: string;
   readonly hash: Hash;
@@ -52,6 +58,8 @@ export interface BasaltWorldChunkTransaction {
   readonly chunkId: string;
   readonly instanceIds: readonly string[];
   readonly roadSegmentIds: readonly string[];
+  readonly stairIds: readonly string[];
+  readonly portalIds: readonly string[];
   readonly phase: BasaltWorldTransactionPhase;
   readonly expectedRevisionHash: Hash;
   readonly payloadHash: Hash;
@@ -60,9 +68,10 @@ export interface BasaltWorldChunkTransaction {
 
 /**
  * One Studio-observed voxel cell: 0-based cell coordinates plus the live
- * occupancy and engine material name read back after lowering. Coordinates
- * address the sealed field dimensions; the host replays them against the
- * sealed payload, so only applied readbacks may carry spots.
+ * solid occupancy, liquid occupancy, and engine material name read back
+ * after lowering. Coordinates address the sealed field dimensions; the host
+ * replays them against the sealed payload, so only applied readbacks may
+ * carry spots.
  */
 export interface BasaltVoxelSpotObservation {
   readonly surfaceId: string;
@@ -70,6 +79,7 @@ export interface BasaltVoxelSpotObservation {
   readonly y: number;
   readonly z: number;
   readonly occupancy: number;
+  readonly liquid: number;
   readonly material: string;
 }
 
@@ -77,6 +87,33 @@ export interface BasaltVoxelSpotObservation {
 export interface BasaltImportFactorObservation {
   readonly contentHash: Hash;
   readonly factor: number;
+}
+
+/**
+ * One Studio-observed stair tread: 0-based step index plus the live step
+ * part center in export meters and engine material name read back after
+ * lowering. The host replays positions against the sealed run record.
+ */
+export interface BasaltStairStepObservation {
+  readonly stairId: string;
+  readonly step: number;
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly material: string;
+}
+
+/**
+ * One Studio-observed door portal: the live marker pose in export meters
+ * plus the yaw quarter-turns read from the marker orientation. Interior
+ * portals lower markers only; entrances additionally bind door instances.
+ */
+export interface BasaltPortalObservation {
+  readonly portalId: string;
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly yawStepsY90: number;
 }
 
 /** Host-sealed drift key over one surface's observed spots. */
@@ -94,8 +131,12 @@ export interface BasaltWorldReadback {
   readonly observedRevisionHash: Hash;
   readonly observedInstanceIds: readonly string[];
   readonly observedRoadSegmentIds: readonly string[];
+  readonly observedStairIds: readonly string[];
+  readonly observedPortalIds: readonly string[];
   readonly observedVoxelSpots: readonly BasaltVoxelSpotObservation[];
   readonly observedImportFactors: readonly BasaltImportFactorObservation[];
+  readonly observedStairSteps: readonly BasaltStairStepObservation[];
+  readonly observedPortals: readonly BasaltPortalObservation[];
   readonly spotHashes: readonly BasaltVoxelSpotHash[];
   readonly exportHash?: Hash;
   readonly hash: Hash;
@@ -111,8 +152,12 @@ export interface BasaltWorldReadbackObservation {
   readonly observedRevisionHash: Hash;
   readonly observedInstanceIds: readonly string[];
   readonly observedRoadSegmentIds: readonly string[];
+  readonly observedStairIds: readonly string[];
+  readonly observedPortalIds: readonly string[];
   readonly observedVoxelSpots: readonly BasaltVoxelSpotObservation[];
   readonly observedImportFactors: readonly BasaltImportFactorObservation[];
+  readonly observedStairSteps: readonly BasaltStairStepObservation[];
+  readonly observedPortals: readonly BasaltPortalObservation[];
 }
 
 export type BasaltStudioMessage =
@@ -150,12 +195,32 @@ export function assertBasaltWorldReadbackObservation(
   );
   if (stableJson(observedRoadSegmentIds) !== stableJson(observation.observedRoadSegmentIds))
     throw new Error("Basalt readback observation road IDs must be canonical");
+  const observedStairIds = canonicalIds(
+    observation.observedStairIds,
+    "observedStairIds",
+    MAX_WORLD_STAIRS_PER_CHUNK,
+  );
+  if (stableJson(observedStairIds) !== stableJson(observation.observedStairIds))
+    throw new Error("Basalt readback observation stair IDs must be canonical");
+  const observedPortalIds = canonicalIds(
+    observation.observedPortalIds,
+    "observedPortalIds",
+    MAX_WORLD_PORTALS_PER_CHUNK,
+  );
+  if (stableJson(observedPortalIds) !== stableJson(observation.observedPortalIds))
+    throw new Error("Basalt readback observation portal IDs must be canonical");
   const observedVoxelSpots = canonicalVoxelSpots(observation.observedVoxelSpots);
   if (stableJson(observedVoxelSpots) !== stableJson(observation.observedVoxelSpots))
     throw new Error("Basalt readback observation voxel spots must be canonical");
   const observedImportFactors = canonicalImportFactors(observation.observedImportFactors);
   if (stableJson(observedImportFactors) !== stableJson(observation.observedImportFactors))
     throw new Error("Basalt readback observation import factors must be canonical");
+  const observedStairSteps = canonicalStairSteps(observation.observedStairSteps);
+  if (stableJson(observedStairSteps) !== stableJson(observation.observedStairSteps))
+    throw new Error("Basalt readback observation stair steps must be canonical");
+  const observedPortals = canonicalPortalObservations(observation.observedPortals);
+  if (stableJson(observedPortals) !== stableJson(observation.observedPortals))
+    throw new Error("Basalt readback observation portals must be canonical");
   return observation;
 }
 
@@ -164,7 +229,14 @@ export function createBasaltWorldTransaction(input: {
   readonly worldPlanHash: Hash;
   readonly chunk: Pick<
     BasaltWorldChunkDelta,
-    "chunkId" | "worldPlanHash" | "hash" | "transactionId" | "instanceIds" | "roadSegmentIds"
+    | "chunkId"
+    | "worldPlanHash"
+    | "hash"
+    | "transactionId"
+    | "instanceIds"
+    | "roadSegmentIds"
+    | "stairIds"
+    | "portalIds"
   >;
   readonly phase: BasaltWorldTransactionPhase;
   readonly expectedRevisionHash: Hash;
@@ -184,6 +256,8 @@ export function createBasaltWorldTransaction(input: {
       "roadSegmentIds",
       MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK,
     ),
+    stairIds: canonicalIds(input.chunk.stairIds, "stairIds", MAX_WORLD_STAIRS_PER_CHUNK),
+    portalIds: canonicalIds(input.chunk.portalIds, "portalIds", MAX_WORLD_PORTALS_PER_CHUNK),
     phase: input.phase,
     expectedRevisionHash: requireHash(input.expectedRevisionHash, "expectedRevisionHash"),
     payloadHash: requireHash(input.payloadHash ?? input.chunk.hash, "payloadHash"),
@@ -199,8 +273,12 @@ export function createBasaltWorldReadback(input: {
   readonly observedRevisionHash: Hash;
   readonly observedInstanceIds: readonly string[];
   readonly observedRoadSegmentIds: readonly string[];
+  readonly observedStairIds: readonly string[];
+  readonly observedPortalIds: readonly string[];
   readonly observedVoxelSpots?: readonly BasaltVoxelSpotObservation[];
   readonly observedImportFactors?: readonly BasaltImportFactorObservation[];
+  readonly observedStairSteps?: readonly BasaltStairStepObservation[];
+  readonly observedPortals?: readonly BasaltPortalObservation[];
   readonly spotHashes?: readonly BasaltVoxelSpotHash[];
   readonly exportHash?: Hash;
 }): BasaltWorldReadback {
@@ -211,8 +289,20 @@ export function createBasaltWorldReadback(input: {
     "observedRoadSegmentIds",
     MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK,
   );
+  const observedStairIds = canonicalIds(
+    input.observedStairIds,
+    "observedStairIds",
+    MAX_WORLD_STAIRS_PER_CHUNK,
+  );
+  const observedPortalIds = canonicalIds(
+    input.observedPortalIds,
+    "observedPortalIds",
+    MAX_WORLD_PORTALS_PER_CHUNK,
+  );
   const observedVoxelSpots = canonicalVoxelSpots(input.observedVoxelSpots ?? []);
   const observedImportFactors = canonicalImportFactors(input.observedImportFactors ?? []);
+  const observedStairSteps = canonicalStairSteps(input.observedStairSteps ?? []);
+  const observedPortals = canonicalPortalObservations(input.observedPortals ?? []);
   const spotHashes = canonicalSpotHashes(input.spotHashes ?? []);
   const material = {
     kind: "BasaltWorldReadback" as const,
@@ -223,8 +313,12 @@ export function createBasaltWorldReadback(input: {
     observedRevisionHash: requireHash(input.observedRevisionHash, "observedRevisionHash"),
     observedInstanceIds,
     observedRoadSegmentIds,
+    observedStairIds,
+    observedPortalIds,
     observedVoxelSpots,
     observedImportFactors,
+    observedStairSteps,
+    observedPortals,
     spotHashes,
     ...(input.exportHash === undefined
       ? {}
@@ -234,9 +328,10 @@ export function createBasaltWorldReadback(input: {
 }
 
 /**
- * Seal one drift key per observed surface. Occupancy quantizes to u8 steps
- * before hashing so engine quantization noise never flips a sealed key; the
- * encoding is integer-only so the hash is exact across runs.
+ * Seal one drift key per observed surface. Solid and liquid occupancy
+ * quantize to u8 steps before hashing so engine quantization noise never
+ * flips a sealed key; the encoding is integer-only so the hash is exact
+ * across runs.
  */
 export function sealVoxelSpotHashes(
   spots: readonly BasaltVoxelSpotObservation[],
@@ -254,7 +349,7 @@ export function sealVoxelSpotHashes(
   )) {
     const lines = group.map(
       (spot) =>
-        `${spot.x},${spot.y},${spot.z},${Math.round(spot.occupancy * 255)},${spot.material}`,
+        `${spot.x},${spot.y},${spot.z},${Math.round(spot.occupancy * 255)},${Math.round(spot.liquid * 255)},${spot.material}`,
     );
     sealed.push({ surfaceId, spotHash: contentHash(`${surfaceId}\n${lines.join("\n")}`) });
   }
@@ -267,6 +362,8 @@ export function reconcileBasaltWorldReadback(
   readbackInput: unknown,
   expectedInstanceIds: readonly string[],
   expectedRoadSegmentIds: readonly string[],
+  expectedStairIds: readonly string[],
+  expectedPortalIds: readonly string[],
 ): void {
   const transaction = assertBasaltWorldTransaction(transactionInput);
   const readback = assertBasaltWorldReadback(readbackInput);
@@ -284,6 +381,20 @@ export function reconcileBasaltWorldReadback(
   );
   if (stableJson(expectedRoads) !== stableJson(readback.observedRoadSegmentIds))
     throw new Error("Basalt Studio readback road set differs from the chunk delta");
+  const expectedStairs = canonicalIds(
+    expectedStairIds,
+    "expectedStairIds",
+    MAX_WORLD_STAIRS_PER_CHUNK,
+  );
+  if (stableJson(expectedStairs) !== stableJson(readback.observedStairIds))
+    throw new Error("Basalt Studio readback stair set differs from the chunk delta");
+  const expectedPortals = canonicalIds(
+    expectedPortalIds,
+    "expectedPortalIds",
+    MAX_WORLD_PORTALS_PER_CHUNK,
+  );
+  if (stableJson(expectedPortals) !== stableJson(readback.observedPortalIds))
+    throw new Error("Basalt Studio readback portal set differs from the chunk delta");
 }
 
 export function assertBasaltWorldTransaction(value: unknown): BasaltWorldChunkTransaction {
@@ -313,6 +424,12 @@ export function assertBasaltWorldTransaction(value: unknown): BasaltWorldChunkTr
   );
   if (stableJson(roadSegmentIds) !== stableJson(transaction.roadSegmentIds))
     throw new Error("Basalt transaction road segment IDs must be canonical");
+  const stairIds = canonicalIds(transaction.stairIds, "stairIds", MAX_WORLD_STAIRS_PER_CHUNK);
+  if (stableJson(stairIds) !== stableJson(transaction.stairIds))
+    throw new Error("Basalt transaction stair IDs must be canonical");
+  const portalIds = canonicalIds(transaction.portalIds, "portalIds", MAX_WORLD_PORTALS_PER_CHUNK);
+  if (stableJson(portalIds) !== stableJson(transaction.portalIds))
+    throw new Error("Basalt transaction portal IDs must be canonical");
   const { hash, ...material } = transaction;
   if (hash !== contentHash(stableJson(material)))
     throw new Error("Basalt world transaction hash mismatch");
@@ -342,6 +459,20 @@ export function assertBasaltWorldReadback(value: unknown): BasaltWorldReadback {
   );
   if (stableJson(observedRoadSegmentIds) !== stableJson(readback.observedRoadSegmentIds))
     throw new Error("Basalt readback road segment IDs must be canonical");
+  const observedStairIds = canonicalIds(
+    readback.observedStairIds,
+    "observedStairIds",
+    MAX_WORLD_STAIRS_PER_CHUNK,
+  );
+  if (stableJson(observedStairIds) !== stableJson(readback.observedStairIds))
+    throw new Error("Basalt readback stair IDs must be canonical");
+  const observedPortalIds = canonicalIds(
+    readback.observedPortalIds,
+    "observedPortalIds",
+    MAX_WORLD_PORTALS_PER_CHUNK,
+  );
+  if (stableJson(observedPortalIds) !== stableJson(readback.observedPortalIds))
+    throw new Error("Basalt readback portal IDs must be canonical");
   if (readback.exportHash !== undefined && !isHash(readback.exportHash))
     throw new Error("Basalt readback export hash must be a sha256 hash");
   const observedVoxelSpots = canonicalVoxelSpots(readback.observedVoxelSpots);
@@ -350,6 +481,12 @@ export function assertBasaltWorldReadback(value: unknown): BasaltWorldReadback {
   const observedImportFactors = canonicalImportFactors(readback.observedImportFactors);
   if (stableJson(observedImportFactors) !== stableJson(readback.observedImportFactors))
     throw new Error("Basalt readback import factors must be canonical");
+  const observedStairSteps = canonicalStairSteps(readback.observedStairSteps);
+  if (stableJson(observedStairSteps) !== stableJson(readback.observedStairSteps))
+    throw new Error("Basalt readback stair steps must be canonical");
+  const observedPortals = canonicalPortalObservations(readback.observedPortals);
+  if (stableJson(observedPortals) !== stableJson(readback.observedPortals))
+    throw new Error("Basalt readback portals must be canonical");
   const spotHashes = canonicalSpotHashes(readback.spotHashes);
   if (stableJson(spotHashes) !== stableJson(readback.spotHashes))
     throw new Error("Basalt readback spot hashes must be canonical");
@@ -392,6 +529,10 @@ function canonicalVoxelSpots(
       !Number.isFinite(spot.occupancy) ||
       (spot.occupancy as number) < 0 ||
       (spot.occupancy as number) > 1 ||
+      typeof spot.liquid !== "number" ||
+      !Number.isFinite(spot.liquid) ||
+      (spot.liquid as number) < 0 ||
+      (spot.liquid as number) > 1 ||
       typeof spot.material !== "string" ||
       (spot.material as string).length === 0 ||
       (spot.material as string).length > 128
@@ -403,6 +544,7 @@ function canonicalVoxelSpots(
       y: spot.y as number,
       z: spot.z as number,
       occupancy: spot.occupancy as number,
+      liquid: spot.liquid as number,
       material: spot.material as string,
     };
   });
@@ -438,6 +580,81 @@ function canonicalImportFactors(
     throw new Error("Basalt observedImportFactors repeats a content hash");
   factors.sort((left, right) => (left.contentHash < right.contentHash ? -1 : 1));
   return factors;
+}
+
+function canonicalStairSteps(
+  values: readonly BasaltStairStepObservation[],
+): BasaltStairStepObservation[] {
+  if (!Array.isArray(values) || values.length > MAX_WORLD_READBACK_STAIR_STEPS)
+    throw new Error("Basalt observedStairSteps exceeds its bound");
+  const steps = values.map((entry) => {
+    if (
+      !isRecord(entry) ||
+      !isId(entry.stairId) ||
+      !Number.isSafeInteger(entry.step) ||
+      (entry.step as number) < 0 ||
+      typeof entry.x !== "number" ||
+      !Number.isFinite(entry.x) ||
+      typeof entry.y !== "number" ||
+      !Number.isFinite(entry.y) ||
+      typeof entry.z !== "number" ||
+      !Number.isFinite(entry.z) ||
+      typeof entry.material !== "string" ||
+      (entry.material as string).length === 0 ||
+      (entry.material as string).length > 128
+    )
+      throw new Error("Basalt observedStairSteps carries an invalid step");
+    return {
+      stairId: entry.stairId as string,
+      step: entry.step as number,
+      x: entry.x as number,
+      y: entry.y as number,
+      z: entry.z as number,
+      material: entry.material as string,
+    };
+  });
+  const keys = steps.map((entry) => `${entry.stairId} ${entry.step}`);
+  if (new Set(keys).size !== keys.length)
+    throw new Error("Basalt observedStairSteps repeats a stair step");
+  steps.sort((left, right) => {
+    if (left.stairId !== right.stairId) return left.stairId < right.stairId ? -1 : 1;
+    return left.step - right.step;
+  });
+  return steps;
+}
+
+function canonicalPortalObservations(
+  values: readonly BasaltPortalObservation[],
+): BasaltPortalObservation[] {
+  if (!Array.isArray(values) || values.length > MAX_WORLD_READBACK_PORTALS)
+    throw new Error("Basalt observedPortals exceeds its bound");
+  const portals = values.map((entry) => {
+    if (
+      !isRecord(entry) ||
+      !isId(entry.portalId) ||
+      typeof entry.x !== "number" ||
+      !Number.isFinite(entry.x) ||
+      typeof entry.y !== "number" ||
+      !Number.isFinite(entry.y) ||
+      typeof entry.z !== "number" ||
+      !Number.isFinite(entry.z) ||
+      !Number.isSafeInteger(entry.yawStepsY90) ||
+      (entry.yawStepsY90 as number) < 0 ||
+      (entry.yawStepsY90 as number) > 3
+    )
+      throw new Error("Basalt observedPortals carries an invalid portal");
+    return {
+      portalId: entry.portalId as string,
+      x: entry.x as number,
+      y: entry.y as number,
+      z: entry.z as number,
+      yawStepsY90: entry.yawStepsY90 as number,
+    };
+  });
+  if (new Set(portals.map((entry) => entry.portalId)).size !== portals.length)
+    throw new Error("Basalt observedPortals repeats a portal");
+  portals.sort((left, right) => (left.portalId < right.portalId ? -1 : 1));
+  return portals;
 }
 
 function canonicalSpotHashes(values: readonly BasaltVoxelSpotHash[]): BasaltVoxelSpotHash[] {

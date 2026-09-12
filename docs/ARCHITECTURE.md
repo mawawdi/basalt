@@ -110,15 +110,23 @@ cardinality cap.
 The model declares family roles, target density, variation, and exclusions. It
 does not emit one transform per instance. The compiler integrates density over
 valid surfaces, subtracts routes and exclusion masks, enforces budgets, and
-invokes Poisson, cluster, along-path, or socket solvers. A population artifact
-stores shared handles plus chunked transforms; repeated instances never duplicate
-mesh or texture bytes.
+invokes Poisson, cluster, along-path, surface-grid, socket, or wall-anchored
+interior solvers. A population artifact stores shared handles plus chunked
+transforms; repeated instances never duplicate mesh or texture bytes.
+
+Sealed assembly recipes feed room graphs: floor plates from floor-forming
+components, guillotine or strip rooms per the sealed room program, door
+portals on shared walls, verified stair runs between stair rooms, and a
+connectivity proof from the entrance. Wall-anchored families place interior
+clutter against room walls with portal and stair-run keepouts; stair records
+lower to connector step parts.
 
 `createBasaltWorldEmission` lowers that population into bounded
 `BasaltWorldChunkDelta` records. Each delta has deterministic surface coverage,
-instance IDs, bounds, a transaction ID, and a content hash. The Studio connector
-consumes these records in canonical chunk order; world compilation itself never
-opens a Studio session or performs a write.
+instance, road-segment, stair, and portal IDs, bounds, a transaction ID, and a
+content hash. The Studio connector consumes these records in canonical chunk
+order; world compilation itself never opens a Studio session or performs a
+write.
 
 Requirements carry an acquisition context. Micro scatter and structural kits
 resolve through procedures or catalog families. One-shot neural geometry is
@@ -148,20 +156,23 @@ canonical readback before advancing the queue.
 
 The compiler's final artifact is the engine-neutral scene export: a sealed
 manifest (instances with placements, assets, mesh parts, terrain voxel fields,
-road ribbons, material bindings) plus a content-addressed payload store keyed
-by sha256. Placements are meters, Y-up, right-handed, with the instance
-composition sealed in the manifest. Sealed records carry content hashes and
-placements only — never engine handles. Mesh-part bounds keep their recorded
-source-unit span with the asset's `unitsToMeters` as the recorded converter;
-no adapter pre-converts them. Each part also records its node origin, so
-adapters verify imported pivots instead of assuming them.
+road ribbons, stair runs, portal markers, material bindings) plus a
+content-addressed payload store keyed by sha256. Placements are meters, Y-up,
+right-handed, with the instance composition sealed in the manifest. Sealed
+records carry content hashes and placements only — never engine handles.
+Mesh-part bounds keep their recorded source-unit span with the asset's
+`unitsToMeters` as the recorded converter; no adapter pre-converts them.
+Each part also records its node origin, so adapters verify imported pivots
+instead of assuming them.
 
 Each engine owns a lowering adapter and two adapter-owned docs served by the
 bridge: the upload sidecar (content-hash to engine asset id) and the material
 map (open-vocabulary material id to engine material). Both must bind the exact
 enqueued export hash. The Roblox adapter lowers in fixed order — MeshParts from
-sidecar ids plus sealed TRS, collision proxies, `WriteVoxels` terrain over
-cell-aligned 4-stud grids, road ribbons as constructed parts — and observes
+sidecar ids plus sealed TRS, collision proxies, `WriteVoxelChannels` terrain
+(solid plus liquid channels) over cell-aligned 4-stud grids, one-time terrain
+appearance (water, grass, tints), road ribbons as constructed parts, stair
+treads as colliding parts, portal evidence markers — and observes
 constructed geometry, never echoed ids. It verifies the measured server
 import map per model (uniform scale, pivots on the flipped recorded center,
 identity rotations), compensates the flip at placement, and fails closed

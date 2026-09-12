@@ -1,6 +1,7 @@
 --!strict
 local Constants = require(script.Parent.Constants)
 local SceneData = require(script.Parent.SceneData)
+local TerrainRepaints = require(script.Parent.TerrainRepaints)
 local VoxelField = require(script.Parent.VoxelField)
 local VoxelSpots = require(script.Parent.VoxelSpots)
 local TerrainMarkers = require(script.Parent.TerrainMarkers)
@@ -59,22 +60,41 @@ end
 local function expectedSpots(
 	surfaceId: string,
 	field: VoxelField.DecodedVoxelField,
-	scene: any
+	scene: any,
+	repaintPlan: TerrainRepaints.RepaintPlan
 ): { VoxelSpots.SpotReading }
 	local nx, nz = field.dimensions[1], field.dimensions[3]
 	local readings: { VoxelSpots.SpotReading } = {}
 	for _, cell in ipairs(VoxelSpots.cells(nx, field.dimensions[2], nz)) do
 		local flat = cell.x + nx * (cell.z + nz * cell.y) + 1
-		local materialId = field.materials[field.materialIndex[flat] + 1]
-		local material = scene.materialById[materialId]
-		if material == nil then
-			fail("terrain " .. surfaceId .. " has no mapped material " .. tostring(materialId))
+		local occupancy = field.occupancy[flat]
+		-- Water-only and dry-air cells lower as Air plus liquid, so they
+		-- read back Air regardless of their column material.
+		local material: string
+		if occupancy == 0 then
+			material = "Air"
+		else
+			local materialId = field.materials[field.materialIndex[flat] + 1]
+			local mapped = scene.materialById[materialId]
+			if mapped == nil then
+				fail("terrain " .. surfaceId .. " has no mapped material " .. tostring(materialId))
+			end
+			material = mapped
+			for _, substitution in ipairs(repaintPlan.substitutions) do
+				local source = scene.materialById[substitution.sourceId]
+				local target = scene.materialById[substitution.targetId]
+				if source == nil or target == nil then
+					fail("terrain " .. surfaceId .. " repaints an unmapped material")
+				end
+				if material == source then material = target end
+			end
 		end
 		table.insert(readings, {
 			x = cell.x,
 			y = cell.y,
 			z = cell.z,
-			occupancy = field.occupancy[flat],
+			occupancy = occupancy,
+			liquid = field.liquid[flat],
 			material = material,
 		})
 	end
@@ -90,7 +110,14 @@ local function readSpots(
 	field: VoxelField.DecodedVoxelField,
 	region: Region3
 ): { VoxelSpots.SpotReading }
-	local materials, occupancy = terrain:ReadVoxels(region, Constants.VOXEL_CELL_STUDS)
+	local channels = terrain:ReadVoxelChannels(region, Constants.VOXEL_CELL_STUDS, {
+		"SolidMaterial",
+		"SolidOccupancy",
+		"LiquidOccupancy",
+	})
+	local materials = channels.SolidMaterial
+	local occupancy = channels.SolidOccupancy
+	local liquid = channels.LiquidOccupancy
 	local readings: { VoxelSpots.SpotReading } = {}
 	for _, cell in ipairs(VoxelSpots.cells(field.dimensions[1], field.dimensions[2], field.dimensions[3])) do
 		local material = materials[cell.x + 1][cell.y + 1][cell.z + 1]
@@ -99,6 +126,7 @@ local function readSpots(
 			y = cell.y,
 			z = cell.z,
 			occupancy = occupancy[cell.x + 1][cell.y + 1][cell.z + 1],
+			liquid = liquid[cell.x + 1][cell.y + 1][cell.z + 1],
 			material = material.Name,
 		})
 	end
@@ -143,30 +171,44 @@ local function writeSurface(
 	for index, materialId in ipairs(field.materials) do
 		engineMaterials[index] = SceneData.resolveEngineMaterial(scene, materialId, "terrain " .. surfaceId)
 	end
+	local air = Enum.Material.Air
 	local materials: { { { Enum.Material } } } = table.create(nx)
 	local occupancy: { { { number } } } = table.create(nx)
+	local liquid: { { { number } } } = table.create(nx)
 	for ix = 1, nx do
 		local materialPlane: { { Enum.Material } } = table.create(ny)
 		local occupancyPlane: { { number } } = table.create(ny)
+		local liquidPlane: { { number } } = table.create(ny)
 		materials[ix] = materialPlane
 		occupancy[ix] = occupancyPlane
+		liquid[ix] = liquidPlane
 		for iy = 1, ny do
 			local materialRow: { Enum.Material } = table.create(nz)
 			local occupancyRow: { number } = table.create(nz)
+			local liquidRow: { number } = table.create(nz)
 			materialPlane[iy] = materialRow
 			occupancyPlane[iy] = occupancyRow
+			liquidPlane[iy] = liquidRow
 			for iz = 1, nz do
 				local flat = (ix - 1) + nx * ((iz - 1) + nz * (iy - 1)) + 1
-				materialRow[iz] = engineMaterials[field.materialIndex[flat] + 1]
-				occupancyRow[iz] = field.occupancy[flat]
+				local solid = field.occupancy[flat]
+				-- The engine no longer accepts a Water solid material: a
+				-- voxel holding only water lowers as Air plus liquid.
+				materialRow[iz] = if solid == 0 then air else engineMaterials[field.materialIndex[flat] + 1]
+				occupancyRow[iz] = solid
+				liquidRow[iz] = field.liquid[flat]
 			end
 		end
 	end
 	local region = fieldRegion(field)
 	local ok, writeError = pcall(function()
-		terrain:WriteVoxels(region, Constants.VOXEL_CELL_STUDS, materials, occupancy)
+		terrain:WriteVoxelChannels(region, Constants.VOXEL_CELL_STUDS, {
+			SolidMaterial = materials,
+			SolidOccupancy = occupancy,
+			LiquidOccupancy = liquid,
+		})
 	end)
-	if not ok then fail("Terrain:WriteVoxels failed for " .. surfaceId .. ": " .. tostring(writeError)) end
+	if not ok then fail("Terrain:WriteVoxelChannels failed for " .. surfaceId .. ": " .. tostring(writeError)) end
 end
 
 function TerrainLowering.clearRegion(terrain: Terrain, origin: { number }, dimensions: { number }): ()
@@ -177,26 +219,36 @@ function TerrainLowering.clearRegion(terrain: Terrain, origin: { number }, dimen
 	local nx, ny, nz = dimensions[1], dimensions[2], dimensions[3]
 	local materials: { { { Enum.Material } } } = table.create(nx)
 	local occupancy: { { { number } } } = table.create(nx)
+	local liquid: { { { number } } } = table.create(nx)
 	for ix = 1, nx do
 		local materialPlane: { { Enum.Material } } = table.create(ny)
 		local occupancyPlane: { { number } } = table.create(ny)
+		local liquidPlane: { { number } } = table.create(ny)
 		materials[ix] = materialPlane
 		occupancy[ix] = occupancyPlane
+		liquid[ix] = liquidPlane
 		for iy = 1, ny do
 			local materialRow: { Enum.Material } = table.create(nz)
 			local occupancyRow: { number } = table.create(nz)
+			local liquidRow: { number } = table.create(nz)
 			materialPlane[iy] = materialRow
 			occupancyPlane[iy] = occupancyRow
+			liquidPlane[iy] = liquidRow
 			for iz = 1, nz do
 				materialRow[iz] = Enum.Material.Air
 				occupancyRow[iz] = 0
+				liquidRow[iz] = 0
 			end
 		end
 	end
 	local ok, writeError = pcall(function()
-		terrain:WriteVoxels(region, Constants.VOXEL_CELL_STUDS, materials, occupancy)
+		terrain:WriteVoxelChannels(region, Constants.VOXEL_CELL_STUDS, {
+			SolidMaterial = materials,
+			SolidOccupancy = occupancy,
+			LiquidOccupancy = liquid,
+		})
 	end)
-	if not ok then fail("Terrain:WriteVoxels failed to clear: " .. tostring(writeError)) end
+	if not ok then fail("Terrain:WriteVoxelChannels failed to clear: " .. tostring(writeError)) end
 end
 
 function TerrainLowering.markerView(marker: Instance, surfaceId: string): TerrainMarkers.MarkerView
@@ -207,6 +259,29 @@ end
 -- Proven markers skip their write after a clean spot check; suspect markers
 -- and drifted voxels force a rewrite, and fresh writes read back their own
 -- spots so the observation always describes live voxels.
+local function applyRepaints(
+	terrain: Terrain,
+	surfaceId: string,
+	scene: any,
+	field: VoxelField.DecodedVoxelField,
+	plan: TerrainRepaints.RepaintPlan
+): ()
+	if #plan.substitutions == 0 then return end
+	local region = fieldRegion(field)
+	for _, substitution in ipairs(plan.substitutions) do
+		local source =
+			SceneData.resolveEngineMaterial(scene, substitution.sourceId, "repaint " .. surfaceId)
+		local target =
+			SceneData.resolveEngineMaterial(scene, substitution.targetId, "repaint " .. surfaceId)
+		local ok, repaintError = pcall(function()
+			terrain:ReplaceMaterial(region, Constants.VOXEL_CELL_STUDS, source, target)
+		end)
+		if not ok then
+			fail("Terrain:ReplaceMaterial failed for " .. surfaceId .. ": " .. tostring(repaintError))
+		end
+	end
+end
+
 function TerrainLowering.lowerTerrain(
 	parent: Instance,
 	scene: any
@@ -224,15 +299,23 @@ function TerrainLowering.lowerTerrain(
 	for _, surfaceId in ipairs(scene.chunkDelta.surfaceIds) do
 		local entry = scene.terrainById[surfaceId]
 		if entry == nil then fail("scene export has no terrain " .. surfaceId) end
+		local repaintPlan = TerrainRepaints.planRepaints(scene.terrainRepaints, surfaceId)
 		local marker = folder:FindFirstChild(surfaceId)
 		if marker ~= nil then
 			local view = markerView(marker, surfaceId)
 			local suspect = TerrainMarkers.isSuspect(view, entry.voxelHash)
+			local painted = marker:GetAttribute("BasaltRepaints")
+			if (if typeof(painted) == "string" then painted else "") ~= repaintPlan.gate then
+				suspect = true
+			end
 			if not suspect then
 				local field = loadField(surfaceId, entry, scene)
 				local live = readSpots(terrain, surfaceId, field, markerRegion(view))
-				local drift =
-					VoxelSpots.findDrift(expectedSpots(surfaceId, field, scene), live, Constants.VOXEL_SPOT_TOLERANCE)
+				local drift = VoxelSpots.findDrift(
+					expectedSpots(surfaceId, field, scene, repaintPlan),
+					live,
+					Constants.VOXEL_SPOT_TOLERANCE
+				)
 				if drift == nil then
 					table.insert(observed, { surfaceId = surfaceId, readings = live })
 					continue
@@ -242,11 +325,13 @@ function TerrainLowering.lowerTerrain(
 		end
 		local field = loadField(surfaceId, entry, scene)
 		writeSurface(terrain, surfaceId, entry, scene, field)
+		applyRepaints(terrain, surfaceId, scene, field, repaintPlan)
 		local fresh = Instance.new("Folder")
 		fresh.Name = surfaceId
 		fresh:SetAttribute("BasaltSurfaceId", surfaceId)
 		fresh:SetAttribute("BasaltVoxelHash", entry.voxelHash)
 		fresh:SetAttribute("BasaltChunkId", chunkId)
+		fresh:SetAttribute("BasaltRepaints", repaintPlan.gate)
 		fresh:SetAttribute(
 			"BasaltOrigin",
 			Vector3.new(field.origin[1], field.origin[2], field.origin[3])

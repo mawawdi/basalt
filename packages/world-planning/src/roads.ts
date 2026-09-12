@@ -38,17 +38,55 @@ export function roadbedOperationsForRoutes(routes: readonly WorldRoute[]): Array
     falloff: number;
   };
 }> {
-  return routes.map((route) => ({
-    surfaceId: route.surfaceId,
-    operation: {
-      id: `roadbed_${route.id.slice(0, 32)}_${contentHash(stableJson(route.id)).slice(0, 8)}`,
-      kind: "roadbed",
-      points: route.points.map((point) => ({ x: point.x, z: point.z })),
-      width: route.width,
-      depth: ROADBED_DEPTH_STUDS,
-      falloff: route.width * ROADBED_FALLOFF_FRACTION,
-    },
-  }));
+  // Joints are exact-shared endpoints between segments. Each segment's
+  // carve polyline extends one link across every simple joint (exactly one
+  // neighboring link), so both sides of a partition seam measure distance
+  // to the same local road shape and carve bit-identically. Junctions
+  // (3+ links) keep per-segment carves: a polyline cannot branch.
+  const jointIndex = new Map<string, Array<{ route: number; point: number }>>();
+  routes.forEach((route, routeIdx) => {
+    route.points.forEach((point, pointIdx) => {
+      const key = `${point.x},${point.z}`;
+      const entry = jointIndex.get(key);
+      if (entry) entry.push({ route: routeIdx, point: pointIdx });
+      else jointIndex.set(key, [{ route: routeIdx, point: pointIdx }]);
+    });
+  });
+  return routes.map((route, routeIdx) => {
+    const own = route.points.map((point) => ({ x: point.x, z: point.z }));
+    const extend = (endpoint: { x: number; z: number }, endpointIdx: number) => {
+      const sharers = (jointIndex.get(`${endpoint.x},${endpoint.z}`) ?? []).filter(
+        (share) => share.route !== routeIdx || share.point !== endpointIdx,
+      );
+      // Exactly one neighboring link: a mid-polyline sharer already owns
+      // two links, and junctions own more; neither extends.
+      const links = sharers.flatMap((share) => {
+        const other = routes[share.route]!.points;
+        const adjacent: Array<{ x: number; z: number }> = [];
+        if (share.point > 0) adjacent.push(other[share.point - 1]!);
+        if (share.point < other.length - 1) adjacent.push(other[share.point + 1]!);
+        return adjacent;
+      });
+      if (links.length !== 1) return null;
+      return { x: links[0]!.x, z: links[0]!.z };
+    };
+    const points = [...own];
+    const head = extend(own[0]!, 0);
+    if (head) points.unshift(head);
+    const tail = extend(own[own.length - 1]!, own.length - 1);
+    if (tail) points.push(tail);
+    return {
+      surfaceId: route.surfaceId,
+      operation: {
+        id: `roadbed_${route.id.slice(0, 32)}_${contentHash(stableJson(route.id)).slice(0, 8)}`,
+        kind: "roadbed",
+        points,
+        width: route.width,
+        depth: ROADBED_DEPTH_STUDS,
+        falloff: route.width * ROADBED_FALLOFF_FRACTION,
+      },
+    };
+  });
 }
 
 const roadRibbonVertex = z

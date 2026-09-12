@@ -1,45 +1,49 @@
 #!/usr/bin/env node
-// Local slice operator: click-through UI for palette → compile → upload →
-// bridge. Serves 127.0.0.1 only. Reads the Roblox API key from the repo-root
-// .env into process memory for uploads; the key is never served, logged, or
-// written anywhere — status reports a boolean only.
+// Local pipeline operator: click-through UI for palette → compile → upload →
+// bridge for any brief/plan working directory. Serves 127.0.0.1 only. Reads
+// the Roblox API key from the repo-root .env into process memory for uploads;
+// the key is never served, logged, or written anywhere — status reports a
+// boolean only.
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readEnvFileKey } from "./read-env-file.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const sliceDir = resolve(root, ".basalt/slice");
-const logPath = resolve(sliceDir, "operator.log");
-const configPath = resolve(sliceDir, "operator-config.json");
+const dirIndex = process.argv.indexOf("--dir");
+const workDir = resolve(
+  root,
+  dirIndex >= 0 && dirIndex + 1 < process.argv.length
+    ? process.argv[dirIndex + 1]
+    : ".basalt/slice",
+);
+const logPath = resolve(workDir, "operator.log");
+const configPath = resolve(workDir, "operator-config.json");
 const PORT = 8797;
 
 const PATHS = {
-  palette: resolve(sliceDir, "palette"),
-  build: resolve(sliceDir, "build.json"),
-  export: resolve(sliceDir, "export"),
-  sidecar: resolve(sliceDir, "sidecar.json"),
-  materialMap: resolve(sliceDir, "material-map.json"),
-  emission: resolve(sliceDir, "emission.json"),
+  palette: resolve(workDir, "palette"),
+  build: resolve(workDir, "build.json"),
+  export: resolve(workDir, "export"),
+  sidecar: resolve(workDir, "sidecar.json"),
+  materialMap: resolve(workDir, "material-map.json"),
+  emission: resolve(workDir, "emission.json"),
 };
 
-mkdirSync(sliceDir, { recursive: true });
+mkdirSync(workDir, { recursive: true });
 writeFileSync(logPath, "", { flag: "a" });
 
-let apiKey = process.env.BASALT_ROBLOX_API_KEY;
-if (!apiKey) {
-  try {
-    for (const line of readFileSync(resolve(root, ".env"), "utf8").split("\n")) {
-      const match = /^\s*(?:export\s+)?BASALT_ROBLOX_API_KEY\s*=\s*("?)([^"\n]*)\1\s*$/.exec(line);
-      if (match) apiKey = match[2].trim();
-    }
-  } catch {
-    apiKey = undefined;
-  }
-}
+let apiKey = process.env.BASALT_ROBLOX_API_KEY ?? readEnvFileKey(root, "BASALT_ROBLOX_API_KEY");
 
-let config = { creatorUserId: "1048340316", includeIncomplete: true, robloxMaterial: "Sand" };
+let config = {
+  creatorUserId: "1048340316",
+  includeIncomplete: true,
+  briefPath: "test/helpers/slice-region.brief.json",
+  planPath: "test/helpers/slice-region.plan.json",
+  engineMaterials: { sliceMaterial: "Sand", asphalt: "Asphalt" },
+};
 try {
   config = { ...config, ...JSON.parse(readFileSync(configPath, "utf8")) };
 } catch {
@@ -127,8 +131,7 @@ async function writeBridgeFiles() {
   if (!manifest?.hash) throw new Error("Compile first: no scene export");
   if (!Array.isArray(manifest.materialIds))
     throw new Error("Compile first: export lacks material ids");
-  if (!/^[A-Za-z]{2,32}$/u.test(config.robloxMaterial)) throw new Error("Material name is invalid");
-  const engineMaterials = { sliceMaterial: config.robloxMaterial, asphalt: "Asphalt" };
+  const engineMaterials = config.engineMaterials;
   const unmapped = manifest.materialIds.filter((id) => !(id in engineMaterials));
   if (unmapped.length > 0)
     throw new Error(`Export material ids lack engine bindings: ${unmapped.join(", ")}`);
@@ -256,10 +259,33 @@ const server = createServer(async (request, response) => {
           throw new Error("Creator user id must be numeric");
         config.creatorUserId = String(body.creatorUserId);
       }
-      if (body.robloxMaterial !== undefined) {
-        if (!/^[A-Za-z]{2,32}$/u.test(String(body.robloxMaterial)))
-          throw new Error("Material name is invalid");
-        config.robloxMaterial = String(body.robloxMaterial);
+      if (body.briefPath !== undefined) {
+        if (typeof body.briefPath !== "string" || body.briefPath.length === 0)
+          throw new Error("Brief path must be a non-empty string");
+        config.briefPath = body.briefPath;
+      }
+      if (body.planPath !== undefined) {
+        if (typeof body.planPath !== "string" || body.planPath.length === 0)
+          throw new Error("Plan path must be a non-empty string");
+        config.planPath = body.planPath;
+      }
+      if (body.engineMaterials !== undefined) {
+        const bindings = body.engineMaterials;
+        if (
+          typeof bindings !== "object" ||
+          bindings === null ||
+          Array.isArray(bindings) ||
+          Object.entries(bindings).length === 0 ||
+          Object.entries(bindings).some(
+            ([materialId, engineMaterial]) =>
+              typeof materialId !== "string" ||
+              materialId.length === 0 ||
+              typeof engineMaterial !== "string" ||
+              !/^[A-Za-z]{2,32}$/u.test(engineMaterial),
+          )
+        )
+          throw new Error("Engine materials must map ids to engine material names");
+        config.engineMaterials = { ...bindings };
       }
       if (body.includeIncomplete !== undefined)
         config.includeIncomplete = Boolean(body.includeIncomplete);
@@ -274,7 +300,7 @@ const server = createServer(async (request, response) => {
           "scripts/resolve-region-palette.mjs",
           "--",
           "--brief",
-          "test/helpers/slice-region.brief.json",
+          config.briefPath,
           "--output",
           PATHS.palette,
         ]);
@@ -283,7 +309,7 @@ const server = createServer(async (request, response) => {
           "bin/basalt.js",
           "world",
           "compile",
-          "test/helpers/slice-region.plan.json",
+          config.planPath,
           "--output",
           PATHS.build,
           "--family-registry",
@@ -369,7 +395,9 @@ function textBody(request) {
 
 server.listen(PORT, "127.0.0.1", () => {
   log(`operator listening on http://127.0.0.1:${PORT}`);
-  process.stdout.write(`Basalt slice operator: open http://127.0.0.1:${PORT} in a browser\n`);
+  process.stdout.write(
+    `Basalt operator (${workDir}): open http://127.0.0.1:${PORT} in a browser\n`,
+  );
 });
 process.once("SIGINT", () => {
   stopBridge();

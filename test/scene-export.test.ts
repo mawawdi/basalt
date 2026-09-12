@@ -8,19 +8,27 @@ import { quantizeQ32_32 } from "../packages/basalt-types/src/fixed.js";
 import type { AssetFamilyRevision } from "../packages/basalt-types/src/index.js";
 import type { CatalogAssetEnvelope } from "../packages/catalog-intelligence/src/contracts.js";
 import { inspectGlb } from "../packages/asset-inspection/src/index.js";
-import { parseVoxelField, sha256Bytes } from "../packages/world-planning/src/index.js";
+import {
+  parseVoxelField,
+  sha256Bytes,
+  type TerrainAppearance,
+} from "../packages/world-planning/src/index.js";
 import { BasaltStudioBridge } from "../packages/studio-bridge/src/index.js";
 import {
   assertSceneExport,
   assessMeshPartBudget,
+  chunkRoomGraphContent,
   compileHierarchicalWorld,
   emitSceneExport,
   emitSkirts,
+  planRooms,
   sealWorldAssetFamilyRegistry,
   type BasaltHierarchicalWorld,
+  type ChunkedRoomContent,
 } from "../packages/world-compiler/src/index.js";
 import { productionWorldPlanFixture } from "./helpers/production-world-fixtures.js";
 import { groundingEvidenceFixture } from "./helpers/grounding-evidence.js";
+import { testKit, testProgram, testRecipe } from "./helpers/room-fixtures.js";
 
 /** Minimal valid single-triangle GLB; optional node matrix for mirror tests. */
 function triangleGlb(nodeMatrix?: readonly number[]): Uint8Array {
@@ -72,18 +80,24 @@ function triangleGlb(nodeMatrix?: readonly number[]): Uint8Array {
 const TRIANGLE = triangleGlb();
 const TRIANGLE_SHA = sha256Bytes(TRIANGLE);
 
-function compilePartitionWorld(): BasaltHierarchicalWorld {
+function compilePartitionWorld(planOverrides?: {
+  readonly seaLevelStuds?: number;
+  readonly terrainAppearance?: TerrainAppearance;
+}): BasaltHierarchicalWorld {
   return compileHierarchicalWorld({
-    worldPlan: productionWorldPlanFixture({
-      sceneId: "exportWorld",
-      regionId: "exportRegion",
-      surfaceId: "exportTerrain",
-      routeId: "exportRoute",
-      anchorId: "exportAnchor",
-      cameraId: "exportCamera",
-      materialId: "exportMaterial",
-      name: "A scene export fixture",
-    }),
+    worldPlan: {
+      ...productionWorldPlanFixture({
+        sceneId: "exportWorld",
+        regionId: "exportRegion",
+        surfaceId: "exportTerrain",
+        routeId: "exportRoute",
+        anchorId: "exportAnchor",
+        cameraId: "exportCamera",
+        materialId: "exportMaterial",
+        name: "A scene export fixture",
+      }),
+      ...planOverrides,
+    },
     styleContractHash: contentHash("style"),
     familyRegistry: sealWorldAssetFamilyRegistry([
       {
@@ -148,7 +162,11 @@ function catalogInputs() {
   return { revisions, assets, unitsByPath };
 }
 
-function emit(world?: BasaltHierarchicalWorld) {
+function emit(
+  world?: BasaltHierarchicalWorld,
+  terrainRepaints?: { surfaceId: string; sourceMaterialId: string; targetMaterialId: string }[],
+  rooms?: ChunkedRoomContent,
+) {
   const { revisions, assets, unitsByPath } = catalogInputs();
   return emitSceneExport({
     world: world ?? compilePartitionWorld(),
@@ -156,6 +174,8 @@ function emit(world?: BasaltHierarchicalWorld) {
     assets,
     unitsByPath,
     readSourceBytes: () => TRIANGLE,
+    ...(terrainRepaints ? { terrainRepaints } : {}),
+    ...(rooms ? { rooms } : {}),
   });
 }
 
@@ -386,11 +406,67 @@ test("Scene export emits no skirts on flat contact", () => {
   assert.deepEqual(manifest.skirts, []);
 });
 
+test("Scene export carries room stairs and portals in meters", () => {
+  const graph = planRooms(testRecipe(), testKit(), testProgram(), { regionId: "exportRegion" });
+  const { manifest } = emit(undefined, undefined, chunkRoomGraphContent([graph], 128));
+  assertSceneExport(manifest);
+  assert.deepEqual(manifest.stairs, [
+    {
+      id: "roomgraph_recipe_test_rooms_00_stair_00_01",
+      chunkId: "chunk_0_0",
+      graphId: "roomgraph_recipe_test_rooms_00",
+      materialId: "test_stone",
+      baseMeters: { x: 2 * 0.28, y: 0, z: -4 * 0.28 },
+      yawStepsY90: 0,
+      steps: 3,
+      riserMeters: 2 * 0.28,
+      treadMeters: (8 / 3) * 0.28,
+      widthMeters: 2 * 0.28,
+    },
+  ]);
+  assert.deepEqual(manifest.portals, [
+    {
+      id: "roomgraph_recipe_test_rooms_00_portal_00_00",
+      chunkId: "chunk_0_0",
+      graphId: "roomgraph_recipe_test_rooms_00",
+      kind: "interior",
+      roomA: "room_00_00",
+      roomB: "room_00_01",
+      positionMeters: { x: 0, y: 0, z: 0 },
+      yawStepsY90: 1,
+      widthMeters: 2 * 0.28,
+    },
+    {
+      id: "roomgraph_recipe_test_rooms_00_portal_00_en",
+      chunkId: "chunk_0_0",
+      graphId: "roomgraph_recipe_test_rooms_00",
+      kind: "entrance",
+      roomA: "room_00_01",
+      positionMeters: { x: 6 * 0.28, y: 0, z: 2 * 0.28 },
+      yawStepsY90: 1,
+      widthMeters: 2 * 0.28,
+      boundComponentId: "cmp_02",
+    },
+    {
+      id: "roomgraph_recipe_test_rooms_00_portal_01_00",
+      chunkId: "chunk_0_0",
+      graphId: "roomgraph_recipe_test_rooms_00",
+      kind: "interior",
+      roomA: "room_01_00",
+      roomB: "room_01_01",
+      positionMeters: { x: 0, y: 6 * 0.28, z: 0 },
+      yawStepsY90: 1,
+      widthMeters: 2 * 0.28,
+    },
+  ]);
+  assert.ok(manifest.materialIds.includes("test_stone"));
+});
+
 test("Scene export seals the conformance golden", () => {
   // Fixed-timestamp worlds emit byte-identical exports across processes;
   // future engine adapters validate against this locked manifest hash.
   const { manifest } = emit();
-  assert.equal(manifest.hash, "40bb4d7dc7587a9e1fe467a63776282c6d004e654a5bd72e79ead0223a819079");
+  assert.equal(manifest.hash, "ebdf37e32f144664c0175b8e5740cfd8ec655d9eb464f9df702f1d9732743876");
 });
 
 test("Scene export matches the checked-in conformance fixture", async () => {
@@ -423,6 +499,85 @@ test("Scene export fixture enqueues on the bridge byte-identical", async () => {
   assert.equal(status.exportHash, manifest.hash);
   assert.deepEqual(bridge.sceneExport(), manifest);
   for (const [hash, bytes] of payloads) assert.deepEqual(bridge.readPayload(hash), bytes);
+});
+
+test("Scene export seals water, grass, and tints in neutral meters", () => {
+  const world = compilePartitionWorld({
+    seaLevelStuds: 4,
+    terrainAppearance: {
+      water: {
+        colorRgb: { r: 0.05, g: 0.33, b: 0.36 },
+        transparency: 0.4,
+        reflectance: 0.2,
+        waveSizeStuds: 0.5,
+        waveSpeedStuds: 2,
+      },
+      grass: { enabled: true, lengthStuds: 0.5 },
+      materialTints: [{ materialId: "exportMaterial", colorRgb: { r: 1, g: 0.9, b: 0.8 } }],
+    },
+  });
+  const { manifest, payloads } = emit(world);
+  const appearance = manifest.terrainAppearance!;
+  assert.deepEqual(appearance.water!.colorRgb, { r: 0.05, g: 0.33, b: 0.36 });
+  assert.equal(appearance.water!.transparency, 0.4);
+  assert.ok(Math.abs(appearance.water!.waveSizeMeters - 0.14) < 1e-12);
+  assert.ok(Math.abs(appearance.water!.waveSpeedMeters - 0.56) < 1e-12);
+  assert.equal(appearance.grass!.enabled, true);
+  assert.ok(Math.abs(appearance.grass!.lengthMeters - 0.14) < 1e-12);
+  assert.deepEqual(appearance.materialTints, [
+    { materialId: "exportMaterial", colorRgb: { r: 1, g: 0.9, b: 0.8 } },
+  ]);
+  const field = manifest.terrain[0]!;
+  const parsed = parseVoxelField(payloads.get(field.voxelHash)!);
+  assert.ok(
+    parsed.liquid.some((value) => value > 0),
+    "sea above terrain seals water",
+  );
+  assert.ok(parsed.liquid.every((value) => value >= 0 && value <= 1));
+});
+
+test("Scene export omits appearance on dry plans and refuses water without sea", () => {
+  const { manifest } = emit();
+  assert.equal(manifest.terrainAppearance, undefined);
+  assert.throws(
+    () =>
+      compilePartitionWorld({
+        terrainAppearance: {
+          water: {
+            colorRgb: { r: 0, g: 0, b: 0 },
+            transparency: 0,
+            reflectance: 0,
+            waveSizeStuds: 0,
+            waveSpeedStuds: 0,
+          },
+          materialTints: [],
+        },
+      }),
+    /sea level/,
+  );
+});
+
+test("Scene export seals repaints sorted and refuses unknown surfaces", () => {
+  const world = compilePartitionWorld();
+  const surfaceId = emit(world).manifest.terrain[0]!.surfaceId;
+  const { manifest } = emit(world, [
+    { surfaceId, sourceMaterialId: "meadow", targetMaterialId: "dune" },
+    { surfaceId, sourceMaterialId: "cliff", targetMaterialId: "rock" },
+  ]);
+  assertSceneExport(manifest);
+  assert.deepEqual(manifest.terrainRepaints, [
+    { surfaceId, sourceMaterialId: "cliff", targetMaterialId: "rock" },
+    { surfaceId, sourceMaterialId: "meadow", targetMaterialId: "dune" },
+  ]);
+  assert.equal(emit(world).manifest.terrainRepaints, undefined);
+  assert.throws(
+    () => emit(world, [{ surfaceId: "Nope", sourceMaterialId: "a", targetMaterialId: "b" }]),
+    /unknown surface/,
+  );
+  assert.throws(
+    () => emit(world, [{ surfaceId, sourceMaterialId: "a", targetMaterialId: "a" }]),
+    /must differ/,
+  );
 });
 
 test("Scene export voxelizes terrain with solid cells below flat plains", () => {

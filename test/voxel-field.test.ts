@@ -107,7 +107,13 @@ test("Voxel datum renders relief columns on their plan heights", () => {
   ] as Array<[number, number]>) {
     // Voxel column (ix, iz) centers on sample (2 ix + 1, 2 iz + 1).
     const expected = (2 * ix + 1) * 0.5 + (2 * iz + 1) * 0.25 - 2;
-    const rendered = renderedHeight(parsed.occupancy, parsed.dimensions, parsed.originStuds[1], ix, iz);
+    const rendered = renderedHeight(
+      parsed.occupancy,
+      parsed.dimensions,
+      parsed.originStuds[1],
+      ix,
+      iz,
+    );
     assert.ok(Math.abs(rendered - expected) < 1e-6, `column renders at ${rendered}`);
   }
 });
@@ -120,4 +126,72 @@ test("Voxel datum round-trips dimensions, origin, materials, and hash", () => {
   assert.deepEqual(parsed.materials, ["datumMaterial"]);
   assert.equal(parsed.cellSizeStuds, CELL);
   assert.equal(sha256Bytes(exported.bytes), exported.contentHash);
+});
+
+test("Voxel liquid seals all-zero without a sea level", () => {
+  const parsed = parseVoxelField(exportVoxelField(field(() => 0)).bytes);
+  assert.ok(parsed.liquid.every((value) => value === 0));
+  assert.equal(parsed.liquid.length, parsed.occupancy.length);
+});
+
+test("Voxel liquid fills the air above a drowned plain", () => {
+  const parsed = parseVoxelField(
+    exportVoxelField(
+      field(() => 0),
+      { seaLevelStuds: 4 },
+    ).bytes,
+  );
+  assert.deepEqual(parsed.dimensions, [4, 2, 4]);
+  for (let iz = 0; iz < 4; iz += 1)
+    for (let ix = 0; ix < 4; ix += 1) {
+      // Lower cell is solid rock to its top: no water inside it.
+      assert.equal(parsed.liquid[ix + 4 * (iz + 4 * 0)], 0);
+      // Upper cell is open air below the sea: full of water.
+      assert.equal(parsed.liquid[ix + 4 * (iz + 4 * 1)], 1);
+    }
+});
+
+test("Voxel liquid stays dry above the sea", () => {
+  const parsed = parseVoxelField(
+    exportVoxelField(
+      field(() => 0),
+      { seaLevelStuds: -8 },
+    ).bytes,
+  );
+  assert.deepEqual(parsed.dimensions, [4, 1, 4]);
+  assert.ok(parsed.liquid.every((value) => value === 0));
+});
+
+test("Voxel liquid derives a shoreline across relief", () => {
+  // Sample columns step from -4 to 4; voxel column ix centers on 2 ix - 3.
+  const parsed = parseVoxelField(
+    exportVoxelField(
+      field((column: number) => column - 4),
+      { seaLevelStuds: 0 },
+    ).bytes,
+  );
+  assert.deepEqual(parsed.dimensions, [4, 3, 4]);
+  // Drowned column (surface -3): middle cell holds 0.75 water over rock.
+  assert.equal(parsed.liquid[0 + 4 * (0 + 4 * 0)], 0);
+  assert.ok(Math.abs(parsed.liquid[0 + 4 * (0 + 4 * 1)]! - 0.75) < 1e-6);
+  assert.equal(parsed.liquid[0 + 4 * (0 + 4 * 2)], 0);
+  // High column (surface 3): dry at every level.
+  assert.ok([0, 1, 2].every((iy) => parsed.liquid[3 + 4 * (0 + 4 * iy)] === 0));
+});
+
+test("Voxel payloads seal magic BVX2 and refuse BVX1 bytes", () => {
+  const exported = exportVoxelField(field(() => 0));
+  assert.equal(String.fromCharCode(exported.bytes[0]!, exported.bytes[1]!), "BV");
+  assert.equal(String.fromCharCode(exported.bytes[2]!, exported.bytes[3]!), "X2");
+  const legacy = Uint8Array.from(exported.bytes);
+  legacy[3] = "1".charCodeAt(0);
+  assert.throws(() => parseVoxelField(legacy), /unknown magic/);
+  assert.throws(
+    () =>
+      exportVoxelField(
+        field(() => 0),
+        { seaLevelStuds: Number.NaN },
+      ),
+    /finite/,
+  );
 });

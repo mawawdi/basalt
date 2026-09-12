@@ -5,12 +5,13 @@ import { availableParallelism } from "node:os";
 import { Worker } from "node:worker_threads";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
+import { catalogInventoryPath } from "./basalt-paths.mjs";
 
 /** Code-unit string order. Locale-aware comparison must never feed sealed output. */
 const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const inventoryPath = resolve(repositoryRoot, ".basalt/catalog-cache/source-inventory.json");
+const inventoryPath = catalogInventoryPath(repositoryRoot);
 
 function measurementWorkerCount(assetCount) {
   if (assetCount === 0) return 0;
@@ -124,6 +125,13 @@ async function main() {
     pathToFileURL(resolve(repositoryRoot, "dist/packages/catalog-intelligence/src/collision.js"))
       .href
   );
+  const { buildJointSockets } = await import(
+    pathToFileURL(resolve(repositoryRoot, "dist/packages/catalog-intelligence/src/sockets.js")).href
+  );
+  const { evaluateModularKit, matingFaceSets } = await import(
+    pathToFileURL(resolve(repositoryRoot, "dist/packages/catalog-intelligence/src/joint-mating.js"))
+      .href
+  );
   const inventory = JSON.parse(await readFile(inventoryPath, "utf8"));
   const failures = [];
   const normalizedMeshesByAsset = new Map();
@@ -190,6 +198,7 @@ async function main() {
   let trimMappingsRejectedByEnergy = 0;
   const sealedRevisions = [];
   const flaggedKindFamilies = [];
+  const modularKitVerdicts = [];
   const sealEvidenceFor = (declaration) => {
     const evidence = {};
     if (declaration.trimBands?.length) {
@@ -276,13 +285,58 @@ async function main() {
         coherenceOutlierVariants: [...kindDiagnostics.coherence.outlierVariants],
         coverageExceedsHectare: kindDiagnostics.coverage.exceedsHectare,
       });
+    // The modularity gate runs before the seal: only modular kits carry
+    // joint sockets in their revision, and every kit candidate seals its
+    // verdict with the reason. Non-modular families still seal (decorative
+    // use is intact); the gate quarantines the kit affordance, not the file.
+    let modularKit;
+    const sealEvidence = sealEvidenceFor(declaration);
+    if (declaration.jointSockets) {
+      const kitMembers = declaration.members.map((member) => {
+        const measurement = assetsById.get(member.assetId).measurement;
+        const fits = measurement.jointPlaneFits ?? [];
+        return {
+          assetId: member.assetId,
+          variantName: member.variantName,
+          sockets:
+            fits.length > 0
+              ? buildJointSockets({ variantName: member.variantName, jointPlaneFits: fits })
+              : [],
+          refusal: measurement.jointPlaneRefusal ?? null,
+          boundsMinimumQ32_32: measurement.boundsMinimumQ32_32,
+          boundsMaximumQ32_32: measurement.boundsMaximumQ32_32,
+        };
+      });
+      const verdict = evaluateModularKit(kitMembers);
+      modularKit = { status: verdict.status, reason: verdict.reason };
+      modularKitVerdicts.push({ familyName: declaration.familyName, ...modularKit });
+      if (verdict.status === "modular") {
+        // The seal carries only mating faces: unmated faces afford no
+        // in-family assembly, and whole buildings would otherwise seal
+        // hundreds of useless sockets. Measurement keeps every face.
+        const matingSets = matingFaceSets(verdict, declaration.members.length);
+        const jointContacts = {};
+        declaration.members.forEach((member, memberIndex) => {
+          const measurement = assetsById.get(member.assetId).measurement;
+          const mating = matingSets[memberIndex];
+          const fits = measurement.jointPlaneFits.filter((_, fitIndex) => mating.has(fitIndex));
+          if (fits.length > 0) jointContacts[member.assetId] = { jointPlaneFits: fits };
+        });
+        sealEvidence.jointContacts = jointContacts;
+      }
+    }
     const revision = buildAuthoredAssetFamilyRevision(
       { ...declaration, status: "declared" },
       declaration.members.map((member) => assetsById.get(member.assetId).record),
-      sealEvidenceFor(declaration),
+      sealEvidence,
     );
     sealedRevisions.push(revision);
-    return { ...declaration, status: "sealed", familyId: revision.familyId };
+    return {
+      ...declaration,
+      status: "sealed",
+      familyId: revision.familyId,
+      ...(modularKit ? { modularKit } : {}),
+    };
   });
   const families = sealedRevisions;
   const familyCards = families.map((family) => {
@@ -327,11 +381,24 @@ async function main() {
       kindFamilyDiagnostics: flaggedKindFamilies.sort((left, right) =>
         compareStrings(left.familyName, right.familyName),
       ),
+      modularKitDiagnostics: {
+        modularFamilies: modularKitVerdicts.filter((verdict) => verdict.status === "modular")
+          .length,
+        pendingFamilies: modularKitVerdicts.filter((verdict) => verdict.status === "pending")
+          .length,
+        quarantinedFamilies: modularKitVerdicts.filter(
+          (verdict) => verdict.status === "quarantined",
+        ).length,
+        quarantined: modularKitVerdicts
+          .filter((verdict) => verdict.status === "quarantined")
+          .map((verdict) => ({ familyName: verdict.familyName, reason: verdict.reason }))
+          .sort((left, right) => compareStrings(left.familyName, right.familyName)),
+      },
     },
   });
   await writeFile(inventoryPath, `${stableJson(sealed)}\n`, { encoding: "utf8", mode: 0o600 });
   process.stdout.write(
-    `${JSON.stringify({ inventory: inventoryPath, measured: inventory.assets.filter((asset) => asset.measurement.status === "measured").length, declaredFamilies: familyDeclarations.length, sealedFamilies: families.length, incompleteCandidates: incompleteCandidateCount, collisionBindings: pairing.bindings.length, collisionDiagnostics: pairing.diagnostics.length, kindCoherenceFlagged: flaggedKindFamilies.filter((entry) => entry.coherenceOutlierVariants.length > 0).length, kindCoverageExceeded: flaggedKindFamilies.filter((entry) => entry.coverageExceedsHectare).length, failures: failures.length }, null, 2)}\n`,
+    `${JSON.stringify({ inventory: inventoryPath, measured: inventory.assets.filter((asset) => asset.measurement.status === "measured").length, declaredFamilies: familyDeclarations.length, sealedFamilies: families.length, incompleteCandidates: incompleteCandidateCount, collisionBindings: pairing.bindings.length, collisionDiagnostics: pairing.diagnostics.length, kindCoherenceFlagged: flaggedKindFamilies.filter((entry) => entry.coherenceOutlierVariants.length > 0).length, kindCoverageExceeded: flaggedKindFamilies.filter((entry) => entry.coverageExceedsHectare).length, modularKits: modularKitVerdicts.filter((verdict) => verdict.status === "modular").length, pendingKits: modularKitVerdicts.filter((verdict) => verdict.status === "pending").length, quarantinedKits: modularKitVerdicts.filter((verdict) => verdict.status === "quarantined").length, failures: failures.length }, null, 2)}\n`,
   );
 }
 

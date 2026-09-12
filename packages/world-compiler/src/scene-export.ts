@@ -13,6 +13,7 @@ import { worldEntityId, worldHash, compareWorldStrings } from "./primitives.js";
 import type { BasaltHierarchicalWorld } from "./tiers.js";
 import type { WorldPopulationInstance } from "./contracts.js";
 import { groundingKindFromSpan } from "./grounding.js";
+import type { ChunkedRoomContent } from "./rooms.js";
 
 export const BASALT_SCENE_EXPORT_ABI = "basalt-scene-export@1" as const;
 
@@ -104,6 +105,48 @@ const sceneTerrainSchema = z
   })
   .strict();
 
+const sceneRgbSchema = z
+  .object({
+    r: finite.min(0).max(1),
+    g: finite.min(0).max(1),
+    b: finite.min(0).max(1),
+  })
+  .strict();
+
+const sceneTerrainAppearanceSchema = z
+  .object({
+    water: z
+      .object({
+        colorRgb: sceneRgbSchema,
+        transparency: finite.min(0).max(1),
+        reflectance: finite.min(0).max(1),
+        waveSizeMeters: finite.nonnegative(),
+        waveSpeedMeters: finite.nonnegative(),
+      })
+      .strict()
+      .optional(),
+    grass: z
+      // 0.1–1 studs in meters; decimal literals stay float-exact where products would not.
+      .object({ enabled: z.boolean(), lengthMeters: finite.min(0.028).max(0.28) })
+      .strict()
+      .optional(),
+    materialTints: z
+      .array(z.object({ materialId: z.string().min(1), colorRgb: sceneRgbSchema }).strict())
+      .max(256),
+  })
+  .strict();
+
+const sceneTerrainRepaintSchema = z
+  .object({
+    surfaceId: worldEntityId,
+    sourceMaterialId: z.string().min(1),
+    targetMaterialId: z.string().min(1),
+  })
+  .strict()
+  .refine((value) => value.sourceMaterialId !== value.targetMaterialId, {
+    message: "Terrain repaint source and target materials must differ",
+  });
+
 const sceneRoadVertexSchema = z.object({ position: vector3Finite, normal: vector3Finite }).strict();
 
 const sceneRoadSegmentSchema = z
@@ -136,6 +179,50 @@ const scenePayloadSchema = z
   })
   .strict();
 
+const sceneStairSchema = z
+  .object({
+    id: worldEntityId,
+    chunkId: worldEntityId,
+    graphId: worldEntityId,
+    materialId: worldEntityId,
+    baseMeters: vector3Finite,
+    yawStepsY90: z.number().int().min(0).max(3),
+    steps: z.number().int().positive(),
+    riserMeters: finite.positive(),
+    treadMeters: finite.positive(),
+    widthMeters: finite.positive(),
+  })
+  .strict();
+
+const scenePortalSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      id: worldEntityId,
+      chunkId: worldEntityId,
+      graphId: worldEntityId,
+      kind: z.literal("interior"),
+      roomA: worldEntityId,
+      roomB: worldEntityId,
+      positionMeters: vector3Finite,
+      yawStepsY90: z.number().int().min(0).max(3),
+      widthMeters: finite.positive(),
+    })
+    .strict(),
+  z
+    .object({
+      id: worldEntityId,
+      chunkId: worldEntityId,
+      graphId: worldEntityId,
+      kind: z.literal("entrance"),
+      roomA: worldEntityId,
+      positionMeters: vector3Finite,
+      yawStepsY90: z.number().int().min(0).max(3),
+      widthMeters: finite.positive(),
+      boundComponentId: worldEntityId.optional(),
+    })
+    .strict(),
+]);
+
 const sceneExportMaterialSchema = z
   .object({
     kind: z.literal("BasaltSceneExport"),
@@ -148,8 +235,12 @@ const sceneExportMaterialSchema = z
     assets: z.array(sceneAssetSchema),
     parts: z.array(scenePartSchema),
     terrain: z.array(sceneTerrainSchema),
+    terrainAppearance: sceneTerrainAppearanceSchema.optional(),
+    terrainRepaints: z.array(sceneTerrainRepaintSchema).max(256).optional(),
     roads: z.array(sceneRoadSchema),
     skirts: z.array(sceneSkirtSchema),
+    stairs: z.array(sceneStairSchema),
+    portals: z.array(scenePortalSchema),
     materialIds: z.array(z.string().min(1)),
     payloads: z.array(scenePayloadSchema),
   })
@@ -176,6 +267,23 @@ export interface EmitSceneExportInput {
   /** Source-manifest meters-per-source-unit by registry-relative path. */
   readonly unitsByPath: Readonly<Record<string, number>>;
   readonly readSourceBytes: (relativePath: string) => Uint8Array;
+  /**
+   * Material-only repaint directives: live voxels keep their sealed payload
+   * while the adapter repaints one material id to another per surface. The
+   * builder sorts them into canonical order and fails closed on unknown
+   * surfaces.
+   */
+  readonly terrainRepaints?: ReadonlyArray<{
+    readonly surfaceId: string;
+    readonly sourceMaterialId: string;
+    readonly targetMaterialId: string;
+  }>;
+  /**
+   * Chunked room stairs and portals from chunkRoomGraphContent. The same
+   * value feeds emission deltas so transactions and the export agree on
+   * chunk ownership.
+   */
+  readonly rooms?: ChunkedRoomContent;
 }
 
 export interface EmittedSceneExport {
@@ -367,8 +475,12 @@ export function emitSceneExport(input: EmitSceneExportInput): EmittedSceneExport
     })
     .sort((left, right) => compareWorldStrings(left.id, right.id));
 
+  const plan = input.world.foundation.worldPlan.plan;
   const terrain = input.world.foundation.worldPlan.terrainFields.map((field) => {
-    const exported = exportVoxelField(field);
+    const exported = exportVoxelField(
+      field,
+      plan.seaLevelStuds === undefined ? {} : { seaLevelStuds: plan.seaLevelStuds },
+    );
     payloads.set(exported.contentHash, exported.bytes);
     return {
       surfaceId: field.surfaceId,
@@ -391,13 +503,74 @@ export function emitSceneExport(input: EmitSceneExportInput): EmittedSceneExport
     assets: assetEntries,
     terrainMaterialId: terrain[0]?.materials[0],
   });
+  const stairs = [...(input.rooms?.stairs ?? [])]
+    .map((entry) => ({
+      id: entry.id,
+      chunkId: entry.chunkId,
+      graphId: entry.graphId,
+      materialId: entry.stair.materialId,
+      baseMeters: scaleVector3(entry.stair.basePosition),
+      yawStepsY90: entry.stair.yawStepsY90,
+      steps: entry.stair.steps,
+      riserMeters: entry.stair.riserStuds * STUD_METERS,
+      treadMeters: entry.stair.treadStuds * STUD_METERS,
+      widthMeters: entry.stair.widthStuds * STUD_METERS,
+    }))
+    .sort((left, right) => compareWorldStrings(left.id, right.id));
+  const portals = [...(input.rooms?.portals ?? [])]
+    .map((entry) =>
+      entry.portal.kind === "interior"
+        ? {
+            id: entry.id,
+            chunkId: entry.chunkId,
+            graphId: entry.graphId,
+            kind: "interior" as const,
+            roomA: entry.portal.roomA,
+            roomB: entry.portal.roomB,
+            positionMeters: scaleVector3(entry.portal.position),
+            yawStepsY90: entry.portal.yawStepsY90,
+            widthMeters: entry.portal.widthStuds * STUD_METERS,
+          }
+        : {
+            id: entry.id,
+            chunkId: entry.chunkId,
+            graphId: entry.graphId,
+            kind: "entrance" as const,
+            roomA: entry.portal.roomA,
+            positionMeters: scaleVector3(entry.portal.position),
+            yawStepsY90: entry.portal.yawStepsY90,
+            widthMeters: entry.portal.widthStuds * STUD_METERS,
+            ...(entry.portal.boundComponentId
+              ? { boundComponentId: entry.portal.boundComponentId }
+              : {}),
+          },
+    )
+    .sort((left, right) => compareWorldStrings(left.id, right.id));
   const materialIds = [
     ...new Set([
       ...terrain.flatMap((entry) => entry.materials),
       ...roadEntries.flatMap((road) => road.segments.map((segment) => segment.materialId)),
       ...skirts.map((skirt) => skirt.materialId),
+      ...stairs.map((stair) => stair.materialId),
     ]),
   ].sort(compareWorldStrings);
+
+  const surfaceIds = new Set(terrain.map((entry) => entry.surfaceId));
+  const repaints = [...(input.terrainRepaints ?? [])]
+    .map((repaint) => ({
+      surfaceId: repaint.surfaceId,
+      sourceMaterialId: repaint.sourceMaterialId,
+      targetMaterialId: repaint.targetMaterialId,
+    }))
+    .sort(
+      (left, right) =>
+        compareWorldStrings(left.surfaceId, right.surfaceId) ||
+        compareWorldStrings(left.sourceMaterialId, right.sourceMaterialId) ||
+        compareWorldStrings(left.targetMaterialId, right.targetMaterialId),
+    );
+  for (const repaint of repaints)
+    if (!surfaceIds.has(repaint.surfaceId))
+      throw new Error(`Terrain repaint names an unknown surface ${repaint.surfaceId}`);
 
   const manifest = sealSceneExport({
     kind: "BasaltSceneExport" as const,
@@ -418,8 +591,40 @@ export function emitSceneExport(input: EmitSceneExportInput): EmittedSceneExport
     ),
     parts: parts.sort((left, right) => compareWorldStrings(left.contentHash, right.contentHash)),
     terrain,
+    ...(repaints.length > 0 ? { terrainRepaints: repaints } : {}),
+    ...(plan.terrainAppearance
+      ? {
+          terrainAppearance: {
+            ...(plan.terrainAppearance.water
+              ? {
+                  water: {
+                    colorRgb: { ...plan.terrainAppearance.water.colorRgb },
+                    transparency: plan.terrainAppearance.water.transparency,
+                    reflectance: plan.terrainAppearance.water.reflectance,
+                    waveSizeMeters: plan.terrainAppearance.water.waveSizeStuds * STUD_METERS,
+                    waveSpeedMeters: plan.terrainAppearance.water.waveSpeedStuds * STUD_METERS,
+                  },
+                }
+              : {}),
+            ...(plan.terrainAppearance.grass
+              ? {
+                  grass: {
+                    enabled: plan.terrainAppearance.grass.enabled,
+                    lengthMeters: plan.terrainAppearance.grass.lengthStuds * STUD_METERS,
+                  },
+                }
+              : {}),
+            materialTints: plan.terrainAppearance.materialTints.map((tint) => ({
+              materialId: tint.materialId,
+              colorRgb: { ...tint.colorRgb },
+            })),
+          },
+        }
+      : {}),
     roads: roadEntries.sort((left, right) => compareWorldStrings(left.routeId, right.routeId)),
     skirts,
+    stairs,
+    portals,
     materialIds,
     payloads: [...payloads.entries()]
       .map(([contentHashValue, bytes]) => ({

@@ -16,6 +16,7 @@ export * from "./roads.js";
 export * from "./surfaces.js";
 export * from "./voxels.js";
 export * from "./terrain.js";
+export * from "./lots.js";
 export {
   worldPlanSchema as ENGINE_NEUTRAL_WORLD_PLAN_SCHEMA,
   type WorldPlan as EngineNeutralWorldPlan,

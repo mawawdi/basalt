@@ -4,6 +4,13 @@ import { compareWorldStrings, worldEntityId, worldHash } from "./primitives.js";
 
 export const BASALT_WORLD_COMPILER_ABI = "basalt-world-compiler@1" as const;
 
+/** Default per-instance scale variation when a plan carries no range. */
+export const DEFAULT_INSTANCE_SCALE_RANGE: readonly [number, number] = [0.92, 1.08];
+/** Density envelopes normalize to instances per this many square studs. */
+export const DENSITY_AREA_NORMALIZATION_STUDS2 = 256;
+/** Steepest slope any placement may accept, in degrees. */
+export const MAXIMUM_SLOPE_DEGREES = 89;
+
 const finite = z.number().finite();
 const positive = finite.positive();
 const vector3 = z.object({ x: finite, y: finite, z: finite }).strict();
@@ -22,7 +29,14 @@ export const WORLD_FAMILY_POPULATION_PLAN_SCHEMA = z
       .array(z.enum(["terrain", "floor", "ramp", "roof", "platform", "wall", "ceiling"]))
       .min(1)
       .max(7),
-    distribution: z.enum(["poisson_scatter", "cluster", "along_path", "surface_grid", "socket"]),
+    distribution: z.enum([
+      "poisson_scatter",
+      "cluster",
+      "along_path",
+      "surface_grid",
+      "socket",
+      "wall_anchored",
+    ]),
     minimumCount: z.number().int().nonnegative().safe(),
     maximumCount: z.number().int().positive().safe(),
     /** Number of coordinated archetypes available in the resolved family. */
@@ -30,7 +44,7 @@ export const WORLD_FAMILY_POPULATION_PLAN_SCHEMA = z
     /** Physical variation is bounded here; final bounds are checked at admission. */
     scaleRange: z
       .tuple([z.number().finite().positive(), z.number().finite().positive()])
-      .default([0.92, 1.08])
+      .default([...DEFAULT_INSTANCE_SCALE_RANGE])
       .refine(([minimum, maximum]) => minimum <= maximum, "Scale range is inverted"),
     density: z
       .object({
@@ -45,6 +59,14 @@ export const WORLD_FAMILY_POPULATION_PLAN_SCHEMA = z
     variationSeed: z.number().int().min(0).max(0xffff_ffff),
     excludedRouteIds: z.array(worldEntityId).max(256),
     excludedRegionIds: z.array(worldEntityId).max(256),
+    elevationBandStuds: z
+      .object({
+        minimum: finite.min(-1_000_000).max(1_000_000).optional(),
+        maximum: finite.min(-1_000_000).max(1_000_000).optional(),
+      })
+      .strict()
+      .optional(),
+    maximumSlopeDegrees: finite.min(0).max(MAXIMUM_SLOPE_DEGREES).optional(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -59,6 +81,13 @@ export const WORLD_FAMILY_POPULATION_PLAN_SCHEMA = z
         code: "custom",
         path: ["scaleRange"],
         message: "Family scale range must be positive and ordered",
+      });
+    const band = value.elevationBandStuds;
+    if (band?.minimum !== undefined && band?.maximum !== undefined && band.minimum > band.maximum)
+      context.addIssue({
+        code: "custom",
+        path: ["elevationBandStuds"],
+        message: "Family elevation band is inverted",
       });
     for (const [field, values] of [
       ["regionIds", value.regionIds],

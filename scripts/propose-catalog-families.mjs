@@ -7,12 +7,13 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
+import { catalogInventoryPath } from "./basalt-paths.mjs";
 
 /** Code-unit string order. Locale-aware comparison must never feed sealed output. */
 const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const inventoryPath = resolve(repositoryRoot, ".basalt/catalog-cache/source-inventory.json");
+const inventoryPath = catalogInventoryPath(repositoryRoot);
 const quarantinePath = resolve(repositoryRoot, "registry/quarantine.json");
 const outputPath = resolve(repositoryRoot, ".basalt/catalog-cache/family-proposals.json");
 

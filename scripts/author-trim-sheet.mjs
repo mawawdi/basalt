@@ -9,9 +9,10 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
+import { catalogInventoryPath } from "./basalt-paths.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const inventoryPath = resolve(repositoryRoot, ".basalt/catalog-cache/source-inventory.json");
+const inventoryPath = catalogInventoryPath(repositoryRoot);
 const outputPath = resolve(repositoryRoot, "registry/trim-sheet.json");
 
 const MAX_BANDS = 128;

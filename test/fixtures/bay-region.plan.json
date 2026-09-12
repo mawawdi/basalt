@@ -1,0 +1,4490 @@
+{
+  "kind": "SpatialWorldPlan",
+  "abi": "basalt-world-plan@1",
+  "id": "bayScene",
+  "seed": 20260912,
+  "styleContractHash": "09976f3d23d500f68f7df1c2bc210f783af1570df4a3141d8e4dc930a94397bb",
+  "bounds": {
+    "center": {
+      "x": 0,
+      "y": 10,
+      "z": 0
+    },
+    "size": {
+      "x": 240,
+      "y": 60,
+      "z": 240
+    }
+  },
+  "references": [
+    {
+      "id": "baySceneBrief",
+      "artifactHash": "b018fcef9f8809acee8953fc84a4b17da0f5b53cb14eb3f779479b3ac13ece15",
+      "mediaType": "text/plain",
+      "origin": "creator_supplied",
+      "roles": ["creator_brief"],
+      "rightsEvidenceHashes": [],
+      "producerQualificationHashes": []
+    }
+  ],
+  "creatorClaims": [
+    {
+      "id": "baySceneClaim",
+      "statement": "Coastal bay",
+      "referenceIds": ["baySceneBrief"]
+    }
+  ],
+  "agentHypotheses": [],
+  "regions": [
+    {
+      "id": "bay_p_0_0",
+      "name": "Bay partition 0-0",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": -120,
+            "z": -120
+          },
+          {
+            "x": -60,
+            "z": -120
+          },
+          {
+            "x": -60,
+            "z": -60
+          },
+          {
+            "x": -120,
+            "z": -60
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_0_0",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": -90,
+            "y": 0,
+            "z": -90
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_0_0"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_0_1",
+      "name": "Bay partition 0-1",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": -60,
+            "z": -120
+          },
+          {
+            "x": 0,
+            "z": -120
+          },
+          {
+            "x": 0,
+            "z": -60
+          },
+          {
+            "x": -60,
+            "z": -60
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_0_1",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": -30,
+            "y": 0,
+            "z": -90
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_0_1"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_0_2",
+      "name": "Bay partition 0-2",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": 0,
+            "z": -120
+          },
+          {
+            "x": 60,
+            "z": -120
+          },
+          {
+            "x": 60,
+            "z": -60
+          },
+          {
+            "x": 0,
+            "z": -60
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_0_2",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": 30,
+            "y": 0,
+            "z": -90
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_0_2"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_0_3",
+      "name": "Bay partition 0-3",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": 60,
+            "z": -120
+          },
+          {
+            "x": 120,
+            "z": -120
+          },
+          {
+            "x": 120,
+            "z": -60
+          },
+          {
+            "x": 60,
+            "z": -60
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_0_3",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": 90,
+            "y": 0,
+            "z": -90
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_0_3"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_1_0",
+      "name": "Bay partition 1-0",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": -120,
+            "z": -60
+          },
+          {
+            "x": -60,
+            "z": -60
+          },
+          {
+            "x": -60,
+            "z": 0
+          },
+          {
+            "x": -120,
+            "z": 0
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_1_0",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": -90,
+            "y": 0,
+            "z": -30
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_1_0"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_1_1",
+      "name": "Bay partition 1-1",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": -60,
+            "z": -60
+          },
+          {
+            "x": 0,
+            "z": -60
+          },
+          {
+            "x": 0,
+            "z": 0
+          },
+          {
+            "x": -60,
+            "z": 0
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_1_1",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": -30,
+            "y": 0,
+            "z": -30
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_1_1"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_1_2",
+      "name": "Bay partition 1-2",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": 0,
+            "z": -60
+          },
+          {
+            "x": 60,
+            "z": -60
+          },
+          {
+            "x": 60,
+            "z": 0
+          },
+          {
+            "x": 0,
+            "z": 0
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_1_2",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": 30,
+            "y": 0,
+            "z": -30
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_1_2"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_1_3",
+      "name": "Bay partition 1-3",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": 60,
+            "z": -60
+          },
+          {
+            "x": 120,
+            "z": -60
+          },
+          {
+            "x": 120,
+            "z": 0
+          },
+          {
+            "x": 60,
+            "z": 0
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_1_3",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": 90,
+            "y": 0,
+            "z": -30
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_1_3"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_2_0",
+      "name": "Bay partition 2-0",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": -120,
+            "z": 0
+          },
+          {
+            "x": -60,
+            "z": 0
+          },
+          {
+            "x": -60,
+            "z": 60
+          },
+          {
+            "x": -120,
+            "z": 60
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_2_0",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": -90,
+            "y": 0,
+            "z": 30
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_2_0"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_2_1",
+      "name": "Bay partition 2-1",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": -60,
+            "z": 0
+          },
+          {
+            "x": 0,
+            "z": 0
+          },
+          {
+            "x": 0,
+            "z": 60
+          },
+          {
+            "x": -60,
+            "z": 60
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_2_1",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": -30,
+            "y": 0,
+            "z": 30
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_2_1"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_2_2",
+      "name": "Bay partition 2-2",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": 0,
+            "z": 0
+          },
+          {
+            "x": 60,
+            "z": 0
+          },
+          {
+            "x": 60,
+            "z": 60
+          },
+          {
+            "x": 0,
+            "z": 60
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_2_2",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": 30,
+            "y": 0,
+            "z": 30
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_2_2"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_2_3",
+      "name": "Bay partition 2-3",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": 60,
+            "z": 0
+          },
+          {
+            "x": 120,
+            "z": 0
+          },
+          {
+            "x": 120,
+            "z": 60
+          },
+          {
+            "x": 60,
+            "z": 60
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_2_3",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": 90,
+            "y": 0,
+            "z": 30
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_2_3"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_3_0",
+      "name": "Bay partition 3-0",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": -120,
+            "z": 60
+          },
+          {
+            "x": -60,
+            "z": 60
+          },
+          {
+            "x": -60,
+            "z": 120
+          },
+          {
+            "x": -120,
+            "z": 120
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_3_0",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": -90,
+            "y": 0,
+            "z": 90
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_3_0"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_3_1",
+      "name": "Bay partition 3-1",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": -60,
+            "z": 60
+          },
+          {
+            "x": 0,
+            "z": 60
+          },
+          {
+            "x": 0,
+            "z": 120
+          },
+          {
+            "x": -60,
+            "z": 120
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_3_1",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": -30,
+            "y": 0,
+            "z": 90
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_3_1"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_3_2",
+      "name": "Bay partition 3-2",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": 0,
+            "z": 60
+          },
+          {
+            "x": 60,
+            "z": 60
+          },
+          {
+            "x": 60,
+            "z": 120
+          },
+          {
+            "x": 0,
+            "z": 120
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_3_2",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": 30,
+            "y": 0,
+            "z": 90
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_3_2"
+        }
+      ],
+      "refinementPriority": 100
+    },
+    {
+      "id": "bay_p_3_3",
+      "name": "Bay partition 3-3",
+      "purpose": "Compile, budget, and emit one coastal partition.",
+      "volume": {
+        "kind": "extruded_polygon",
+        "footprint": [
+          {
+            "x": 60,
+            "z": 60
+          },
+          {
+            "x": 120,
+            "z": 60
+          },
+          {
+            "x": 120,
+            "z": 120
+          },
+          {
+            "x": 60,
+            "z": 120
+          }
+        ],
+        "verticalRange": {
+          "minimum": -20,
+          "maximum": 40
+        }
+      },
+      "compositionMeasures": [
+        {
+          "id": "bay_composition_3_3",
+          "purpose": "Measure the partition surface.",
+          "origin": {
+            "x": 90,
+            "y": 0,
+            "z": 90
+          },
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "boundary": [
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
+          ],
+          "densityTarget": 1,
+          "minimumNegativeSpace": 0,
+          "surfaceId": "bay_surface_3_3"
+        }
+      ],
+      "refinementPriority": 100
+    }
+  ],
+  "regionRelations": [],
+  "terrainPlans": [
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_0_0",
+      "surfaceId": "bay_surface_0_0",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": -120,
+          "maximum": -60
+        },
+        "z": {
+          "minimum": -120,
+          "maximum": -60
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_0_0",
+          "footprint": [
+            {
+              "x": -120,
+              "z": -120
+            },
+            {
+              "x": -60,
+              "z": -120
+            },
+            {
+              "x": -60,
+              "z": -60
+            },
+            {
+              "x": -120,
+              "z": -60
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_0_0",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_0_1",
+      "surfaceId": "bay_surface_0_1",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": -60,
+          "maximum": 0
+        },
+        "z": {
+          "minimum": -120,
+          "maximum": -60
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_0_1",
+          "footprint": [
+            {
+              "x": -60,
+              "z": -120
+            },
+            {
+              "x": 0,
+              "z": -120
+            },
+            {
+              "x": 0,
+              "z": -60
+            },
+            {
+              "x": -60,
+              "z": -60
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_0_1",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_0_2",
+      "surfaceId": "bay_surface_0_2",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": 0,
+          "maximum": 60
+        },
+        "z": {
+          "minimum": -120,
+          "maximum": -60
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_0_2",
+          "footprint": [
+            {
+              "x": 0,
+              "z": -120
+            },
+            {
+              "x": 60,
+              "z": -120
+            },
+            {
+              "x": 60,
+              "z": -60
+            },
+            {
+              "x": 0,
+              "z": -60
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_0_2",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_0_3",
+      "surfaceId": "bay_surface_0_3",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": 60,
+          "maximum": 120
+        },
+        "z": {
+          "minimum": -120,
+          "maximum": -60
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_0_3",
+          "footprint": [
+            {
+              "x": 60,
+              "z": -120
+            },
+            {
+              "x": 120,
+              "z": -120
+            },
+            {
+              "x": 120,
+              "z": -60
+            },
+            {
+              "x": 60,
+              "z": -60
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_0_3",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_1_0",
+      "surfaceId": "bay_surface_1_0",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": -120,
+          "maximum": -60
+        },
+        "z": {
+          "minimum": -60,
+          "maximum": 0
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_1_0",
+          "footprint": [
+            {
+              "x": -120,
+              "z": -60
+            },
+            {
+              "x": -60,
+              "z": -60
+            },
+            {
+              "x": -60,
+              "z": 0
+            },
+            {
+              "x": -120,
+              "z": 0
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_1_0",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_1_1",
+      "surfaceId": "bay_surface_1_1",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": -60,
+          "maximum": 0
+        },
+        "z": {
+          "minimum": -60,
+          "maximum": 0
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_1_1",
+          "footprint": [
+            {
+              "x": -60,
+              "z": -60
+            },
+            {
+              "x": 0,
+              "z": -60
+            },
+            {
+              "x": 0,
+              "z": 0
+            },
+            {
+              "x": -60,
+              "z": 0
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_1_1",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_1_2",
+      "surfaceId": "bay_surface_1_2",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": 0,
+          "maximum": 60
+        },
+        "z": {
+          "minimum": -60,
+          "maximum": 0
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_1_2",
+          "footprint": [
+            {
+              "x": 0,
+              "z": -60
+            },
+            {
+              "x": 60,
+              "z": -60
+            },
+            {
+              "x": 60,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "z": 0
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_1_2",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_1_3",
+      "surfaceId": "bay_surface_1_3",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": 60,
+          "maximum": 120
+        },
+        "z": {
+          "minimum": -60,
+          "maximum": 0
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_1_3",
+          "footprint": [
+            {
+              "x": 60,
+              "z": -60
+            },
+            {
+              "x": 120,
+              "z": -60
+            },
+            {
+              "x": 120,
+              "z": 0
+            },
+            {
+              "x": 60,
+              "z": 0
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_1_3",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_2_0",
+      "surfaceId": "bay_surface_2_0",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": -120,
+          "maximum": -60
+        },
+        "z": {
+          "minimum": 0,
+          "maximum": 60
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_2_0",
+          "footprint": [
+            {
+              "x": -120,
+              "z": 0
+            },
+            {
+              "x": -60,
+              "z": 0
+            },
+            {
+              "x": -60,
+              "z": 60
+            },
+            {
+              "x": -120,
+              "z": 60
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_2_0",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_2_1",
+      "surfaceId": "bay_surface_2_1",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": -60,
+          "maximum": 0
+        },
+        "z": {
+          "minimum": 0,
+          "maximum": 60
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_2_1",
+          "footprint": [
+            {
+              "x": -60,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "z": 60
+            },
+            {
+              "x": -60,
+              "z": 60
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_2_1",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_2_2",
+      "surfaceId": "bay_surface_2_2",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": 0,
+          "maximum": 60
+        },
+        "z": {
+          "minimum": 0,
+          "maximum": 60
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_2_2",
+          "footprint": [
+            {
+              "x": 0,
+              "z": 0
+            },
+            {
+              "x": 60,
+              "z": 0
+            },
+            {
+              "x": 60,
+              "z": 60
+            },
+            {
+              "x": 0,
+              "z": 60
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_2_2",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_2_3",
+      "surfaceId": "bay_surface_2_3",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": 60,
+          "maximum": 120
+        },
+        "z": {
+          "minimum": 0,
+          "maximum": 60
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_2_3",
+          "footprint": [
+            {
+              "x": 60,
+              "z": 0
+            },
+            {
+              "x": 120,
+              "z": 0
+            },
+            {
+              "x": 120,
+              "z": 60
+            },
+            {
+              "x": 60,
+              "z": 60
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_2_3",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_3_0",
+      "surfaceId": "bay_surface_3_0",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": -120,
+          "maximum": -60
+        },
+        "z": {
+          "minimum": 60,
+          "maximum": 120
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_3_0",
+          "footprint": [
+            {
+              "x": -120,
+              "z": 60
+            },
+            {
+              "x": -60,
+              "z": 60
+            },
+            {
+              "x": -60,
+              "z": 120
+            },
+            {
+              "x": -120,
+              "z": 120
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_3_0",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_3_1",
+      "surfaceId": "bay_surface_3_1",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": -60,
+          "maximum": 0
+        },
+        "z": {
+          "minimum": 60,
+          "maximum": 120
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_3_1",
+          "footprint": [
+            {
+              "x": -60,
+              "z": 60
+            },
+            {
+              "x": 0,
+              "z": 60
+            },
+            {
+              "x": 0,
+              "z": 120
+            },
+            {
+              "x": -60,
+              "z": 120
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_3_1",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_3_2",
+      "surfaceId": "bay_surface_3_2",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": 0,
+          "maximum": 60
+        },
+        "z": {
+          "minimum": 60,
+          "maximum": 120
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_3_2",
+          "footprint": [
+            {
+              "x": 0,
+              "z": 60
+            },
+            {
+              "x": 60,
+              "z": 60
+            },
+            {
+              "x": 60,
+              "z": 120
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_3_2",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    },
+    {
+      "kind": "TerrainPlan",
+      "abi": "basalt-terrain-plan@1",
+      "id": "bay_terrain_3_3",
+      "surfaceId": "bay_surface_3_3",
+      "seed": 20260912,
+      "bounds": {
+        "x": {
+          "minimum": 60,
+          "maximum": 120
+        },
+        "z": {
+          "minimum": 60,
+          "maximum": 120
+        }
+      },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
+      "regions": [
+        {
+          "regionId": "bay_p_3_3",
+          "footprint": [
+            {
+              "x": 60,
+              "z": 60
+            },
+            {
+              "x": 120,
+              "z": 60
+            },
+            {
+              "x": 120,
+              "z": 120
+            },
+            {
+              "x": 60,
+              "z": 120
+            }
+          ],
+          "blendWidth": 8,
+          "baseElevation": 0,
+          "noiseLayers": [
+            {
+              "id": "bay_noise_low",
+              "kind": "value",
+              "frequency": 0.02,
+              "amplitude": 2,
+              "octaves": 3,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 0
+            },
+            {
+              "id": "bay_noise_detail",
+              "kind": "ridged",
+              "frequency": 0.07,
+              "amplitude": 0.7,
+              "octaves": 2,
+              "lacunarity": 2,
+              "gain": 0.5,
+              "seedOffset": 101
+            }
+          ],
+          "materialWeights": [
+            {
+              "materialId": "bayMeadow",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "materialBands": [
+        {
+          "materialId": "bayCliff",
+          "aboveSlopeDegrees": 35
+        },
+        {
+          "materialId": "bayFloor",
+          "belowElevationStuds": -2
+        },
+        {
+          "materialId": "baySand",
+          "belowElevationStuds": 1.5
+        },
+        {
+          "materialId": "bayDune",
+          "belowElevationStuds": 4.5
+        }
+      ],
+      "operations": [
+        {
+          "id": "bay_slope",
+          "kind": "slope",
+          "directionDegrees": -90,
+          "risePerUnit": 0.06,
+          "origin": {
+            "x": 0,
+            "z": 120
+          }
+        },
+        {
+          "id": "bay_basin",
+          "kind": "basin",
+          "center": {
+            "x": 0,
+            "z": 75
+          },
+          "radius": 85,
+          "depth": 17,
+          "falloff": 1.5
+        },
+        {
+          "id": "bay_channel",
+          "kind": "channel",
+          "points": [
+            {
+              "x": 0,
+              "z": 55
+            },
+            {
+              "x": 0,
+              "z": 120
+            }
+          ],
+          "width": 30,
+          "depth": 7
+        },
+        {
+          "id": "bay_peak_west",
+          "kind": "peak",
+          "center": {
+            "x": -95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_peak_east",
+          "kind": "peak",
+          "center": {
+            "x": 95,
+            "z": -55
+          },
+          "radius": 60,
+          "height": 9,
+          "falloff": 2
+        },
+        {
+          "id": "bay_dunes",
+          "kind": "dune",
+          "directionDegrees": 90,
+          "wavelength": 22,
+          "height": 1.1
+        },
+        {
+          "id": "bay_spawn_pad",
+          "kind": "local_patch",
+          "regionId": "bay_p_3_3",
+          "center": {
+            "x": 0,
+            "z": -40
+          },
+          "radius": 14,
+          "falloff": 2,
+          "edit": {
+            "kind": "flatten",
+            "elevation": 9,
+            "strength": 1
+          }
+        }
+      ],
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      }
+    }
+  ],
+  "styleOverlays": [],
+  "constructedSurfaces": [],
+  "routes": [
+    {
+      "id": "bay_coast_road_0",
+      "name": "Bay coast road segment 0",
+      "surfaceId": "bay_surface_2_0",
+      "regionIds": ["bay_p_2_0"],
+      "points": [
+        {
+          "x": -115,
+          "y": 0,
+          "z": 30
+        },
+        {
+          "x": -80,
+          "y": 0,
+          "z": 22
+        },
+        {
+          "x": -60,
+          "y": 0,
+          "z": 20
+        }
+      ],
+      "width": 6,
+      "heightClearance": 8,
+      "agentRadius": 1,
+      "agentHeight": 6,
+      "maximumStepHeight": 1,
+      "maximumSlopeDegrees": 30,
+      "closed": false,
+      "reachableAnchorIds": ["baySpawn"],
+      "materialId": "asphalt"
+    },
+    {
+      "id": "bay_coast_road_1",
+      "name": "Bay coast road segment 1",
+      "surfaceId": "bay_surface_2_1",
+      "regionIds": ["bay_p_2_1"],
+      "points": [
+        {
+          "x": -60,
+          "y": 0,
+          "z": 20
+        },
+        {
+          "x": -40,
+          "y": 0,
+          "z": 18
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 16
+        }
+      ],
+      "width": 6,
+      "heightClearance": 8,
+      "agentRadius": 1,
+      "agentHeight": 6,
+      "maximumStepHeight": 1,
+      "maximumSlopeDegrees": 30,
+      "closed": false,
+      "reachableAnchorIds": ["baySpawn"],
+      "materialId": "asphalt"
+    },
+    {
+      "id": "bay_coast_road_2",
+      "name": "Bay coast road segment 2",
+      "surfaceId": "bay_surface_2_2",
+      "regionIds": ["bay_p_2_2"],
+      "points": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 16
+        },
+        {
+          "x": 40,
+          "y": 0,
+          "z": 18
+        },
+        {
+          "x": 60,
+          "y": 0,
+          "z": 20
+        }
+      ],
+      "width": 6,
+      "heightClearance": 8,
+      "agentRadius": 1,
+      "agentHeight": 6,
+      "maximumStepHeight": 1,
+      "maximumSlopeDegrees": 30,
+      "closed": false,
+      "reachableAnchorIds": ["baySpawn"],
+      "materialId": "asphalt"
+    },
+    {
+      "id": "bay_coast_road_3",
+      "name": "Bay coast road segment 3",
+      "surfaceId": "bay_surface_2_3",
+      "regionIds": ["bay_p_2_3"],
+      "points": [
+        {
+          "x": 60,
+          "y": 0,
+          "z": 20
+        },
+        {
+          "x": 80,
+          "y": 0,
+          "z": 22
+        },
+        {
+          "x": 115,
+          "y": 0,
+          "z": 30
+        }
+      ],
+      "width": 6,
+      "heightClearance": 8,
+      "agentRadius": 1,
+      "agentHeight": 6,
+      "maximumStepHeight": 1,
+      "maximumSlopeDegrees": 30,
+      "closed": false,
+      "reachableAnchorIds": ["baySpawn"],
+      "materialId": "asphalt"
+    },
+    {
+      "id": "bay_north_road_0",
+      "name": "Bay north road segment 0",
+      "surfaceId": "bay_surface_0_0",
+      "regionIds": ["bay_p_0_0"],
+      "points": [
+        {
+          "x": -100,
+          "y": 0,
+          "z": -100
+        },
+        {
+          "x": -60,
+          "y": 0,
+          "z": -106.66666666666667
+        }
+      ],
+      "width": 6,
+      "heightClearance": 8,
+      "agentRadius": 1,
+      "agentHeight": 6,
+      "maximumStepHeight": 1,
+      "maximumSlopeDegrees": 30,
+      "closed": false,
+      "reachableAnchorIds": ["baySpawn"],
+      "materialId": "asphalt"
+    },
+    {
+      "id": "bay_north_road_1",
+      "name": "Bay north road segment 1",
+      "surfaceId": "bay_surface_0_1",
+      "regionIds": ["bay_p_0_1"],
+      "points": [
+        {
+          "x": -60,
+          "y": 0,
+          "z": -106.66666666666667
+        },
+        {
+          "x": -40,
+          "y": 0,
+          "z": -110
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": -110
+        }
+      ],
+      "width": 6,
+      "heightClearance": 8,
+      "agentRadius": 1,
+      "agentHeight": 6,
+      "maximumStepHeight": 1,
+      "maximumSlopeDegrees": 30,
+      "closed": false,
+      "reachableAnchorIds": ["baySpawn"],
+      "materialId": "asphalt"
+    },
+    {
+      "id": "bay_north_road_2",
+      "name": "Bay north road segment 2",
+      "surfaceId": "bay_surface_0_2",
+      "regionIds": ["bay_p_0_2"],
+      "points": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": -110
+        },
+        {
+          "x": 40,
+          "y": 0,
+          "z": -110
+        },
+        {
+          "x": 60,
+          "y": 0,
+          "z": -106.66666666666667
+        }
+      ],
+      "width": 6,
+      "heightClearance": 8,
+      "agentRadius": 1,
+      "agentHeight": 6,
+      "maximumStepHeight": 1,
+      "maximumSlopeDegrees": 30,
+      "closed": false,
+      "reachableAnchorIds": ["baySpawn"],
+      "materialId": "asphalt"
+    },
+    {
+      "id": "bay_north_road_3",
+      "name": "Bay north road segment 3",
+      "surfaceId": "bay_surface_0_3",
+      "regionIds": ["bay_p_0_3"],
+      "points": [
+        {
+          "x": 60,
+          "y": 0,
+          "z": -106.66666666666667
+        },
+        {
+          "x": 100,
+          "y": 0,
+          "z": -100
+        }
+      ],
+      "width": 6,
+      "heightClearance": 8,
+      "agentRadius": 1,
+      "agentHeight": 6,
+      "maximumStepHeight": 1,
+      "maximumSlopeDegrees": 30,
+      "closed": false,
+      "reachableAnchorIds": ["baySpawn"],
+      "materialId": "asphalt"
+    }
+  ],
+  "anchors": [
+    {
+      "id": "baySpawn",
+      "regionId": "bay_p_1_2",
+      "type": "spawn",
+      "position": {
+        "x": 0,
+        "y": 9,
+        "z": -40
+      },
+      "bindingName": "baySceneSpawn"
+    }
+  ],
+  "collisionProxies": [],
+  "cameras": [
+    {
+      "id": "bayOverview",
+      "name": "Bay overview",
+      "purpose": "Show the full coastal bay.",
+      "evidenceRole": "global_overview",
+      "position": {
+        "x": 0,
+        "y": 150,
+        "z": 260
+      },
+      "lookAt": {
+        "x": 0,
+        "y": 0,
+        "z": 30
+      },
+      "up": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "fieldOfViewDegrees": 55,
+      "nearClip": 0.1,
+      "farClip": 2000,
+      "width": 1280,
+      "height": 720,
+      "regionIds": [
+        "bay_p_0_0",
+        "bay_p_0_1",
+        "bay_p_0_2",
+        "bay_p_0_3",
+        "bay_p_1_0",
+        "bay_p_1_1",
+        "bay_p_1_2",
+        "bay_p_1_3",
+        "bay_p_2_0",
+        "bay_p_2_1",
+        "bay_p_2_2",
+        "bay_p_2_3",
+        "bay_p_3_0",
+        "bay_p_3_1",
+        "bay_p_3_2",
+        "bay_p_3_3"
+      ],
+      "framingAssetIds": [],
+      "readabilityIntent": {
+        "kind": "art_directed",
+        "rationale": "Bay readability."
+      },
+      "declaredState": "Overview"
+    },
+    {
+      "id": "bayShore",
+      "name": "Bay shore",
+      "purpose": "Show the shoreline waterline.",
+      "evidenceRole": "region_detail",
+      "position": {
+        "x": -40,
+        "y": 12,
+        "z": 70
+      },
+      "lookAt": {
+        "x": 20,
+        "y": 0,
+        "z": 40
+      },
+      "up": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "fieldOfViewDegrees": 55,
+      "nearClip": 0.1,
+      "farClip": 1000,
+      "width": 1280,
+      "height": 720,
+      "regionIds": ["bay_p_2_1", "bay_p_2_2"],
+      "framingAssetIds": [],
+      "readabilityIntent": {
+        "kind": "art_directed",
+        "rationale": "Shore readability."
+      },
+      "declaredState": "Overview"
+    }
+  ],
+  "assetRequirements": [],
+  "tolerances": {
+    "support": 0.05,
+    "penetration": 0.05,
+    "clearance": 1
+  },
+  "seaLevelStuds": -2,
+  "terrainAppearance": {
+    "water": {
+      "colorRgb": {
+        "r": 0.1,
+        "g": 0.5,
+        "b": 0.55
+      },
+      "transparency": 0.35,
+      "reflectance": 0.6,
+      "waveSizeStuds": 1.5,
+      "waveSpeedStuds": 3
+    },
+    "grass": {
+      "enabled": true,
+      "lengthStuds": 0.6
+    },
+    "materialTints": [
+      {
+        "materialId": "bayMeadow",
+        "colorRgb": {
+          "r": 0.42,
+          "g": 0.66,
+          "b": 0.28
+        }
+      },
+      {
+        "materialId": "baySand",
+        "colorRgb": {
+          "r": 0.92,
+          "g": 0.82,
+          "b": 0.64
+        }
+      },
+      {
+        "materialId": "bayFloor",
+        "colorRgb": {
+          "r": 0.55,
+          "g": 0.6,
+          "b": 0.5
+        }
+      },
+      {
+        "materialId": "bayDune",
+        "colorRgb": {
+          "r": 0.9,
+          "g": 0.8,
+          "b": 0.62
+        }
+      },
+      {
+        "materialId": "bayCliff",
+        "colorRgb": {
+          "r": 0.45,
+          "g": 0.42,
+          "b": 0.4
+        }
+      }
+    ]
+  }
+}

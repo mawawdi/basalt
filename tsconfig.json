@@ -63,7 +63,14 @@
     "test/grounding.test.ts",
     "test/spacing.test.ts",
     "test/voxel-spots.test.ts",
-    "test/voxel-field.test.ts"
+    "test/voxel-field.test.ts",
+    "test/bay-region.test.ts",
+    "test/lot-subdivision.test.ts",
+    "test/joint-sockets.test.ts",
+    "test/wfc.test.ts",
+    "test/kit-authoring.test.ts",
+    "test/assembly.test.ts",
+    "test/rooms.test.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

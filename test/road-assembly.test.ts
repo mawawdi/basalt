@@ -257,6 +257,59 @@ test("Roadbed carve grades a flat bed with smooth shoulders", () => {
   assert.ok(heightAt(0, 4) < heightAt(0, 5));
 });
 
+test("Roadbed carves extend one link across simple joints", () => {
+  const base = fixture().routes[0]!;
+  const segment = (id: string, points: Array<{ x: number; y: number; z: number }>) => ({
+    ...base,
+    id,
+    points,
+  });
+  const west = segment("segWest", [
+    { x: 0, y: 0, z: 0 },
+    { x: 10, y: 0, z: 0 },
+  ]);
+  const east = segment("segEast", [
+    { x: 10, y: 0, z: 0 },
+    { x: 20, y: 0, z: 0 },
+  ]);
+  const [westOp, eastOp] = roadbedOperationsForRoutes([west, east]).map((entry) => entry.operation);
+  // Both sides measure the full local road: identical carve geometry.
+  assert.deepEqual(westOp!.points, [
+    { x: 0, z: 0 },
+    { x: 10, z: 0 },
+    { x: 20, z: 0 },
+  ]);
+  assert.deepEqual(eastOp!.points, westOp!.points);
+  // Lone endpoints never extend.
+  const [soloOp] = roadbedOperationsForRoutes([west]).map((entry) => entry.operation);
+  assert.deepEqual(soloOp!.points, [
+    { x: 0, z: 0 },
+    { x: 10, z: 0 },
+  ]);
+  // Junctions and T-crossings keep per-segment carves: polylines cannot branch.
+  const spur = segment("segSpur", [
+    { x: 10, y: 0, z: 0 },
+    { x: 10, y: 0, z: 10 },
+  ]);
+  const junctioned = roadbedOperationsForRoutes([west, east, spur]).map(
+    (entry) => entry.operation.points,
+  );
+  assert.deepEqual(junctioned[0], [
+    { x: 0, z: 0 },
+    { x: 10, z: 0 },
+  ]);
+  const through = segment("segThrough", [
+    { x: 10, y: 0, z: -10 },
+    { x: 10, y: 0, z: 0 },
+    { x: 10, y: 0, z: 10 },
+  ]);
+  const teed = roadbedOperationsForRoutes([west, through]).map((entry) => entry.operation.points);
+  assert.deepEqual(teed[0], [
+    { x: 0, z: 0 },
+    { x: 10, z: 0 },
+  ]);
+});
+
 test("World compilation derives one roadbed carve per terrain route", () => {
   const compiled = compileWorldPlan(fixture());
   const operations = compiled.plan.terrainPlans[0]!.operations;

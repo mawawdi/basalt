@@ -23,6 +23,9 @@ export * from "./tiers.js";
 export * from "./relations.js";
 export * from "./grounding.js";
 export * from "./spacing.js";
+export * from "./wfc.js";
+export * from "./assembly.js";
+export * from "./rooms.js";
 
 export interface BasaltWorldFoundation {
   readonly kind: "BasaltWorldFoundation";

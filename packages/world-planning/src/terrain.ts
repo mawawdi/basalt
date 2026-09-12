@@ -20,7 +20,7 @@ import {
 } from "./contracts.js";
 import { PlacementSurfaceIndex } from "./surfaces.js";
 
-/** Bounds one exported terrain partition for Roblox streaming and adaptation. */
+/** Bounds one exported terrain partition for engine streaming and adaptation. */
 export const TERRAIN_EXPORT_MAX_TRIANGLES = 20_000 as const;
 const TERRAIN_EXPORT_MAX_CELL_AXIS = Math.floor(Math.sqrt(TERRAIN_EXPORT_MAX_TRIANGLES / 2));
 
@@ -31,7 +31,6 @@ export function compileTerrainPlan(input: unknown): TerrainFieldArtifact {
   const stepX = (plan.bounds.x.maximum - plan.bounds.x.minimum) / (columns - 1);
   const stepZ = (plan.bounds.z.maximum - plan.bounds.z.minimum) / (rows - 1);
   const regionWeightRows: Array<Record<string, number>> = [];
-  const materialWeightRows: Array<Record<string, number>> = [];
   let heights: number[] = [];
 
   for (let row = 0; row < rows; row += 1) {
@@ -39,7 +38,6 @@ export function compileTerrainPlan(input: unknown): TerrainFieldArtifact {
     for (let column = 0; column < columns; column += 1) {
       const x = plan.bounds.x.minimum + column * stepX;
       const regionWeights = weightsAt(plan, { x, z });
-      const materialWeights = materialsAt(plan, regionWeights);
       let height = 0;
       for (const region of plan.regions) {
         const regionWeight = regionWeights[region.regionId] ?? 0;
@@ -49,7 +47,6 @@ export function compileTerrainPlan(input: unknown): TerrainFieldArtifact {
         height += regionHeight * regionWeight;
       }
       regionWeightRows.push(regionWeights);
-      materialWeightRows.push(materialWeights);
       heights.push(f32(height));
     }
   }
@@ -100,7 +97,7 @@ export function compileTerrainPlan(input: unknown): TerrainFieldArtifact {
       normal,
       slopeDegrees: f32(slopeDegrees),
       regionWeights: regionWeightRows[index]!,
-      materialWeights: materialWeightRows[index]!,
+      materialWeights: materialsAt(plan, regionWeightRows[index]!, height, slopeDegrees),
       navigable: slopeDegrees <= plan.navigation.maximumSlopeDegrees,
     };
   });
@@ -683,7 +680,15 @@ function weightsAt(plan: TerrainPlan, point: WorldPoint2): Record<string, number
 function materialsAt(
   plan: TerrainPlan,
   regionWeights: Readonly<Record<string, number>>,
+  height: number,
+  slopeDegrees: number,
 ): Record<string, number> {
+  for (const band of plan.materialBands ?? []) {
+    const below = band.belowElevationStuds === undefined || height < band.belowElevationStuds;
+    const above = band.aboveElevationStuds === undefined || height >= band.aboveElevationStuds;
+    const steep = band.aboveSlopeDegrees === undefined || slopeDegrees >= band.aboveSlopeDegrees;
+    if (below && above && steep) return { [band.materialId]: 1 };
+  }
   const totals = new Map<string, number>();
   for (const region of plan.regions) {
     const regionWeight = regionWeights[region.regionId] ?? 0;

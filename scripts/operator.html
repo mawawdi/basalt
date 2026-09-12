@@ -161,10 +161,11 @@
   </head>
   <body>
     <main>
-      <h1>Basalt slice operator</h1>
+      <h1>Basalt operator</h1>
       <p class="sub">
-        Palette, compile, upload, bridge — everything lands in <code>.basalt/slice</code>. The API
-        key is read from the repo-root <code>.env</code> and never shown here.
+        Palette, compile, upload, bridge — everything lands in the working directory (default
+        <code>.basalt/slice</code>, override with <code>--dir</code>). The API key is read from the
+        repo-root <code>.env</code> and never shown here.
       </p>
 
       <section>
@@ -173,17 +174,11 @@
           <label
             >Creator user id <input id="creatorUserId" type="text" inputmode="numeric"
           /></label>
-          <label>
-            Terrain material
-            <input id="robloxMaterial" type="text" list="materials" />
-            <datalist id="materials">
-              <option>Sand</option>
-              <option>Grass</option>
-              <option>Rock</option>
-              <option>Ground</option>
-              <option>Asphalt</option>
-              <option>Concrete</option>
-            </datalist>
+          <label>Brief path <input id="briefPath" type="text" size="34" /></label>
+          <label>Plan path <input id="planPath" type="text" size="34" /></label>
+          <label
+            >Engine materials (JSON)
+            <textarea id="engineMaterials" rows="3" cols="40"></textarea>
           </label>
           <label><input id="includeIncomplete" type="checkbox" /> include open meshes</label>
           <span id="apiKey" class="pill">key?</span>
@@ -276,12 +271,21 @@
       };
 
       document.getElementById("save").onclick = async () => {
+        let engineMaterials;
+        try {
+          engineMaterials = JSON.parse(document.getElementById("engineMaterials").value);
+        } catch {
+          alert("Engine materials must be valid JSON");
+          return;
+        }
         await fetch("/api/config", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             creatorUserId: document.getElementById("creatorUserId").value,
-            robloxMaterial: document.getElementById("robloxMaterial").value,
+            briefPath: document.getElementById("briefPath").value,
+            planPath: document.getElementById("planPath").value,
+            engineMaterials,
             includeIncomplete: document.getElementById("includeIncomplete").checked,
           }),
         });
@@ -292,7 +296,11 @@
       async function refresh() {
         const status = await (await fetch("/api/status")).json();
         document.getElementById("creatorUserId").value = status.config.creatorUserId;
-        document.getElementById("robloxMaterial").value = status.config.robloxMaterial;
+        document.getElementById("briefPath").value = status.config.briefPath;
+        document.getElementById("planPath").value = status.config.planPath;
+        document.getElementById("engineMaterials").value = JSON.stringify(
+          status.config.engineMaterials,
+        );
         document.getElementById("includeIncomplete").checked = status.config.includeIncomplete;
         const key = document.getElementById("apiKey");
         key.textContent = status.apiKeySet ? "key set" : "key missing";

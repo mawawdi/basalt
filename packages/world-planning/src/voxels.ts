@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 import type { TerrainFieldArtifact, TerrainFieldSample } from "./contracts.js";
 
-/** Default voxel edge length in studs. Matches the Roblox terrain cell. */
+/** Default voxel edge length in studs. Matches the 4-stud engine voxel cell. */
 export const VOXEL_CELL_SIZE_STUDS = 4 as const;
 /** Hard cap on exported voxel cells per terrain surface. */
 export const MAXIMUM_VOXEL_CELLS = 1_048_576 as const;
@@ -14,7 +14,7 @@ export const VOXEL_SPOT_CELL_CAP = 32 as const;
  * connector mirrors this value (see `VOXEL_SPOT_TOLERANCE`).
  */
 export const VOXEL_SPOT_OCCUPANCY_TOLERANCE = 0.004 as const;
-const VOXEL_MAGIC = "BVX1";
+const VOXEL_MAGIC = "BVX2";
 
 export interface VoxelFieldExport {
   readonly surfaceId: string;
@@ -33,18 +33,29 @@ export interface VoxelFieldExport {
  * code-unit tiebreaks. Index order is x-fastest, then z, then y:
  * `index = x + dimX * (z + dimZ * y)`.
  *
- * Binary layout (all little-endian): magic `BVX1`, dims u32 x3, origin
+ * Binary layout (all little-endian): magic `BVX2`, dims u32 x3, origin
  * f64 x3, cell size f64, material count u32, per material (name length
- * u16 + utf8), occupancy f32 per cell, material index u16 per cell.
+ * u16 + utf8), solid occupancy f32 per cell, liquid occupancy f32 per
+ * cell, material index u16 per cell.
  * The origin is an exact multiple of the cell size in every axis.
+ *
+ * Liquid is standing water from the world sea level: the fraction of the
+ * cell below sea level, capped by the physical air fraction
+ * (bottom-measured; the sealed solid occupancy is a render datum, not a
+ * volume fraction), so shorelines derive where solid meets liquid and
+ * engines draw the waterline. The grid extends up to cover the sea.
+ * Dry worlds (no sea level) seal all-zero liquid.
  */
 export function exportVoxelField(
   field: TerrainFieldArtifact,
-  options?: { readonly cellSizeStuds?: number },
+  options?: { readonly cellSizeStuds?: number; readonly seaLevelStuds?: number },
 ): VoxelFieldExport {
   const cell = options?.cellSizeStuds ?? VOXEL_CELL_SIZE_STUDS;
   if (!Number.isFinite(cell) || cell <= 0)
     throw new Error(`Voxel cell size must be positive for surface ${field.surfaceId}`);
+  const sea = options?.seaLevelStuds;
+  if (sea !== undefined && !Number.isFinite(sea))
+    throw new Error(`Voxel sea level must be finite for surface ${field.surfaceId}`);
   const { columns, rows } = field.resolution;
   const stepX = (field.bounds.x.maximum - field.bounds.x.minimum) / (columns - 1);
   const stepZ = (field.bounds.z.maximum - field.bounds.z.minimum) / (rows - 1);
@@ -72,7 +83,10 @@ export function exportVoxelField(
   const nx = Math.max(1, Math.ceil((field.bounds.x.maximum - originX) / cell));
   const nz = Math.max(1, Math.ceil((field.bounds.z.maximum - originZ) / cell));
   const yFloor = Math.floor(minH / cell) * cell - cell;
-  const yCeil = Math.ceil(maxH / cell) * cell;
+  // The grid must cover standing water above the highest terrain, or the sea
+  // has no cells to fill.
+  const waterTop = sea === undefined ? Number.NEGATIVE_INFINITY : sea;
+  const yCeil = Math.ceil(Math.max(maxH, waterTop) / cell) * cell;
   const ny = Math.max(1, Math.round((yCeil - yFloor) / cell));
   const origin: readonly [number, number, number] = [originX, yFloor, originZ];
   const total = nx * ny * nz;
@@ -116,6 +130,7 @@ export function exportVoxelField(
     return best;
   };
   const occupancy = new Float32Array(total);
+  const liquid = new Float32Array(total);
   const columnMaterial: string[] = new Array(nx * nz);
   for (let iz = 0; iz < nz; iz += 1)
     for (let ix = 0; ix < nx; ix += 1) {
@@ -126,10 +141,17 @@ export function exportVoxelField(
       columnMaterial[iz * nx + ix] = material;
       for (let iy = 0; iy < ny; iy += 1) {
         const cellCenter = origin[1] + (iy + 0.5) * cell;
-        occupancy[ix + nx * (iz + nz * iy)] = Math.min(
-          1,
-          Math.max(0, (surfaceH - cellCenter) / cell),
-        );
+        const solid = Math.min(1, Math.max(0, (surfaceH - cellCenter) / cell));
+        occupancy[ix + nx * (iz + nz * iy)] = solid;
+        if (sea !== undefined) {
+          const cellBottom = origin[1] + iy * cell;
+          const belowSea = Math.min(1, Math.max(0, (sea - cellBottom) / cell));
+          // Liquid fills the physical air fraction (bottom-measured), not
+          // the render datum: a boundary cell sealing solid 0.5 can still
+          // be entirely below its surface.
+          const physicalSolid = Math.min(1, Math.max(0, (surfaceH - cellBottom) / cell));
+          liquid[ix + nx * (iz + nz * iy)] = Math.min(belowSea, 1 - physicalSolid);
+        }
       }
     }
   const materials = [...new Set(columnMaterial)].sort(compareSpatialStrings);
@@ -143,7 +165,7 @@ export function exportVoxelField(
   }
   const headerLength =
     4 + 12 + 24 + 8 + 4 + encodedNames.reduce((sum, name) => sum + 2 + name.byteLength, 0);
-  const bytes = new Uint8Array(headerLength + total * 4 + total * 2);
+  const bytes = new Uint8Array(headerLength + total * 4 + total * 4 + total * 2);
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   for (let i = 0; i < VOXEL_MAGIC.length; i += 1) view.setUint8(i, VOXEL_MAGIC.charCodeAt(i));
   view.setUint32(4, nx, true);
@@ -163,6 +185,10 @@ export function exportVoxelField(
   }
   for (let i = 0; i < total; i += 1) {
     view.setFloat32(offset, occupancy[i]!, true);
+    offset += 4;
+  }
+  for (let i = 0; i < total; i += 1) {
+    view.setFloat32(offset, liquid[i]!, true);
     offset += 4;
   }
   for (let iy = 0; iy < ny; iy += 1)
@@ -189,6 +215,7 @@ export function parseVoxelField(bytes: Uint8Array): {
   readonly cellSizeStuds: number;
   readonly materials: readonly string[];
   readonly occupancy: ReadonlyArray<number>;
+  readonly liquid: ReadonlyArray<number>;
   readonly materialIndex: ReadonlyArray<number>;
 } {
   if (bytes.byteLength < 52) throw new Error("Voxel payload is truncated");
@@ -226,11 +253,16 @@ export function parseVoxelField(bytes: Uint8Array): {
     offset += length;
   }
   const total = dimensions[0] * dimensions[1] * dimensions[2];
-  if (offset + total * 6 !== bytes.byteLength)
+  if (offset + total * 10 !== bytes.byteLength)
     throw new Error("Voxel payload length disagrees with its dimensions");
   const occupancy: number[] = new Array(total);
   for (let i = 0; i < total; i += 1) {
     occupancy[i] = view.getFloat32(offset, true);
+    offset += 4;
+  }
+  const liquid: number[] = new Array(total);
+  for (let i = 0; i < total; i += 1) {
+    liquid[i] = view.getFloat32(offset, true);
     offset += 4;
   }
   const materialIndex: number[] = new Array(total);
@@ -246,6 +278,7 @@ export function parseVoxelField(bytes: Uint8Array): {
     cellSizeStuds: cellSize,
     materials,
     occupancy,
+    liquid,
     materialIndex,
   };
 }

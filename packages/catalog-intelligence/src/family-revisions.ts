@@ -9,7 +9,7 @@ import {
 } from "../../basalt-types/src/index.js";
 import { quantizeQ32_32 } from "../../basalt-types/src/fixed.js";
 import type { CatalogFamilyDeclaration } from "./contracts.js";
-import { buildMountSockets } from "./sockets.js";
+import { buildJointSockets, buildMountSockets } from "./sockets.js";
 
 export interface MountContactEvidence {
   readonly supportPlaneFits: ReadonlyArray<{
@@ -21,9 +21,20 @@ export interface MountContactEvidence {
   }>;
 }
 
+export interface JointContactEvidence {
+  readonly jointPlaneFits: ReadonlyArray<{
+    readonly normalQ32_32: { readonly x: string; readonly y: string; readonly z: string };
+    readonly originQ32_32: { readonly x: string; readonly y: string; readonly z: string };
+    readonly boundaryRadiusStuds: number;
+    readonly inlierCount: number;
+    readonly pointCount: number;
+  }>;
+}
+
 export interface FamilySealEvidence {
   readonly trimMappings?: readonly TrimSheetMapping[];
   readonly mountContacts?: Readonly<Record<string, MountContactEvidence>>;
+  readonly jointContacts?: Readonly<Record<string, JointContactEvidence>>;
 }
 
 export function buildAuthoredAssetFamilyRevision(
@@ -75,6 +86,22 @@ export function buildAuthoredAssetFamilyRevision(
         supportPlaneFits: contact.supportPlaneFits,
       });
       if (sockets.length > 0) socketsByAssetId.set(member.assetId, sockets);
+    }
+  if (declaration.jointSockets)
+    for (const member of declaration.members) {
+      const contact = evidence.jointContacts?.[member.assetId];
+      if (!contact || contact.jointPlaneFits.length === 0) continue;
+      const sockets = buildJointSockets({
+        variantName: member.variantName,
+        jointPlaneFits: contact.jointPlaneFits,
+      });
+      if (sockets.length === 0) continue;
+      const combined = [...(socketsByAssetId.get(member.assetId) ?? []), ...sockets];
+      if (combined.length > 128)
+        throw new Error(
+          `Member ${member.assetId} of ${declaration.familyName} seals ${combined.length} sockets, beyond the 128-socket archetype bound`,
+        );
+      socketsByAssetId.set(member.assetId, combined);
     }
   const socketGrammarHash =
     socketsByAssetId.size > 0

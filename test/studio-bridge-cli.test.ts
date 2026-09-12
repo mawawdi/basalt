@@ -21,6 +21,8 @@ function emissionManifest() {
     surfaceIds: [],
     instanceIds: [],
     roadSegmentIds: [],
+    stairIds: [],
+    portalIds: [],
     bounds: {
       minimum: { x: 0, y: 0, z: 0 },
       maximum: { x: 4, y: 4, z: 4 },

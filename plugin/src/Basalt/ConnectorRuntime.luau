@@ -5,9 +5,12 @@ local Constants = require(script.Parent.Constants)
 local BridgeClient = require(script.Parent.BridgeClient)
 local SceneData = require(script.Parent.SceneData)
 local InstanceLowering = require(script.Parent.InstanceLowering)
+local TerrainAppearance = require(script.Parent.TerrainAppearance)
 local TerrainLowering = require(script.Parent.TerrainLowering)
 local RoadLowering = require(script.Parent.RoadLowering)
 local SkirtLowering = require(script.Parent.SkirtLowering)
+local StairLowering = require(script.Parent.StairLowering)
+local PortalLowering = require(script.Parent.PortalLowering)
 local TerrainMarkers = require(script.Parent.TerrainMarkers)
 
 local ConnectorRuntime = {}
@@ -58,6 +61,26 @@ local function beginRecording(transaction: any): any
 		if seenRoads[id] then fail("transaction.roadSegmentIds must be unique") end
 		seenRoads[id] = true
 	end
+	if typeof(transaction.stairIds) ~= "table" then fail("transaction.stairIds must be an array") end
+	if #transaction.stairIds > Constants.MAX_WORLD_STAIRS_PER_CHUNK then
+		fail("transaction.stairIds exceeds its bound")
+	end
+	local seenStairs = {}
+	for _, stairId in ipairs(transaction.stairIds) do
+		local id = requireId(stairId, "transaction.stairId")
+		if seenStairs[id] then fail("transaction.stairIds must be unique") end
+		seenStairs[id] = true
+	end
+	if typeof(transaction.portalIds) ~= "table" then fail("transaction.portalIds must be an array") end
+	if #transaction.portalIds > Constants.MAX_WORLD_PORTALS_PER_CHUNK then
+		fail("transaction.portalIds exceeds its bound")
+	end
+	local seenPortals = {}
+	for _, portalId in ipairs(transaction.portalIds) do
+		local id = requireId(portalId, "transaction.portalId")
+		if seenPortals[id] then fail("transaction.portalIds must be unique") end
+		seenPortals[id] = true
+	end
 	if transaction.phase ~= "preflight" and transaction.phase ~= "apply" and transaction.phase ~= "commit" and transaction.phase ~= "rollback" then
 		fail("transaction.phase is invalid")
 	end
@@ -97,14 +120,19 @@ function ConnectorRuntime.detachedPreflight(transaction: any): any
 		observedRevisionHash = readRevision(),
 		observedInstanceIds = transaction.instanceIds,
 		observedRoadSegmentIds = transaction.roadSegmentIds,
+		observedStairIds = transaction.stairIds,
+		observedPortalIds = transaction.portalIds,
 		observedVoxelSpots = {},
 		observedImportFactors = {},
+		observedStairSteps = {},
+		observedPortals = {},
 	}
 end
 
 -- Observed ids mean constructed geometry, not echoed ids: every observed
 -- instance has a lowered model with parts, every observed road segment a
--- ribbon folder, every chunk surface a voxel marker.
+-- ribbon folder, every stair its sealed step count, every portal a
+-- marker, every chunk surface a voxel marker.
 local function verifyConstruction(folder: Instance, transaction: any, scene: any): ()
 	local instances = folder:FindFirstChild("instances")
 	if instances == nil and #transaction.instanceIds > 0 then
@@ -127,6 +155,23 @@ local function verifyConstruction(folder: Instance, transaction: any, scene: any
 		if #segmentFolder:GetChildren() == 0 then
 			fail("road segment " .. segmentId .. " lowered no ribbon")
 		end
+	end
+	local stairs = folder:FindFirstChild("stairs")
+	if stairs == nil and #transaction.stairIds > 0 then fail("chunk lowered no stairs") end
+	for _, stairId in ipairs(transaction.stairIds) do
+		local stairFolder = (stairs :: Instance):FindFirstChild(stairId)
+		if stairFolder == nil then fail("chunk lowered no geometry for stair " .. stairId) end
+		local sealed = scene.stairsById[stairId]
+		if sealed == nil then fail("scene export has no stair " .. stairId) end
+		if #stairFolder:GetChildren() ~= sealed.steps then
+			fail("stair " .. stairId .. " lowered " .. #stairFolder:GetChildren() .. " steps against sealed " .. sealed.steps)
+		end
+	end
+	local portals = folder:FindFirstChild("portals")
+	if portals == nil and #transaction.portalIds > 0 then fail("chunk lowered no portals") end
+	for _, portalId in ipairs(transaction.portalIds) do
+		local marker = (portals :: Instance):FindFirstChild(portalId)
+		if marker == nil then fail("chunk lowered no marker for portal " .. portalId) end
 	end
 	local skirts = folder:FindFirstChild("skirts")
 	for _, instanceId in ipairs(transaction.instanceIds) do
@@ -164,12 +209,21 @@ function ConnectorRuntime.applyChunk(transaction: any): any
 	folder:SetAttribute("BasaltWorldPlanHash", requireHash(transaction.worldPlanHash, "transaction.worldPlanHash"))
 	local observedSpots: { any } = {}
 	local observedFactors: { any } = {}
+	local observedSteps: { any } = {}
+	local observedPortalMarkers: { any } = {}
 	withRecording(recording, function()
 		local scene = SceneData.load(chunkId)
 		local factors = InstanceLowering.lowerInstances(folder, transaction, scene)
 		local surfaces = TerrainLowering.lowerTerrain(folder, scene)
+		TerrainAppearance.lowerAppearance(folder, scene)
 		RoadLowering.lowerRoads(folder, transaction, scene)
 		SkirtLowering.lowerSkirts(folder, transaction, scene)
+		for _, reading in ipairs(StairLowering.lowerStairs(folder, transaction, scene)) do
+			table.insert(observedSteps, reading)
+		end
+		for _, reading in ipairs(PortalLowering.lowerPortals(folder, transaction, scene)) do
+			table.insert(observedPortalMarkers, reading)
+		end
 		verifyConstruction(folder, transaction, scene)
 		for _, surface in ipairs(surfaces) do
 			for _, reading in ipairs(surface.readings) do
@@ -179,6 +233,7 @@ function ConnectorRuntime.applyChunk(transaction: any): any
 					y = reading.y,
 					z = reading.z,
 					occupancy = reading.occupancy,
+					liquid = reading.liquid,
 					material = reading.material,
 				})
 			end
@@ -195,6 +250,13 @@ function ConnectorRuntime.applyChunk(transaction: any): any
 		table.sort(observedFactors, function(left: any, right: any): boolean
 			return left.contentHash < right.contentHash
 		end)
+		table.sort(observedSteps, function(left: any, right: any): boolean
+			if left.stairId ~= right.stairId then return left.stairId < right.stairId end
+			return left.step < right.step
+		end)
+		table.sort(observedPortalMarkers, function(left: any, right: any): boolean
+			return left.portalId < right.portalId
+		end)
 	end)
 	ChangeHistoryService:SetWaypoint("Basalt apply " .. chunkId)
 	return {
@@ -206,8 +268,12 @@ function ConnectorRuntime.applyChunk(transaction: any): any
 		observedRevisionHash = readRevision(),
 		observedInstanceIds = transaction.instanceIds,
 		observedRoadSegmentIds = transaction.roadSegmentIds,
+		observedStairIds = transaction.stairIds,
+		observedPortalIds = transaction.portalIds,
 		observedVoxelSpots = observedSpots,
 		observedImportFactors = observedFactors,
+		observedStairSteps = observedSteps,
+		observedPortals = observedPortalMarkers,
 	}
 end
 
@@ -227,8 +293,12 @@ function ConnectorRuntime.commit(transaction: any): any
 		observedRevisionHash = readRevision(),
 		observedInstanceIds = transaction.instanceIds,
 		observedRoadSegmentIds = transaction.roadSegmentIds,
+		observedStairIds = transaction.stairIds,
+		observedPortalIds = transaction.portalIds,
 		observedVoxelSpots = {},
 		observedImportFactors = {},
+		observedStairSteps = {},
+		observedPortals = {},
 	}
 end
 
@@ -250,6 +320,10 @@ function ConnectorRuntime.rollback(transaction: any): any
 			if roads ~= nil then roads:Destroy() end
 			local skirts = folder:FindFirstChild("skirts")
 			if skirts ~= nil then skirts:Destroy() end
+			local stairs = folder:FindFirstChild("stairs")
+			if stairs ~= nil then stairs:Destroy() end
+			local portals = folder:FindFirstChild("portals")
+			if portals ~= nil then portals:Destroy() end
 			local terrainFolder = folder:FindFirstChild("terrain")
 			if terrainFolder ~= nil then
 				local markers: { TerrainMarkers.MarkerView } = {}
@@ -284,8 +358,12 @@ function ConnectorRuntime.rollback(transaction: any): any
 		observedRevisionHash = readRevision(),
 		observedInstanceIds = transaction.instanceIds,
 		observedRoadSegmentIds = transaction.roadSegmentIds,
+		observedStairIds = transaction.stairIds,
+		observedPortalIds = transaction.portalIds,
 		observedVoxelSpots = {},
 		observedImportFactors = {},
+		observedStairSteps = {},
+		observedPortals = {},
 	}
 end
 

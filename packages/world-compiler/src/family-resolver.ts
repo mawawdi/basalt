@@ -1,9 +1,17 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
 import { worldEntityId, worldHash, compareWorldStrings } from "./primitives.js";
 import {
+  DEFAULT_INSTANCE_SCALE_RANGE,
+  DENSITY_AREA_NORMALIZATION_STUDS2,
+  MAXIMUM_SLOPE_DEGREES,
   WORLD_FAMILY_POPULATION_PLAN_SCHEMA,
   type WorldFamilyPopulationPlan,
 } from "./contracts.js";
+
+/** Tag-match scoring: named semantics dominate style, style dominates role. */
+const SEMANTIC_MATCH_WEIGHT = 4;
+const STYLE_MATCH_WEIGHT = 2;
+const ROLE_MATCH_WEIGHT = 1;
 import { z } from "zod";
 import {
   STUD_METERS,
@@ -39,7 +47,7 @@ const requestSchema = z
       .max(7)
       .optional(),
     distribution: z
-      .enum(["poisson_scatter", "cluster", "along_path", "surface_grid", "socket"])
+      .enum(["poisson_scatter", "cluster", "along_path", "surface_grid", "socket", "wall_anchored"])
       .optional(),
     minimumCount: z.number().int().nonnegative().safe().optional(),
     maximumCount: z.number().int().positive().safe().optional(),
@@ -54,6 +62,14 @@ const requestSchema = z
     variationSeed: z.number().int().min(0).max(0xffff_ffff).optional(),
     excludedRouteIds: z.array(worldEntityId).max(256).optional(),
     excludedRegionIds: z.array(worldEntityId).max(256).optional(),
+    elevationBandStuds: z
+      .object({
+        minimum: z.number().finite().min(-1_000_000).max(1_000_000).optional(),
+        maximum: z.number().finite().min(-1_000_000).max(1_000_000).optional(),
+      })
+      .strict()
+      .optional(),
+    maximumSlopeDegrees: z.number().finite().min(0).max(MAXIMUM_SLOPE_DEGREES).optional(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -227,7 +243,7 @@ export function assertWorldAssetFamilyRegistry(
 export function resolveWorldAssetFamilies(input: {
   registry: WorldAssetFamilyRegistry;
   requests: readonly WorldBiomeFamilyRequest[];
-}): Readonly<Record<string, readonly string[]>> {
+}): ReadonlyArray<ReadonlyArray<string>> {
   assertWorldAssetFamilyRegistry(input.registry);
   const requests = input.requests.map((request) => requestSchema.parse(request));
   const byToken = new Map<string, Set<string>>();
@@ -242,10 +258,11 @@ export function resolveWorldAssetFamilies(input: {
     }
   }
   const familyById = new Map(input.registry.families.map((family) => [family.familyId, family]));
-  const resolved: Record<string, readonly string[]> = {};
-  for (const request of [...requests].sort((left, right) =>
-    compareWorldStrings(left.biomeId, right.biomeId),
-  )) {
+  // Index-aligned with the input requests: several requests may share one
+  // biome (scrub and canopy in the same bay), so a biome-keyed record would
+  // collapse them. Scoring is per-request, hence order-independent.
+  const resolved: Array<readonly string[]> = [];
+  for (const request of requests) {
     const semantic = new Set(request.semanticTags.map(normalize));
     const style = new Set(request.styleTags.map(normalize));
     const role = new Set(request.roleTags.map(normalize));
@@ -261,7 +278,13 @@ export function resolveWorldAssetFamilies(input: {
         scores.set(
           familyId,
           (scores.get(familyId) ?? 0) +
-            (semantic.has(token) ? 4 : style.has(token) ? 2 : role.has(token) ? 1 : 0),
+            (semantic.has(token)
+              ? SEMANTIC_MATCH_WEIGHT
+              : style.has(token)
+                ? STYLE_MATCH_WEIGHT
+                : role.has(token)
+                  ? ROLE_MATCH_WEIGHT
+                  : 0),
         );
       }
     if (semantic.size > 0)
@@ -280,16 +303,17 @@ export function resolveWorldAssetFamilies(input: {
       throw new Error(
         `No coherent family set satisfies biome ${request.biomeId}; refusing unrelated fallback families`,
       );
-    resolved[request.biomeId] = selected;
+    resolved.push(Object.freeze(selected));
   }
   return Object.freeze(resolved);
 }
 
 /**
  * Convert a brief role density (instances per hectare) into the resolver's
- * density envelope (instances per 256 square studs, matching the population
- * compiler's area normalization). The envelope carries the role total; the
- * candidate loop below divides it across resolved families.
+ * density envelope (instances per DENSITY_AREA_NORMALIZATION_STUDS2 square
+ * studs, matching the population compiler's area normalization). The envelope
+ * carries the role total; the candidate loop below divides it across resolved
+ * families.
  */
 export function densityEnvelopeFromPerHectare(perHectare: number): {
   minimum: number;
@@ -298,7 +322,8 @@ export function densityEnvelopeFromPerHectare(perHectare: number): {
 } {
   if (!Number.isFinite(perHectare) || perHectare < 0)
     throw new Error("Per-hectare density must be a non-negative finite number");
-  const target = (perHectare * 256 * STUD_METERS * STUD_METERS) / 10_000;
+  const target =
+    (perHectare * DENSITY_AREA_NORMALIZATION_STUDS2 * STUD_METERS * STUD_METERS) / 10_000;
   return { minimum: 0, target, maximum: target };
 }
 
@@ -316,8 +341,8 @@ export function compileResolvedFamilyPopulationPlans(input: {
   const resolved = resolveWorldAssetFamilies({ registry: input.registry, requests: parsed });
   const familyById = new Map(input.registry.families.map((family) => [family.familyId, family]));
   const merged = new Map<string, WorldFamilyPopulationPlan>();
-  for (const request of parsed) {
-    const familyIds = resolved[request.biomeId] ?? [];
+  for (const [requestIndex, request] of parsed.entries()) {
+    const familyIds = resolved[requestIndex] ?? [];
     const regionIds = [...(request.regionIds ?? [request.biomeId])].sort(compareWorldStrings);
     const surfaceKinds = [...(request.surfaceKinds ?? (["terrain"] as const))].sort(
       compareWorldStrings,
@@ -345,11 +370,15 @@ export function compileResolvedFamilyPopulationPlans(input: {
         minimumCount: Math.floor(minimumCount / familyShare),
         maximumCount: countShare,
         archetypeCount: familyById.get(familyId)?.variantCount ?? 1,
-        scaleRange: [0.92, 1.08],
+        scaleRange: [...DEFAULT_INSTANCE_SCALE_RANGE],
         density: densityShare,
         variationSeed: (request.variationSeed ?? 0) + index,
         excludedRouteIds: [...(request.excludedRouteIds ?? [])].sort(compareWorldStrings),
         excludedRegionIds: [...(request.excludedRegionIds ?? [])].sort(compareWorldStrings),
+        ...(request.elevationBandStuds ? { elevationBandStuds: request.elevationBandStuds } : {}),
+        ...(request.maximumSlopeDegrees !== undefined
+          ? { maximumSlopeDegrees: request.maximumSlopeDegrees }
+          : {}),
       });
       if (!existing) merged.set(familyId, candidate);
       else
@@ -363,12 +392,43 @@ export function compileResolvedFamilyPopulationPlans(input: {
             surfaceKinds: [...new Set([...existing.surfaceKinds, ...candidate.surfaceKinds])].sort(
               compareWorldStrings,
             ),
+            // Restrictions intersect (strictest wins); extents union
+            // elsewhere. Empty intersections fail closed at parse.
+            ...(existing.elevationBandStuds || candidate.elevationBandStuds
+              ? {
+                  elevationBandStuds: {
+                    ...intersectMinimum(
+                      existing.elevationBandStuds?.minimum,
+                      candidate.elevationBandStuds?.minimum,
+                    ),
+                    ...intersectMaximum(
+                      existing.elevationBandStuds?.maximum,
+                      candidate.elevationBandStuds?.maximum,
+                    ),
+                  },
+                }
+              : {}),
+            ...(existing.maximumSlopeDegrees !== undefined ||
+            candidate.maximumSlopeDegrees !== undefined
+              ? {
+                  maximumSlopeDegrees: Math.min(
+                    existing.maximumSlopeDegrees ?? MAXIMUM_SLOPE_DEGREES,
+                    candidate.maximumSlopeDegrees ?? MAXIMUM_SLOPE_DEGREES,
+                  ),
+                }
+              : {}),
             minimumCount: existing.minimumCount + candidate.minimumCount,
             maximumCount: existing.maximumCount + candidate.maximumCount,
             archetypeCount: Math.max(existing.archetypeCount ?? 1, candidate.archetypeCount ?? 1),
             scaleRange: [
-              Math.min(existing.scaleRange?.[0] ?? 0.92, candidate.scaleRange?.[0] ?? 0.92),
-              Math.max(existing.scaleRange?.[1] ?? 1.08, candidate.scaleRange?.[1] ?? 1.08),
+              Math.min(
+                existing.scaleRange?.[0] ?? DEFAULT_INSTANCE_SCALE_RANGE[0],
+                candidate.scaleRange?.[0] ?? DEFAULT_INSTANCE_SCALE_RANGE[0],
+              ),
+              Math.max(
+                existing.scaleRange?.[1] ?? DEFAULT_INSTANCE_SCALE_RANGE[1],
+                candidate.scaleRange?.[1] ?? DEFAULT_INSTANCE_SCALE_RANGE[1],
+              ),
             ],
             density: {
               minimum: Math.min(existing.density.minimum, candidate.density.minimum),
@@ -388,6 +448,24 @@ export function compileResolvedFamilyPopulationPlans(input: {
   return [...merged.values()].sort((left, right) =>
     compareWorldStrings(left.familyId, right.familyId),
   );
+}
+
+function intersectMinimum(
+  left: number | undefined,
+  right: number | undefined,
+): { minimum: number } | Record<string, never> {
+  if (left === undefined) return right === undefined ? {} : { minimum: right };
+  if (right === undefined) return { minimum: left };
+  return { minimum: Math.max(left, right) };
+}
+
+function intersectMaximum(
+  left: number | undefined,
+  right: number | undefined,
+): { maximum: number } | Record<string, never> {
+  if (left === undefined) return right === undefined ? {} : { maximum: right };
+  if (right === undefined) return { maximum: left };
+  return { maximum: Math.min(left, right) };
 }
 
 function normalize(value: string): string {

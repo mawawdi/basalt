@@ -12,6 +12,8 @@ import {
   reconcileBasaltWorldReadback,
   sealVoxelSpotHashes,
   type BasaltImportFactorObservation,
+  type BasaltPortalObservation,
+  type BasaltStairStepObservation,
   type BasaltVoxelSpotObservation,
   type BasaltWorldChunkDelta,
   type BasaltWorldChunkTransaction,
@@ -35,6 +37,13 @@ export const MAX_SCENE_PAYLOAD_BYTES = 20971520;
  * failure messages, never as floats across the wire.
  */
 export const BRIDGE_IMPORT_FACTOR_TOLERANCE = 0.01 as const;
+/**
+ * Position slack in export meters between an observed stair tread or
+ * portal marker and its sealed pose. Covers studs/meters conversion
+ * plus engine float noise on readback; the city walkthrough proves it.
+ */
+export const BRIDGE_STAIR_STEP_TOLERANCE_METERS = 0.02 as const;
+export const BRIDGE_PORTAL_POSE_TOLERANCE_METERS = 0.02 as const;
 
 export interface BasaltScenePayloadEntry {
   readonly contentHash: string;
@@ -60,8 +69,12 @@ export interface BasaltSceneExportManifest {
   readonly terrain: readonly unknown[];
   readonly roads: readonly unknown[];
   readonly skirts: readonly unknown[];
+  readonly stairs: readonly unknown[];
+  readonly portals: readonly unknown[];
   readonly materialIds: readonly string[];
   readonly payloads: readonly BasaltScenePayloadEntry[];
+  readonly terrainAppearance?: unknown;
+  readonly terrainRepaints?: readonly unknown[];
   readonly hash: string;
 }
 
@@ -337,7 +350,16 @@ export class BasaltStudioBridge {
     if (!chunk) throw new Error("Readback references an unknown world chunk");
     const expectedIds = chunk.instanceIds;
     const expectedRoads = chunk.roadSegmentIds;
-    reconcileBasaltWorldReadback(transaction, readback, expectedIds, expectedRoads);
+    const expectedStairs = chunk.stairIds;
+    const expectedPortals = chunk.portalIds;
+    reconcileBasaltWorldReadback(
+      transaction,
+      readback,
+      expectedIds,
+      expectedRoads,
+      expectedStairs,
+      expectedPortals,
+    );
     this.assertReadbackEvidence(readback, chunk);
     if (readback.phase === "committed" || readback.phase === "rolled_back") {
       if (readback.phase === "committed") {
@@ -353,6 +375,15 @@ export class BasaltStudioBridge {
         stableJson([...expectedRoads].sort())
       )
         throw new Error("Committed world chunk readback has an unexpected road set");
+      if (
+        stableJson([...readback.observedStairIds].sort()) !== stableJson([...expectedStairs].sort())
+      )
+        throw new Error("Committed world chunk readback has an unexpected stair set");
+      if (
+        stableJson([...readback.observedPortalIds].sort()) !==
+        stableJson([...expectedPortals].sort())
+      )
+        throw new Error("Committed world chunk readback has an unexpected portal set");
       this.#queued.shift();
       this.#settled.set(transaction.hash, readback);
     } else if (readback.phase === "preflighted" && transaction.phase === "preflight") {
@@ -379,17 +410,23 @@ export class BasaltStudioBridge {
   }
 
   /**
-   * Evidence gate: only applied readbacks may carry voxel spots or import
-   * factors, and an applied readback must account for every chunk surface
-   * and every lowered part against the sealed export. Runs before any queue
-   * mutation so a failed verification never advances the transaction.
+   * Evidence gate: only applied readbacks may carry observed evidence, and
+   * an applied readback must account for every chunk surface, every
+   * lowered part, every stair tread, and every portal marker against the
+   * sealed export. Runs before any queue mutation so a failed
+   * verification never advances the transaction.
    */
   private assertReadbackEvidence(
     readback: BasaltWorldReadback,
     chunk: BasaltWorldChunkDelta,
   ): void {
     if (readback.phase !== "applied") {
-      if (readback.observedVoxelSpots.length > 0 || readback.observedImportFactors.length > 0)
+      if (
+        readback.observedVoxelSpots.length > 0 ||
+        readback.observedImportFactors.length > 0 ||
+        readback.observedStairSteps.length > 0 ||
+        readback.observedPortals.length > 0
+      )
         throw new Error(`A ${readback.phase} readback must not carry observed evidence`);
       return;
     }
@@ -410,6 +447,8 @@ export class BasaltStudioBridge {
       sceneExport,
       this.#sidecar,
     );
+    assertStairEvidence(readback.observedStairSteps, chunk.stairIds, sceneExport, materialMap);
+    assertPortalEvidence(readback.observedPortals, chunk.portalIds, sceneExport);
   }
 
   /** Append the sealed readback to the on-disk evidence trail when configured. */
@@ -444,6 +483,8 @@ export class BasaltStudioBridge {
     evidence?: {
       readonly observedVoxelSpots?: readonly BasaltVoxelSpotObservation[];
       readonly observedImportFactors?: readonly BasaltImportFactorObservation[];
+      readonly observedStairSteps?: readonly BasaltStairStepObservation[];
+      readonly observedPortals?: readonly BasaltPortalObservation[];
     },
   ) {
     const transaction = assertBasaltWorldTransaction(transactionInput);
@@ -456,8 +497,12 @@ export class BasaltStudioBridge {
       observedRevisionHash: revisionHash,
       observedInstanceIds: chunk.instanceIds,
       observedRoadSegmentIds: chunk.roadSegmentIds,
+      observedStairIds: chunk.stairIds,
+      observedPortalIds: chunk.portalIds,
       observedVoxelSpots,
       observedImportFactors: evidence?.observedImportFactors ?? [],
+      observedStairSteps: evidence?.observedStairSteps ?? [],
+      observedPortals: evidence?.observedPortals ?? [],
       spotHashes: sealVoxelSpotHashes(observedVoxelSpots),
       ...(this.#sceneExport ? { exportHash: this.#sceneExport.hash } : {}),
     });
@@ -550,6 +595,8 @@ function assertEmissionManifest(value: unknown): BasaltWorldEmissionManifest {
       !Array.isArray(chunk.instanceIds) ||
       !Array.isArray(chunk.surfaceIds) ||
       !Array.isArray(chunk.roadSegmentIds) ||
+      !Array.isArray(chunk.stairIds) ||
+      !Array.isArray(chunk.portalIds) ||
       !isId(chunk.id) ||
       !isId(chunk.transactionId) ||
       !isBounds(chunk.bounds) ||
@@ -566,12 +613,18 @@ function assertEmissionManifest(value: unknown): BasaltWorldEmissionManifest {
       "world chunk road segment IDs",
       16_384,
     );
+    const stairIds = canonicalIds(chunk.stairIds, "world chunk stair IDs", 4096);
+    const portalIds = canonicalIds(chunk.portalIds, "world chunk portal IDs", 4096);
     if (stableJson(instanceIds) !== stableJson(chunk.instanceIds))
       throw new Error("World chunk instance IDs are not canonical");
     if (stableJson(surfaceIds) !== stableJson(chunk.surfaceIds))
       throw new Error("World chunk surface IDs are not canonical");
     if (stableJson(roadSegmentIds) !== stableJson(chunk.roadSegmentIds))
       throw new Error("World chunk road segment IDs are not canonical");
+    if (stableJson(stairIds) !== stableJson(chunk.stairIds))
+      throw new Error("World chunk stair IDs are not canonical");
+    if (stableJson(portalIds) !== stableJson(chunk.portalIds))
+      throw new Error("World chunk portal IDs are not canonical");
     const chunkMaterial = {
       kind: "BasaltWorldChunkDelta" as const,
       chunkId: chunk.chunkId,
@@ -580,6 +633,8 @@ function assertEmissionManifest(value: unknown): BasaltWorldEmissionManifest {
       surfaceIds,
       instanceIds,
       roadSegmentIds,
+      stairIds,
+      portalIds,
       bounds: chunk.bounds,
     };
     if (contentHash(stableJson(chunkMaterial)) !== chunk.hash)
@@ -618,8 +673,12 @@ function sealConnectorReadback(
       observedRevisionHash: observation.observedRevisionHash,
       observedInstanceIds: observation.observedInstanceIds,
       observedRoadSegmentIds: observation.observedRoadSegmentIds,
+      observedStairIds: observation.observedStairIds,
+      observedPortalIds: observation.observedPortalIds,
       observedVoxelSpots: observation.observedVoxelSpots,
       observedImportFactors: observation.observedImportFactors,
+      observedStairSteps: observation.observedStairSteps,
+      observedPortals: observation.observedPortals,
       spotHashes: sealVoxelSpotHashes(observation.observedVoxelSpots),
       ...(exportHash === undefined ? {} : { exportHash }),
     });
@@ -631,7 +690,8 @@ function sealConnectorReadback(
  * Replay every observed voxel spot against the sealed payload: the observed
  * surfaces must equal the chunk surfaces, the observed cells must equal the
  * deterministic spot rule, and each observed value must match the sealed
- * occupancy (within engine quantization) and mapped material.
+ * solid and liquid occupancy (within engine quantization) and mapped
+ * material, with empty sealed cells reading back Air.
  */
 function assertSpotEvidence(
   spots: readonly BasaltVoxelSpotObservation[],
@@ -646,6 +706,23 @@ function assertSpotEvidence(
   const materialById = new Map(
     materialMap.bindings.map((binding) => [binding.materialId, binding.robloxMaterial]),
   );
+  const repaintBySurface = new Map<string, Map<string, string>>();
+  const repaints = sceneExport.terrainRepaints;
+  if (repaints !== undefined) {
+    if (!Array.isArray(repaints)) throw new Error("Scene export terrain repaints must be an array");
+    for (const repaint of repaints) {
+      if (
+        !isRecord(repaint) ||
+        typeof repaint.surfaceId !== "string" ||
+        typeof repaint.sourceMaterialId !== "string" ||
+        typeof repaint.targetMaterialId !== "string"
+      )
+        throw new Error("Scene export carries an invalid terrain repaint");
+      const table = repaintBySurface.get(repaint.surfaceId) ?? new Map<string, string>();
+      table.set(repaint.sourceMaterialId, repaint.targetMaterialId);
+      repaintBySurface.set(repaint.surfaceId, table);
+    }
+  }
   for (const surfaceId of surfaceIds) {
     const entry = sceneExport.terrain.find(
       (candidate): candidate is { surfaceId: string; voxelHash: string } =>
@@ -671,10 +748,24 @@ function assertSpotEvidence(
           `Surface ${surfaceId} cell ${spot.x},${spot.y},${spot.z} reads occupancy ` +
             `${spot.occupancy} against sealed ${sealed}`,
         );
-      const materialId = field.materials[field.materialIndex[flat]!]!;
-      const expectedMaterial = materialById.get(materialId);
+      const sealedLiquid = field.liquid[flat]!;
+      if (Math.abs(spot.liquid - sealedLiquid) > VOXEL_SPOT_OCCUPANCY_TOLERANCE)
+        throw new Error(
+          `Surface ${surfaceId} cell ${spot.x},${spot.y},${spot.z} reads liquid ` +
+            `${spot.liquid} against sealed ${sealedLiquid}`,
+        );
+      // The connector lowers water-only cells as Air plus liquid (the engine
+      // no longer accepts a Water solid material), so empty sealed cells read
+      // back Air regardless of their column material. Live repaints remap
+      // the sealed material id before the engine-material lookup.
+      const sealedMaterialId = field.materials[field.materialIndex[flat]!]!;
+      const liveMaterialId =
+        repaintBySurface.get(surfaceId)?.get(sealedMaterialId) ?? sealedMaterialId;
+      const expectedMaterial = sealed === 0 ? "Air" : materialById.get(liveMaterialId);
       if (!expectedMaterial)
-        throw new Error(`Surface ${surfaceId} material ${materialId} has no mapped material`);
+        throw new Error(
+          `Surface ${surfaceId} material ${field.materials[field.materialIndex[flat]!]!} has no mapped material`,
+        );
       if (spot.material !== expectedMaterial)
         throw new Error(
           `Surface ${surfaceId} cell ${spot.x},${spot.y},${spot.z} reads material ` +
@@ -733,6 +824,141 @@ function assertFactorEvidence(
     if (Math.abs(entry.factor - baseline) / baseline > BRIDGE_IMPORT_FACTOR_TOLERANCE)
       throw new Error(
         `Part ${entry.contentHash} import factor ${entry.factor} drifts past recorded ${baseline}`,
+      );
+  }
+}
+
+/**
+ * Replay every observed stair tread against the sealed export: the
+ * observed steps must equal every tread of every chunk stair, each
+ * within tolerance of its sealed run center, reading the mapped stair
+ * material. Mirrors the connector's step math exactly.
+ */
+function assertStairEvidence(
+  steps: readonly BasaltStairStepObservation[],
+  stairIds: readonly string[],
+  sceneExport: BasaltSceneExportManifest,
+  materialMap: BasaltMaterialMap,
+): void {
+  const materialById = new Map(
+    materialMap.bindings.map((binding) => [binding.materialId, binding.robloxMaterial]),
+  );
+  const expected = new Map<string, { step: number; x: number; y: number; z: number }>();
+  for (const stairId of stairIds) {
+    const stair = sceneExport.stairs.find(
+      (
+        candidate,
+      ): candidate is {
+        id: string;
+        materialId: string;
+        baseMeters: { x: number; y: number; z: number };
+        yawStepsY90: number;
+        steps: number;
+        riserMeters: number;
+        treadMeters: number;
+      } =>
+        isRecord(candidate) &&
+        candidate.id === stairId &&
+        typeof candidate.materialId === "string" &&
+        isVector(candidate.baseMeters) &&
+        Number.isSafeInteger(candidate.yawStepsY90) &&
+        (candidate.yawStepsY90 as number) >= 0 &&
+        (candidate.yawStepsY90 as number) <= 3 &&
+        Number.isSafeInteger(candidate.steps) &&
+        (candidate.steps as number) > 0 &&
+        typeof candidate.riserMeters === "number" &&
+        Number.isFinite(candidate.riserMeters) &&
+        (candidate.riserMeters as number) > 0 &&
+        typeof candidate.treadMeters === "number" &&
+        Number.isFinite(candidate.treadMeters) &&
+        (candidate.treadMeters as number) > 0,
+    );
+    if (!stair) throw new Error(`Scene export has no stair ${stairId}`);
+    const direction =
+      stair.yawStepsY90 === 0
+        ? { x: 0, z: 1 }
+        : stair.yawStepsY90 === 1
+          ? { x: 1, z: 0 }
+          : stair.yawStepsY90 === 2
+            ? { x: 0, z: -1 }
+            : { x: -1, z: 0 };
+    for (let step = 0; step < stair.steps; step += 1)
+      expected.set(`${stairId} ${step}`, {
+        step,
+        x: stair.baseMeters.x + direction.x * stair.treadMeters * (step + 0.5),
+        y: stair.baseMeters.y + stair.riserMeters * (step + 0.5),
+        z: stair.baseMeters.z + direction.z * stair.treadMeters * (step + 0.5),
+      });
+  }
+  const observed = steps.map((entry) => `${entry.stairId} ${entry.step}`).sort();
+  if (stableJson(observed) !== stableJson([...expected.keys()].sort()))
+    throw new Error("Applied readback stair steps do not cover the chunk stairs");
+  for (const entry of steps) {
+    const sealed = expected.get(`${entry.stairId} ${entry.step}`)!;
+    const gap = Math.hypot(entry.x - sealed.x, entry.y - sealed.y, entry.z - sealed.z);
+    if (gap > BRIDGE_STAIR_STEP_TOLERANCE_METERS)
+      throw new Error(
+        `Stair ${entry.stairId} step ${entry.step} reads ${entry.x},${entry.y},${entry.z} against sealed ${sealed.x},${sealed.y},${sealed.z}`,
+      );
+  }
+  for (const stairId of stairIds) {
+    const stair = sceneExport.stairs.find(
+      (candidate): candidate is { id: string; materialId: string } =>
+        isRecord(candidate) && candidate.id === stairId && typeof candidate.materialId === "string",
+    )!;
+    const mapped = materialById.get(stair.materialId);
+    if (!mapped) throw new Error(`Stair ${stairId} material ${stair.materialId} has no mapping`);
+    for (const entry of steps.filter((candidate) => candidate.stairId === stairId))
+      if (entry.material !== mapped)
+        throw new Error(
+          `Stair ${stairId} step ${entry.step} reads material ${entry.material} against mapped ${mapped}`,
+        );
+  }
+}
+
+/**
+ * Replay every observed portal marker against the sealed export: the
+ * observed markers must equal the chunk portals, each within tolerance
+ * of its sealed pose with the sealed yaw. No material applies; markers
+ * are transparent evidence anchors.
+ */
+function assertPortalEvidence(
+  portals: readonly BasaltPortalObservation[],
+  portalIds: readonly string[],
+  sceneExport: BasaltSceneExportManifest,
+): void {
+  const observed = portals.map((entry) => entry.portalId).sort();
+  if (stableJson(observed) !== stableJson([...portalIds].sort()))
+    throw new Error("Applied readback portals do not cover the chunk portals");
+  for (const entry of portals) {
+    const sealed = sceneExport.portals.find(
+      (
+        candidate,
+      ): candidate is {
+        id: string;
+        positionMeters: { x: number; y: number; z: number };
+        yawStepsY90: number;
+      } =>
+        isRecord(candidate) &&
+        candidate.id === entry.portalId &&
+        isVector(candidate.positionMeters) &&
+        Number.isSafeInteger(candidate.yawStepsY90) &&
+        (candidate.yawStepsY90 as number) >= 0 &&
+        (candidate.yawStepsY90 as number) <= 3,
+    );
+    if (!sealed) throw new Error(`Scene export has no portal ${entry.portalId}`);
+    const gap = Math.hypot(
+      entry.x - sealed.positionMeters.x,
+      entry.y - sealed.positionMeters.y,
+      entry.z - sealed.positionMeters.z,
+    );
+    if (gap > BRIDGE_PORTAL_POSE_TOLERANCE_METERS)
+      throw new Error(
+        `Portal ${entry.portalId} reads ${entry.x},${entry.y},${entry.z} against sealed ${sealed.positionMeters.x},${sealed.positionMeters.y},${sealed.positionMeters.z}`,
+      );
+    if (entry.yawStepsY90 !== sealed.yawStepsY90)
+      throw new Error(
+        `Portal ${entry.portalId} reads yaw ${entry.yawStepsY90} against sealed ${sealed.yawStepsY90}`,
       );
   }
 }
@@ -832,6 +1058,8 @@ function assertSceneExportManifest(value: unknown): BasaltSceneExportManifest {
     !Array.isArray(value.terrain) ||
     !Array.isArray(value.roads) ||
     !Array.isArray(value.skirts) ||
+    !Array.isArray(value.stairs) ||
+    !Array.isArray(value.portals) ||
     !Array.isArray(value.materialIds) ||
     !value.materialIds.every((id) => typeof id === "string" && id.length > 0) ||
     !Array.isArray(value.payloads)
@@ -859,8 +1087,14 @@ function assertSceneExportManifest(value: unknown): BasaltSceneExportManifest {
     assets: value.assets,
     parts: value.parts,
     terrain: value.terrain,
+    ...(value.terrainAppearance === undefined
+      ? {}
+      : { terrainAppearance: value.terrainAppearance }),
+    ...(value.terrainRepaints === undefined ? {} : { terrainRepaints: value.terrainRepaints }),
     roads: value.roads,
     skirts: value.skirts,
+    stairs: value.stairs,
+    portals: value.portals,
     materialIds: value.materialIds,
     payloads: value.payloads,
   };

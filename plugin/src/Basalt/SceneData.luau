@@ -47,7 +47,7 @@ local function checkExportConvention(mod: any): any
 	if convention.instanceComposition ~= Constants.SCENE_EXPORT_COMPOSITION then
 		fail("scene export instance composition is unsupported")
 	end
-	for _, key in ipairs({ "instances", "assets", "parts", "terrain", "roads", "skirts", "payloads" }) do
+	for _, key in ipairs({ "instances", "assets", "parts", "terrain", "roads", "skirts", "stairs", "portals", "payloads" }) do
 		if typeof(mod[key]) ~= "table" then fail("scene export lacks " .. key) end
 	end
 	for _, skirt in ipairs(mod.skirts) do
@@ -141,6 +141,8 @@ function SceneData.load(chunkId: string): any
 		end
 	end
 	local skirtsByInstanceId = indexBy(mod.skirts, "instanceId", "scene export skirts")
+	local stairsById = indexBy(mod.stairs, "id", "scene export stairs")
+	local portalsById = indexBy(mod.portals, "id", "scene export portals")
 
 	local sidecar = BridgeClient.getJson("/sidecar")
 	if sidecar == nil then fail("bridge has no engine sidecar; restart it with --sidecar") end
@@ -193,9 +195,13 @@ function SceneData.load(chunkId: string): any
 		payloadsByHash = payloadsByHash,
 		roadSegmentsById = roadSegmentsById,
 		skirtsByInstanceId = skirtsByInstanceId,
+		stairsById = stairsById,
+		portalsById = portalsById,
 		assetByPartHash = assetByPartHash,
 		importFactorByPartHash = importFactorByPartHash,
 		materialById = materialById,
+		terrainAppearance = mod.terrainAppearance,
+		terrainRepaints = mod.terrainRepaints,
 	}
 end
 
@@ -231,6 +237,42 @@ function SceneData.checkAvailability(scene: any, transaction: any): ()
 			fail("road segment " .. segmentId .. " has no mapped material")
 		end
 	end
+	for _, stairId in ipairs(transaction.stairIds) do
+		local stair = scene.stairsById[stairId]
+		if stair == nil then fail("scene export has no stair " .. stairId) end
+		if stair.chunkId ~= transaction.chunkId then
+			fail("stair " .. stairId .. " belongs to another chunk")
+		end
+		requireVector(stair.baseMeters, "stair " .. stairId .. " baseMeters")
+		if stair.yawStepsY90 ~= 0 and stair.yawStepsY90 ~= 1 and stair.yawStepsY90 ~= 2 and stair.yawStepsY90 ~= 3 then
+			fail("stair " .. stairId .. " has an invalid yaw")
+		end
+		if typeof(stair.steps) ~= "number" or stair.steps < 1 or stair.steps % 1 ~= 0 then
+			fail("stair " .. stairId .. " lacks positive integer steps")
+		end
+		for _, key in ipairs({ "riserMeters", "treadMeters", "widthMeters" }) do
+			if typeof(stair[key]) ~= "number" or stair[key] <= 0 then
+				fail("stair " .. stairId .. " lacks positive " .. key)
+			end
+		end
+		if scene.materialById[stair.materialId] == nil then
+			fail("stair " .. stairId .. " has no mapped material")
+		end
+	end
+	for _, portalId in ipairs(transaction.portalIds) do
+		local portal = scene.portalsById[portalId]
+		if portal == nil then fail("scene export has no portal " .. portalId) end
+		if portal.chunkId ~= transaction.chunkId then
+			fail("portal " .. portalId .. " belongs to another chunk")
+		end
+		requireVector(portal.positionMeters, "portal " .. portalId .. " positionMeters")
+		if portal.yawStepsY90 ~= 0 and portal.yawStepsY90 ~= 1 and portal.yawStepsY90 ~= 2 and portal.yawStepsY90 ~= 3 then
+			fail("portal " .. portalId .. " has an invalid yaw")
+		end
+		if typeof(portal.widthMeters) ~= "number" or portal.widthMeters <= 0 then
+			fail("portal " .. portalId .. " lacks a positive width")
+		end
+	end
 	for _, instanceId in ipairs(transaction.instanceIds) do
 		local skirt = scene.skirtsByInstanceId[instanceId]
 		if skirt ~= nil and scene.materialById[skirt.materialId] == nil then
@@ -246,6 +288,19 @@ function SceneData.checkAvailability(scene: any, transaction: any): ()
 		for _, materialId in ipairs(entry.materials) do
 			if scene.materialById[materialId] == nil then
 				fail("terrain " .. surfaceId .. " has no mapped material " .. tostring(materialId))
+			end
+		end
+	end
+	if scene.terrainRepaints ~= nil then
+		if typeof(scene.terrainRepaints) ~= "table" then fail("terrain repaints must be an array") end
+		for _, repaint in ipairs(scene.terrainRepaints) do
+			if scene.terrainById[repaint.surfaceId] == nil then
+				fail("terrain repaint names an unknown surface " .. tostring(repaint.surfaceId))
+			end
+			for _, key in ipairs({ "sourceMaterialId", "targetMaterialId" }) do
+				if scene.materialById[repaint[key]] == nil then
+					fail("terrain repaint has no mapped material " .. tostring(repaint[key]))
+				end
 			end
 		end
 	end

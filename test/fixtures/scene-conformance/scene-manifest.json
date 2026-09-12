@@ -32,7 +32,7 @@
       "unitsToMeters": 1
     }
   ],
-  "hash": "40bb4d7dc7587a9e1fe467a63776282c6d004e654a5bd72e79ead0223a819079",
+  "hash": "ebdf37e32f144664c0175b8e5740cfd8ec655d9eb464f9df702f1d9732743876",
   "instances": [
     {
       "archetypeId": "FamilyGroundCover_archetype_0",
@@ -136,14 +136,14 @@
   ],
   "payloads": [
     {
-      "byteLength": 3140,
-      "contentHash": "07f66641b659230c163dabf339885641531048262031c45f5cf1c3823ae5e53e",
-      "mediaType": "application/x-basalt-voxels"
-    },
-    {
       "byteLength": 620,
       "contentHash": "1e93a948111175e4e81068b0e08a1c9d4c7492db0f07a1642d6f17cc54a63dfb",
       "mediaType": "model/gltf-binary"
+    },
+    {
+      "byteLength": 5188,
+      "contentHash": "7cf459eaf78d1efa7d99aa2c1222bf58ea355508112a2c2ad5aeb6b4e16ea6c5",
+      "mediaType": "application/x-basalt-voxels"
     }
   ],
   "placementConvention": {
@@ -153,6 +153,7 @@
     "upAxis": "+Y"
   },
   "populationHash": "01b71ec81cae94c5a056c713eec5b9f45968e1e8c1c22d17e4215927cc550964",
+  "portals": [],
   "roads": [
     {
       "routeId": "exportRoute",
@@ -735,6 +736,7 @@
     }
   ],
   "skirts": [],
+  "stairs": [],
   "studMeters": 0.28,
   "terrain": [
     {
@@ -747,7 +749,7 @@
         "z": -8.96
       },
       "surfaceId": "exportTerrain",
-      "voxelHash": "07f66641b659230c163dabf339885641531048262031c45f5cf1c3823ae5e53e"
+      "voxelHash": "7cf459eaf78d1efa7d99aa2c1222bf58ea355508112a2c2ad5aeb6b4e16ea6c5"
     }
   ],
   "worldPlanHash": "4c01e9b7cce05b3ad58158b6614d7e5a0cdc9d5d4b04076356eedf8d3f7b80bf"

@@ -48,12 +48,13 @@ stable routes, support, clearance, and partition hashes.
 ## M4 — Engine-neutral lowering and the Roblox adapter
 
 Done: the compiler emits one sealed scene export (manifest plus
-content-addressed GLB/BVX1 payloads, meters/Y-up/right-handed, zero engine
+content-addressed GLB/BVX2 payloads, meters/Y-up/right-handed, zero engine
 handles) with a byte-locked conformance fixture; the bridge serves the export,
 hash-verified payload bytes, the upload sidecar, and the material map; the
 upload tool enforces mesh budgets with a dry-run mode; the fixed Luau connector
-lowers MeshParts with measured import scale, collision proxies, `WriteVoxels`
-terrain, and road ribbons, then observes constructed geometry. `slice_bay`
+lowers MeshParts with measured import scale, collision proxies,
+`WriteVoxelChannels` terrain with liquid readback, one-time terrain appearance,
+and road ribbons, then observes constructed geometry. `slice_bay`
 compiles deterministically: 28 instances, 17 parts, 4 chunks, 1 terrain
 surface, 2 road segments; budgets judge 8 parts eligible, 9 incomplete (open
 topology held for creator review), 0 rejected.

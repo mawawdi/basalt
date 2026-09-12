@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Uploads scene-export mesh payloads through the Open Cloud Assets API and
 // writes the adapter-owned sidecar binding content hashes to asset IDs.
-// Creator-run: the API key comes from the environment and is never stored.
+// Creator-run: the API key comes from the environment, falling back to the
+// repo-root .env, and is never stored or logged.
 // One uploader per sidecar (lockfile); bindings persist per upload so reruns
 // rebind finished uploads instead of duplicating them.
 // --dry-run reports budget verdicts without touching the network.
@@ -12,6 +13,7 @@ import { open, readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
+import { readEnvFileKey } from "./read-env-file.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -151,7 +153,8 @@ async function main() {
     return;
   }
 
-  const apiKey = process.env[option(args, "--api-key-env") ?? "BASALT_ROBLOX_API_KEY"];
+  const apiKeyName = option(args, "--api-key-env") ?? "BASALT_ROBLOX_API_KEY";
+  const apiKey = process.env[apiKeyName] || readEnvFileKey(repositoryRoot, apiKeyName);
   if (!apiKey && !recordDir)
     throw new Error("Uploads require the API key environment variable to be set");
   activeUploadLockRelease = await acquireUploadLock(`${resolve(sidecarOut)}.lock`);

@@ -2,6 +2,7 @@ import { lstat, readFile, realpath } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
 import { parentPort, workerData } from "node:worker_threads";
 import { pathToFileURL } from "node:url";
+import { sourceManifestPath } from "./basalt-paths.mjs";
 
 const repositoryRoot = workerData.repositoryRoot;
 const trustedSourceRoot = resolve(repositoryRoot, "registry");
@@ -115,6 +116,7 @@ async function measureAsset(asset, modules, sourceUnits) {
     inspectGlbTopology,
     inspectGlbAssetContactPatches,
     fitSupportPlane,
+    fitJointPlanes,
     seedFromAssetId,
     packGltfToGlb,
     normalizeSource,
@@ -230,6 +232,11 @@ async function measureAsset(asset, modules, sourceUnits) {
     );
   })();
   const supportPlaneFits = supportPlaneResult.status === "fit" ? supportPlaneResult.fits : [];
+  // Planar joint-face decomposition runs on the studs-space rebased mesh;
+  // fits are the assembly-socket evidence the seal consumes for kit
+  // families, and refusals carry reasons.
+  const jointPlaneResult = fitJointPlanes(rebased.mesh);
+  const jointPlaneFits = jointPlaneResult.status === "fit" ? jointPlaneResult.fits : [];
   return {
     assetId: asset.record.assetId,
     mesh: rebased.mesh,
@@ -278,6 +285,24 @@ async function measureAsset(asset, modules, sourceUnits) {
       })),
       supportPlaneRefusal:
         supportPlaneResult.status === "refused" ? supportPlaneResult.reason : null,
+      jointPlaneFits: jointPlaneFits.map((fit) => ({
+        normalQ32_32: {
+          x: quantizeQ32_32(fit.normal.x),
+          y: quantizeQ32_32(fit.normal.y),
+          z: quantizeQ32_32(fit.normal.z),
+        },
+        originQ32_32: {
+          x: quantizeQ32_32(fit.origin.x),
+          y: quantizeQ32_32(fit.origin.y),
+          z: quantizeQ32_32(fit.origin.z),
+        },
+        boundaryRadiusStuds: fit.boundaryRadiusStuds,
+        axisAlignmentDegrees: fit.axisAlignmentDegrees,
+        faceAreaStuds2: fit.faceAreaStuds2,
+        inlierCount: fit.inlierCount,
+        pointCount: fit.pointCount,
+      })),
+      jointPlaneRefusal: jointPlaneResult.status === "refused" ? jointPlaneResult.reason : null,
       surfaceAreaStuds2,
       texelDensityPixelsPerStud: (() => {
         const minimum = report.nodes
@@ -335,7 +360,7 @@ async function main() {
     measureGeometry,
   };
   const sourceUnits = resolveSourceUnits(
-    JSON.parse(await readFile(resolve(repositoryRoot, "registry/source-manifest.json"), "utf8")),
+    JSON.parse(await readFile(sourceManifestPath(repositoryRoot), "utf8")),
   );
   for (const asset of workerData.assets) {
     if (!sourceUnits.has(asset.source.relativePath))

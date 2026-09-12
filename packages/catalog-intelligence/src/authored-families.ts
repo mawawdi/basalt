@@ -35,6 +35,7 @@ export const authoredFamilyDeclarationSchema = z
     members: z.array(memberSchema).min(1).max(4096),
     trimBands: z.array(TRIM_BAND_SCHEMA).max(128).optional(),
     mountSockets: z.boolean().optional(),
+    jointSockets: z.boolean().optional(),
   })
   .strict();
 export type AuthoredFamilyDeclaration = z.infer<typeof authoredFamilyDeclarationSchema>;

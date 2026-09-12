@@ -3,10 +3,14 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
+import {
+  catalogInventoryPath,
+  sourceManifestPath as resolveSourceManifestPath,
+} from "./basalt-paths.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const sourceManifestPath = resolve(repositoryRoot, "registry/source-manifest.json");
-const outputPath = resolve(repositoryRoot, ".basalt/catalog-cache/source-inventory.json");
+const sourceManifestPath = resolveSourceManifestPath(repositoryRoot);
+const outputPath = catalogInventoryPath(repositoryRoot);
 
 function pendingRecord(assetId, fileHash, sourcePath, contentHash, stableJson) {
   const zero = { x: "0", y: "0", z: "0" };
@@ -101,6 +105,7 @@ async function main() {
         : family.sharedTrimSheetAssetId,
     ...(family.trimBands ? { trimBands: family.trimBands } : { trimBands: trimSheet.bands }),
     ...(family.mountSockets ? { mountSockets: family.mountSockets } : {}),
+    ...(family.jointSockets ? { jointSockets: family.jointSockets } : {}),
     members: family.members.map((member) => {
       const asset = assetsByPath.get(member.sourcePath);
       if (!asset)
@@ -128,6 +133,12 @@ async function main() {
       trimMappingsRejectedByEnergy: 0,
       incompleteCandidates: assets.length,
       kindFamilyDiagnostics: [],
+      modularKitDiagnostics: {
+        modularFamilies: 0,
+        pendingFamilies: 0,
+        quarantinedFamilies: 0,
+        quarantined: [],
+      },
     },
   });
   await mkdir(dirname(outputPath), { recursive: true, mode: 0o700 });

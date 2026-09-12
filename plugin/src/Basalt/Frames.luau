@@ -11,6 +11,10 @@ function Frames.metersToStuds(meters: number): number
 	return meters / Constants.STUD_METERS
 end
 
+function Frames.studsToMeters(studs: number): number
+	return studs * Constants.STUD_METERS
+end
+
 -- Unit quaternion [x, y, z, w] to a rotation-only CFrame.
 function Frames.quaternionToCFrame(qx: number, qy: number, qz: number, qw: number): CFrame
 	local xx = qx * qx

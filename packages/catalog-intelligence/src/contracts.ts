@@ -109,6 +109,24 @@ const measuredEvidenceSchema = z
     supportPlaneRefusal: z
       .enum(["no_patches", "sparse_points", "no_plane", "degenerate_footprint"])
       .nullable(),
+    // Whole-building members legitimately expose thousands of planar
+    // faces; the family seal still carries only the mating subset.
+    jointPlaneFits: z
+      .array(
+        z
+          .object({
+            normalQ32_32: q32Vector3,
+            originQ32_32: q32Vector3,
+            boundaryRadiusStuds: finite.nonnegative(),
+            axisAlignmentDegrees: finite.nonnegative(),
+            faceAreaStuds2: finite.nonnegative(),
+            inlierCount: z.number().int().nonnegative(),
+            pointCount: z.number().int().nonnegative(),
+          })
+          .strict(),
+      )
+      .max(8192),
+    jointPlaneRefusal: z.enum(["no_triangles", "no_planar_faces", "degenerate_faces"]).nullable(),
     surfaceAreaStuds2: finite.nonnegative(),
     texelDensityPixelsPerStud: finite.nonnegative(),
     topologicalGenus: z.number().int(),
@@ -182,6 +200,14 @@ export const catalogFamilyDeclarationSchema = z
     reason: z.string().trim().min(1).max(1024).optional(),
     trimBands: z.array(TRIM_BAND_SCHEMA).max(128).optional(),
     mountSockets: z.boolean().optional(),
+    jointSockets: z.boolean().optional(),
+    modularKit: z
+      .object({
+        status: z.enum(["modular", "pending", "quarantined"]),
+        reason: z.string().trim().min(1).max(1024),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type CatalogFamilyDeclaration = z.infer<typeof catalogFamilyDeclarationSchema>;
@@ -202,6 +228,23 @@ export const catalogInventoryManifestSchema = z
         renderablesWithValidCollisionBindings: z.number().int().nonnegative(),
         trimMappingsRejectedByEnergy: z.number().int().nonnegative(),
         incompleteCandidates: z.number().int().nonnegative(),
+        modularKitDiagnostics: z
+          .object({
+            modularFamilies: z.number().int().nonnegative(),
+            pendingFamilies: z.number().int().nonnegative(),
+            quarantinedFamilies: z.number().int().nonnegative(),
+            quarantined: z
+              .array(
+                z
+                  .object({
+                    familyName: z.string().min(1).max(128),
+                    reason: z.string().min(1).max(1024),
+                  })
+                  .strict(),
+              )
+              .max(20_000),
+          })
+          .strict(),
         kindFamilyDiagnostics: z
           .array(
             z

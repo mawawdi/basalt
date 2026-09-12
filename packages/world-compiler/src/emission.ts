@@ -3,6 +3,7 @@ import type { RoadAssembly, RoadSegment } from "../../world-planning/src/roads.j
 import type { BasaltWorldFoundation } from "./index.js";
 import { worldEntityId, worldHash, compareWorldStrings } from "./primitives.js";
 import type { WorldPopulationArtifact } from "./contracts.js";
+import type { ChunkedRoomContent } from "./rooms.js";
 
 /** One bounded write unit handed to the Studio connector. */
 export interface BasaltWorldChunkDelta {
@@ -14,6 +15,8 @@ export interface BasaltWorldChunkDelta {
   readonly surfaceIds: readonly string[];
   readonly instanceIds: readonly string[];
   readonly roadSegmentIds: readonly string[];
+  readonly stairIds: readonly string[];
+  readonly portalIds: readonly string[];
   readonly bounds: {
     readonly minimum: { readonly x: number; readonly y: number; readonly z: number };
     readonly maximum: { readonly x: number; readonly y: number; readonly z: number };
@@ -41,6 +44,7 @@ export function createBasaltWorldEmission(
   population: WorldPopulationArtifact,
   chunkSize = 128,
   roads: readonly RoadAssembly[] = [],
+  rooms: ChunkedRoomContent = { stairs: [], portals: [] },
 ): BasaltWorldEmissionManifest {
   if (!Number.isFinite(chunkSize) || chunkSize <= 0) throw new Error("Chunk size must be positive");
   if (population.worldPlanHash !== foundation.worldPlanHash)
@@ -56,22 +60,48 @@ export function createBasaltWorldEmission(
     {
       instances: WorldPopulationArtifact["chunks"][number]["instances"];
       roadSegments: RoadSegment[];
+      stairs: ChunkedRoomContent["stairs"][number][];
+      portals: ChunkedRoomContent["portals"][number][];
     }
   >();
+  const blankRecord = () =>
+    ({ instances: [], roadSegments: [], stairs: [], portals: [] }) as {
+      instances: WorldPopulationArtifact["chunks"][number]["instances"];
+      roadSegments: RoadSegment[];
+      stairs: ChunkedRoomContent["stairs"][number][];
+      portals: ChunkedRoomContent["portals"][number][];
+    };
   for (const chunk of population.chunks)
-    records.set(chunk.chunkId, { instances: [...chunk.instances], roadSegments: [] });
+    records.set(chunk.chunkId, {
+      instances: [...chunk.instances],
+      roadSegments: [],
+      stairs: [],
+      portals: [],
+    });
   for (const road of roads)
     for (const segment of road.segments) {
-      const record = records.get(segment.chunkId) ?? { instances: [], roadSegments: [] };
+      const record = records.get(segment.chunkId) ?? blankRecord();
       record.roadSegments.push(segment);
       records.set(segment.chunkId, record);
     }
+  for (const stair of rooms.stairs) {
+    const record = records.get(stair.chunkId) ?? blankRecord();
+    record.stairs.push(stair);
+    records.set(stair.chunkId, record);
+  }
+  for (const portal of rooms.portals) {
+    const record = records.get(portal.chunkId) ?? blankRecord();
+    record.portals.push(portal);
+    records.set(portal.chunkId, record);
+  }
   const chunks = [...records.entries()]
     .map(([chunkId, record]) => {
       const instances = [...record.instances].sort((a, b) => compareWorldStrings(a.id, b.id));
       const roadSegmentIds = record.roadSegments
         .map((segment) => segment.id)
         .sort(compareWorldStrings);
+      const stairIds = record.stairs.map((stair) => stair.id).sort(compareWorldStrings);
+      const portalIds = record.portals.map((portal) => portal.id).sort(compareWorldStrings);
       const minimum = {
         x: Number.POSITIVE_INFINITY,
         y: Number.POSITIVE_INFINITY,
@@ -98,7 +128,28 @@ export function createBasaltWorldEmission(
         maximum.y = Math.max(maximum.y, segment.bounds.maximum.y);
         maximum.z = Math.max(maximum.z, segment.bounds.maximum.z);
       }
-      if (instances.length === 0 && record.roadSegments.length === 0) {
+      for (const stair of record.stairs) {
+        minimum.x = Math.min(minimum.x, stair.bounds.minimum.x);
+        minimum.y = Math.min(minimum.y, stair.bounds.minimum.y);
+        minimum.z = Math.min(minimum.z, stair.bounds.minimum.z);
+        maximum.x = Math.max(maximum.x, stair.bounds.maximum.x);
+        maximum.y = Math.max(maximum.y, stair.bounds.maximum.y);
+        maximum.z = Math.max(maximum.z, stair.bounds.maximum.z);
+      }
+      for (const portal of record.portals) {
+        minimum.x = Math.min(minimum.x, portal.portal.position.x);
+        minimum.y = Math.min(minimum.y, portal.portal.position.y);
+        minimum.z = Math.min(minimum.z, portal.portal.position.z);
+        maximum.x = Math.max(maximum.x, portal.portal.position.x);
+        maximum.y = Math.max(maximum.y, portal.portal.position.y);
+        maximum.z = Math.max(maximum.z, portal.portal.position.z);
+      }
+      if (
+        instances.length === 0 &&
+        record.roadSegments.length === 0 &&
+        record.stairs.length === 0 &&
+        record.portals.length === 0
+      ) {
         const [xText, zText] = chunkId.replace(/^chunk_/, "").split("_");
         const x = Number(xText) * chunkSize;
         const z = Number(zText) * chunkSize;
@@ -109,10 +160,27 @@ export function createBasaltWorldEmission(
         minimum.z = z;
         maximum.z = z + chunkSize;
       }
+      // Surfaces follow the chunk tile, never the content bounds: a sparse
+      // chunk must still write every surface its tile touches, or terrain
+      // silently never lowers. Shared edge surfaces stay idempotent through
+      // the marker skip path.
+      const [tileXText, tileZText] = chunkId.replace(/^chunk_/, "").split("_");
+      const tileMinimum = {
+        x: Number(tileXText) * chunkSize,
+        z: Number(tileZText) * chunkSize,
+      };
+      const tileMaximum = {
+        x: Number(tileXText) * chunkSize + chunkSize,
+        z: Number(tileZText) * chunkSize + chunkSize,
+      };
       const surfaceIds = foundation.worldPlan.surfaces
         .ids()
         .filter((surfaceId) =>
-          intersects(foundation.worldPlan.surfaces.coordinateBounds(surfaceId), minimum, maximum),
+          intersects(
+            foundation.worldPlan.surfaces.coordinateBounds(surfaceId),
+            tileMinimum,
+            tileMaximum,
+          ),
         )
         .sort(compareWorldStrings);
       const material = {
@@ -123,6 +191,8 @@ export function createBasaltWorldEmission(
         surfaceIds,
         instanceIds: instances.map((instance) => instance.id),
         roadSegmentIds,
+        stairIds,
+        portalIds,
         bounds: { minimum, maximum },
       };
       const hash = contentHash(stableJson(material));

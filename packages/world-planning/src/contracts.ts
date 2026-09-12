@@ -167,6 +167,15 @@ const terrainMaterialWeight = z
   .object({ materialId: entityId, weight: positive.max(1_000_000) })
   .strict();
 
+const terrainMaterialBand = z
+  .object({
+    materialId: entityId,
+    belowElevationStuds: coordinate.optional(),
+    aboveElevationStuds: coordinate.optional(),
+    aboveSlopeDegrees: finite.min(0).max(180).optional(),
+  })
+  .strict();
+
 const terrainNoiseLayer = z
   .object({
     id: entityId,
@@ -344,6 +353,7 @@ export const TERRAIN_PLAN_SCHEMA = z
       })
       .strict(),
     regions: z.array(terrainRegion).min(1).max(64),
+    materialBands: z.array(terrainMaterialBand).max(32).optional(),
     operations: z.array(terrainOperation).max(128),
     navigation: z.object({ maximumSlopeDegrees: finite.min(0).max(89) }).strict(),
   })
@@ -432,6 +442,7 @@ const worldRegion = z
     name: string160,
     purpose: string1024,
     parentId: entityId.optional(),
+    zoneTag: z.string().min(1).max(64).optional(),
     volume: WORLD_REGION_VOLUME_SCHEMA,
     compositionMeasures: z.array(WORLD_COMPOSITION_MEASURE_SCHEMA).max(16),
     refinementPriority: z.number().int().min(0).max(100),
@@ -713,6 +724,37 @@ const semanticClaim = z
   })
   .strict();
 
+const linearRgb = z.object({ r: weight, g: weight, b: weight }).strict();
+
+const waterTableAppearance = z
+  .object({
+    colorRgb: linearRgb,
+    transparency: weight,
+    reflectance: weight,
+    waveSizeStuds: nonnegative.max(64),
+    waveSpeedStuds: nonnegative.max(64),
+  })
+  .strict();
+
+const terrainGrassAppearance = z
+  .object({
+    enabled: z.boolean(),
+    lengthStuds: finite.min(0.1).max(1),
+  })
+  .strict();
+
+export const TERRAIN_APPEARANCE_SCHEMA = z
+  .object({
+    water: waterTableAppearance.optional(),
+    grass: terrainGrassAppearance.optional(),
+    materialTints: z
+      .array(z.object({ materialId: z.string().min(1), colorRgb: linearRgb }).strict())
+      .max(256)
+      .default([]),
+  })
+  .strict();
+export type TerrainAppearance = z.infer<typeof TERRAIN_APPEARANCE_SCHEMA>;
+
 export const WORLD_PLAN_SCHEMA = z
   .object({
     kind: z.literal("SpatialWorldPlan"),
@@ -747,6 +789,8 @@ export const WORLD_PLAN_SCHEMA = z
         clearance: nonnegative.max(1024),
       })
       .strict(),
+    seaLevelStuds: coordinate.optional(),
+    terrainAppearance: TERRAIN_APPEARANCE_SCHEMA.optional(),
   })
   .strict()
   .superRefine((value, context) => validateWorldPlan(value, context));
@@ -1038,6 +1082,12 @@ function validateWorldPlan(
     "World collision IDs",
     context,
   );
+  if (value.terrainAppearance?.water && value.seaLevelStuds === undefined)
+    context.addIssue({
+      code: "custom",
+      path: ["terrainAppearance", "water"],
+      message: "Water appearance requires a world sea level",
+    });
   unique(
     value.cameras.map((camera) => camera.id),
     "World camera IDs",

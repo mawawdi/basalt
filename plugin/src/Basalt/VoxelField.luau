@@ -1,6 +1,6 @@
 --!strict
 
--- Pure BVX1 decoder. Every integer and float is decoded manually from raw
+-- Pure BVX2 decoder. Every integer and float is decoded manually from raw
 -- bytes in little-endian order, so lowering depends on no engine float
 -- decoding behavior beyond IEEE-754 doubles.
 local VoxelField = {}
@@ -83,6 +83,7 @@ export type DecodedVoxelField = {
 	cellSize: number,
 	materials: { string },
 	occupancy: { number },
+	liquid: { number },
 	materialIndex: { number },
 }
 
@@ -90,7 +91,7 @@ export type DecodedVoxelField = {
 -- x-fastest, then z, then y: flat = x + dimX * (z + dimZ * y), 0-based.
 function VoxelField.decode(bytes: string): DecodedVoxelField
 	local reader = Reader.new(bytes)
-	if reader:take(4, "magic") ~= "BVX1" then fail("voxel payload has an unknown magic") end
+	if reader:take(4, "magic") ~= "BVX2" then fail("voxel payload has an unknown magic") end
 	local nx = reader:u32("dimX")
 	local ny = reader:u32("dimY")
 	local nz = reader:u32("dimZ")
@@ -105,7 +106,7 @@ function VoxelField.decode(bytes: string): DecodedVoxelField
 		table.insert(materials, reader:take(length, "material name"))
 	end
 	local total = nx * ny * nz
-	if reader:remaining() ~= total * 6 then
+	if reader:remaining() ~= total * 10 then
 		fail("voxel payload length disagrees with its dimensions")
 	end
 	local occupancy: { number } = table.create(total)
@@ -113,6 +114,12 @@ function VoxelField.decode(bytes: string): DecodedVoxelField
 		local value = reader:f32("occupancy")
 		if value < 0 or value > 1 then fail("voxel payload occupancy escapes [0, 1]") end
 		occupancy[index] = value
+	end
+	local liquid: { number } = table.create(total)
+	for index = 1, total do
+		local value = reader:f32("liquid")
+		if value < 0 or value > 1 then fail("voxel payload liquid escapes [0, 1]") end
+		liquid[index] = value
 	end
 	local materialIndex: { number } = table.create(total)
 	for index = 1, total do
@@ -128,6 +135,7 @@ function VoxelField.decode(bytes: string): DecodedVoxelField
 		cellSize = cellSize,
 		materials = materials,
 		occupancy = occupancy,
+		liquid = liquid,
 		materialIndex = materialIndex,
 	}
 end

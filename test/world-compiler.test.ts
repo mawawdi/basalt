@@ -2,16 +2,21 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { contentHash, stableJson } from "../packages/contracts/src/index.js";
 import {
+  attachInstancesToPopulation,
+  chunkRoomGraphContent,
   compileBasaltWorldFoundation,
   createBasaltWorldEmission,
   createBasaltWorldCompilerPlan,
+  planRooms,
   populateBasaltWorld,
   sealWorldPopulationArtifact,
   type GroundingEvidenceFile,
   type WorldFamilyPopulationPlan,
+  type WorldPopulationInstance,
 } from "../packages/world-compiler/src/index.js";
 import { productionWorldPlanFixture } from "./helpers/production-world-fixtures.js";
 import { groundingEvidenceFixture } from "./helpers/grounding-evidence.js";
+import { testKit, testProgram, testRecipe } from "./helpers/room-fixtures.js";
 
 function fixture() {
   return productionWorldPlanFixture({
@@ -161,6 +166,80 @@ test("Basalt lowers population into deterministic connector-sized transaction de
   assert.ok(first.chunks.length > 0);
   assert.ok(first.chunks.every((chunk) => chunk.transactionId.startsWith("basalt_tx_")));
   assert.ok(first.chunks.every((chunk) => chunk.surfaceIds.includes("basaltTerrain")));
+  assert.ok(first.chunks.every((chunk) => chunk.stairIds.length === 0));
+  assert.ok(first.chunks.every((chunk) => chunk.portalIds.length === 0));
+});
+
+test("Basalt attaches assembly instances to the sealed population", () => {
+  const foundation = compileBasaltWorldFoundation(fixture());
+  const plan = createBasaltWorldCompilerPlan({
+    foundation,
+    styleContractHash: contentHash("basalt-style"),
+    familyPlans: [familyPlan()],
+  });
+  const population = populateBasaltWorld(foundation, plan, {
+    groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
+  });
+  assert.deepEqual(attachInstancesToPopulation(population, []), population);
+  const home = population.chunks[0]!.chunkId;
+  const extra: WorldPopulationInstance[] = [
+    {
+      id: "asm_test_home_00",
+      familyId: "family_test_huts",
+      archetypeId: "family_test_huts_archetype_0",
+      chunkId: home,
+      position: { x: 1, y: 0, z: 2 },
+      rotation: [0, 0, 0, 1],
+      scale: 1,
+      footprint: { contactRadiusStuds: 1, restYStuds: 0, dropsStuds: [0, 0, 0, 0] },
+    },
+    {
+      id: "asm_test_far_00",
+      familyId: "family_test_huts",
+      archetypeId: "family_test_huts_archetype_0",
+      chunkId: "chunk_9_9",
+      position: { x: 1153, y: 0, z: 1154 },
+      rotation: [0, 0, 0, 1],
+      scale: 1,
+      footprint: { contactRadiusStuds: 1, restYStuds: 0, dropsStuds: [0, 0, 0, 0] },
+    },
+  ];
+  const merged = attachInstancesToPopulation(population, extra);
+  assert.equal(merged.instanceCount, population.instanceCount + 2);
+  assert.equal(merged.worldPlanHash, population.worldPlanHash);
+  assert.equal(merged.populationPlanHash, population.populationPlanHash);
+  const homeChunk = merged.chunks.find((chunk) => chunk.chunkId === home)!;
+  assert.ok(homeChunk.familyIds.includes("family_test_huts"));
+  assert.ok(homeChunk.instances.some((instance) => instance.id === "asm_test_home_00"));
+  const farChunk = merged.chunks.find((chunk) => chunk.chunkId === "chunk_9_9")!;
+  assert.deepEqual(farChunk.familyIds, ["family_test_huts"]);
+  assert.throws(() => attachInstancesToPopulation(merged, extra), /already carries instance/);
+});
+
+test("Basalt emission deltas carry chunked room stairs and portals", () => {
+  const foundation = compileBasaltWorldFoundation(fixture());
+  const plan = createBasaltWorldCompilerPlan({
+    foundation,
+    styleContractHash: contentHash("basalt-style"),
+    familyPlans: [familyPlan()],
+  });
+  const population = populateBasaltWorld(foundation, plan, {
+    groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
+  });
+  const graph = planRooms(testRecipe(), testKit(), testProgram(), { regionId: "basaltRegion" });
+  const rooms = chunkRoomGraphContent([graph], 64);
+  const manifest = createBasaltWorldEmission(foundation, population, 64, [], rooms);
+  const stairId = "roomgraph_recipe_test_rooms_00_stair_00_01";
+  const delta = manifest.chunks.find((chunk) => chunk.stairIds.includes(stairId))!;
+  assert.deepEqual(delta.stairIds, [stairId]);
+  assert.deepEqual(delta.portalIds, [
+    "roomgraph_recipe_test_rooms_00_portal_00_00",
+    "roomgraph_recipe_test_rooms_00_portal_00_en",
+    "roomgraph_recipe_test_rooms_00_portal_01_00",
+  ]);
+  assert.ok(delta.bounds.minimum.x <= 1 && delta.bounds.maximum.x >= 3);
+  assert.ok(delta.bounds.minimum.z <= -4 && delta.bounds.maximum.z >= 4);
+  assert.ok(delta.bounds.maximum.y >= 6);
 });
 
 test("Basalt spacing separates contact discs across families", () => {
@@ -298,6 +377,47 @@ test("Basalt population keeps support footprints over the surface", () => {
       `pole contact disk leaves the surface at ${instance.position.x}, ${instance.position.z}`,
     );
   }
+});
+
+test("Basalt elevation bands admit and refuse by sample height", () => {
+  const foundation = compileBasaltWorldFoundation(fixture());
+  const run = (band?: { minimum?: number; maximum?: number }) => {
+    const plan = createBasaltWorldCompilerPlan({
+      foundation,
+      styleContractHash: contentHash("basalt-style"),
+      familyPlans: [{ ...familyPlan(), ...(band ? { elevationBandStuds: band } : {}) }],
+    });
+    return populateBasaltWorld(foundation, plan, {
+      groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
+    });
+  };
+  const open = run();
+  const placed = (pop: ReturnType<typeof run>) => pop.chunks.flatMap((chunk) => chunk.instances);
+  // The flat fixture rests at 0: a covering band places the same count
+  // (ids differ: instance ids key on the plan hash, which covers the band).
+  const covered = run({ minimum: -1, maximum: 1 });
+  assert.equal(covered.instanceCount, open.instanceCount);
+  for (const instance of placed(covered))
+    assert.ok(
+      instance.footprint.restYStuds >= -1 && instance.footprint.restYStuds <= 1,
+      `banded instance escapes its band at ${instance.footprint.restYStuds}`,
+    );
+  assert.equal(run({ minimum: 1 }).instanceCount, 0);
+  assert.equal(run({ maximum: -1 }).instanceCount, 0);
+  assert.ok(open.instanceCount > 0, "open run must place to prove the bands refuse");
+});
+
+test("Basalt rejects inverted elevation bands at plan time", () => {
+  const foundation = compileBasaltWorldFoundation(fixture());
+  assert.throws(
+    () =>
+      createBasaltWorldCompilerPlan({
+        foundation,
+        styleContractHash: contentHash("basalt-style"),
+        familyPlans: [{ ...familyPlan(), elevationBandStuds: { minimum: 2, maximum: 1 } }],
+      }),
+    /elevation band is inverted/,
+  );
 });
 
 test("Basalt cluster distribution fills counts deterministically", () => {

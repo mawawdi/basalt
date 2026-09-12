@@ -109,6 +109,8 @@ test("macro landmarks use a typed shell and socketed focal components", () => {
     abi: ASSEMBLY_RECIPE_ABI,
     id: "landmarkAssembly",
     styleContractHash: contentHash("style"),
+    kitId: "landmarkKit",
+    lotId: "lot_district_p_0_0_1_00",
     shell: { archetypeId: "shellModule", repetition: 12, trimSheetRequired: true },
     socketedComponents: [
       {
@@ -116,11 +118,13 @@ test("macro landmarks use a typed shell and socketed focal components", () => {
         archetypeId: "crestArchetype",
         socketId: "crestSocket",
         semanticRole: "focal ornament",
+        position: { x: 0, y: 12, z: 0 },
+        rotationStepsY90: 0,
       },
     ],
   });
   assertAssemblyRecipeIdentity(recipe);
-  assert.equal(recipe.shell.trimSheetRequired, true);
+  assert.equal(recipe.shell?.trimSheetRequired, true);
   assert.equal(recipe.socketedComponents[0]!.socketId, "crestSocket");
 });
 

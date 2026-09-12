@@ -3,11 +3,20 @@ import { createMurmurHash3Random } from "../../spatial-core/src/primitives.js";
 import { isPointInRouteCorridor } from "../../world-planning/src/roads.js";
 import type { PlacementSurfaceSample } from "../../world-planning/src/surfaces.js";
 import {
+  DEFAULT_INSTANCE_SCALE_RANGE,
+  DENSITY_AREA_NORMALIZATION_STUDS2,
   sealWorldPopulationArtifact,
   type WorldCompilerPlan,
   type WorldPopulationArtifact,
   type WorldPopulationInstance,
 } from "./contracts.js";
+
+/** Rejection-sampling budget multiplier per surface when the caller sets none. */
+const DEFAULT_ATTEMPTS_PER_FAMILY_SURFACE = 20;
+/** Attempt floor so tiny allocations still sample. */
+const MINIMUM_ATTEMPTS_PER_FAMILY_SURFACE = 32;
+/** A candidate must carry at least this region weight to belong to a plan region. */
+const REGION_WEIGHT_COVERAGE_THRESHOLD = 0.25;
 import type { BasaltWorldFoundation } from "./index.js";
 import { compareWorldStrings } from "./primitives.js";
 import {
@@ -22,13 +31,21 @@ import {
   type SurfaceCalibration,
 } from "./grounding.js";
 import { validateInterlockClearance } from "./relations.js";
-import { clearanceRadius, createCrossFamilySpacing, maximumClearanceRadius } from "./spacing.js";
+import { placeWallAnchoredClutter, type RoomGraph } from "./rooms.js";
+import {
+  allocateProportionalCounts,
+  clearanceRadius,
+  createCrossFamilySpacing,
+  maximumClearanceRadius,
+} from "./spacing.js";
 
 export interface BasaltPopulationOptions {
   readonly chunkSize?: number;
   readonly maxAttemptsPerFamilySurface?: number;
   /** Measured per-family grounding evidence; population never places blind. */
   readonly groundingEvidence: GroundingEvidenceFile;
+  /** Sealed room graphs feeding wall-anchored interior families. */
+  readonly interiorRooms?: readonly RoomGraph[];
 }
 
 /**
@@ -82,7 +99,9 @@ function footprintInsideSurface(
     for (const cornerZ of [min.z, max.z]) {
       const localX = (cornerX - centerX) * scale;
       const localZ = (cornerZ - centerZ) * scale;
-      if (!inside(position.x + localX * cos + localZ * sin, position.z - localX * sin + localZ * cos))
+      if (
+        !inside(position.x + localX * cos + localZ * sin, position.z - localX * sin + localZ * cos)
+      )
         return false;
     }
   return true;
@@ -100,7 +119,8 @@ export function populateBasaltWorld(
 ): WorldPopulationArtifact {
   const chunkSize = options.chunkSize ?? 128;
   if (!Number.isFinite(chunkSize) || chunkSize <= 0) throw new Error("Chunk size must be positive");
-  const attemptsPerSurface = options.maxAttemptsPerFamilySurface ?? 20;
+  const attemptsPerSurface =
+    options.maxAttemptsPerFamilySurface ?? DEFAULT_ATTEMPTS_PER_FAMILY_SURFACE;
   if (!Number.isInteger(attemptsPerSurface) || attemptsPerSurface < 1)
     throw new Error("Population attempt budget must be a positive integer");
   const evidenceIndex = indexGroundingEvidence(options.groundingEvidence);
@@ -114,8 +134,59 @@ export function populateBasaltWorld(
   for (const family of [...plan.familyPlans].sort((a, b) =>
     compareWorldStrings(a.familyId, b.familyId),
   )) {
+    if (family.distribution === "wall_anchored") {
+      const placed = placeWallAnchoredClutter({
+        graphs: options.interiorRooms ?? [],
+        family,
+        evidence: evidenceIndex,
+        planHash: plan.hash,
+        spacing,
+        attemptsPerFamily: attemptsPerSurface,
+      });
+      const ordinals = new Map<string, number>();
+      for (const placement of placed) {
+        const roomKey = `${placement.graphId} ${placement.roomId}`;
+        const ordinal = ordinals.get(roomKey) ?? 0;
+        ordinals.set(roomKey, ordinal + 1);
+        const id = `instance_${contentHash(stableJson([plan.hash, family.familyId, placement.graphId, placement.roomId, ordinal])).slice(0, 24)}`;
+        const evidence = evidenceIndex.get(family.familyId)?.[placement.variant];
+        if (!evidence)
+          throw new Error(
+            `Population has no grounding evidence for ${family.familyId} archetype ${placement.variant}`,
+          );
+        const chunkId = `chunk_${Math.floor(placement.position.x / chunkSize)}_${Math.floor(placement.position.z / chunkSize)}`;
+        instances.push({
+          id,
+          familyId: family.familyId,
+          archetypeId: `${family.familyId}_archetype_${placement.variant}`,
+          chunkId,
+          position: { ...placement.position },
+          rotation: [0, Math.sin(placement.yaw / 2), 0, Math.cos(placement.yaw / 2)] as [
+            number,
+            number,
+            number,
+            number,
+          ],
+          scale: placement.scale,
+          footprint: {
+            contactRadiusStuds: placement.radius,
+            restYStuds: placement.floorY,
+            dropsStuds: [0, 0, 0, 0],
+          },
+        });
+        const claimKey = `room_${roomKey}`;
+        const roomClaims = claimed.get(claimKey);
+        const claim = {
+          position: { x: placement.position.x, z: placement.position.z },
+          radius: placement.radius,
+        };
+        if (roomClaims) roomClaims.push(claim);
+        else claimed.set(claimKey, [claim]);
+      }
+      continue;
+    }
     const archetypeCount = family.archetypeCount ?? 1;
-    const scaleRange = family.scaleRange ?? ([0.92, 1.08] as const);
+    const scaleRange = family.scaleRange ?? DEFAULT_INSTANCE_SCALE_RANGE;
     const excludedRegions = new Set(family.excludedRegionIds);
     const surfaces = foundation.worldPlan.surfaces
       .ids()
@@ -142,7 +213,9 @@ export function populateBasaltWorld(
       };
     });
     const totalArea = surfaceAreas.reduce((sum, surface) => sum + surface.area, 0);
-    const estimatedTotal = Math.floor((totalArea / 256) * family.density.target);
+    const estimatedTotal = Math.floor(
+      (totalArea / DENSITY_AREA_NORMALIZATION_STUDS2) * family.density.target,
+    );
     const totalCount = Math.min(family.maximumCount, Math.max(family.minimumCount, estimatedTotal));
     const allocations = allocateSurfaceCounts(surfaceAreas, totalCount);
     for (const { surfaceId, bounds, area } of surfaceAreas) {
@@ -172,7 +245,10 @@ export function populateBasaltWorld(
         radius: number;
       }> = [];
       let attempts = 0;
-      while (accepted.length < count && attempts < Math.max(count * attemptsPerSurface, 32)) {
+      while (
+        accepted.length < count &&
+        attempts < Math.max(count * attemptsPerSurface, MINIMUM_ATTEMPTS_PER_FAMILY_SURFACE)
+      ) {
         attempts += 1;
         const coordinate = clustered
           ? clusterCoordinate(clusterCenters, clusterRadius, calibration, bounds, rng)
@@ -181,9 +257,21 @@ export function populateBasaltWorld(
               v: bounds.v.minimum + rng() * (bounds.v.maximum - bounds.v.minimum),
             };
         const sample = foundation.worldPlan.surfaces.sample(surfaceId, coordinate);
-        if (!family.regionIds.some((regionId) => (sample.regionWeights[regionId] ?? 0) >= 0.25))
+        if (
+          !family.regionIds.some(
+            (regionId) => (sample.regionWeights[regionId] ?? 0) >= REGION_WEIGHT_COVERAGE_THRESHOLD,
+          )
+        )
           continue;
         if (isRouteExcluded(foundation, family.excludedRouteIds, surfaceId, sample.position))
+          continue;
+        const band = family.elevationBandStuds;
+        if (band?.minimum !== undefined && sample.position.y < band.minimum) continue;
+        if (band?.maximum !== undefined && sample.position.y > band.maximum) continue;
+        if (
+          family.maximumSlopeDegrees !== undefined &&
+          sample.slopeDegrees > family.maximumSlopeDegrees
+        )
           continue;
         const ordinal = accepted.length;
         const variantSeed = contentHash(
@@ -223,7 +311,7 @@ export function populateBasaltWorld(
         )
           continue;
         const radius = clearanceRadius(variantEvidence.contactRadiusStuds, scale);
-        if (!spacing.tryClaim(surfaceId, sample.position.x, sample.position.z, radius)) continue;
+        if (!spacing.tryClaim(sample.position.x, sample.position.z, radius)) continue;
         const surfaceClaims = claimed.get(surfaceId);
         const claim = { position: { x: sample.position.x, z: sample.position.z }, radius };
         if (surfaceClaims) surfaceClaims.push(claim);
@@ -297,32 +385,57 @@ export function populateBasaltWorld(
   });
 }
 
+/**
+ * Attach externally solved instances (kit assemblies) to a sealed
+ * population. Assembly instances carry their own chunk ids from
+ * lowering; the family index unions so the export still resolves
+ * every instance to catalog geometry. The plan hash keeps naming the
+ * family-plan input; assemblies ride as additional compiler input.
+ */
+export function attachInstancesToPopulation(
+  artifact: WorldPopulationArtifact,
+  instances: readonly WorldPopulationInstance[],
+): WorldPopulationArtifact {
+  const chunks = new Map<
+    string,
+    { chunkId: string; familyIds: string[]; instances: WorldPopulationInstance[] }
+  >();
+  for (const chunk of artifact.chunks)
+    chunks.set(chunk.chunkId, {
+      chunkId: chunk.chunkId,
+      familyIds: [...chunk.familyIds],
+      instances: [...chunk.instances],
+    });
+  for (const instance of [...instances].sort((left, right) =>
+    compareWorldStrings(left.id, right.id),
+  )) {
+    const chunk = chunks.get(instance.chunkId) ?? {
+      chunkId: instance.chunkId,
+      familyIds: [],
+      instances: [],
+    };
+    if (chunk.instances.some((entry) => entry.id === instance.id))
+      throw new Error(`Population already carries instance ${instance.id}`);
+    if (!chunk.familyIds.includes(instance.familyId)) chunk.familyIds.push(instance.familyId);
+    chunk.instances.push(instance);
+    chunks.set(instance.chunkId, chunk);
+  }
+  return sealWorldPopulationArtifact({
+    worldPlanHash: artifact.worldPlanHash,
+    populationPlanHash: artifact.populationPlanHash,
+    chunks: [...chunks.values()],
+  });
+}
+
 /** Allocate one family budget across surfaces by area using largest remainders. */
 function allocateSurfaceCounts(
   surfaces: readonly { surfaceId: string; area: number }[],
   totalCount: number,
 ): ReadonlyMap<string, number> {
-  if (totalCount <= 0 || surfaces.length === 0) return new Map();
-  const areaTotal = surfaces.reduce((sum, surface) => sum + surface.area, 0);
-  if (areaTotal <= 0) return new Map();
-  const floors = surfaces.map((surface) => {
-    const exact = (totalCount * surface.area) / areaTotal;
-    return {
-      surfaceId: surface.surfaceId,
-      floor: Math.floor(exact),
-      remainder: exact - Math.floor(exact),
-    };
-  });
-  let remaining = totalCount - floors.reduce((sum, value) => sum + value.floor, 0);
-  for (const value of [...floors].sort(
-    (left, right) =>
-      right.remainder - left.remainder || compareWorldStrings(left.surfaceId, right.surfaceId),
-  )) {
-    if (remaining <= 0) break;
-    value.floor += 1;
-    remaining -= 1;
-  }
-  return new Map(floors.map((value) => [value.surfaceId, value.floor]));
+  return allocateProportionalCounts(
+    surfaces.map((surface) => ({ key: surface.surfaceId, weight: surface.area })),
+    totalCount,
+  );
 }
 
 function isRouteExcluded(

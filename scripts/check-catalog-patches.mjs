@@ -7,6 +7,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
+import { sourceManifestPath } from "./basalt-paths.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 await assertRuntimeBuildCurrent();
@@ -20,9 +21,7 @@ const { STUD_METERS } = await import(
 const manifest = JSON.parse(
   await readFile(resolve(repositoryRoot, "registry/family-manifest.json"), "utf8"),
 );
-const sourceManifest = JSON.parse(
-  await readFile(resolve(repositoryRoot, "registry/source-manifest.json"), "utf8"),
-);
+const sourceManifest = JSON.parse(await readFile(sourceManifestPath(repositoryRoot), "utf8"));
 const metersPerUnit = new Map();
 for (const pkg of sourceManifest.packages ?? [])
   for (const file of pkg.files ?? [])

@@ -5,6 +5,8 @@ return {
 	MAX_WORLD_CHUNKS = 4096,
 	MAX_WORLD_INSTANCES_PER_CHUNK = 65536,
 	MAX_WORLD_ROAD_SEGMENTS_PER_CHUNK = 16384,
+	MAX_WORLD_STAIRS_PER_CHUNK = 4096,
+	MAX_WORLD_PORTALS_PER_CHUNK = 4096,
 	WORLD_TRANSACTION_ABI = "basalt-world-transaction@1",
 	WORLD_READBACK_ABI = "basalt-world-readback@1",
 	-- Lowering adapter facts. The scene export stays engine-neutral; unit and
@@ -43,4 +45,8 @@ return {
 	ROAD_LIFT_STUDS = 0.3,
 	-- Skirt curtains hang plumb from slab edges; no lift, thin body.
 	SKIRT_THICKNESS_STUDS = 0.2,
+	-- Portal markers are transparent evidence slabs centered on the sealed
+	-- pose, wide across the opening. They never collide or render.
+	PORTAL_MARKER_HEIGHT_STUDS = 2,
+	PORTAL_MARKER_THICKNESS_STUDS = 0.2,
 }

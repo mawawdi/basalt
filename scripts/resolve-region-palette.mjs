@@ -7,9 +7,10 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
+import { catalogInventoryPath } from "./basalt-paths.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const inventoryPath = resolve(repositoryRoot, ".basalt/catalog-cache/source-inventory.json");
+const inventoryPath = catalogInventoryPath(repositoryRoot);
 
 function option(args, name) {
   const index = args.indexOf(name);
@@ -99,6 +100,33 @@ async function main() {
         role.semanticTags.some((tag) => typeof tag !== "string"))
     )
       throw new Error(`Role semanticTags must be a string array (region ${role.regionId})`);
+    if (role.elevationBandStuds !== undefined) {
+      const band = role.elevationBandStuds;
+      const finiteOrMissing = (value) => value === undefined || Number.isFinite(value);
+      if (
+        typeof band !== "object" ||
+        band === null ||
+        !finiteOrMissing(band.minimum) ||
+        !finiteOrMissing(band.maximum) ||
+        (band.minimum !== undefined && band.maximum !== undefined && band.minimum > band.maximum)
+      )
+        throw new Error(
+          `Role elevationBandStuds needs finite minimum/maximum with minimum <= maximum (region ${role.regionId})`,
+        );
+    }
+    if (
+      role.maximumSlopeDegrees !== undefined &&
+      (!Number.isFinite(role.maximumSlopeDegrees) ||
+        role.maximumSlopeDegrees < 0 ||
+        role.maximumSlopeDegrees > 90)
+    )
+      throw new Error(`Role maximumSlopeDegrees must be within 0 to 90 (region ${role.regionId})`);
+    if (
+      role.excludedRouteIds !== undefined &&
+      (!Array.isArray(role.excludedRouteIds) ||
+        role.excludedRouteIds.some((id) => typeof id !== "string" || id.length === 0))
+    )
+      throw new Error(`Role excludedRouteIds must be a string array (region ${role.regionId})`);
     requests.push({
       biomeId,
       regionIds: [role.regionId],
@@ -113,6 +141,11 @@ async function main() {
         ? { density: role.density }
         : { density: densityEnvelopeFromPerHectare(role.targetDensityPerHectare) }),
       ...(role.targetDensityPerHectare > 0 ? { minimumCount: role.families } : {}),
+      ...(role.elevationBandStuds ? { elevationBandStuds: role.elevationBandStuds } : {}),
+      ...(role.maximumSlopeDegrees !== undefined
+        ? { maximumSlopeDegrees: role.maximumSlopeDegrees }
+        : {}),
+      ...(role.excludedRouteIds ? { excludedRouteIds: role.excludedRouteIds } : {}),
     });
     bound.push({ ...role, biomeId });
   }
@@ -124,7 +157,7 @@ async function main() {
   for (const role of bound) {
     const request = requests.find((candidate) => candidate.biomeId === role.biomeId);
     try {
-      Object.assign(resolved, resolveWorldAssetFamilies({ registry, requests: [request] }));
+      resolved[role.biomeId] = resolveWorldAssetFamilies({ registry, requests: [request] })[0];
       emittedRequests.push(request);
     } catch (error) {
       if (!role.factory) throw error;
@@ -252,7 +285,10 @@ async function main() {
     registry: JSON.parse(registryJson),
     requests: JSON.parse(requestsJson),
   });
-  if (stableJson(replayed) !== stableJson(resolved))
+  const replayedByBiome = Object.fromEntries(
+    emittedRequests.map((request, index) => [request.biomeId, replayed[index]]),
+  );
+  if (stableJson(replayedByBiome) !== stableJson(resolved))
     throw new Error("Emitted registry/requests do not reproduce the resolution");
   process.stdout.write(
     `${JSON.stringify({ output: outDir, roles: bound.length, cards: selected.length, bindings: worldPlan.exploit_bindings.length, missedRoles, queuedJobs: factoryJobs.length }, null, 2)}\n`,

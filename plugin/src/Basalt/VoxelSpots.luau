@@ -12,6 +12,7 @@ export type SpotReading = {
 	y: number,
 	z: number,
 	occupancy: number,
+	liquid: number,
 	material: string,
 }
 export type SpotDrift = {
@@ -68,8 +69,8 @@ function VoxelSpots.cells(nx: number, ny: number, nz: number): { SpotCell }
 end
 
 -- First difference between sealed and observed spot readings, or nil when
--- the surface reads back clean. Occupancy compares within the engine
--- quantization tolerance; materials compare exactly.
+-- the surface reads back clean. Solid and liquid occupancy compare within
+-- the engine quantization tolerance; materials compare exactly.
 function VoxelSpots.findDrift(
 	expected: { SpotReading },
 	observed: { SpotReading },
@@ -94,6 +95,16 @@ function VoxelSpots.findDrift(
 				field = "occupancy",
 				expected = want.occupancy,
 				observed = got.occupancy,
+			}
+		end
+		if math.abs(got.liquid - want.liquid) > tolerance then
+			return {
+				x = want.x,
+				y = want.y,
+				z = want.z,
+				field = "liquid",
+				expected = want.liquid,
+				observed = got.liquid,
 			}
 		end
 		if got.material ~= want.material then

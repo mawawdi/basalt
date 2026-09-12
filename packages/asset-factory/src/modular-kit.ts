@@ -47,12 +47,25 @@ export const EXPOSED_MODULAR_SURFACE_SCHEMA = z
 
 export type ExposedModularSurface = z.infer<typeof EXPOSED_MODULAR_SURFACE_SCHEMA>;
 
+const sourceFamilyId = z
+  .string()
+  .min(1)
+  .max(512)
+  .regex(
+    /^[A-Za-z][A-Za-z0-9_-]{0,511}$/u,
+    "Source family IDs follow world-identifier spelling, not the shorter spatial entity form",
+  );
+
 export const MODULAR_ARCHETYPE_SPECIFICATION_SCHEMA = z
   .object({
     archetypeId: entityId,
     name: z.string().trim().min(1).max(160),
     semanticRole: z.string().trim().min(1).max(80),
-    boundingEnvelope: z.tuple([positive, positive, positive]),
+    sourceFamilyId,
+    sourceVariantIndex: z.number().int().nonnegative(),
+    boundingEnvelope: z.tuple([finite.nonnegative(), finite.nonnegative(), finite.nonnegative()]),
+    /** Pivot-relative bounding-box center: placements derive world volumes from it. */
+    boundsCenterStuds: z.tuple([finite, finite, finite]),
     maxTriangleBudget: z.number().int().positive().max(65_536),
     sockets: z.array(SOCKET_CONTRACT_SCHEMA).max(64),
     supportedSurfaceKinds: z
@@ -65,8 +78,11 @@ export const MODULAR_ARCHETYPE_SPECIFICATION_SCHEMA = z
         trimAtlasHandle: hashSchema.optional(),
         sharedPbrMaterialId: entityId.optional(),
       })
-      .strict(),
-    collisionStrategy: z.enum(["precise_convex_decomposition", "box_envelope", "hull_cluster"]),
+      .strict()
+      .optional(),
+    collisionStrategy: z
+      .enum(["precise_convex_decomposition", "box_envelope", "hull_cluster"])
+      .optional(),
   })
   .strict()
   .superRefine((archetype, context) => {
@@ -85,6 +101,11 @@ export const MODULAR_ARCHETYPE_SPECIFICATION_SCHEMA = z
 
 export type ModularArchetypeSpecification = z.infer<typeof MODULAR_ARCHETYPE_SPECIFICATION_SCHEMA>;
 
+/**
+ * One measured mating fact: these two sockets mate under a grid placement
+ * (the solver directs the pair per rotation from socket geometry).
+ * Source/target order is canonical, not semantic: mating is symmetric.
+ */
 export const MODULAR_KIT_ADJACENCY_RULE_SCHEMA = z
   .object({
     sourceArchetypeId: entityId,
@@ -105,8 +126,9 @@ export const MODULAR_KIT_REQUIREMENT_SCHEMA = z
     name: z.string().trim().min(1).max(160),
     styleContractHash: hashSchema,
     studsPerUnit: positive.default(1.0),
+    modulePitchStuds: positive.optional(),
     archetypes: z.array(MODULAR_ARCHETYPE_SPECIFICATION_SCHEMA).min(1).max(64),
-    adjacencyRules: z.array(MODULAR_KIT_ADJACENCY_RULE_SCHEMA).max(512),
+    adjacencyRules: z.array(MODULAR_KIT_ADJACENCY_RULE_SCHEMA).max(4096),
     tolerances: z
       .object({
         socketMismatchThreshold: positive.default(0.01),
@@ -213,28 +235,40 @@ export function assertPreparedModularKitArtifactIdentity(
     throw new Error("Prepared modular-kit artifact identity is invalid");
 }
 
-/** A typed landmark graph: large shells stay procedural, focal inserts use sockets. */
+/**
+ * A sealed assembly: placed kit components with grid transforms, plus an
+ * optional procedural shell for landmark graphs. Solver-written recipes
+ * carry kit, lot, and per-component placements; rotation stays in
+ * Y quarter-turns so grid assemblies never accrue quaternion noise. Each
+ * component names the own socket it attached through, so the assembly
+ * re-verifies without re-solving; anchors omit it.
+ */
 const assemblyRecipeMaterial = z
   .object({
     kind: z.literal("AssemblyRecipe"),
     abi: z.literal(ASSEMBLY_RECIPE_ABI),
     id: entityId,
     styleContractHash: hashSchema,
+    kitId: entityId,
+    lotId: entityId,
     shell: z
       .object({
         archetypeId: entityId,
         repetition: z.number().int().positive().max(4096),
         trimSheetRequired: z.literal(true),
       })
-      .strict(),
+      .strict()
+      .optional(),
     socketedComponents: z
       .array(
         z
           .object({
             componentId: entityId,
             archetypeId: entityId,
-            socketId: entityId,
+            socketId: entityId.optional(),
             semanticRole: z.string().trim().min(1).max(160),
+            position: WORLD_VECTOR3_SCHEMA,
+            rotationStepsY90: z.number().int().min(0).max(3),
           })
           .strict(),
       )

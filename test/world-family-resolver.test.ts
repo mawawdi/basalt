@@ -61,7 +61,56 @@ test("family resolver builds one inverted index and returns a bounded determinis
     requests: [{ ...request, roleTags: [...request.roleTags] }],
   });
   assert.deepEqual(first, second);
-  assert.deepEqual(first.RegionA, ["FamilyStone", "FamilyDistant"]);
+  assert.deepEqual(first[0], ["FamilyStone", "FamilyDistant"]);
+});
+
+test("family resolver keeps same-biome requests independent", () => {
+  const registry = sealWorldAssetFamilyRegistry([
+    {
+      familyId: "BayScrub",
+      semanticTags: ["scrub"],
+      styleTags: ["coherent"],
+      roleTags: ["scatter"],
+      variantCount: 1,
+    },
+    {
+      familyId: "BayCanopy",
+      semanticTags: ["canopy"],
+      styleTags: ["coherent"],
+      roleTags: ["cluster"],
+      variantCount: 1,
+    },
+  ]);
+  const requests = [
+    {
+      biomeId: "bay",
+      semanticTags: ["scrub"],
+      styleTags: ["coherent"],
+      roleTags: ["scatter"],
+      minimumFamilies: 1,
+      maximumFamilies: 1,
+    },
+    {
+      biomeId: "bay",
+      semanticTags: ["canopy"],
+      styleTags: ["coherent"],
+      roleTags: ["cluster"],
+      minimumFamilies: 1,
+      maximumFamilies: 1,
+    },
+  ];
+  assert.deepEqual(resolveWorldAssetFamilies({ registry, requests }), [
+    ["BayScrub"],
+    ["BayCanopy"],
+  ]);
+  const plans = compileResolvedFamilyPopulationPlans({
+    registry,
+    requests: requests.map((request) => ({ ...request, regionIds: ["bay"] })),
+  });
+  assert.deepEqual(
+    plans.map((plan) => plan.familyId),
+    ["BayCanopy", "BayScrub"],
+  );
 });
 
 test("family resolver fails closed when named semantic terms match nothing", () => {
@@ -228,6 +277,8 @@ function admissionEnvelope(record: CatalogAssetRecord): CatalogAssetEnvelope {
       bottomContactAreaStuds2: 4,
       supportPlaneFits: [],
       supportPlaneRefusal: "no_patches",
+      jointPlaneFits: [],
+      jointPlaneRefusal: null,
       surfaceAreaStuds2: 24,
       texelDensityPixelsPerStud: 8,
       topologicalGenus: 0,
