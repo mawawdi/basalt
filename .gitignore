@@ -5,6 +5,7 @@ dist/
 3d-assets/
 .DS_Store
 .basalt/
+registry/
 target/
 *.rbxl
 *.rbxlx

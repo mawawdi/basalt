@@ -1,13 +1,24 @@
 import { z } from "zod";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { compareSpatialStrings, entityId, hashSchema } from "../../spatial-core/src/primitives.js";
+import {
+  assetFamilyRevisionSchema,
+  catalogAssetRecordSchema,
+  familyCardSchema,
+  type AssetFamilyRevision,
+  type CatalogAssetRecord,
+  type FamilyCard,
+  familyHandleSchema,
+  TRIM_BAND_SCHEMA,
+} from "../../basalt-types/src/index.js";
+import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 
-export const CATALOG_INTELLIGENCE_ABI = "basalt-catalog-intelligence@1" as const;
+export const CATALOG_INTELLIGENCE_ABI = "basalt-catalog-intelligence@2" as const;
 
 export const CATALOG_SOURCE_KIND_SCHEMA = z.enum([
   "quaternius_trusted",
   "kenney_cc0",
   "creator_owned",
+  "commercial_pack",
 ]);
 export type CatalogSourceKind = z.infer<typeof CATALOG_SOURCE_KIND_SCHEMA>;
 
@@ -22,15 +33,18 @@ export const CATALOG_SURFACE_KIND_SCHEMA = z.enum([
 ]);
 export type CatalogSurfaceKind = z.infer<typeof CATALOG_SURFACE_KIND_SCHEMA>;
 
+export const CATALOG_TEXTURE_EVIDENCE_SCHEMA = z.enum(["embedded", "external", "none"]);
+export type CatalogTextureEvidence = z.infer<typeof CATALOG_TEXTURE_EVIDENCE_SCHEMA>;
+
+const hashSchema = z.string().regex(/^[a-f0-9]{64}$/u);
+const q32Key = z.string().regex(/^(?:0|-?[1-9][0-9]*)$/u);
+const q32Vector3 = z.object({ x: q32Key, y: q32Key, z: q32Key }).strict();
 const finite = z.number().finite();
-const positive = finite.positive();
-const positiveInteger = z.number().int().positive();
-const vector3 = z.tuple([positive, positive, positive]);
 
 const sourceSchema = z
   .object({
     kind: CATALOG_SOURCE_KIND_SCHEMA,
-    packageId: entityId,
+    packageId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u),
     relativePath: z.string().trim().min(1).max(4096),
     externalId: z.string().trim().min(1).max(256).optional(),
     contentHash: hashSchema,
@@ -40,149 +54,219 @@ const sourceSchema = z
     attribution: z.string().trim().min(1).max(512),
   })
   .strict();
+export type CatalogSourceEnvelope = z.infer<typeof sourceSchema>;
 
-const pendingMeasurementSchema = z
+const collisionEvidenceSchema = z
   .object({
-    status: z.literal("pending"),
-    reason: z.string().trim().min(1).max(512),
+    status: z.enum(["none", "authored_proxy", "measured_mesh"]),
+    proxyAssetId: z
+      .string()
+      .regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u)
+      .optional(),
+    volumetricInclusionQ32_32: q32Key.optional(),
+    triangleRatioQ32_32: q32Key.optional(),
+    syntacticGate: z.boolean(),
+    volumetricGate: z.boolean(),
+    complexityGate: z.boolean(),
+    watertight: z.boolean(),
+    convex: z.boolean(),
+    convexComponentCount: z.number().int().nonnegative().max(8),
   })
   .strict();
 
-const partialMeasurementFields = z
+const measuredEvidenceSchema = z
   .object({
-    boundsStuds: vector3,
-    triangleCount: positiveInteger.max(2_000_000),
-    meshCount: positiveInteger.max(8192),
-    materialSlotCount: positiveInteger.max(512),
+    status: z.literal("measured"),
+    boundsStuds: z.tuple([finite.nonnegative(), finite.nonnegative(), finite.nonnegative()]),
+    boundsMinimumQ32_32: q32Vector3,
+    boundsMaximumQ32_32: q32Vector3,
+    pivotOffsetQ32_32: q32Vector3,
+    triangleCount: z.number().int().nonnegative().max(2_000_000),
+    vertexCount: z.number().int().nonnegative().max(4_000_000),
+    submeshCount: z.number().int().nonnegative().max(8192),
+    materialSlotCount: z.number().int().nonnegative().max(512),
     texturePixelCount: z
       .number()
       .int()
       .nonnegative()
       .max(4096 * 4096 * 64),
-    hasFiniteGeometry: z.literal(true),
-    previewHashes: z.array(hashSchema).max(8),
-    coverage: z
-      .array(z.enum(["gltf_structure", "materials", "textures"]))
-      .min(1)
-      .max(3),
-  })
-  .strict();
-
-const partialMeasurementSchema = partialMeasurementFields
-  .extend({ status: z.literal("partial") })
-  .strict();
-
-const measuredMeasurementSchema = partialMeasurementFields
-  .extend({
-    status: z.literal("measured"),
     supportedSurfaceKinds: z.array(CATALOG_SURFACE_KIND_SCHEMA).max(7),
     primaryContact: z.enum(["bottom", "lateral_wall", "top_ceiling", "socket_only", "unknown"]),
     bottomContactAreaStuds2: finite.nonnegative(),
+    surfaceAreaStuds2: finite.nonnegative(),
     texelDensityPixelsPerStud: finite.nonnegative(),
+    topologicalGenus: z.number().int(),
     hasManifoldTopology: z.boolean(),
-    visualEmbeddingHash: hashSchema.optional(),
-    semanticEmbeddingHash: hashSchema.optional(),
+    geometryEvidenceStatus: z.enum(["validated", "invalid_topology"]),
+    materialAppearanceHashes: z.array(hashSchema).max(512),
+    pbrChannels: z.array(z.string().trim().min(1).max(64)).max(16),
+    renderable: z.boolean(),
+    collision: collisionEvidenceSchema,
+    normalizedPivot: z.enum(["bottom_center_obb", "volumetric_center"]),
+    textureEvidence: CATALOG_TEXTURE_EVIDENCE_SCHEMA,
+    textureFacts: z
+      .array(
+        z
+          .object({
+            width: z.number().int().positive(),
+            height: z.number().int().positive(),
+            format: z.enum(["BC7", "ASTC_4x4", "PNG_PBR"]),
+            texelDensityPxPerMeter: q32Key,
+            channelHash: hashSchema,
+          })
+          .strict(),
+      )
+      .max(512),
   })
   .strict();
 
-export const CATALOG_ASSET_RECORD_SCHEMA = z
+const pendingEvidenceSchema = z
   .object({
-    kind: z.literal("CatalogAssetRecord"),
+    status: z.enum(["pending", "quarantined", "incomplete"]),
+    reason: z.string().trim().min(1).max(1024),
+  })
+  .strict();
+
+export const catalogAssetEnvelopeSchema = z
+  .object({
+    kind: z.literal("CatalogAssetEnvelope"),
     abi: z.literal(CATALOG_INTELLIGENCE_ABI),
-    assetId: entityId,
+    record: catalogAssetRecordSchema,
     source: sourceSchema,
-    tags: z.array(z.string().trim().min(1).max(80)).max(64),
-    familyHint: z
-      .object({
-        kitId: entityId,
-        familyKey: z.string().trim().min(1).max(160),
-        confidence: z.enum(["source_declared", "derived_hint"]),
-      })
-      .strict(),
-    measurement: z.discriminatedUnion("status", [
-      pendingMeasurementSchema,
-      partialMeasurementSchema,
-      measuredMeasurementSchema,
-    ]),
+    measurement: z.union([pendingEvidenceSchema, measuredEvidenceSchema]),
   })
   .strict();
-export type CatalogAssetRecord = z.infer<typeof CATALOG_ASSET_RECORD_SCHEMA>;
+export type CatalogAssetEnvelope = z.infer<typeof catalogAssetEnvelopeSchema>;
 
-export const CATALOG_ASSET_FAMILY_SCHEMA = z
+export const catalogFamilyDeclarationSchema = z
   .object({
-    kind: z.literal("CatalogAssetFamily"),
-    abi: z.literal(CATALOG_INTELLIGENCE_ABI),
-    familyId: entityId,
-    kitId: entityId,
-    familyKey: z.string().trim().min(1).max(160),
-    memberAssetIds: z.array(entityId).min(1).max(4096),
-    roleTags: z.array(z.string().trim().min(1).max(80)).max(64),
-    confidence: z.enum(["source_declared", "derived_hint", "validated"]),
+    familyName: z.string().regex(/^[a-z][a-z0-9_]{1,127}$/u),
+    handle: familyHandleSchema,
+    displayName: z.string().trim().min(1).max(160),
+    semanticRole: z.string().trim().min(1).max(160),
+    styleTokens: z.array(z.string().trim().min(1).max(80)).max(64),
+    sharedTrimSheetAssetId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u),
+    members: z
+      .array(
+        z
+          .object({
+            assetId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u),
+            sourcePath: z.string().trim().min(1).max(4096),
+            variantName: z.string().trim().min(1).max(160),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(4096),
+    status: z.enum(["declared", "sealed", "incomplete"]),
+    familyId: z
+      .string()
+      .regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u)
+      .optional(),
+    reason: z.string().trim().min(1).max(1024).optional(),
+    trimBands: z.array(TRIM_BAND_SCHEMA).max(128).optional(),
+    mountSockets: z.boolean().optional(),
   })
   .strict();
-export type CatalogAssetFamily = z.infer<typeof CATALOG_ASSET_FAMILY_SCHEMA>;
+export type CatalogFamilyDeclaration = z.infer<typeof catalogFamilyDeclarationSchema>;
 
-export const CATALOG_INVENTORY_MANIFEST_SCHEMA = z
+export const catalogInventoryManifestSchema = z
   .object({
     kind: z.literal("CatalogInventoryManifest"),
     abi: z.literal(CATALOG_INTELLIGENCE_ABI),
     sourceManifestHashes: z.array(hashSchema).max(32),
-    assets: z.array(CATALOG_ASSET_RECORD_SCHEMA).max(100_000),
-    families: z.array(CATALOG_ASSET_FAMILY_SCHEMA).max(20_000),
+    assets: z.array(catalogAssetEnvelopeSchema).max(100_000),
+    familyDeclarations: z.array(catalogFamilyDeclarationSchema).max(20_000),
+    families: z.array(assetFamilyRevisionSchema).max(20_000),
+    familyCards: z.array(familyCardSchema).max(20_000),
+    diagnostics: z
+      .object({
+        unmatchedCollisionCompanions: z.number().int().nonnegative(),
+        ambiguousCollisionCompanions: z.number().int().nonnegative(),
+        renderablesWithValidCollisionBindings: z.number().int().nonnegative(),
+        trimMappingsRejectedByEnergy: z.number().int().nonnegative(),
+        incompleteCandidates: z.number().int().nonnegative(),
+      })
+      .strict(),
     hash: hashSchema,
   })
   .strict();
-export type CatalogInventoryManifest = z.infer<typeof CATALOG_INVENTORY_MANIFEST_SCHEMA>;
+export type CatalogInventoryManifest = z.infer<typeof catalogInventoryManifestSchema>;
 
-export const CATALOG_QUERY_SCHEMA = z
-  .object({
-    requiredTags: z.array(z.string().trim().min(1).max(80)).max(32).default([]),
-    familyKey: z.string().trim().min(1).max(160).optional(),
-    surfaceKind: CATALOG_SURFACE_KIND_SCHEMA.optional(),
-    minimumBoundsStuds: vector3.optional(),
-    maximumBoundsStuds: vector3.optional(),
-    maximumTriangles: positiveInteger.max(2_000_000).optional(),
-    requireMeasured: z.boolean().default(true),
-    limit: positiveInteger.max(64).default(16),
-  })
-  .strict();
-export type CatalogQuery = z.infer<typeof CATALOG_QUERY_SCHEMA>;
-
-export interface CatalogRetrievalCandidate {
-  readonly asset: CatalogAssetRecord;
-  readonly score: number;
-  readonly matchedTags: readonly string[];
+/**
+ * Local admission rule: a measured asset qualifies iff its geometry is
+ * manifold and it carries texture evidence. Unmeasured assets stay pending;
+ * measured assets that fail the rule are incomplete until repaired.
+ */
+export function resolveAdmissionStatus(input: {
+  readonly isManifold: boolean;
+  readonly textureEvidence: CatalogTextureEvidence;
+}): CatalogAssetRecord["admissionStatus"] {
+  return input.isManifold && input.textureEvidence !== "none" ? "locally_qualified" : "incomplete";
 }
 
 export function sealCatalogInventory(input: {
   sourceManifestHashes: readonly string[];
-  assets: readonly CatalogAssetRecord[];
-  families: readonly CatalogAssetFamily[];
+  assets: readonly CatalogAssetEnvelope[];
+  familyDeclarations: readonly CatalogFamilyDeclaration[];
+  families: readonly AssetFamilyRevision[];
+  familyCards: readonly FamilyCard[];
+  diagnostics: CatalogInventoryManifest["diagnostics"];
 }): CatalogInventoryManifest {
   const sourceManifestHashes = [...new Set(input.sourceManifestHashes)].sort(compareSpatialStrings);
   const assets = input.assets
-    .map((asset) => canonicalAsset(asset))
-    .sort((left, right) => compareSpatialStrings(left.assetId, right.assetId));
+    .map((asset) => catalogAssetEnvelopeSchema.parse(asset))
+    .sort((left, right) => compareSpatialStrings(left.record.assetId, right.record.assetId));
+  const familyDeclarations = input.familyDeclarations
+    .map((declaration) => catalogFamilyDeclarationSchema.parse(declaration))
+    .sort((left, right) => compareSpatialStrings(left.familyName, right.familyName));
   const families = input.families
-    .map((family) => canonicalFamily(family))
+    .map((family) => assetFamilyRevisionSchema.parse(family))
     .sort((left, right) => compareSpatialStrings(left.familyId, right.familyId));
-  if (new Set(assets.map(({ assetId }) => assetId)).size !== assets.length)
+  const familyCards = input.familyCards
+    .map((card) => familyCardSchema.parse(card))
+    .sort((left, right) => compareSpatialStrings(left.fid, right.fid));
+  if (new Set(assets.map(({ record }) => record.assetId)).size !== assets.length)
     throw new Error("Catalog asset IDs must be unique");
   if (new Set(families.map(({ familyId }) => familyId)).size !== families.length)
     throw new Error("Catalog family IDs must be unique");
-  const assetIds = new Set(assets.map(({ assetId }) => assetId));
-  for (const family of families)
-    for (const assetId of family.memberAssetIds)
-      if (!assetIds.has(assetId))
-        throw new Error(`Catalog family references unknown asset: ${assetId}`);
+  if (new Set(familyCards.map(({ fid }) => fid)).size !== familyCards.length)
+    throw new Error("Catalog family card IDs must be unique");
+  const familyIds = new Set(families.map(({ familyId }) => familyId));
+  if (familyCards.some(({ fid }) => !familyIds.has(fid)))
+    throw new Error("Catalog family card has no family revision");
+  const assetIds = new Set(assets.map(({ record }) => record.assetId));
+  if (
+    new Set(familyDeclarations.map((declaration) => declaration.familyName)).size !==
+    familyDeclarations.length
+  )
+    throw new Error("Catalog family declaration names must be unique");
+  for (const declaration of familyDeclarations) {
+    if (
+      new Set(declaration.members.map((member) => member.assetId)).size !==
+      declaration.members.length
+    )
+      throw new Error(`Family declaration ${declaration.familyName} contains duplicate members`);
+    for (const member of declaration.members)
+      if (!assetIds.has(member.assetId))
+        throw new Error(`Family declaration references unknown asset: ${member.assetId}`);
+  }
+  for (const family of families) {
+    for (const member of family.archetypes)
+      if (!assetIds.has(member.assetId))
+        throw new Error(`Family references unknown asset: ${member.assetId}`);
+  }
   const material = {
     kind: "CatalogInventoryManifest" as const,
     abi: CATALOG_INTELLIGENCE_ABI,
     sourceManifestHashes,
     assets,
+    familyDeclarations,
     families,
+    familyCards,
+    diagnostics: input.diagnostics,
   };
-  return CATALOG_INVENTORY_MANIFEST_SCHEMA.parse({
+  return catalogInventoryManifestSchema.parse({
     ...material,
     hash: contentHash(stableJson(material)),
   });
@@ -191,87 +275,9 @@ export function sealCatalogInventory(input: {
 export function assertCatalogInventoryIdentity(
   value: unknown,
 ): asserts value is CatalogInventoryManifest {
-  const inventory = CATALOG_INVENTORY_MANIFEST_SCHEMA.parse(value);
+  const inventory = catalogInventoryManifestSchema.parse(value);
   const canonical = sealCatalogInventory(inventory);
   if (canonical.hash !== inventory.hash) throw new Error("Catalog inventory identity is invalid");
 }
 
-export function queryCatalogInventory(
-  inventoryInput: CatalogInventoryManifest,
-  queryInput: unknown,
-): readonly CatalogRetrievalCandidate[] {
-  assertCatalogInventoryIdentity(inventoryInput);
-  const query = CATALOG_QUERY_SCHEMA.parse(queryInput);
-  const requiredTags = new Set(query.requiredTags.map(normalizeTag));
-  const candidates: CatalogRetrievalCandidate[] = [];
-  for (const asset of inventoryInput.assets) {
-    if (query.requireMeasured && asset.measurement.status !== "measured") continue;
-    if (query.familyKey && asset.familyHint.familyKey !== query.familyKey) continue;
-    if (asset.measurement.status === "partial" || asset.measurement.status === "measured") {
-      if (
-        query.maximumTriangles !== undefined &&
-        asset.measurement.triangleCount > query.maximumTriangles
-      )
-        continue;
-      if (
-        query.surfaceKind &&
-        (asset.measurement.status !== "measured" ||
-          !asset.measurement.supportedSurfaceKinds.includes(query.surfaceKind))
-      )
-        continue;
-      if (
-        query.minimumBoundsStuds &&
-        query.minimumBoundsStuds.some(
-          (minimum, index) =>
-            asset.measurement.status === "measured" &&
-            asset.measurement.boundsStuds[index]! < minimum,
-        )
-      )
-        continue;
-      if (
-        query.maximumBoundsStuds &&
-        query.maximumBoundsStuds.some(
-          (maximum, index) =>
-            asset.measurement.status === "measured" &&
-            asset.measurement.boundsStuds[index]! > maximum,
-        )
-      )
-        continue;
-    }
-    const tags = new Set(asset.tags.map(normalizeTag));
-    const matchedTags = [...requiredTags]
-      .filter((tag) => tags.has(tag))
-      .sort(compareSpatialStrings);
-    if (requiredTags.size > 0 && matchedTags.length === 0) continue;
-    const tagScore = requiredTags.size === 0 ? 0 : matchedTags.length / requiredTags.size;
-    const familyScore = query.familyKey ? 1 : 0;
-    candidates.push({ asset, score: tagScore * 0.85 + familyScore * 0.15, matchedTags });
-  }
-  return candidates
-    .sort(
-      (left, right) =>
-        right.score - left.score || compareSpatialStrings(left.asset.assetId, right.asset.assetId),
-    )
-    .slice(0, query.limit);
-}
-
-function canonicalAsset(input: CatalogAssetRecord): CatalogAssetRecord {
-  const asset = CATALOG_ASSET_RECORD_SCHEMA.parse(input);
-  return {
-    ...asset,
-    tags: [...new Set(asset.tags.map(normalizeTag))].sort(compareSpatialStrings),
-  };
-}
-
-function canonicalFamily(input: CatalogAssetFamily): CatalogAssetFamily {
-  const family = CATALOG_ASSET_FAMILY_SCHEMA.parse(input);
-  return {
-    ...family,
-    memberAssetIds: [...new Set(family.memberAssetIds)].sort(compareSpatialStrings),
-    roleTags: [...new Set(family.roleTags.map(normalizeTag))].sort(compareSpatialStrings),
-  };
-}
-
-function normalizeTag(value: string): string {
-  return value.normalize("NFC").trim().toLocaleLowerCase("en-US");
-}
+export type { AssetFamilyRevision, CatalogAssetRecord };

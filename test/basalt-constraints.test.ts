@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { contentHash } from "../packages/contracts/src/index.js";
-import { createMurmurHash3Random, q32_32Key } from "../packages/spatial-core/src/index.js";
+import { createMurmurHash3Random } from "../packages/spatial-core/src/index.js";
+import { quantizeQ32_32 } from "../packages/basalt-types/src/index.js";
 import {
   ASSEMBLY_RECIPE_ABI,
   assertAssemblyRecipeIdentity,
@@ -44,11 +45,11 @@ test("neural geometry is reserved for sub-8-stud focal inserts", () => {
 });
 
 test("spatial keys and seeded populations use stable fixed-point primitives", () => {
-  assert.equal(q32_32Key(1.25), "5368709120");
+  assert.equal(quantizeQ32_32(1.25), "5368709120");
   const first = createMurmurHash3Random(42);
   const second = createMurmurHash3Random(42);
   assert.deepEqual([first(), first(), first()], [second(), second(), second()]);
-  assert.throws(() => q32_32Key(Number.POSITIVE_INFINITY));
+  assert.throws(() => quantizeQ32_32(Number.POSITIVE_INFINITY));
 });
 
 test("seasonal style overlays preserve the compiled terrain field hash", () => {

@@ -2,7 +2,7 @@ import { contentHash, stableJson } from "../../contracts/src/index.js";
 import {
   compileWorldPlan,
   type CompiledWorldPlan,
-  type WorldPlan,
+  type SpatialWorldPlan,
 } from "../../world-planning/src/index.js";
 import {
   assertWorldCompilerPlanIdentity,
@@ -15,6 +15,8 @@ export * from "./contracts.js";
 export * from "./primitives.js";
 export * from "./population.js";
 export * from "./family-resolver.js";
+export * from "./catalog-adapter.js";
+export * from "./factory-dispatch.js";
 export * from "./emission.js";
 export * from "./tiers.js";
 export * from "./relations.js";
@@ -91,4 +93,4 @@ export function summarizeBasaltWorld(input: {
   return { hash: contentHash(stableJson(summary)), summary };
 }
 
-export type { WorldPlan };
+export type { SpatialWorldPlan };

@@ -1105,6 +1105,7 @@ function aggregatePlacedBounds(
   let minimum: AssetVector | undefined;
   let maximum: AssetVector | undefined;
   for (const part of parts) {
+    if (part.role === "collision_proxy") continue;
     const mesh = meshes.get(part.meshId)?.mesh;
     if (!mesh) throw new Error(`Prepared part references missing measured mesh: ${part.id}`);
     for (const placement of part.placements) {
@@ -1130,6 +1131,7 @@ function assertCanonicalSupportRoot(
   aggregateBounds: AssetBounds,
 ): void {
   const groups = parts.flatMap((part) => {
+    if (part.role === "collision_proxy") return [];
     if (
       part.support.kind !== "surface_contact" ||
       (part.support.mode !== "resting" && part.support.mode !== "embedded")

@@ -1,0 +1,29 @@
+{
+  "briefId": "slice_bay",
+  "styleContract": {
+    "style_motif": "stylized_low_poly",
+    "edge_fidelity": "faceted",
+    "palette_tokens": ["harbor", "noon"],
+    "texel_density_target": 16
+  },
+  "roles": [
+    {
+      "regionId": "slice_bay",
+      "role": "canopy",
+      "families": 3,
+      "targetDensityPerHectare": 40
+    },
+    {
+      "regionId": "slice_bay",
+      "role": "groundcover",
+      "families": 2,
+      "targetDensityPerHectare": 500
+    },
+    {
+      "regionId": "slice_bay",
+      "role": "clutter",
+      "families": 2,
+      "targetDensityPerHectare": 100
+    }
+  ]
+}

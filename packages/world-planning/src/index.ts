@@ -1,5 +1,5 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { WORLD_PLAN_SCHEMA, type WorldPlan } from "./contracts.js";
+import { WORLD_PLAN_SCHEMA, type SpatialWorldPlan } from "./contracts.js";
 import { PlacementSurfaceIndex } from "./surfaces.js";
 import {
   analyzeRouteGrades,
@@ -12,9 +12,13 @@ export * from "./contracts.js";
 export * from "./primitives.js";
 export * from "./surfaces.js";
 export * from "./terrain.js";
+export {
+  worldPlanSchema as ENGINE_NEUTRAL_WORLD_PLAN_SCHEMA,
+  type WorldPlan as EngineNeutralWorldPlan,
+} from "../../basalt-types/src/index.js";
 
 export interface CompiledWorldPlan {
-  readonly plan: WorldPlan;
+  readonly plan: SpatialWorldPlan;
   readonly worldPlanHash: string;
   readonly surfaceIndexHash: string;
   readonly terrainFields: ReturnType<typeof compileTerrainPlan>[];
@@ -40,7 +44,7 @@ export function compileWorldPlan(input: unknown): CompiledWorldPlan {
 }
 
 /** Canonicalize semantically unordered declarations without reordering paths or operators. */
-export function canonicalWorldPlan(input: unknown): WorldPlan {
+export function canonicalWorldPlan(input: unknown): SpatialWorldPlan {
   const plan = structuredClone(WORLD_PLAN_SCHEMA.parse(input));
   plan.references.sort((left, right) => left.id.localeCompare(right.id));
   for (const reference of plan.references) {

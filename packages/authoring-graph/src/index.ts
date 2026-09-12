@@ -18,7 +18,7 @@ import {
 } from "../../spatial-core/src/primitives.js";
 
 export const AUTHORING_GRAPH_ABI = "basalt-authoring-graph@1" as const;
-export const AUTHORING_GRAPH_STORE = ".basalt/creator-graph-v1" as const;
+export const AUTHORING_GRAPH_STORE = ".basalt/creator-graph" as const;
 
 export type ModelStage = "design" | "compose" | "asset" | "source" | "critique" | "repair";
 

@@ -3,7 +3,7 @@ import {
   TERRAIN_PLAN_ABI,
   WORLD_PLAN_ABI,
   WORLD_PLAN_SCHEMA,
-  type WorldPlan,
+  type SpatialWorldPlan,
 } from "../../packages/world-planning/src/index.js";
 
 /** A small domain-neutral plan used by compiler tests; it contains no assets. */
@@ -16,7 +16,7 @@ export function productionWorldPlanFixture(input: {
   readonly cameraId: string;
   readonly materialId: string;
   readonly name: string;
-}): WorldPlan {
+}): SpatialWorldPlan {
   const footprint = [
     { x: -30, z: -30 },
     { x: 30, z: -30 },
@@ -24,7 +24,7 @@ export function productionWorldPlanFixture(input: {
     { x: -30, z: 30 },
   ];
   return WORLD_PLAN_SCHEMA.parse({
-    kind: "WorldPlan",
+    kind: "SpatialWorldPlan",
     abi: WORLD_PLAN_ABI,
     id: input.sceneId,
     seed: 42017,

@@ -1,5 +1,6 @@
 # Generated or tool-managed artifacts have their own deterministic writers.
 .basalt/
+registry/
 .VSCodeCounter/
 dist/
 node_modules/

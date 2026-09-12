@@ -11,15 +11,19 @@ workers remain outside the live map compiler.
   operation.
 - Verify `TerrainFieldArtifact`, `PlacementSurfaceIndex`, exact triangle
   raycasts, route grades, and order-independent hashes.
-- Keep content-addressed Merkle records in `.basalt/creator-graph-v1`.
+- Keep content-addressed Merkle records in `.basalt/creator-graph`.
 
 **Gate:** declaration order, platform locale, and repeated runs produce the
 same field, surface, placement, and artifact hashes.
 
-## M2 — Asset family registry and canonical adapter
+## M2 — Deterministic asset registry and canonical adapter
 
 - Ingest CC0 or creator-owned sources offline into measured catalog records.
-- Resolve bounded families through inverted postings and hard physical filters.
+- Resolve explicit authored or generated family cohorts through strict
+  taxonomy handles, Merkle family IDs, and hard rights, kind-admission,
+  treatment-coverage, collision, and budget filters.
+- Serialize a bounded compact `FamilyCard` palette menu and resolve Pass 2
+  `WorldPlan` exploit bindings before any regional population work.
 - Finish the asset-local adapter: UV unwrap/hotspot mapping, PBR baking,
   support/contact evidence, convex proxies, and RANSAC socket clipping.
 - Bind shared quad-strip trim sheets and validate family style coherence.
@@ -68,7 +72,34 @@ and Studio import/play criteria without fixture-specific code in Basalt core.
 
 ## Current next slice
 
-The deterministic compiler and connector contracts are implemented. The next
-evidence-producing task is to ingest a real `.basalt/trusted-sources` family
-manifest, compile a partitioned region, and lower accepted geometry through the
-connector. Neural inference can then fill only missing sub-8-stud family slots.
+The deterministic compiler and connector contracts are implemented. The current
+trusted-source slice materializes the starter archives under one bounded
+`registry/starter-assets` root and declares 275 authored
+cohorts (774 members, all sealed, 89 quarantined with reasons, 0
+untriaged) with canonical taxonomy handles in
+`registry/family-manifest.json`. Source folders mirror the
+manifests one-to-one (one folder per declared family, undeclared sources under
+`_pending/`); identity still comes from declarations and Merkle evidence, never
+from paths. Structural measurement, Q32.32 normalization, texture
+evidence, topology diagnostics, Merkle sealing, and collision companion pairing
+run without model calls.
+
+The palette/region slice is complete: per-record admission is stamped at
+measure time (692 locally qualified, 171 incomplete, 0 pending among
+measured) and enforced by both resolvers (222 of 275 families
+retrievable); one shared 128-band trim sheet is authored from sealed
+measurements and re-sealed (703 member mappings, 71 energy rejections, 0
+pending trim hashes); `visual:catalog:palette` resolves a region brief to a
+7-card palette menu with exploit bindings plus CLI registry/requests; the
+`slice_bay` brief compiles to one partitioned region (28 instances, 4
+connector chunks) whose emission passes transaction asserts and local
+bridge enqueue; registry misses record explore requirements and queue
+focal-insert factory batches (no model calls), and oversize misses fail
+closed naming the procedural route. Unadmitted members stay out of
+retrieval until their geometry or texture evidence is repaired.
+
+The next evidence-producing task is RANSAC socket extraction and clipping
+for the sealed cohorts, then region-aware route/road assembly, then the
+creator-run Studio import/save/reopen capture of the compiled slice
+region. Trim atlas texture bytes stay deferred until the Blender worker
+can bake them under Studio evidence.

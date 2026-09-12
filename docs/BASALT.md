@@ -32,8 +32,8 @@ large landmarks are assembled from typed procedural shells and socketed parts.
 
 Basalt keeps creator claims separate from model hypotheses and evidence. A render
 or generated image can guide composition; it cannot become geometry authority.
-No candidate is accepted without structural adaptation, bounds/support checks,
-style compatibility, and exact provenance.
+No candidate is accepted without structural adaptation, kind-admission and
+treatment-coverage checks, style compatibility, and exact provenance.
 
 The Roblox connector remains a transaction boundary. It receives partitioned,
 canonical world plans and applies bounded deltas with ChangeHistory, detached

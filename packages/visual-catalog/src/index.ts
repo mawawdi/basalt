@@ -17,7 +17,7 @@ import { contentHash, stableJson } from "../../contracts/src/index.js";
 import { compareSpatialStrings, entityId, hashSchema } from "../../spatial-core/src/primitives.js";
 
 export const VISUAL_ASSET_LIBRARY_ABI = "basalt-visual-asset-library@2" as const;
-export const VISUAL_ASSET_LIBRARY_PATH = "visual-assets/library-v2.json" as const;
+export const VISUAL_ASSET_LIBRARY_PATH = "visual-assets/library.json" as const;
 
 const evidenceDescriptor = z
   .object({
@@ -582,3 +582,4 @@ function canonicalTags(tags: readonly string[]): string[] {
 }
 
 export type { BinaryArtifactReference };
+export * from "./family-registry.js";

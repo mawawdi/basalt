@@ -12,6 +12,14 @@ documentation authority is split deliberately:
 
 - Make clean breaks. Delete superseded schemas, commands, packages, and storage paths;
   do not add compatibility readers, migrations, deprecated aliases, or old/new fallbacks.
+- Do not version asset or family handles, directory names, or registry identities. Family
+  identity is content-addressed; replacing measured evidence replaces the sealed artifact
+  instead of introducing `v1`, `v2`, revision suffixes, or parent links.
+- Keep paths and artifact names stable and unversioned. Do not add version suffixes to
+  directories, filenames, registry roots, cache roots, or operational artifacts; replacing
+  the canonical artifact must not require renaming every downstream reference. Protocol,
+  schema, and ABI identifiers may carry a version only when it is part of the typed contract
+  identity, never as a path-versioning convention such as `-v1` or `-v2`.
 - Keep the semantic-authority boundary: creator intent, agent hypotheses, platform policies,
   and evaluation evidence remain distinct.
 - Keep generic world-compiler packages independent of fixtures, example maps, and evaluator
@@ -20,6 +28,15 @@ documentation authority is split deliberately:
   enter Basalt contracts.
 - Preserve the spatial authority boundary: models propose family plans and composition;
   typed terrain, surface, relation, socket, and budget solvers decide geometry and transforms.
+- Catalog family grouping is decided by evidence and the author: measured family proposals
+  derive only from metric bounds (including Q32.32 envelopes), topology, material/PBR evidence,
+  support/contact, and collision facts, and the seal admits only on kind evidence. Review
+  tooling may additionally surface source-path hints (vendor directory organization, filename
+  stems) to pre-split review buckets, labeled as hints; hints never decide membership, never
+  enter the seal, and never appear in Basalt contracts — declarations reference asset IDs and
+  content hashes, folders mirror declared nouns. An explicit `_Collision` suffix may identify a
+  non-renderable collision companion only, never family membership. Unmeasured or ambiguous
+  assets remain pending/quarantined.
 - Keep workspace access bounded to declared roots, regular files, hash-guarded replacement,
   explicit absent creation, and fail-closed path/symlink handling.
 - Use `eligible`, `rejected`, and `incomplete` for local gates. Never describe output as
@@ -34,9 +51,28 @@ documentation authority is split deliberately:
   place, connector artifact, commands, and click sequence, then wait for the user's result.
 - Use `apply_patch` for repository edits and preserve unrelated work.
 - Run `git diff --check`, the TypeScript build, current backend tests, plugin checks,
-  and a temporary-output Rojo build before completion. Do not make model calls or Studio runs
-  during tests.
+  and a temporary-output Rojo build before FINAL completion. Do not make model calls or Studio runs
+  during tests. No need to constantly run the tests after every change, they take time. However, do not finish until the tests pass.
 - Materialize the final connector with `npm run plugin:build` at
   `$HOME/Documents/Roblox/Plugins/BasaltStudioPlugin.rbxmx`.
-- Report changed/deleted files, commands and exact results, model/Studio calls, unresolved
-  claims, and the next smallest evidence-producing check.
+
+## Commands
+
+- `npm test`: run the full test suite
+- `npm run build`: build the project
+- `npm run lint`: run the lint task
+- `npm run format`: run the format task
+
+## Code Map
+
+- `packages`: packages
+- `test`: automated tests
+- `docs`: project documentation
+
+## Conventions
+
+- Use ESM `import` and `export` syntax.
+- Use `.js` extensions in relative imports.
+- Name test files `*.test.ts`.
+
+- DO NOT USE SUBAGENTS.

@@ -3,13 +3,71 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
+HOTSPOT_ALPHA = 1.0
+HOTSPOT_BETA = 1.5
+HOTSPOT_GAMMA = 5.0
+HOTSPOT_MAXIMUM_ENERGY = 0.45
+
+
+def compute_hotspot_distortion_energy(
+    strip: Dict[str, Any],
+    band: Dict[str, Any],
+    semantic_cost: float,
+) -> float:
+    """Compute the canonical Hotspot energy with α=1, β=1.5, γ=5."""
+    aspect_ratio = float(strip["aspectRatio"])
+    surface_area = float(strip["surfaceArea"])
+    if aspect_ratio <= 0.0 or surface_area <= 0.0 or semantic_cost < 0.0:
+        raise ValueError("Hotspot measurements and semantic cost must be positive/non-negative")
+    metric_w = float(band.get("metricWidth", 1.0))
+    metric_h = float(band.get("metricHeight", 1.0))
+    band_ratio = metric_w / max(1e-6, metric_h)
+    band_area = metric_w * metric_h
+    return (
+        HOTSPOT_ALPHA * abs(math.log(aspect_ratio / max(1e-6, band_ratio)))
+        + HOTSPOT_BETA * abs(surface_area / max(1e-6, band_area) - 1.0)
+        + HOTSPOT_GAMMA * semantic_cost
+    )
+
+
+def crop_atlas_subrectangle(image: Any, uv_bounds: Tuple[float, float, float, float], gutter_pixels: int = 16) -> Any:
+    """Crop a UV sub-rectangle with a dilated gutter before UV rescaling."""
+    if gutter_pixels < 0:
+        raise ValueError("gutter_pixels must be non-negative")
+    width, height = image.size
+    u_min, v_min, u_max, v_max = (float(value) for value in uv_bounds)
+    if not (0.0 <= u_min < u_max <= 1.0 and 0.0 <= v_min < v_max <= 1.0):
+        raise ValueError("uv_bounds must be an ordered unit rectangle")
+    left = max(0, math.floor(u_min * width) - gutter_pixels)
+    upper = max(0, math.floor((1.0 - v_max) * height) - gutter_pixels)
+    right = min(width, math.ceil(u_max * width) + gutter_pixels)
+    lower = min(height, math.ceil((1.0 - v_min) * height) + gutter_pixels)
+    return image.crop((left, upper, right, lower))
+
+
+def remap_submesh_uvs(mesh: Any, uv_bounds: Tuple[float, float, float, float]) -> Any:
+    """Remap UVs into a cropped atlas rectangle after its gutter has been applied."""
+    u_min, v_min, u_max, v_max = (float(value) for value in uv_bounds)
+    if not (0.0 <= u_min < u_max <= 1.0 and 0.0 <= v_min < v_max <= 1.0):
+        raise ValueError("uv_bounds must be an ordered unit rectangle")
+
+    def remap(uv: Tuple[float, float]) -> Tuple[float, float]:
+        return ((uv[0] - u_min) / (u_max - u_min), (uv[1] - v_min) / (v_max - v_min))
+
+    if isinstance(mesh, dict) and "uvs" in mesh:
+        return {**mesh, "uvs": [remap((float(uv[0]), float(uv[1]))) for uv in mesh["uvs"]]}
+    if isinstance(mesh, (list, tuple)):
+        return type(mesh)(remap((float(uv[0]), float(uv[1]))) for uv in mesh)
+    raise TypeError("remap_submesh_uvs expects a mesh dictionary with uvs or a UV sequence")
+
 
 def compute_mismatch_energy(
     island_aspect_ratio: float,
     island_3d_area: float,
     band: Dict[str, Any],
     aspect_ratio_penalty: float = 1.0,
-    area_distortion_penalty: float = 0.5,
+    area_distortion_penalty: float = 1.5,
+    semantic_cost: float = 0.0,
 ) -> float:
     metric_w = float(band.get("metricWidth", 1.0))
     metric_h = float(band.get("metricHeight", 1.0))
@@ -21,7 +79,11 @@ def compute_mismatch_energy(
     ratio_diff = abs(math.log(safe_island_ratio / safe_band_ratio))
     area_diff = abs(island_3d_area / max(1e-6, band_area) - 1.0)
 
-    return aspect_ratio_penalty * ratio_diff + area_distortion_penalty * area_diff
+    return (
+        aspect_ratio_penalty * ratio_diff
+        + area_distortion_penalty * area_diff
+        + HOTSPOT_GAMMA * semantic_cost
+    )
 
 
 def match_optimal_band(
@@ -30,7 +92,7 @@ def match_optimal_band(
     bands: List[Dict[str, Any]],
     semantic_role: Optional[str] = None,
     aspect_ratio_penalty: float = 1.0,
-    area_distortion_penalty: float = 0.5,
+    area_distortion_penalty: float = 1.5,
 ) -> Optional[Dict[str, Any]]:
     if not bands:
         return None
@@ -52,8 +114,9 @@ def match_optimal_band(
             band,
             aspect_ratio_penalty,
             area_distortion_penalty,
+            float(band.get("semanticCost", 0.0)),
         )
-        if energy < lowest_energy:
+        if energy <= HOTSPOT_MAXIMUM_ENERGY and energy < lowest_energy:
             lowest_energy = energy
             best_band = band
 
@@ -74,7 +137,7 @@ def apply_hotspot_to_mesh(
     import bmesh
     from mathutils import Vector
 
-    target_td = float(trim_spec.get("targetTexelDensity", 64.0))
+    target_td = float(trim_spec.get("targetTexelDensity", 512.0))
     resolution = trim_spec.get("resolution", {"width": 2048, "height": 2048})
     tex_w = float(resolution.get("width", 2048))
     tex_h = float(resolution.get("height", 2048))
@@ -160,7 +223,9 @@ def apply_hotspot_to_mesh(
         scale_u = target_td / tex_w
         scale_v = target_td / tex_h
 
-        tiling_axis = band.get("tilingAxis", "u")
+        tiling_axis = band.get("tilingAxis", "v")
+        if tiling_axis == "u":
+            continue
         u_min = float(band.get("uMin", 0.0))
         u_max = float(band.get("uMax", 1.0))
         v_min = float(band.get("vMin", 0.0))

@@ -53,9 +53,12 @@ world.
 
 ### World planning
 
-`WorldPlan` contains open-vocabulary regions, nested volumes, adjacency,
-containment, routes, cameras, terrain domains, constructed surfaces, anchors,
-style bindings, and asset requirements. `compileWorldPlan` produces deterministic
+The engine-neutral `WorldPlan` in `packages/basalt-types` is intentionally
+small: Pass 1 supplies a `WorldStyleContract` and compact palette menu, then
+Pass 2 records exploit bindings to sealed family IDs and explore requirements
+using canonical taxonomy handles. The detailed terrain/route model in
+`packages/world-planning` is an internal `SpatialWorldPlan`; it is not the
+planner-facing registry contract. `compileWorldPlan` produces deterministic
 terrain fields, route profiles, and a `PlacementSurfaceIndex` whose raycasts use
 the same triangles exported to Roblox.
 
@@ -84,19 +87,23 @@ props.
 ### Asset families and catalog intelligence
 
 Catalog ingestion is an offline `O(N)` operation. It records rights, source
-hashes, tags, measured structure, bounds, and non-authoritative family hints.
-Production retrieval applies hard filters first, then semantic/visual ranking,
-then a bounded contact-sheet assessment. Only a small shortlist is adapted.
-`resolveWorldAssetFamilies` builds one inverted tag index for the registry, and
+hashes, explicit taxonomy handles, and measured structure. Measurement
+validates a declared cohort; it does not discover family membership from
+physical or visual similarity. Family IDs are Merkle-derived from the handle
+core plus geometry, trim, physics, and socket evidence. Production retrieval applies exact family,
+rights, metric, collision, and delivery filters before adaptation.
+`resolveWorldAssetFamilies` resolves sealed registry families, and
 `compileResolvedFamilyPopulationPlans` merges repeated family use across regions
-before any instance transforms are emitted. If a request cannot meet its family
-minimum from matching postings, compilation fails closed instead of filling the
-gap with unrelated assets.
+before any instance transforms are emitted. If a request misses, the offline
+family factory receives the cohort brief; the compiler never fills the gap with
+unrelated assets.
 
 An accepted family stores shared mesh/material handles and variant metadata. A
 family can be reused across regions and projects through exact content hashes.
-If a family is missing, neural generation or a procedure creates a few
-archetypes offline; the result enters the same adaptation and admission path.
+If a family is missing, the offline family factory creates a declared cohort;
+the result enters the same adaptation and admission path. The factory may
+target four to six variants, but the registry does not impose an artificial
+cardinality cap.
 
 ### Population
 

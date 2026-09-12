@@ -18,6 +18,7 @@
     "skipLibCheck": true
   },
   "include": [
+    "packages/basalt-types/**/*.ts",
     "packages/contracts/**/*.ts",
     "packages/artifact-store/**/*.ts",
     "packages/authoring-graph/**/*.ts",
@@ -39,10 +40,20 @@
     "test/helpers/production-world-fixtures.ts",
     "test/world-compiler.test.ts",
     "test/world-family-resolver.test.ts",
+    "test/world-factory-dispatch.test.ts",
     "test/hierarchical-world.test.ts",
     "test/studio-bridge.test.ts",
     "test/neural-family-factory.test.ts",
-    "test/basalt-constraints.test.ts"
+    "test/basalt-constraints.test.ts",
+    "test/basalt-types.test.ts",
+    "test/catalog-admission.test.ts",
+    "test/asset-normalization.test.ts",
+    "test/geometric-invariants.test.ts",
+    "test/collision-pairing.test.ts",
+    "test/authored-families.test.ts",
+    "test/family-cards.test.ts",
+    "test/family-proposals.test.ts",
+    "test/trim-sheet.test.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

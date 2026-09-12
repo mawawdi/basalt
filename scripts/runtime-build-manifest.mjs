@@ -15,6 +15,7 @@ const fixedInputs = [
   "tsconfig.json",
 ];
 const PRODUCT_PACKAGE_ROOTS = [
+  "basalt-types",
   "contracts",
   "artifact-store",
   "spatial-core",

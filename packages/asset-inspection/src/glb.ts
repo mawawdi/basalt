@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
+import type { NormalizedMesh } from "./geometry.js";
 
 const GLB_MAGIC = 0x46546c67;
 const JSON_CHUNK = 0x4e4f534a;
@@ -8,6 +9,7 @@ const BIN_CHUNK = 0x004e4942;
 const GLB_VERSION = 2;
 const SUPPORTED_EXTENSIONS = new Set([
   "KHR_materials_emissive_strength",
+  "KHR_materials_specular",
   "KHR_materials_unlit",
   "KHR_texture_transform",
 ]);
@@ -31,7 +33,7 @@ const typeComponents = new Map([
 const textureReference = z
   .object({
     index: z.number().int().nonnegative(),
-    texCoord: z.literal(0).optional(),
+    texCoord: z.number().int().min(0).max(7).optional(),
     extensions: z.record(z.string(), z.unknown()).optional(),
   })
   .strict();
@@ -277,7 +279,13 @@ export interface GlbInspectionReport {
     >;
     /** Effective channels in the final GLB, including glTF's scalar PBR factors. */
     pbrChannels: Array<
-      "base_color" | "metallic_roughness" | "normal" | "occlusion" | "opacity" | "emissive"
+      | "base_color"
+      | "metallic_roughness"
+      | "normal"
+      | "occlusion"
+      | "opacity"
+      | "emissive"
+      | "specular"
     >;
     /** Independently decoded glTF values after specification defaults are applied. */
     properties: {
@@ -311,6 +319,163 @@ export interface GlbInspectionOptions {
   assetUnitsToStuds?: number;
 }
 
+export type GltfExternalResourceResolver = (uri: string) => Uint8Array | Promise<Uint8Array>;
+
+/**
+ * Pack a .gltf JSON document and its bounded external resources into the
+ * canonical embedded-resource GLB inspection form.
+ */
+export async function packGltfToGlb(
+  jsonBytes: Uint8Array,
+  resolveExternalResource?: GltfExternalResourceResolver,
+): Promise<Uint8Array> {
+  if (jsonBytes.byteLength === 0 || jsonBytes.byteLength > 256 * 1024 * 1024)
+    throw new Error("glTF JSON is outside the admitted byte range");
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(jsonBytes));
+  } catch {
+    throw new Error("glTF JSON is invalid UTF-8 JSON");
+  }
+  const gltf = gltfSchema.parse(decoded);
+  if (gltf.animations?.length || gltf.skins?.length)
+    throw new Error("Animations and skins are outside the current BlenderSceneSpec ABI");
+  const sourceBuffers = await Promise.all(
+    gltf.buffers.map(async (buffer, index) => {
+      if (!buffer.uri)
+        throw new Error(`glTF buffer ${index} has no URI; use GLB for embedded buffers`);
+      const bytes = await resolveGltfResource(buffer.uri, resolveExternalResource);
+      if (bytes.byteLength < buffer.byteLength)
+        throw new Error(`glTF buffer ${index} is shorter than its declared byteLength`);
+      return bytes;
+    }),
+  );
+  const bases: number[] = [];
+  let totalLength = 0;
+  for (const bytes of sourceBuffers) {
+    totalLength = align4(totalLength);
+    bases.push(totalLength);
+    totalLength += bytes.byteLength;
+  }
+  const adjustedViews = gltf.bufferViews.map((bufferView, index) => {
+    const source = sourceBuffers[bufferView.buffer];
+    if (!source) throw new Error(`glTF bufferView ${index} references a missing buffer`);
+    const offset = bufferView.byteOffset ?? 0;
+    if (offset + bufferView.byteLength > source.byteLength)
+      throw new Error(`glTF bufferView ${index} exceeds its source buffer`);
+    return {
+      ...bufferView,
+      buffer: 0,
+      byteOffset: bases[bufferView.buffer]! + offset,
+    };
+  });
+  const imageViews = [...adjustedViews];
+  const extraImageBytes = new Map<number, Uint8Array>();
+  const imageRecords = await Promise.all(
+    gltf.images.map(async (image, index) => {
+      let bufferViewIndex = image.bufferView;
+      let mimeType = image.mimeType;
+      if (image.uri) {
+        const bytes = await resolveGltfResource(image.uri, resolveExternalResource);
+        const offset = align4(totalLength);
+        totalLength = offset + bytes.byteLength;
+        imageViews.push({ buffer: 0, byteOffset: offset, byteLength: bytes.byteLength });
+        bufferViewIndex = imageViews.length - 1;
+        mimeType ??= inferImageMimeType(bytes, image.uri);
+        extraImageBytes.set(bufferViewIndex, bytes);
+      }
+      if (bufferViewIndex === undefined)
+        throw new Error(`glTF image ${index} has no URI or bufferView`);
+      const imageView = imageViews[bufferViewIndex];
+      if (!imageView) throw new Error(`glTF image ${index} references a missing bufferView`);
+      if (!mimeType) {
+        const sourceView = gltf.bufferViews[image.bufferView ?? -1];
+        const sourceBuffer = sourceView ? sourceBuffers[sourceView.buffer] : undefined;
+        if (!sourceView || !sourceBuffer)
+          throw new Error(`glTF image ${index} references a missing source bufferView`);
+        const imageBytes = sourceBuffer.subarray(
+          sourceView.byteOffset ?? 0,
+          (sourceView.byteOffset ?? 0) + sourceView.byteLength,
+        );
+        mimeType = inferImageMimeType(imageBytes, `image-${index}`);
+      }
+      if (mimeType !== "image/png" && mimeType !== "image/jpeg")
+        throw new Error(`glTF image ${index} uses an unsupported MIME type`);
+      return { ...image, bufferView: bufferViewIndex, mimeType, uri: undefined };
+    }),
+  );
+  if (totalLength > 256 * 1024 * 1024) throw new Error("Packed glTF exceeds the byte budget");
+  const binary = new Uint8Array(totalLength);
+  for (let index = 0; index < sourceBuffers.length; index += 1)
+    binary.set(sourceBuffers[index]!, bases[index]!);
+  for (const [viewIndex, bytes] of extraImageBytes)
+    binary.set(bytes, imageViews[viewIndex]!.byteOffset);
+  const packedDocument = {
+    ...gltf,
+    buffers: [{ byteLength: binary.byteLength }],
+    bufferViews: imageViews,
+    images: imageRecords,
+  };
+  return encodeGlb(packedDocument, binary);
+}
+
+async function resolveGltfResource(
+  uri: string,
+  resolveExternalResource?: GltfExternalResourceResolver,
+): Promise<Uint8Array> {
+  if (uri.startsWith("data:")) {
+    const comma = uri.indexOf(",");
+    if (comma < 0) throw new Error("glTF data URI is malformed");
+    const metadata = uri.slice(5, comma);
+    const payload = uri.slice(comma + 1);
+    if (metadata.split(";").includes("base64")) {
+      const bytes = Uint8Array.from(Buffer.from(payload, "base64"));
+      if (bytes.byteLength === 0 && payload.length > 0) throw new Error("glTF base64 URI is empty");
+      return bytes;
+    }
+    return new TextEncoder().encode(decodeURIComponent(payload));
+  }
+  if (!resolveExternalResource)
+    throw new Error(`glTF external resource requires a resolver: ${uri}`);
+  return resolveExternalResource(uri);
+}
+
+function inferImageMimeType(bytes: Uint8Array, label: string): "image/png" | "image/jpeg" {
+  if (
+    bytes.byteLength >= 8 &&
+    [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value)
+  )
+    return "image/png";
+  if (bytes.byteLength >= 2 && bytes[0] === 0xff && bytes[1] === 0xd8) return "image/jpeg";
+  if (/\.jpe?g$/iu.test(label)) return "image/jpeg";
+  if (/\.png$/iu.test(label)) return "image/png";
+  throw new Error(`glTF image MIME type cannot be inferred: ${label}`);
+}
+
+function align4(value: number): number {
+  return (value + 3) & ~3;
+}
+
+function encodeGlb(document: unknown, binary: Uint8Array): Uint8Array {
+  const json = new TextEncoder().encode(JSON.stringify(document));
+  const jsonLength = align4(json.byteLength);
+  const binaryLength = align4(binary.byteLength);
+  const output = new Uint8Array(12 + 8 + jsonLength + 8 + binaryLength);
+  const view = new DataView(output.buffer);
+  view.setUint32(0, GLB_MAGIC, true);
+  view.setUint32(4, GLB_VERSION, true);
+  view.setUint32(8, output.byteLength, true);
+  view.setUint32(12, jsonLength, true);
+  view.setUint32(16, JSON_CHUNK, true);
+  output.set(json, 20);
+  output.fill(0x20, 20 + json.byteLength, 20 + jsonLength);
+  const binaryHeader = 20 + jsonLength;
+  view.setUint32(binaryHeader, binaryLength, true);
+  view.setUint32(binaryHeader + 4, BIN_CHUNK, true);
+  output.set(binary, binaryHeader + 8);
+  return output;
+}
+
 export interface GlbCollisionSupportPatch {
   polygon: [
     { x: number; y: number; z: number },
@@ -318,6 +483,72 @@ export interface GlbCollisionSupportPatch {
     { x: number; y: number; z: number },
   ];
   normal: { x: number; y: number; z: number };
+}
+
+/** Extract normalized triangle buffers for deterministic offline geometry gates. */
+export function inspectGlbMeshes(bytes: Uint8Array): readonly NormalizedMesh[] {
+  if (bytes.byteLength < 20 || bytes.byteLength > 256 * 1024 * 1024)
+    throw new Error("GLB byte length is outside the admitted range");
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (view.getUint32(0, true) !== GLB_MAGIC || view.getUint32(4, true) !== GLB_VERSION)
+    throw new Error("Malformed GLB header");
+  const jsonLength = view.getUint32(12, true);
+  if (view.getUint32(16, true) !== JSON_CHUNK || 20 + jsonLength > bytes.byteLength)
+    throw new Error("Malformed GLB JSON chunk");
+  const gltf = gltfSchema.parse(
+    JSON.parse(
+      new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(20, 20 + jsonLength)),
+    ),
+  );
+  const binaryOffset = 20 + jsonLength;
+  if (binaryOffset + 8 > bytes.byteLength || view.getUint32(binaryOffset + 4, true) !== BIN_CHUNK)
+    throw new Error("GLB geometry extraction requires an embedded BIN chunk");
+  const binaryLength = view.getUint32(binaryOffset, true);
+  const binary = bytes.subarray(binaryOffset + 8, binaryOffset + 8 + binaryLength);
+  const parents = validateNodeGraph(gltf.nodes);
+  const matrices = nodeWorldMatrices(gltf.nodes, parents);
+  const meshes: NormalizedMesh[] = [];
+  for (let nodeIndex = 0; nodeIndex < gltf.nodes.length; nodeIndex += 1) {
+    const node = gltf.nodes[nodeIndex]!;
+    if (node.mesh === undefined) continue;
+    const mesh = gltf.meshes[node.mesh];
+    if (!mesh) throw new Error(`GLB node references missing mesh: ${nodeIndex}`);
+    const vertices: Array<{ x: number; y: number; z: number }> = [];
+    const vertexIndices = new Map<string, number>();
+    const triangles: Array<[number, number, number]> = [];
+    for (const primitive of mesh.primitives) {
+      if ((primitive.mode ?? 4) !== 4)
+        throw new Error("GLB geometry extraction requires triangle primitives");
+      const positionIndex = primitive.attributes.POSITION;
+      if (positionIndex === undefined) throw new Error("GLB mesh lacks POSITION");
+      const positions = accessorTuples(gltf, binary, positionIndex);
+      const localIndices: number[] = [];
+      for (const position of positions) {
+        const transformed = transformPosition(position, matrices[nodeIndex]!);
+        const key = transformed.map((value) => Math.round(value * 1_000_000)).join(",");
+        let vertexIndex = vertexIndices.get(key);
+        if (vertexIndex === undefined) {
+          vertexIndex = vertices.length;
+          vertices.push({ x: transformed[0], y: transformed[1], z: transformed[2] });
+          vertexIndices.set(key, vertexIndex);
+        }
+        localIndices.push(vertexIndex);
+      }
+      const indices =
+        primitive.indices === undefined
+          ? Array.from({ length: positions.length }, (_, index) => index)
+          : accessorTuples(gltf, binary, primitive.indices).map((entry) => entry[0]!);
+      if (indices.length % 3 !== 0) throw new Error("GLB triangle index count is invalid");
+      for (let index = 0; index < indices.length; index += 3)
+        triangles.push([
+          localIndices[indices[index]!]!,
+          localIndices[indices[index + 1]!]!,
+          localIndices[indices[index + 2]!]!,
+        ]);
+    }
+    if (vertices.length > 0 && triangles.length > 0) meshes.push({ vertices, triangles });
+  }
+  return meshes;
 }
 
 type GlbCollisionSupportPoint = GlbCollisionSupportPatch["polygon"][number];
@@ -330,6 +561,94 @@ export interface GlbAssetContactPatch {
   ];
   outwardNormal: { x: number; y: number; z: number };
   contactSamples: [{ x: number; y: number; z: number }];
+}
+
+export interface GlbTopologyEvidence {
+  triangleCount: number;
+  boundaryEdgeCount: number;
+  nonManifoldEdgeCount: number;
+  degenerateTriangleCount: number;
+  hasManifoldTopology: boolean;
+}
+
+/** Measure indexed and non-indexed triangle topology from the retained GLB. */
+export function inspectGlbTopology(
+  bytes: Uint8Array,
+  expectedNodeNames?: readonly string[],
+): GlbTopologyEvidence {
+  const report = inspectGlb(bytes, {
+    maximumBytes: Math.min(bytes.byteLength, 256 * 1024 * 1024),
+    maximumTriangles: 2_000_000,
+    maximumTrianglesPerMesh: 2_000_000,
+    maximumNodes: 8_192,
+    maximumMaterials: 512,
+    maximumTextures: 512,
+    maximumTexturePixels: 64 * 4096 * 4096,
+    ...(expectedNodeNames ? { expectedNodeNames } : {}),
+  });
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const jsonLength = view.getUint32(12, true);
+  const document = gltfSchema.parse(
+    JSON.parse(
+      new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(20, 20 + jsonLength)),
+    ),
+  );
+  const binaryOffset = 20 + jsonLength;
+  const binaryLength = view.getUint32(binaryOffset, true);
+  const binary = bytes.subarray(binaryOffset + 8, binaryOffset + 8 + binaryLength);
+  const targetNames = expectedNodeNames
+    ? new Set(expectedNodeNames)
+    : new Set(report.nodes.filter((node) => node.meshIndex !== undefined).map((node) => node.name));
+  const edges = new Map<string, number>();
+  let triangleCount = 0;
+  let degenerateTriangleCount = 0;
+  const vertexKey = (position: readonly number[]): string =>
+    position.map((value) => Math.round(value * 1_000_000)).join(",");
+  const edgeKey = (left: string, right: string): string =>
+    left < right ? `${left}|${right}` : `${right}|${left}`;
+  for (const node of document.nodes) {
+    if (!node.name || !targetNames.has(node.name) || node.mesh === undefined) continue;
+    const mesh = document.meshes[node.mesh];
+    if (!mesh) continue;
+    for (const primitive of mesh.primitives) {
+      const positionIndex = primitive.attributes.POSITION;
+      if (positionIndex === undefined) continue;
+      const positions = accessorTuples(document, binary, positionIndex);
+      const indices =
+        primitive.indices === undefined
+          ? Array.from({ length: positions.length }, (_, index) => index)
+          : accessorTuples(document, binary, primitive.indices).map((entry) => entry[0]!);
+      for (let index = 0; index < indices.length; index += 3) {
+        const triangle = indices.slice(index, index + 3).map((entry) => positions[entry]!);
+        if (triangle.length !== 3) continue;
+        const keys = triangle.map(vertexKey);
+        triangleCount += 1;
+        if (new Set(keys).size !== 3) {
+          degenerateTriangleCount += 1;
+          continue;
+        }
+        const edgePairs: Array<[string, string]> = [
+          [keys[0]!, keys[1]!],
+          [keys[1]!, keys[2]!],
+          [keys[2]!, keys[0]!],
+        ];
+        for (const [left, right] of edgePairs) {
+          const identity = edgeKey(left, right);
+          edges.set(identity, (edges.get(identity) ?? 0) + 1);
+        }
+      }
+    }
+  }
+  const boundaryEdgeCount = [...edges.values()].filter((count) => count === 1).length;
+  const nonManifoldEdgeCount = [...edges.values()].filter((count) => count > 2).length;
+  return {
+    triangleCount,
+    boundaryEdgeCount,
+    nonManifoldEdgeCount,
+    degenerateTriangleCount,
+    hasManifoldTopology:
+      triangleCount > 0 && degenerateTriangleCount === 0 && nonManifoldEdgeCount === 0,
+  };
 }
 
 /** Select the same bounded proxy surfaces before and after glTF float encoding. */
@@ -471,8 +790,15 @@ export function inspectGlbAssetContactPatches(
   const projections = directed.flatMap(({ polygon }) =>
     polygon.map((point) => topologyProjection(point, normal)),
   );
-  const extreme = Math.max(...projections);
-  const tolerance = Math.max(1e-6, (Math.max(...projections) - Math.min(...projections)) * 1e-6);
+  const projectionExtents = projections.reduce(
+    (extents, value) => ({
+      minimum: Math.min(extents.minimum, value),
+      maximum: Math.max(extents.maximum, value),
+    }),
+    { minimum: Infinity, maximum: -Infinity },
+  );
+  const extreme = projectionExtents.maximum;
+  const tolerance = Math.max(1e-6, (projectionExtents.maximum - projectionExtents.minimum) * 1e-6);
   const patches = directed
     .filter(({ polygon }) =>
       polygon.every((point) => topologyProjection(point, normal) >= extreme - tolerance),
@@ -488,7 +814,17 @@ export function inspectGlbAssetContactPatches(
         ]),
       ] as GlbAssetContactPatch["contactSamples"],
     }))
-    .sort((left, right) => stableJson(left).localeCompare(stableJson(right)));
+    .sort((left, right) => stableJson(left).localeCompare(stableJson(right)))
+    .filter(({ polygon }) => {
+      const first = polygon[0]!;
+      const second = polygon[1]!;
+      const third = polygon[2]!;
+      const cross = cross3(
+        subtract3(collisionSupportTuple(second), collisionSupportTuple(first)),
+        subtract3(collisionSupportTuple(third), collisionSupportTuple(first)),
+      );
+      return Math.hypot(...cross) > 1e-8;
+    });
   return patches.length > 0 ? patches : fallbackContactProxy(evidence.points, normal);
 }
 
@@ -508,7 +844,6 @@ function inspectGlbDirectionalTopology(
     maximumMaterials: 512,
     maximumTextures: 512,
     maximumTexturePixels: 4096 * 4096,
-    expectedNodeNames: [nodeName],
   });
 
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -602,13 +937,12 @@ function fallbackContactProxy(
 ): GlbAssetContactPatch[] {
   if (points.length === 0) return [];
   const projections = points.map((point) => topologyProjection(point, direction));
-  const extreme = Math.max(...projections);
+  const extreme = projections.reduce((maximum, value) => Math.max(maximum, value), -Infinity);
   const origin = points[0]!;
-  const span = Math.max(
+  const span = points.reduce(
+    (maximum, point) =>
+      Math.max(maximum, Math.hypot(point.x - origin.x, point.y - origin.y, point.z - origin.z)),
     1e-5,
-    ...points.map((point) =>
-      Math.hypot(point.x - origin.x, point.y - origin.y, point.z - origin.z),
-    ),
   );
   const tolerance = Math.max(1e-6, span * 1e-6);
   const extremePoints = points.filter(
@@ -633,7 +967,10 @@ function fallbackContactProxy(
   const tangentLength = Math.hypot(...tangentTuple);
   const tangent = tangentTuple.map((value) => value / tangentLength) as [number, number, number];
   const bitangent = cross3([direction.x, direction.y, direction.z], tangent);
-  const radius = Math.max(1e-5, span * 1e-4);
+  // Keep fallback contact topology measurable when source packages encode
+  // geometry in centimeter-scale units; the typed admission contract rejects
+  // triangles whose area is numerically indistinguishable from zero.
+  const radius = Math.max(1e-4, span * 1e-2);
   const point = (tangentScale: number, bitangentScale: number) =>
     collisionSupportPoint([
       contact.x + radius * (tangent[0] * tangentScale + bitangent[0] * bitangentScale),
@@ -803,8 +1140,6 @@ export function inspectGlb(
     let nodeBounds: GlbNodeReport["bounds"];
     for (const primitive of mesh.primitives) {
       if ((primitive.mode ?? 4) !== 4) throw new Error(`GLB mesh is not triangle mode: ${name}`);
-      if (primitive.attributes.TEXCOORD_1 !== undefined)
-        throw new Error(`GLB mesh uses more than one UV set: ${name}`);
       const positionIndex = primitive.attributes.POSITION;
       if (positionIndex === undefined) throw new Error(`GLB mesh lacks POSITION: ${name}`);
       const position = gltf.accessors[positionIndex];
@@ -823,11 +1158,20 @@ export function inspectGlb(
         )
           throw new Error(`GLB TANGENT accessor must be float VEC4: ${name}`);
         if (
-          attribute === "TEXCOORD_0" &&
+          /^TEXCOORD_[0-7]$/u.test(attribute) &&
           (accessor.type !== "VEC2" || ![5121, 5123, 5126].includes(accessor.componentType))
         )
-          throw new Error(`GLB TEXCOORD_0 accessor is unsupported: ${name}`);
-        if (!["POSITION", "NORMAL", "TANGENT", "TEXCOORD_0"].includes(attribute))
+          throw new Error(`GLB ${attribute} accessor is unsupported: ${name}`);
+        if (
+          ["COLOR_0", "COLOR_1"].includes(attribute) &&
+          (!["VEC3", "VEC4"].includes(accessor.type) ||
+            ![5121, 5123, 5126].includes(accessor.componentType))
+        )
+          throw new Error(`GLB ${attribute} accessor is unsupported: ${name}`);
+        if (
+          !["POSITION", "NORMAL", "TANGENT", "COLOR_0", "COLOR_1"].includes(attribute) &&
+          !/^TEXCOORD_[0-7]$/u.test(attribute)
+        )
           throw new Error(`GLB attribute ${attribute} is unsupported: ${name}`);
         validateVertexAttributeValues(gltf, binary, accessorIndex, attribute, name);
       }
@@ -1024,7 +1368,16 @@ function materialPbrChannels(
     (material.emissiveFactor ?? [0, 0, 0]).some((value) => value > 0)
       ? (["emissive"] as const)
       : []),
+    ...(hasSpecularMaterialExtension(material) ? (["specular"] as const) : []),
   ];
+}
+
+function hasSpecularMaterialExtension(
+  material: z.infer<typeof gltfSchema>["materials"][number],
+): boolean {
+  return (
+    isPlainRecord(material.extensions) && isPlainRecord(material.extensions.KHR_materials_specular)
+  );
 }
 
 function baseColorTexturePixels(
@@ -1455,8 +1808,18 @@ function validateVertexAttributeValues(
   const view = new DataView(binary.buffer, binary.byteOffset, binary.byteLength);
   if ((attribute === "NORMAL" || attribute === "TANGENT") && accessor.normalized)
     throw new Error(`GLB ${attribute} accessor cannot be normalized float data: ${name}`);
-  if (attribute === "TEXCOORD_0" && accessor.componentType !== 5126 && accessor.normalized !== true)
-    throw new Error(`GLB integer TEXCOORD_0 accessor must be normalized: ${name}`);
+  if (
+    /^TEXCOORD_[0-7]$/u.test(attribute) &&
+    accessor.componentType !== 5126 &&
+    accessor.normalized !== true
+  )
+    throw new Error(`GLB integer ${attribute} accessor must be normalized: ${name}`);
+  if (
+    ["COLOR_0", "COLOR_1"].includes(attribute) &&
+    accessor.componentType !== 5126 &&
+    accessor.normalized !== true
+  )
+    throw new Error(`GLB integer ${attribute} accessor must be normalized: ${name}`);
   for (let element = 0; element < accessor.count; element += 1) {
     const values = Array.from({ length: componentCount }, (_, component) =>
       readAccessorComponent(
@@ -1612,15 +1975,22 @@ function summarizeUvMetricTriangles(
     .filter(({ uvSignedDoubleArea }) => uvSignedDoubleArea < -1e-12)
     .reduce((sum, triangle) => sum + triangle.surfaceArea, 0);
   const allUvs = triangles.flatMap(({ uv }) => uv);
+  const uvExtents = allUvs.reduce(
+    (extents, value) => {
+      extents.minimum[0] = Math.min(extents.minimum[0], value[0]);
+      extents.minimum[1] = Math.min(extents.minimum[1], value[1]);
+      extents.maximum[0] = Math.max(extents.maximum[0], value[0]);
+      extents.maximum[1] = Math.max(extents.maximum[1], value[1]);
+      return extents;
+    },
+    {
+      minimum: [Infinity, Infinity] as [number, number],
+      maximum: [-Infinity, -Infinity] as [number, number],
+    },
+  );
   const uvBounds = {
-    minimum: [
-      Math.min(...allUvs.map((value) => value[0])),
-      Math.min(...allUvs.map((value) => value[1])),
-    ] as [number, number],
-    maximum: [
-      Math.max(...allUvs.map((value) => value[0])),
-      Math.max(...allUvs.map((value) => value[1])),
-    ] as [number, number],
+    minimum: uvExtents.minimum,
+    maximum: uvExtents.maximum,
   };
   const densitySamples: Array<{ value: number; weight: number }> = [];
   const stretchSamples: Array<{ value: number; weight: number }> = [];
@@ -1926,6 +2296,53 @@ function validateExtensionPayload(extension: string, payload: unknown, path: str
       throw new Error("GLB emissive-strength extension is malformed");
     return;
   }
+  if (extension === "KHR_materials_specular") {
+    if (!/^gltf\.materials\[[0-9]+\]$/u.test(path))
+      throw new Error("GLB specular extension is outside a material");
+    const allowed = new Set([
+      "specularFactor",
+      "specularTexture",
+      "specularColorFactor",
+      "specularColorTexture",
+    ]);
+    if (Object.keys(payload).some((key) => !allowed.has(key)))
+      throw new Error("GLB specular extension has unknown fields");
+    const factor = payload.specularFactor;
+    if (
+      factor !== undefined &&
+      (typeof factor !== "number" || !Number.isFinite(factor) || factor < 0 || factor > 1)
+    )
+      throw new Error("GLB specular factor is malformed");
+    const colorFactor = payload.specularColorFactor;
+    if (
+      colorFactor !== undefined &&
+      (!finiteTuple(colorFactor, 3) || colorFactor.some((value) => value < 0 || value > 4))
+    )
+      throw new Error("GLB specular color factor is malformed");
+    for (const key of ["specularTexture", "specularColorTexture"]) {
+      const reference = payload[key];
+      if (reference === undefined) continue;
+      if (!isPlainRecord(reference)) throw new Error(`GLB ${key} is malformed`);
+      const referenceKeys = Object.keys(reference);
+      if (referenceKeys.some((entry) => !["index", "texCoord", "extensions"].includes(entry)))
+        throw new Error(`GLB ${key} has unknown fields`);
+      if (
+        typeof reference.index !== "number" ||
+        !Number.isInteger(reference.index) ||
+        reference.index < 0
+      )
+        throw new Error(`GLB ${key} index is malformed`);
+      if (
+        reference.texCoord !== undefined &&
+        (typeof reference.texCoord !== "number" ||
+          !Number.isInteger(reference.texCoord) ||
+          reference.texCoord < 0 ||
+          reference.texCoord > 7)
+      )
+        throw new Error(`GLB ${key} references an unsupported UV set`);
+    }
+    return;
+  }
   if (!/(?:Texture|normalTexture|occlusionTexture|emissiveTexture)$/u.test(path))
     throw new Error("GLB texture-transform extension is outside a texture reference");
   const allowed = new Set(["offset", "rotation", "scale", "texCoord"]);
@@ -1941,7 +2358,10 @@ function validateExtensionPayload(extension: string, payload: unknown, path: str
     throw new Error("GLB texture-transform scale is malformed");
   if (rotation !== undefined && (typeof rotation !== "number" || !Number.isFinite(rotation)))
     throw new Error("GLB texture-transform rotation is malformed");
-  if (texCoord !== undefined && texCoord !== 0)
+  if (
+    texCoord !== undefined &&
+    (typeof texCoord !== "number" || !Number.isInteger(texCoord) || texCoord < 0 || texCoord > 7)
+  )
     throw new Error("GLB texture-transform references an unsupported UV set");
 }
 

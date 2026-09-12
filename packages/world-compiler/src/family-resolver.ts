@@ -5,6 +5,8 @@ import {
   type WorldFamilyPopulationPlan,
 } from "./contracts.js";
 import { z } from "zod";
+import { type AssetFamilyRevision, type FamilyCard } from "../../basalt-types/src/index.js";
+import type { CatalogAssetEnvelope } from "../../catalog-intelligence/src/contracts.js";
 
 /** Open-vocabulary family metadata. Geometry and style remain outside the resolver's authority. */
 const familyCandidateSchema = z
@@ -77,6 +79,103 @@ const registrySchema = z
   .strict();
 export type WorldAssetFamilyRegistry = z.infer<typeof registrySchema>;
 
+export interface CanonicalFamilyResolutionRequest {
+  readonly semanticRole?: string;
+  readonly minimumDimensionsStuds?: readonly [number, number, number];
+  readonly maximumDimensionsStuds?: readonly [number, number, number];
+  readonly maximumTriangles?: number;
+  readonly requireCollisionProxy?: boolean;
+  readonly requireCommercialRights?: boolean;
+  readonly limit?: number;
+}
+
+export interface CanonicalFamilyResolutionCandidate {
+  readonly revision: AssetFamilyRevision;
+  readonly card: FamilyCard;
+  readonly score: number;
+}
+
+/** Hard physical/rights filters precede bounded semantic-role ranking. */
+export function resolveCanonicalAssetFamilies(input: {
+  readonly revisions: readonly AssetFamilyRevision[];
+  readonly cards: readonly FamilyCard[];
+  readonly assets: readonly CatalogAssetEnvelope[];
+  readonly request: CanonicalFamilyResolutionRequest;
+}): readonly CanonicalFamilyResolutionCandidate[] {
+  const cardsById = new Map(input.cards.map((card) => [card.fid, card]));
+  const assetsById = new Map(input.assets.map((asset) => [asset.record.assetId, asset]));
+  const limit = input.request.limit ?? 20;
+  const candidates: CanonicalFamilyResolutionCandidate[] = [];
+  for (const revision of input.revisions) {
+    const card = cardsById.get(revision.familyId);
+    if (!card) continue;
+    if (
+      input.request.semanticRole &&
+      !card.roles.some((role) => role === input.request.semanticRole)
+    )
+      continue;
+    const members = revision.archetypes.map((archetype) => assetsById.get(archetype.assetId));
+    if (members.some((asset) => !asset || asset.measurement.status !== "measured")) continue;
+    const measuredMembers = members.filter(
+      (asset): asset is CatalogAssetEnvelope =>
+        asset !== undefined && asset.measurement.status === "measured",
+    );
+    if (
+      input.request.requireCommercialRights &&
+      measuredMembers.some((asset) => !asset.source.commercialUsePermitted)
+    )
+      continue;
+    if (measuredMembers.some((asset) => asset.record.admissionStatus !== "locally_qualified"))
+      continue;
+    if (
+      input.request.maximumTriangles !== undefined &&
+      measuredMembers.some((asset) => asset.record.triangleCount > input.request.maximumTriangles!)
+    )
+      continue;
+    if (
+      input.request.requireCollisionProxy &&
+      measuredMembers.some((asset) => asset.record.collisionProxy.type === "None")
+    )
+      continue;
+    const minDimensions = card.archetypes.reduce(
+      (result, archetype) =>
+        result.map((value, index) => Math.min(value, archetype.bounds[index]!)),
+      [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
+    );
+    const maxDimensions = card.archetypes.reduce(
+      (result, archetype) =>
+        result.map((value, index) => Math.max(value, archetype.bounds[index]!)),
+      [0, 0, 0],
+    );
+    if (
+      input.request.minimumDimensionsStuds?.some(
+        (minimum, index) => maxDimensions[index]! < minimum,
+      )
+    )
+      continue;
+    if (
+      input.request.maximumDimensionsStuds?.some(
+        (maximum, index) => minDimensions[index]! > maximum,
+      )
+    )
+      continue;
+    candidates.push({
+      revision,
+      card,
+      score:
+        input.request.semanticRole && card.roles.some((role) => role === input.request.semanticRole)
+          ? 1
+          : 0,
+    });
+  }
+  return candidates
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.revision.familyId.localeCompare(right.revision.familyId),
+    )
+    .slice(0, limit);
+}
+
 export function sealWorldAssetFamilyRegistry(
   families: readonly WorldAssetFamilyCandidate[],
 ): WorldAssetFamilyRegistry {
@@ -147,13 +246,22 @@ export function resolveWorldAssetFamilies(input: {
     const role = new Set(request.roleTags.map(normalize));
     const requested = [...semantic, ...style, ...role];
     const scores = new Map<string, number>();
+    // Named semantic terms are mandatory: a request that names a family the
+    // registry cannot satisfy fails closed instead of substituting role-only
+    // matches that ignore the author's terms.
+    const semanticMatches = new Set<string>();
     for (const token of requested)
-      for (const familyId of byToken.get(token) ?? [])
+      for (const familyId of byToken.get(token) ?? []) {
+        if (semantic.has(token)) semanticMatches.add(familyId);
         scores.set(
           familyId,
           (scores.get(familyId) ?? 0) +
             (semantic.has(token) ? 4 : style.has(token) ? 2 : role.has(token) ? 1 : 0),
         );
+      }
+    if (semantic.size > 0)
+      for (const familyId of [...scores.keys()])
+        if (!semanticMatches.has(familyId)) scores.delete(familyId);
     const ranked = [...scores.entries()]
       .map(([familyId, score]) => ({ familyId, score, family: familyById.get(familyId)! }))
       .sort(

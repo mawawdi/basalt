@@ -1,0 +1,142 @@
+20:18 11/09/2026
+
+*Mohammed:*
+
+So, fast forward, theoretically, a user asks to create a Zelda-style game.
+So we infer it's stylized, low poly, etc..
+We do have, let's say, 90% of the assets we will ever need to make that user his game, okay?
+How would the model know that we have the assets?
+So, do we give the model the families before it starts thinking of the game world map hierarchy and the regions and that kind of stuff?
+Like, where does that go? Okay, let's say we want to make a forest region, okay? We have three different packs of trees. We have oak trees, spruce, birch.
+The model wants another type of trees, and it asks the neural generator of Basalt to create those type of trees, but we didn't give it a choice to reuse this kind of trees and to see if it wants that.
+But then this is recursive, right? Like we have an issue where we don't want it to just take it blindly. We want it to have exploration versus exploitation, if that makes sense. Do you get me?
+
+---
+
+*AI:*
+The solution to the exploration vs. exploitation dilemma is a **Two-Pass Planning and Resolution Loop**.
+
+The model is never given 5,000 loose meshes upfront, nor is it left blind to invent assets when valid matches already exist. Instead, the compiler decouples **Macro World Planning** from **Asset Family Resolution** through an inverted index palette query.
+
+---
+
+```
+Creator Brief ("Zelda-style coastal forest with ruins")
+   │
+   ▼
+[Pass 1: Style & Biome Formulation]
+   │ ──> Derives WorldStyleContract (cel-shaded, vibrant albedo, sharp arrises)
+   ▼
+[Registry Inverted Index Query]
+   │ ──> Searches .basalt/catalog-cache/ for biome_affinity & style compatibility
+   ▼
+[Compact Palette Menu Injected (10-15 FamilyCards)]
+   │ ──> Presents existing Oak, Birch, Rock kits, etc.
+   ▼
+[Pass 2: WorldPlan Authoring]
+   │ ──> LLM maps regions:
+   │      ├─ Region A (Temperate Forest): Binds existing "family_stylized_oak" [EXPLOIT]
+   │      └─ Region B (Fairy Glade): Declares FamilyRequirement for "luminous_fungi" [EXPLORE]
+   ▼
+[Resolver & Acquisition Cascade]
+   ├─ Exact Hit: Reuse cached Merkle artifact
+   ├─ Semantic Near-Hit: Retexture untextured base geometry via procedural graph
+   └─ Definite Miss: Trigger offline Family Factory (5-mesh cohort generation)
+
+```
+
+---
+
+### Step-by-Step Architecture Flow
+
+**1. Pass 1: Global Style Contract & Palette Query**
+
+* The user inputs: *"Create a Zelda-style open world with a coastal cliff and a dense temperate forest."*
+* The compiler parses the brief into a `WorldStyleContract` (visual tokens: `cel_shaded`, `weathered_arrises`, `vibrant_palette`) and extracts the target biomes (`coastal_cliffs`, `temperate_forest`, `ancient_ruins`).
+
+
+* Before generating regional coordinates or boundaries, the compiler runs a fast tag query against the local registry:
+```ts
+const candidateFamilies = catalogRegistry.query({
+  biomes: ["temperate_forest", "coastal_cliffs"],
+  styleTokens: ["cel_shaded", "stylized"],
+});
+
+```
+
+
+* The registry returns a **Palette Menu** of 10 to 15 compact `FamilyCard` descriptors. Each card carries a canonical taxonomy `handle`, a content-addressed `fid`, archetype bounds, surface affinities, and density capacity.
+
+
+
+---
+
+**2. Pass 2: Regional World Planning (Exploit vs. Explore)**
+The LLM receives the brief, the map bounds, and the **Palette Menu**. When the LLM outputs the `WorldPlan` JSON, each region uses one of two explicit paths:
+
+* **The Exploitation Path (Reuse Cache)**: If an item on the Palette Menu fits the creative vision, the LLM assigns the exact content-addressed family ID:
+
+
+```json
+{
+  "region_id": "region_highland_woods",
+  "exploit_bindings": [
+    {
+      "assigned_fid": "family_foliage_canopy_stylized_low_poly_oaks_<content-suffix>",
+      "target_density_per_hectare": 35.0
+    }
+  ]
+}
+
+```
+
+
+* **The Exploration Path (Declare a Gap)**: If the LLM genuinely needs a novel biome feature not present on the menu (e.g., luminous giant mushrooms for a magic glade), it outputs a formal `FamilyRequirement` instead of inventing a family ID:
+
+
+```json
+{
+  "region_id": "region_fairy_glade",
+  "explore_requirements": [
+    {
+      "suggested_handle": "foliage/canopy/stylized_low_poly/luminous_mushrooms",
+      "spatial_role": "canopy",
+      "bounding_envelope_studs": [6.0, 8.0, 6.0],
+      "target_texel_density": 512,
+      "min_archetype_count": 3,
+      "surface_affinity": "terrain_grass",
+    }
+  ]
+}
+
+```
+
+
+
+---
+
+**3. The Acquisition Cascade (Solving the Gap)**
+When the compiler encounters an unfulfilled `FamilyRequirement`, it evaluates an automated 3-tier cascade before spending compute on neural generation:
+
+* **Tier 1: Semantic Fuzzy Matching**: The compiler checks if an existing family in another biome can satisfy the requirement under an alias (e.g., a "Stylized Deciduous" family satisfying a generic "Broadleaf Tree" request).
+
+
+* **Tier 2: Procedural PBR Re-Skinning (Fast Path)**: If untextured CC0 base geometry with matching silhouette and metric bounds exists in the inventory, the compiler runs the procedural surface graph (applying the Zelda moss/bark material graph) and seals a new family revision without 3D generative inference.
+
+
+* **Tier 3: Offline Neural Family Factory (The Fallback)**: If no structural geometry exists, the compiler dispatches a batch generation job. The job prompts the 3D model for a **5-archetype cohort** (e.g., giant mushroom tall, curved, medium, cluster, stump). The resulting cohort is normalized, assigned bottom-center pivots, given collision hulls, mapped to a shared trim sheet, and sealed into `.basalt/catalog-cache/` as an immutable `AssetFamilyRevision`.
+
+
+
+---
+
+**4. Deterministic Compilation & Registry Flywheel**
+Once all family handles are bound:
+
+* The spatial compiler integrates continuous density fields over the terrain's `PlacementSurfaceIndex` and runs deterministic Poisson-disk scatter.
+
+
+* The newly generated family becomes a permanent, content-addressed asset in the registry.
+
+
+* On the next run, any user asking for a Zelda-style world with glowing mushrooms gets an instant cache hit, costing zero model calls and zero generation compute.

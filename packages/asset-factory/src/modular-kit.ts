@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  socketContractSchema as CANONICAL_SOCKET_CONTRACT_SCHEMA,
+  type SocketContract as CanonicalSocketContract,
+} from "../../basalt-types/src/index.js";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
 import { entityId, hashSchema } from "../../spatial-core/src/primitives.js";
 import {
@@ -15,54 +19,12 @@ import { TRIM_SHEET_MAPPING_PROFILE_SCHEMA } from "./trim-sheet.js";
 export const MODULAR_KIT_ABI = "basalt-modular-kit@1" as const;
 export const ASSEMBLY_RECIPE_ABI = "basalt-assembly-recipe@1" as const;
 
-export const SOCKET_GENDER_SCHEMA = z.enum(["male", "female", "neutral"]);
-export type SocketGender = z.infer<typeof SOCKET_GENDER_SCHEMA>;
-
 const finite = z.number().finite();
 const positive = finite.positive();
-const vector3Tuple = z.tuple([finite, finite, finite]);
 
-export const SOCKET_LOCAL_FRAME_SCHEMA = z
-  .object({
-    origin: vector3Tuple,
-    normal: vector3Tuple, // Outward mating direction
-    upVector: vector3Tuple, // Alignment orientation
-  })
-  .strict();
-
-export const SOCKET_BOUNDARY_PROFILE_SCHEMA = z
-  .object({
-    shape: z.enum(["polygon", "rectangle", "circle"]),
-    dimensions: z.tuple([positive, finite.nonnegative()]), // [width, height] or [radius, 0]
-    planarTolerance: positive.default(1e-4),
-    canonicalPolygonVertices: z
-      .array(z.tuple([finite, finite]))
-      .min(3)
-      .max(64)
-      .optional(),
-  })
-  .strict();
-
-export const SOCKET_SNAP_POLICY_SCHEMA = z
-  .object({
-    angularStepDegrees: finite.nonnegative().max(360).default(0), // e.g. 60 for hex, 90 for orthogonal, 0 for continuous
-    allowInversion: z.boolean().default(false),
-    weldDistanceThreshold: positive.default(0.005),
-  })
-  .strict();
-
-export const SOCKET_CONTRACT_SCHEMA = z
-  .object({
-    socketId: entityId,
-    semanticRole: z.string().trim().min(1).max(80),
-    gender: SOCKET_GENDER_SCHEMA,
-    localFrame: SOCKET_LOCAL_FRAME_SCHEMA,
-    boundaryProfile: SOCKET_BOUNDARY_PROFILE_SCHEMA,
-    snapPolicy: SOCKET_SNAP_POLICY_SCHEMA,
-  })
-  .strict();
-
-export type SocketContract = z.infer<typeof SOCKET_CONTRACT_SCHEMA>;
+/** Socket semantics are canonical and engine-neutral; modular kits only reference them. */
+export const SOCKET_CONTRACT_SCHEMA = CANONICAL_SOCKET_CONTRACT_SCHEMA;
+export type SocketContract = CanonicalSocketContract;
 
 export const EXPOSED_MODULAR_SURFACE_SCHEMA = z
   .object({

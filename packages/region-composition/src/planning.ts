@@ -7,7 +7,7 @@ import {
 import {
   compileWorldPlan,
   type CompiledWorldPlan,
-  type WorldPlan,
+  type SpatialWorldPlan,
 } from "../../world-planning/src/index.js";
 import { calibratePerspectiveCamera } from "./camera.js";
 import {
@@ -359,9 +359,9 @@ function canonicalPlacementAuthority(
 }
 
 function chooseRegionCamera(
-  plan: WorldPlan,
+  plan: SpatialWorldPlan,
   regionId: string,
-): WorldPlan["cameras"][number] | undefined {
+): SpatialWorldPlan["cameras"][number] | undefined {
   return [...plan.cameras]
     .filter((camera) => camera.regionIds.includes(regionId))
     .sort(

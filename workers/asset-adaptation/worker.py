@@ -2243,7 +2243,10 @@ def asset_contact_patches(
             reference = Vector((1.0, 0.0, 0.0))
         tangent = direction.cross(reference).normalized()
         bitangent = direction.cross(tangent).normalized()
-        radius = max(1e-5, span * 1e-4)
+        # The typed admission contract rejects numerically degenerate contact
+        # triangles. Keep the fallback patch bounded but large enough to remain
+        # measurable when source packages encode centimeter-scale geometry.
+        radius = max(1e-4, span * 1e-2)
         polygon_vectors = [
             center + tangent * radius,
             center + bitangent * radius,
@@ -2309,6 +2312,28 @@ def asset_contact_patches(
         }
         for patch in directed
         if all(projection(point) >= extreme - tolerance for point in patch["polygon"])
+    ]
+    patches = [
+        patch
+        for patch in patches
+        if (
+            Vector(
+                (
+                    patch["polygon"][1]["x"] - patch["polygon"][0]["x"],
+                    patch["polygon"][1]["y"] - patch["polygon"][0]["y"],
+                    patch["polygon"][1]["z"] - patch["polygon"][0]["z"],
+                )
+            ).cross(
+                Vector(
+                    (
+                        patch["polygon"][2]["x"] - patch["polygon"][0]["x"],
+                        patch["polygon"][2]["y"] - patch["polygon"][0]["y"],
+                        patch["polygon"][2]["z"] - patch["polygon"][0]["z"],
+                    )
+                )
+            ).length
+            > 1e-8
+        )
     ]
     if not patches:
         return fallback_contact_patch()
@@ -4674,6 +4699,16 @@ def normalize_materials(
             if tensor_textures is not None
             else opacity_binding
         )
+        # Some authored GLBs carry cutout alpha only in the embedded base-color
+        # PNG and leave the Principled Alpha socket unbound. Treat that alpha as
+        # the declared opacity authority instead of silently dropping foliage
+        # masks during the fixed material rewrite.
+        if source_opacity_binding is None and base_binding is not None:
+            source_opacity_binding = {
+                "image": base_binding["image"],
+                "channel": 3,
+                "extension": base_binding.get("extension", "REPEAT"),
+            }
         if opacity_policy["kind"] == "opaque":
             opacity_handling = "opaque"
             minimum_opacity = apply_constant_opacity(base_image, 1.0)
@@ -5563,6 +5598,8 @@ def canonical_root_support_origin(
     support_groups: list[dict[str, Any]] = []
     geometry_points: list[Vector] = []
     for part in parts:
+        if part.get("role") == "collision_proxy":
+            continue
         mesh = mesh_by_id[part["meshId"]]
         for placement in part["placements"]:
             geometry_points.extend(
@@ -5587,14 +5624,15 @@ def canonical_root_support_origin(
         fail("Adapted asset has no placed geometry")
     if surface_placement["kind"] == "none":
         minimum_y = min(point.y for point in geometry_points)
-        points = [point for point in geometry_points if point.y <= minimum_y + 1e-5]
         return {
             "x": clean_float(
-                (min(point.x for point in points) + max(point.x for point in points)) / 2
+                (min(point.x for point in geometry_points) + max(point.x for point in geometry_points))
+                / 2
             ),
             "y": clean_float(minimum_y),
             "z": clean_float(
-                (min(point.z for point in points) + max(point.z for point in points)) / 2
+                (min(point.z for point in geometry_points) + max(point.z for point in geometry_points))
+                / 2
             ),
         }
     normal = surface_placement["outwardNormal"]
@@ -5637,6 +5675,7 @@ def placed_asset_bounds(
     points = [
         metadata_point(point, part["pivot"], placement)
         for part in parts
+        if part.get("role") != "collision_proxy"
         for placement in part["placements"]
         for point in mesh_bounds_corners(mesh_by_id[part["meshId"]])
     ]
@@ -5718,7 +5757,9 @@ def adapt(invocation_path: pathlib.Path, output: pathlib.Path) -> None:
     )
     if any(abs(output_support_origin[axis]) > 1e-5 for axis in ("x", "y", "z")):
         fail("Canonical support-origin rebase was not applied exactly once")
-    previews = render_previews(parts, output, meshes)
+    previews = render_previews(
+        [part for part in parts if part.get("role") != "collision_proxy"], output, meshes
+    )
     write_json(
         output / "report.json",
         {

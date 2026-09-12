@@ -1,5 +1,13 @@
 import { types } from "node:util";
 import { z } from "zod";
+import {
+  Q32_32_MAX,
+  Q32_32_MIN,
+  Q32_32_SCALE,
+  quantizeQ32_32,
+  serializeQ32_32,
+  type Q32_32,
+} from "../../basalt-types/src/fixed.js";
 
 /** Opaque, case-sensitive keys used by Basalt's spatial graph. */
 export const entityId = z
@@ -17,23 +25,8 @@ export function compareSpatialStrings(left: string, right: string): number {
 export type SpatialJsonValue =
   null | boolean | number | string | SpatialJsonValue[] | { [key: string]: SpatialJsonValue };
 
-/** Signed Q32.32 spatial quantization used at index and hash boundaries. */
-export const Q32_32_SCALE = 4_294_967_296n;
-export const Q32_32_MIN = -2_147_483_648n * Q32_32_SCALE;
-export const Q32_32_MAX = 2_147_483_648n * Q32_32_SCALE - 1n;
-
-export function quantizeQ32_32(value: number): bigint {
-  if (!Number.isFinite(value) || Object.is(value, -0))
-    throw new Error("Q32.32 values must be finite and cannot be negative zero");
-  const scaled = BigInt(Math.round(value * Number(Q32_32_SCALE)));
-  if (scaled < Q32_32_MIN || scaled > Q32_32_MAX)
-    throw new Error("Q32.32 value exceeds signed range");
-  return scaled;
-}
-
-export function q32_32Key(value: number): string {
-  return quantizeQ32_32(value).toString();
-}
+export { Q32_32_MAX, Q32_32_MIN, Q32_32_SCALE, quantizeQ32_32, serializeQ32_32 };
+export type { Q32_32 };
 
 /** MurmurHash3 fmix32 finalizer, used by the seeded population PRNG. */
 export function murmurHash3Uint32(value: number): number {

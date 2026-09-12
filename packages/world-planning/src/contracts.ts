@@ -703,7 +703,7 @@ const semanticClaim = z
 
 export const WORLD_PLAN_SCHEMA = z
   .object({
-    kind: z.literal("WorldPlan"),
+    kind: z.literal("SpatialWorldPlan"),
     abi: z.literal(WORLD_PLAN_ABI),
     id: entityId,
     seed: z.number().int().min(0).max(0xffff_ffff),
@@ -947,7 +947,8 @@ export type WorldCompositionMeasure = z.infer<typeof WORLD_COMPOSITION_MEASURE_S
 export type TerrainPlan = z.infer<typeof TERRAIN_PLAN_SCHEMA>;
 export type TerrainOperation = z.infer<typeof terrainOperation>;
 export type ConstructedSurface = z.infer<typeof CONSTRUCTED_SURFACE_SCHEMA>;
-export type WorldPlan = z.infer<typeof WORLD_PLAN_SCHEMA>;
+/** Detailed terrain/route plan retained behind the engine-neutral WorldPlan boundary. */
+export type SpatialWorldPlan = z.infer<typeof WORLD_PLAN_SCHEMA>;
 export type WorldRegion = z.infer<typeof worldRegion>;
 export type WorldRegionVolume = z.infer<typeof WORLD_REGION_VOLUME_SCHEMA>;
 export type WorldRoute = z.infer<typeof worldRoute>;

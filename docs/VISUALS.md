@@ -13,10 +13,10 @@ centimeter values.
 
 Each region adds a bounded overlay for palette shifts, atmosphere, terrain
 materials, density gradients, negative space, motifs, detail bands, and effects.
-An asset-family revision binds several validated archetypes to that style. A
-family may be a foliage population, rock group, clutter set, architectural kit,
-or hero variant set. Socketed structural families use `ModularKitRequirement`;
-ordinary families do not need sockets.
+An asset-family revision binds a declared taxonomy handle to validated
+archetypes and measured evidence. A family may be a foliage population, rock
+group, clutter set, architectural kit, or hero variant set. Socketed structural
+families use `ModularKitRequirement`; ordinary families do not need sockets.
 
 Family members share a visual grammar and material realization policy. They do
 not have to share one texture atlas when that would damage quality. The policy
@@ -33,10 +33,10 @@ ground blending while leaving the authored mesh and runtime transform intact.
 brief and references
   -> global style and world plan
   -> regional family and density plan
-  -> catalog hard filters
-  -> bounded family shortlist
-  -> accepted family archetypes
-  -> offline neural/procedural generation for missing variants
+  -> exact sealed-family lookup
+  -> hard catalog and admission filters
+  -> accepted family cohort
+  -> offline neural/procedural family factory on miss
   -> common adaptation, material realization, and admission
   -> deterministic surface-aware population
   -> partitioned Roblox world
@@ -49,14 +49,13 @@ routes, exclusion masks, support footprints, and memory/triangle budgets.
 
 ## Catalog and neural routes
 
-Catalog intelligence measures source assets offline and groups them with explicit
-non-authoritative hints. Retrieval filters by rights, bounds, surface kind,
-capability, and delivery budget before semantic and visual ranking. A bounded
-contact sheet is assessed at one shared anchor; only shortlisted candidates enter
-the expensive adapter.
+Catalog intelligence measures source assets offline and validates explicit
+cohorts. Retrieval filters by exact taxonomy handle/family ID, rights, bounds,
+surface kind, capability, and delivery budget. A bounded contact sheet may be
+used for creator review; it does not invent family membership.
 
 TRELLIS, Hunyuan, Pixal3D, Qwen, and other qualified routes are peer factories.
-They generate family archetypes or hero exceptions offline. They do not run inline
+They generate coordinated family cohorts or hero exceptions offline. They do not run inline
 for every instance and never block terrain, routes, blockout, or population.
 Every accepted result becomes a content-addressed library entry and is reusable
 without another model call.
