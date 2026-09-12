@@ -5,7 +5,11 @@ import {
   type WorldFamilyPopulationPlan,
 } from "./contracts.js";
 import { z } from "zod";
-import { type AssetFamilyRevision, type FamilyCard } from "../../basalt-types/src/index.js";
+import {
+  STUD_METERS,
+  type AssetFamilyRevision,
+  type FamilyCard,
+} from "../../basalt-types/src/index.js";
 import type { CatalogAssetEnvelope } from "../../catalog-intelligence/src/contracts.js";
 
 /** Open-vocabulary family metadata. Geometry and style remain outside the resolver's authority. */
@@ -41,9 +45,9 @@ const requestSchema = z
     maximumCount: z.number().int().positive().safe().optional(),
     density: z
       .object({
-        minimum: z.number().finite().min(0).max(1),
-        target: z.number().finite().min(0).max(1),
-        maximum: z.number().finite().min(0).max(1),
+        minimum: z.number().finite().min(0),
+        target: z.number().finite().min(0),
+        maximum: z.number().finite().min(0),
       })
       .strict()
       .optional(),
@@ -282,6 +286,23 @@ export function resolveWorldAssetFamilies(input: {
 }
 
 /**
+ * Convert a brief role density (instances per hectare) into the resolver's
+ * density envelope (instances per 256 square studs, matching the population
+ * compiler's area normalization). The envelope carries the role total; the
+ * candidate loop below divides it across resolved families.
+ */
+export function densityEnvelopeFromPerHectare(perHectare: number): {
+  minimum: number;
+  target: number;
+  maximum: number;
+} {
+  if (!Number.isFinite(perHectare) || perHectare < 0)
+    throw new Error("Per-hectare density must be a non-negative finite number");
+  const target = (perHectare * 256 * STUD_METERS * STUD_METERS) / 10_000;
+  return { minimum: 0, target, maximum: target };
+}
+
+/**
  * Lower family choices and regional density intent into population plans. The
  * model chooses semantic families and density envelopes once per region; this
  * function merges repeated family usage before the deterministic population
@@ -307,7 +328,13 @@ export function compileResolvedFamilyPopulationPlans(input: {
     if (minimumCount > maximumCount)
       throw new Error(`Family population count range is inverted for ${request.biomeId}`);
     const density = request.density ?? { minimum: 0, target: 0.35, maximum: 1 };
-    const countShare = Math.ceil(maximumCount / Math.max(familyIds.length, 1));
+    const familyShare = Math.max(familyIds.length, 1);
+    const countShare = Math.ceil(maximumCount / familyShare);
+    const densityShare = {
+      minimum: density.minimum / familyShare,
+      target: density.target / familyShare,
+      maximum: density.maximum / familyShare,
+    };
     for (const [index, familyId] of familyIds.entries()) {
       const existing = merged.get(familyId);
       const candidate: WorldFamilyPopulationPlan = WORLD_FAMILY_POPULATION_PLAN_SCHEMA.parse({
@@ -315,11 +342,11 @@ export function compileResolvedFamilyPopulationPlans(input: {
         regionIds,
         surfaceKinds,
         distribution,
-        minimumCount: Math.floor(minimumCount / Math.max(familyIds.length, 1)),
+        minimumCount: Math.floor(minimumCount / familyShare),
         maximumCount: countShare,
         archetypeCount: familyById.get(familyId)?.variantCount ?? 1,
         scaleRange: [0.92, 1.08],
-        density,
+        density: densityShare,
         variationSeed: (request.variationSeed ?? 0) + index,
         excludedRouteIds: [...(request.excludedRouteIds ?? [])].sort(compareWorldStrings),
         excludedRegionIds: [...(request.excludedRegionIds ?? [])].sort(compareWorldStrings),

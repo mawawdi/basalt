@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import {
@@ -9,16 +10,31 @@ import {
   createBasaltWorldReadback,
   createBasaltWorldTransaction,
   reconcileBasaltWorldReadback,
+  sealVoxelSpotHashes,
+  type BasaltImportFactorObservation,
+  type BasaltVoxelSpotObservation,
   type BasaltWorldChunkDelta,
   type BasaltWorldChunkTransaction,
   type BasaltWorldEmissionManifest,
   type BasaltWorldReadback,
 } from "../../studio-protocol/src/index.js";
 import { contentHash, stableJson } from "../../contracts/src/index.js";
+import {
+  parseVoxelField,
+  VOXEL_SPOT_OCCUPANCY_TOLERANCE,
+  voxelSpotCells,
+} from "../../world-planning/src/voxels.js";
 
 export const BASALT_STUDIO_BRIDGE_ABI = "basalt-studio-bridge@1" as const;
 /** Hard cap on a single scene payload served over the binary channel. */
 export const MAX_SCENE_PAYLOAD_BYTES = 20971520;
+/**
+ * Relative drift allowed between a Studio-observed import factor and the
+ * factor the sidecar recorded for the same part. Mirrors the connector's
+ * `IMPORT_SCALE_TOLERANCE`; the two are compared as formatted decimals in
+ * failure messages, never as floats across the wire.
+ */
+export const BRIDGE_IMPORT_FACTOR_TOLERANCE = 0.01 as const;
 
 export interface BasaltScenePayloadEntry {
   readonly contentHash: string;
@@ -43,6 +59,7 @@ export interface BasaltSceneExportManifest {
   readonly parts: readonly unknown[];
   readonly terrain: readonly unknown[];
   readonly roads: readonly unknown[];
+  readonly skirts: readonly unknown[];
   readonly materialIds: readonly string[];
   readonly payloads: readonly BasaltScenePayloadEntry[];
   readonly hash: string;
@@ -63,6 +80,12 @@ export interface BasaltEngineSidecarBinding {
     readonly bytes: number;
     readonly watertight: boolean;
   };
+  /**
+   * Studio-measured imported-studs-per-source-unit, merged back after a
+   * Studio run. Absent until observed; when present the connector and the
+   * bridge both fail closed past the import tolerance.
+   */
+  readonly importFactor?: number;
 }
 
 export interface BasaltEngineSidecar {
@@ -139,10 +162,19 @@ export async function removeBasaltBridgeDiscovery(
   if (current?.bridgeId === bridgeId) await rm(filePath, { force: true });
 }
 
+export function defaultBasaltBridgeReadbackDir(cwd = process.cwd()): string {
+  return resolve(cwd, ".basalt", "readbacks");
+}
+
 export interface BasaltBridgeOptions {
   readonly host?: "127.0.0.1";
   readonly port?: number;
   readonly maxQueue?: number;
+  /**
+   * Directory receiving one sealed readback per settled transaction. Absent
+   * keeps readbacks in memory only; the CLI always configures a directory.
+   */
+  readonly readbackDir?: string;
 }
 
 export interface BasaltBridgeStatus {
@@ -166,6 +198,7 @@ export class BasaltStudioBridge {
   readonly bridgeId: string;
   readonly controlToken: string;
   readonly #maxQueue: number;
+  #readbackDir?: string;
   readonly #queued: BasaltWorldChunkTransaction[] = [];
   readonly #chunks = new Map<string, BasaltWorldChunkDelta>();
   readonly #settled = new Map<string, BasaltWorldReadback>();
@@ -179,6 +212,7 @@ export class BasaltStudioBridge {
     this.bridgeId = `basalt_bridge_${randomBytes(12).toString("hex")}`;
     this.controlToken = randomBytes(24).toString("hex");
     this.#maxQueue = Math.max(1, Math.min(options.maxQueue ?? 4096, 4096));
+    if (options.readbackDir !== undefined) this.#readbackDir = options.readbackDir;
   }
 
   enqueueManifest(manifestInput: unknown, expectedRevisionHash: string): BasaltBridgeStatus {
@@ -293,7 +327,7 @@ export class BasaltStudioBridge {
 
   settle(transactionInput: unknown, readbackInput: unknown): BasaltBridgeStatus {
     const transaction = assertBasaltWorldTransaction(transactionInput);
-    const readback = sealConnectorReadback(transaction, readbackInput);
+    const readback = sealConnectorReadback(transaction, readbackInput, this.#sceneExport?.hash);
     if (readback.transactionHash !== transaction.hash || readback.chunkId !== transaction.chunkId)
       throw new Error("Readback does not bind the queued transaction");
     const queued = this.#queued[0];
@@ -304,6 +338,7 @@ export class BasaltStudioBridge {
     const expectedIds = chunk.instanceIds;
     const expectedRoads = chunk.roadSegmentIds;
     reconcileBasaltWorldReadback(transaction, readback, expectedIds, expectedRoads);
+    this.assertReadbackEvidence(readback, chunk);
     if (readback.phase === "committed" || readback.phase === "rolled_back") {
       if (readback.phase === "committed") {
         if (transaction.phase !== "commit") throw new Error("Commit readback has wrong phase");
@@ -339,7 +374,52 @@ export class BasaltStudioBridge {
     } else {
       throw new Error("Readback phase cannot advance the queued transaction");
     }
+    this.persistReadback(readback);
     return this.status();
+  }
+
+  /**
+   * Evidence gate: only applied readbacks may carry voxel spots or import
+   * factors, and an applied readback must account for every chunk surface
+   * and every lowered part against the sealed export. Runs before any queue
+   * mutation so a failed verification never advances the transaction.
+   */
+  private assertReadbackEvidence(
+    readback: BasaltWorldReadback,
+    chunk: BasaltWorldChunkDelta,
+  ): void {
+    if (readback.phase !== "applied") {
+      if (readback.observedVoxelSpots.length > 0 || readback.observedImportFactors.length > 0)
+        throw new Error(`A ${readback.phase} readback must not carry observed evidence`);
+      return;
+    }
+    const sceneExport = this.#sceneExport;
+    if (!sceneExport) throw new Error("An applied readback needs its scene export");
+    const materialMap = this.#materialMap;
+    if (!materialMap) throw new Error("An applied readback needs its material map");
+    assertSpotEvidence(
+      readback.observedVoxelSpots,
+      chunk.surfaceIds,
+      sceneExport,
+      this.#payloads,
+      materialMap,
+    );
+    assertFactorEvidence(
+      readback.observedImportFactors,
+      chunk.instanceIds,
+      sceneExport,
+      this.#sidecar,
+    );
+  }
+
+  /** Append the sealed readback to the on-disk evidence trail when configured. */
+  private persistReadback(readback: BasaltWorldReadback): void {
+    if (!this.#readbackDir) return;
+    mkdirSync(this.#readbackDir, { recursive: true });
+    const target = resolve(this.#readbackDir, `${readback.transactionHash}.json`);
+    const temporary = `${target}.${process.pid}.tmp`;
+    writeFileSync(temporary, `${stableJson(readback)}\n`, { encoding: "utf8", mode: 0o600 });
+    renameSync(temporary, target);
   }
 
   status(): BasaltBridgeStatus {
@@ -361,16 +441,25 @@ export class BasaltStudioBridge {
     transactionInput: unknown,
     phase: BasaltWorldReadback["phase"],
     revisionHash: string,
+    evidence?: {
+      readonly observedVoxelSpots?: readonly BasaltVoxelSpotObservation[];
+      readonly observedImportFactors?: readonly BasaltImportFactorObservation[];
+    },
   ) {
     const transaction = assertBasaltWorldTransaction(transactionInput);
     const chunk = this.#chunks.get(transaction.chunkId);
     if (!chunk) throw new Error("Unknown world chunk");
+    const observedVoxelSpots = evidence?.observedVoxelSpots ?? [];
     return createBasaltWorldReadback({
       transaction,
       phase,
       observedRevisionHash: revisionHash,
       observedInstanceIds: chunk.instanceIds,
       observedRoadSegmentIds: chunk.roadSegmentIds,
+      observedVoxelSpots,
+      observedImportFactors: evidence?.observedImportFactors ?? [],
+      spotHashes: sealVoxelSpotHashes(observedVoxelSpots),
+      ...(this.#sceneExport ? { exportHash: this.#sceneExport.hash } : {}),
     });
   }
 }
@@ -514,6 +603,7 @@ function assertEmissionManifest(value: unknown): BasaltWorldEmissionManifest {
 function sealConnectorReadback(
   transaction: ReturnType<typeof assertBasaltWorldTransaction>,
   input: unknown,
+  exportHash?: string,
 ): BasaltWorldReadback {
   if (isRecord(input) && input.kind === "BasaltWorldReadbackObservation") {
     const observation = assertBasaltWorldReadbackObservation(input);
@@ -528,9 +618,123 @@ function sealConnectorReadback(
       observedRevisionHash: observation.observedRevisionHash,
       observedInstanceIds: observation.observedInstanceIds,
       observedRoadSegmentIds: observation.observedRoadSegmentIds,
+      observedVoxelSpots: observation.observedVoxelSpots,
+      observedImportFactors: observation.observedImportFactors,
+      spotHashes: sealVoxelSpotHashes(observation.observedVoxelSpots),
+      ...(exportHash === undefined ? {} : { exportHash }),
     });
   }
   return assertBasaltWorldReadback(input);
+}
+
+/**
+ * Replay every observed voxel spot against the sealed payload: the observed
+ * surfaces must equal the chunk surfaces, the observed cells must equal the
+ * deterministic spot rule, and each observed value must match the sealed
+ * occupancy (within engine quantization) and mapped material.
+ */
+function assertSpotEvidence(
+  spots: readonly BasaltVoxelSpotObservation[],
+  surfaceIds: readonly string[],
+  sceneExport: BasaltSceneExportManifest,
+  payloads: ReadonlyMap<string, Uint8Array>,
+  materialMap: BasaltMaterialMap,
+): void {
+  const observedSurfaces = [...new Set(spots.map((spot) => spot.surfaceId))].sort();
+  if (stableJson(observedSurfaces) !== stableJson([...surfaceIds].sort()))
+    throw new Error("Applied readback voxel spots do not cover the chunk surfaces");
+  const materialById = new Map(
+    materialMap.bindings.map((binding) => [binding.materialId, binding.robloxMaterial]),
+  );
+  for (const surfaceId of surfaceIds) {
+    const entry = sceneExport.terrain.find(
+      (candidate): candidate is { surfaceId: string; voxelHash: string } =>
+        isRecord(candidate) &&
+        candidate.surfaceId === surfaceId &&
+        typeof candidate.voxelHash === "string",
+    );
+    if (!entry) throw new Error(`Scene export has no terrain for surface ${surfaceId}`);
+    const bytes = payloads.get(entry.voxelHash);
+    if (!bytes) throw new Error(`Scene export is missing voxel payload for ${surfaceId}`);
+    const field = parseVoxelField(bytes);
+    const expected = new Set(voxelSpotCells(field.dimensions).map(([x, y, z]) => `${x},${y},${z}`));
+    const observed = spots.filter((spot) => spot.surfaceId === surfaceId);
+    const observedKeys = observed.map((spot) => `${spot.x},${spot.y},${spot.z}`).sort();
+    if (stableJson(observedKeys) !== stableJson([...expected].sort()))
+      throw new Error(`Applied readback voxel spots miss cells of surface ${surfaceId}`);
+    const [nx, , nz] = field.dimensions;
+    for (const spot of observed) {
+      const flat = spot.x + nx * (spot.z + nz * spot.y);
+      const sealed = field.occupancy[flat]!;
+      if (Math.abs(spot.occupancy - sealed) > VOXEL_SPOT_OCCUPANCY_TOLERANCE)
+        throw new Error(
+          `Surface ${surfaceId} cell ${spot.x},${spot.y},${spot.z} reads occupancy ` +
+            `${spot.occupancy} against sealed ${sealed}`,
+        );
+      const materialId = field.materials[field.materialIndex[flat]!]!;
+      const expectedMaterial = materialById.get(materialId);
+      if (!expectedMaterial)
+        throw new Error(`Surface ${surfaceId} material ${materialId} has no mapped material`);
+      if (spot.material !== expectedMaterial)
+        throw new Error(
+          `Surface ${surfaceId} cell ${spot.x},${spot.y},${spot.z} reads material ` +
+            `${spot.material} against mapped ${expectedMaterial}`,
+        );
+    }
+  }
+}
+
+/**
+ * Replay every observed import factor against the sealed export: the observed
+ * parts must equal the parts the chunk instances lower, and any sidecar
+ * recorded factor must agree within the import tolerance.
+ */
+function assertFactorEvidence(
+  factors: readonly BasaltImportFactorObservation[],
+  instanceIds: readonly string[],
+  sceneExport: BasaltSceneExportManifest,
+  sidecar: BasaltEngineSidecar | undefined,
+): void {
+  const expected = new Set<string>();
+  for (const instanceId of instanceIds) {
+    const instance = sceneExport.instances.find(
+      (candidate): candidate is { id: string; assetId: string } =>
+        isRecord(candidate) && candidate.id === instanceId && typeof candidate.assetId === "string",
+    );
+    if (!instance) throw new Error(`Scene export has no instance ${instanceId}`);
+    const asset = sceneExport.assets.find(
+      (candidate): candidate is { assetId: string; partHashes: string[] } =>
+        isRecord(candidate) &&
+        candidate.assetId === instance.assetId &&
+        Array.isArray(candidate.partHashes) &&
+        candidate.partHashes.every((hash): hash is string => typeof hash === "string"),
+    );
+    if (!asset) throw new Error(`Scene export has no asset ${instance.assetId}`);
+    for (const partHash of asset.partHashes) expected.add(partHash);
+  }
+  const observed = factors.map((entry) => entry.contentHash).sort();
+  if (stableJson(observed) !== stableJson([...expected].sort()))
+    throw new Error("Applied readback import factors do not cover the lowered parts");
+  const partHashes = new Set(
+    sceneExport.parts
+      .map((candidate) => (isRecord(candidate) ? candidate.contentHash : undefined))
+      .filter((hash): hash is string => typeof hash === "string"),
+  );
+  const recorded = new Map(
+    (sidecar?.bindings ?? [])
+      .filter((binding) => typeof binding.importFactor === "number")
+      .map((binding) => [binding.contentHash, binding.importFactor!]),
+  );
+  for (const entry of factors) {
+    if (!partHashes.has(entry.contentHash))
+      throw new Error(`Applied readback factor references unknown part ${entry.contentHash}`);
+    const baseline = recorded.get(entry.contentHash);
+    if (baseline === undefined) continue;
+    if (Math.abs(entry.factor - baseline) / baseline > BRIDGE_IMPORT_FACTOR_TOLERANCE)
+      throw new Error(
+        `Part ${entry.contentHash} import factor ${entry.factor} drifts past recorded ${baseline}`,
+      );
+  }
 }
 
 function canonicalIds(values: unknown, label: string, max = 65_536): string[] {
@@ -627,6 +831,7 @@ function assertSceneExportManifest(value: unknown): BasaltSceneExportManifest {
     !Array.isArray(value.parts) ||
     !Array.isArray(value.terrain) ||
     !Array.isArray(value.roads) ||
+    !Array.isArray(value.skirts) ||
     !Array.isArray(value.materialIds) ||
     !value.materialIds.every((id) => typeof id === "string" && id.length > 0) ||
     !Array.isArray(value.payloads)
@@ -655,6 +860,7 @@ function assertSceneExportManifest(value: unknown): BasaltSceneExportManifest {
     parts: value.parts,
     terrain: value.terrain,
     roads: value.roads,
+    skirts: value.skirts,
     materialIds: value.materialIds,
     payloads: value.payloads,
   };
@@ -677,6 +883,7 @@ function assertEngineSidecar(value: unknown): BasaltEngineSidecar {
   const seen = new Set<string>();
   for (const binding of value.bindings as BasaltEngineSidecarBinding[]) {
     const budgets: unknown = binding?.budgets;
+    const importFactor: unknown = binding?.importFactor;
     if (
       !isRecord(binding) ||
       !isHash(binding.contentHash) ||
@@ -688,7 +895,9 @@ function assertEngineSidecar(value: unknown): BasaltEngineSidecar {
       (budgets.triangles as number) < 0 ||
       !Number.isInteger(budgets.bytes) ||
       (budgets.bytes as number) <= 0 ||
-      typeof budgets.watertight !== "boolean"
+      typeof budgets.watertight !== "boolean" ||
+      (importFactor !== undefined &&
+        (typeof importFactor !== "number" || !Number.isFinite(importFactor) || importFactor <= 0))
     )
       throw new Error("Invalid Basalt engine sidecar binding");
     if (seen.has(binding.contentHash))

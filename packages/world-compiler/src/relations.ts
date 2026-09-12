@@ -208,7 +208,15 @@ export function solveWorldRelations(
         y: position.y + surface.normal.y * normalOffset,
         z: position.z + surface.normal.z * normalOffset,
       };
-      validateRelations(position, surface.normal, scoped, input, distribution.surfaceId);
+      validateRelations(
+        position,
+        surface.normal,
+        surface.position,
+        normalOffset,
+        scoped,
+        input,
+        distribution.surfaceId,
+      );
       const material = {
         proposalId: distribution.id,
         ordinal,
@@ -287,6 +295,8 @@ function expandDistribution(value: WorldPlacementDistribution): Array<{ u: numbe
 function validateRelations(
   position: WorldVector3,
   normal: WorldVector3,
+  surfacePosition: WorldVector3,
+  normalOffset: number,
   relations: readonly WorldSpatialRelation[],
   input: SolveWorldRelationsInput,
   surfaceId: string,
@@ -302,9 +312,16 @@ function validateRelations(
         throw new Error(`Placement violates route clearance: ${relation.routeId}`);
     } else if (relation.kind === "on_surface" && relation.surfaceId !== surfaceId)
       throw new Error(`Placement surface mismatch: ${relation.surfaceId}`);
-    else if (relation.kind === "support" && relation.surfaceId !== surfaceId)
-      throw new Error(`Support surface mismatch: ${relation.surfaceId}`);
-    else if (
+    else if (relation.kind === "support") {
+      if (relation.surfaceId !== surfaceId)
+        throw new Error(`Support surface mismatch: ${relation.surfaceId}`);
+      const axial =
+        (position.x - surfacePosition.x) * normal.x +
+        (position.y - surfacePosition.y) * normal.y +
+        (position.z - surfacePosition.z) * normal.z;
+      if (Math.abs(axial - normalOffset) > relation.tolerance + 1e-6)
+        throw new Error("Placement leaves its support plane");
+    } else if (
       relation.kind === "align_to_normal" &&
       tiltDegrees(normal) > relation.maximumTiltDegrees + 1e-6
     )
@@ -317,6 +334,25 @@ function alignToNormal(normal: WorldVector3, yaw: number): Quaternion {
   const tilt = Math.acos(Math.max(-1, Math.min(1, n.y)));
   const axis = normalize({ x: n.z, y: 0, z: -n.x });
   return multiplyQuaternion(axisAngle(axis, tilt), [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)]);
+}
+
+/**
+ * Align to the surface normal with yaw spin, capping the tilt at the given
+ * maximum. The capped normal keeps the true tilt axis; only its magnitude is
+ * clamped, so cover follows gentle relief and stays near-upright on steeps.
+ */
+export function alignToNormalCapped(
+  normal: WorldVector3,
+  yaw: number,
+  maximumTiltDegrees: number,
+): Quaternion {
+  if (!Number.isFinite(maximumTiltDegrees) || maximumTiltDegrees < 0)
+    throw new Error("Maximum tilt must be a non-negative finite number");
+  const n = normalize(normal);
+  const tilt = Math.acos(Math.max(-1, Math.min(1, n.y)));
+  const capped = Math.min(tilt, (maximumTiltDegrees * Math.PI) / 180);
+  const axis = normalize({ x: n.z, y: 0, z: -n.x });
+  return multiplyQuaternion(axisAngle(axis, capped), [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)]);
 }
 function yawOnly(rotation: Quaternion): Quaternion {
   const yaw = Math.atan2(
@@ -357,8 +393,33 @@ function normalize(value: WorldVector3): WorldVector3 {
   const length = Math.hypot(value.x, value.y, value.z) || 1;
   return { x: value.x / length, y: value.y / length, z: value.z / length };
 }
-function tiltDegrees(value: WorldVector3): number {
+export function tiltDegrees(value: WorldVector3): number {
   return (Math.acos(Math.max(-1, Math.min(1, normalize(value).y))) * 180) / Math.PI;
+}
+
+/**
+ * Pairwise interlock check: no two placement footprints may penetrate deeper
+ * than the allowance. Radii are contact radii in the same units as positions.
+ */
+export function validateInterlockClearance(
+  placements: readonly { position: WorldVector3; radius: number }[],
+  maximumPenetrationDepth: number,
+): void {
+  if (!Number.isFinite(maximumPenetrationDepth) || maximumPenetrationDepth < 0)
+    throw new Error("Maximum penetration depth must be a non-negative finite number");
+  for (let left = 0; left < placements.length; left += 1) {
+    const a = placements[left]!;
+    if (!Number.isFinite(a.radius) || a.radius < 0)
+      throw new Error("Interlock radius must be a non-negative finite number");
+    for (let right = left + 1; right < placements.length; right += 1) {
+      const b = placements[right]!;
+      if (!Number.isFinite(b.radius) || b.radius < 0)
+        throw new Error("Interlock radius must be a non-negative finite number");
+      const distance = Math.hypot(a.position.x - b.position.x, a.position.z - b.position.z);
+      if (distance + maximumPenetrationDepth < a.radius + b.radius)
+        throw new Error("Placement footprints interlock beyond the allowance");
+    }
+  }
 }
 function insidePolygon(
   point: { u: number; v: number },

@@ -232,6 +232,42 @@ export function resolveAdmissionStatus(input: {
   return input.isManifold && input.textureEvidence !== "none" ? "locally_qualified" : "incomplete";
 }
 
+/**
+ * Decal-patch quarantine signature. A declared member is a color patch
+ * masquerading as volumetric content when its whole mesh samples ~one atlas
+ * texel, its spans are flat, and it dwarfs its measured family cohort. All
+ * three must hold: solid-color props are volumetric, ground tiles match
+ * their flat cohort, and textured flats sample wide UV. Spans are
+ * axis-invariant (min/max), so authoring frames cannot hide a patch.
+ */
+export const PATCH_UV_BBOX_AREA_MAX = 1e-6 as const;
+export const PATCH_FLAT_RATIO_MAX = 0.05 as const;
+export const PATCH_FAMILY_SPAN_RATIO_MIN = 4 as const;
+
+export function matchesPatchQuarantineSignature(input: {
+  /** Union TEXCOORD_0 bbox area over all primitives, in UV units squared. */
+  readonly uvBboxArea: number;
+  /** Minimum/maximum measured span in studs (any axis order). */
+  readonly minSpanStuds: number;
+  readonly maxSpanStuds: number;
+  /** Median max-span of the declared family cohort, in studs. */
+  readonly familyMedianMaxSpanStuds: number;
+}): boolean {
+  if (
+    !Number.isFinite(input.uvBboxArea) ||
+    !Number.isFinite(input.minSpanStuds) ||
+    !Number.isFinite(input.maxSpanStuds) ||
+    !Number.isFinite(input.familyMedianMaxSpanStuds)
+  )
+    return false;
+  if (input.maxSpanStuds <= 0 || input.familyMedianMaxSpanStuds <= 0) return false;
+  return (
+    input.uvBboxArea < PATCH_UV_BBOX_AREA_MAX &&
+    input.minSpanStuds / input.maxSpanStuds < PATCH_FLAT_RATIO_MAX &&
+    input.maxSpanStuds / input.familyMedianMaxSpanStuds > PATCH_FAMILY_SPAN_RATIO_MIN
+  );
+}
+
 export function sealCatalogInventory(input: {
   sourceManifestHashes: readonly string[];
   assets: readonly CatalogAssetEnvelope[];

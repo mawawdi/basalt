@@ -8,6 +8,9 @@ local Frames = require(script.Parent.Frames)
 -- (uniform scale from bounds, pivots on the flipped recorded center,
 -- identity rotations) and places every MeshPart by framing the recorded
 -- center with the flip compensated. Any deviation fails closed with numbers.
+-- Measured factors return to the readback observation; when the sidecar
+-- already records a factor for the part, drift past tolerance fails closed
+-- instead of silently compensating a changed upload.
 local InstanceLowering = {}
 
 -- Loaded model templates keyed by part hash for the current export only; a
@@ -169,6 +172,22 @@ local function checkImportRotations(template: Model, _part: any): ()
 	end
 end
 
+local function checkRecordedFactor(scene: any, partHash: string, factor: number): ()
+	local recorded = scene.importFactorByPartHash[partHash]
+	if recorded == nil then return end
+	if math.abs(factor - recorded) / recorded > Constants.IMPORT_SCALE_TOLERANCE then
+		fail(
+			"uploaded model for "
+				.. partHash
+				.. " drifts its import factor (measured "
+				.. tostring(factor)
+				.. ", recorded "
+				.. tostring(recorded)
+				.. "); re-record the sidecar after re-uploading"
+		)
+	end
+end
+
 local function loadTemplate(scene: any, partHash: string): (Model, number)
 	if templateCache.exportHash ~= scene.exportHash then
 		templateCache = { exportHash = scene.exportHash, models = {} }
@@ -179,6 +198,7 @@ local function loadTemplate(scene: any, partHash: string): (Model, number)
 		local factor = measureImportFactor(cached, part)
 		checkImportPivots(cached, part, factor)
 		checkImportRotations(cached, part)
+		checkRecordedFactor(scene, partHash, factor)
 		return cached, factor
 	end
 	local part = scene.partsByHash[partHash]
@@ -198,6 +218,7 @@ local function loadTemplate(scene: any, partHash: string): (Model, number)
 	local factor = measureImportFactor(model, part)
 	checkImportPivots(model, part, factor)
 	checkImportRotations(model, part)
+	checkRecordedFactor(scene, partHash, factor)
 	templateCache.models[partHash] = model
 	return model, factor
 end
@@ -229,12 +250,17 @@ local function placePart(
 	end
 end
 
-function InstanceLowering.lowerInstances(parent: Instance, transaction: any, scene: any): ()
+function InstanceLowering.lowerInstances(
+	parent: Instance,
+	transaction: any,
+	scene: any
+): { [string]: number }
 	local stale = parent:FindFirstChild("instances")
 	if stale ~= nil then stale:Destroy() end
 	local folder = Instance.new("Folder")
 	folder.Name = "instances"
 	folder.Parent = parent
+	local factors: { [string]: number } = {}
 	for _, instanceId in ipairs(transaction.instanceIds) do
 		local instance = scene.instancesById[instanceId]
 		local asset = scene.assetsById[instance.assetId]
@@ -249,6 +275,7 @@ function InstanceLowering.lowerInstances(parent: Instance, transaction: any, sce
 		for _, partHash in ipairs(asset.partHashes) do
 			local part = scene.partsByHash[partHash]
 			local template, importFactor = loadTemplate(scene, partHash)
+			factors[partHash] = importFactor
 			local clone: Model = template:Clone()
 			local render = not hasCollisionSuffix(part.nodeName)
 			local partIndex = 0
@@ -275,6 +302,7 @@ function InstanceLowering.lowerInstances(parent: Instance, transaction: any, sce
 		if placed == 0 then fail("instance " .. instanceId .. " lowered no parts") end
 		model.Parent = folder
 	end
+	return factors
 end
 
 return InstanceLowering

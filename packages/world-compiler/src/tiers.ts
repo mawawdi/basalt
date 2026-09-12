@@ -70,10 +70,15 @@ export function compileHierarchicalWorld(
           stage,
           familyPlans,
         });
-  const microPopulation =
-    mesoPlan && stage !== "meso"
-      ? populateBasaltWorld(foundation, mesoPlan, input.population)
-      : undefined;
+  let microPopulation: WorldPopulationArtifact | undefined;
+  if (mesoPlan && stage !== "meso") {
+    const groundingEvidence = input.population?.groundingEvidence;
+    if (!groundingEvidence) throw new Error("Hierarchical population requires grounding evidence");
+    microPopulation = populateBasaltWorld(foundation, mesoPlan, {
+      ...input.population,
+      groundingEvidence,
+    });
+  }
   const chunkSize = input.chunkSize ?? input.population?.chunkSize ?? 128;
   const roadAssemblies =
     microPopulation && stage === "partition"

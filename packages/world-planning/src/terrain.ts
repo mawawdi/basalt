@@ -740,6 +740,11 @@ function applyHeightOperation(
     const distance = distanceToPolyline(point, operation.points);
     return height - operation.depth * smoothFalloff(distance, operation.width) * influence;
   }
+  if (operation.kind === "roadbed") {
+    const distance = distanceToPolyline(point, operation.points);
+    const shoulder = Math.max(0, distance - operation.width / 2);
+    return height - operation.depth * smoothFalloff(shoulder, operation.falloff) * influence;
+  }
   if (operation.kind === "local_patch") {
     if (operation.edit.kind === "smooth") return height;
     const distance = Math.hypot(point.x - operation.center.x, point.z - operation.center.z);

@@ -7,6 +7,8 @@ local SceneData = require(script.Parent.SceneData)
 local InstanceLowering = require(script.Parent.InstanceLowering)
 local TerrainLowering = require(script.Parent.TerrainLowering)
 local RoadLowering = require(script.Parent.RoadLowering)
+local SkirtLowering = require(script.Parent.SkirtLowering)
+local TerrainMarkers = require(script.Parent.TerrainMarkers)
 
 local ConnectorRuntime = {}
 local activeRecording: any = nil
@@ -95,6 +97,8 @@ function ConnectorRuntime.detachedPreflight(transaction: any): any
 		observedRevisionHash = readRevision(),
 		observedInstanceIds = transaction.instanceIds,
 		observedRoadSegmentIds = transaction.roadSegmentIds,
+		observedVoxelSpots = {},
+		observedImportFactors = {},
 	}
 end
 
@@ -124,6 +128,16 @@ local function verifyConstruction(folder: Instance, transaction: any, scene: any
 			fail("road segment " .. segmentId .. " lowered no ribbon")
 		end
 	end
+	local skirts = folder:FindFirstChild("skirts")
+	for _, instanceId in ipairs(transaction.instanceIds) do
+		if scene.skirtsByInstanceId[instanceId] ~= nil then
+			local skirtFolder = if skirts ~= nil then skirts:FindFirstChild(instanceId) else nil
+			if skirtFolder == nil then fail("chunk lowered no skirt for instance " .. instanceId) end
+			if #skirtFolder:GetChildren() == 0 then
+				fail("skirt " .. instanceId .. " lowered no curtain")
+			end
+		end
+	end
 	local terrainFolder = folder:FindFirstChild("terrain")
 	for _, surfaceId in ipairs(scene.chunkDelta.surfaceIds) do
 		local entry = scene.terrainById[surfaceId]
@@ -148,12 +162,39 @@ function ConnectorRuntime.applyChunk(transaction: any): any
 	end
 	folder:SetAttribute("BasaltChunkHash", requireHash(transaction.chunkHash, "transaction.chunkHash"))
 	folder:SetAttribute("BasaltWorldPlanHash", requireHash(transaction.worldPlanHash, "transaction.worldPlanHash"))
+	local observedSpots: { any } = {}
+	local observedFactors: { any } = {}
 	withRecording(recording, function()
 		local scene = SceneData.load(chunkId)
-		InstanceLowering.lowerInstances(folder, transaction, scene)
-		TerrainLowering.lowerTerrain(folder, scene)
+		local factors = InstanceLowering.lowerInstances(folder, transaction, scene)
+		local surfaces = TerrainLowering.lowerTerrain(folder, scene)
 		RoadLowering.lowerRoads(folder, transaction, scene)
+		SkirtLowering.lowerSkirts(folder, transaction, scene)
 		verifyConstruction(folder, transaction, scene)
+		for _, surface in ipairs(surfaces) do
+			for _, reading in ipairs(surface.readings) do
+				table.insert(observedSpots, {
+					surfaceId = surface.surfaceId,
+					x = reading.x,
+					y = reading.y,
+					z = reading.z,
+					occupancy = reading.occupancy,
+					material = reading.material,
+				})
+			end
+		end
+		for partHash, factor in pairs(factors) do
+			table.insert(observedFactors, { contentHash = partHash, factor = factor })
+		end
+		table.sort(observedSpots, function(left: any, right: any): boolean
+			if left.surfaceId ~= right.surfaceId then return left.surfaceId < right.surfaceId end
+			if left.x ~= right.x then return left.x < right.x end
+			if left.y ~= right.y then return left.y < right.y end
+			return left.z < right.z
+		end)
+		table.sort(observedFactors, function(left: any, right: any): boolean
+			return left.contentHash < right.contentHash
+		end)
 	end)
 	ChangeHistoryService:SetWaypoint("Basalt apply " .. chunkId)
 	return {
@@ -165,6 +206,8 @@ function ConnectorRuntime.applyChunk(transaction: any): any
 		observedRevisionHash = readRevision(),
 		observedInstanceIds = transaction.instanceIds,
 		observedRoadSegmentIds = transaction.roadSegmentIds,
+		observedVoxelSpots = observedSpots,
+		observedImportFactors = observedFactors,
 	}
 end
 
@@ -184,6 +227,8 @@ function ConnectorRuntime.commit(transaction: any): any
 		observedRevisionHash = readRevision(),
 		observedInstanceIds = transaction.instanceIds,
 		observedRoadSegmentIds = transaction.roadSegmentIds,
+		observedVoxelSpots = {},
+		observedImportFactors = {},
 	}
 end
 
@@ -191,9 +236,11 @@ function ConnectorRuntime.rollback(transaction: any): any
 	if activeRecording ~= nil then fail("a world transaction is already open") end
 	local recording = beginRecording(transaction)
 	if transaction.phase ~= "rollback" then fail("rollback requires a rollback transaction") end
-	-- Constructed parts roll back; terrain voxels persist because terrain is
-	-- global to the place and has no per-chunk undo. Markers stay so a later
-	-- apply skips already-correct surfaces instead of rewriting them.
+	-- Constructed parts roll back, and terrain voxels this chunk wrote clear
+	-- to air from the marker-carried region: no scene load, so rollback
+	-- clears exactly what was written even across export changes. Markers
+	-- this chunk did not write stay untouched, and legacy markers without a
+	-- writer drop so the next apply rewrites them.
 	withRecording(recording, function()
 		local folder = Workspace:FindFirstChild(recording.chunkId)
 		if folder ~= nil then
@@ -201,6 +248,30 @@ function ConnectorRuntime.rollback(transaction: any): any
 			if instances ~= nil then instances:Destroy() end
 			local roads = folder:FindFirstChild("roads")
 			if roads ~= nil then roads:Destroy() end
+			local skirts = folder:FindFirstChild("skirts")
+			if skirts ~= nil then skirts:Destroy() end
+			local terrainFolder = folder:FindFirstChild("terrain")
+			if terrainFolder ~= nil then
+				local markers: { TerrainMarkers.MarkerView } = {}
+				for _, child in ipairs(terrainFolder:GetChildren()) do
+					table.insert(markers, TerrainLowering.markerView(child, child.Name))
+				end
+				local plan =
+					TerrainMarkers.planClear(markers, recording.chunkId, Constants.VOXEL_CELL_STUDS)
+				if #plan.clear > 0 then
+					local terrain = Workspace:FindFirstChildOfClass("Terrain")
+					if terrain == nil then fail("place has no Terrain to clear") end
+					for _, clear in ipairs(plan.clear) do
+						TerrainLowering.clearRegion(terrain, clear.origin, clear.dimensions)
+						local marker = terrainFolder:FindFirstChild(clear.name)
+						if marker ~= nil then marker:Destroy() end
+					end
+				end
+				for _, name in ipairs(plan.drop) do
+					local marker = terrainFolder:FindFirstChild(name)
+					if marker ~= nil then marker:Destroy() end
+				end
+			end
 		end
 		ChangeHistoryService:SetWaypoint("Basalt rollback " .. recording.chunkId)
 	end)
@@ -213,6 +284,8 @@ function ConnectorRuntime.rollback(transaction: any): any
 		observedRevisionHash = readRevision(),
 		observedInstanceIds = transaction.instanceIds,
 		observedRoadSegmentIds = transaction.roadSegmentIds,
+		observedVoxelSpots = {},
+		observedImportFactors = {},
 	}
 end
 

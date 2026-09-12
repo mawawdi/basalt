@@ -34,9 +34,9 @@ export const WORLD_FAMILY_POPULATION_PLAN_SCHEMA = z
       .refine(([minimum, maximum]) => minimum <= maximum, "Scale range is inverted"),
     density: z
       .object({
-        minimum: z.number().finite().min(0).max(1),
-        target: z.number().finite().min(0).max(1),
-        maximum: z.number().finite().min(0).max(1),
+        minimum: z.number().finite().min(0),
+        target: z.number().finite().min(0),
+        maximum: z.number().finite().min(0),
       })
       .strict()
       .refine((value) => value.minimum <= value.target && value.target <= value.maximum, {
@@ -105,6 +105,18 @@ export const WORLD_POPULATION_INSTANCE_SCHEMA = z
     position: vector3,
     rotation: quaternion,
     scale: positive,
+    footprint: z
+      .object({
+        contactRadiusStuds: z.number().finite().positive(),
+        restYStuds: z.number().finite(),
+        dropsStuds: z.tuple([
+          z.number().finite().max(0),
+          z.number().finite().max(0),
+          z.number().finite().max(0),
+          z.number().finite().max(0),
+        ]),
+      })
+      .strict(),
   })
   .strict();
 export type WorldPopulationInstance = z.infer<typeof WORLD_POPULATION_INSTANCE_SCHEMA>;

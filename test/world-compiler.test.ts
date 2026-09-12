@@ -7,9 +7,11 @@ import {
   createBasaltWorldCompilerPlan,
   populateBasaltWorld,
   sealWorldPopulationArtifact,
+  type GroundingEvidenceFile,
   type WorldFamilyPopulationPlan,
 } from "../packages/world-compiler/src/index.js";
 import { productionWorldPlanFixture } from "./helpers/production-world-fixtures.js";
+import { groundingEvidenceFixture } from "./helpers/grounding-evidence.js";
 
 function fixture() {
   return productionWorldPlanFixture({
@@ -92,6 +94,7 @@ test("Basalt population artifact canonicalizes chunks and reuses family handles"
             position: { x: 1, y: 0, z: 2 },
             rotation: [0, 0, 0, 1],
             scale: 1,
+            footprint: { contactRadiusStuds: 0.5, restYStuds: 0, dropsStuds: [0, 0, 0, 0] },
           },
         ],
       },
@@ -107,6 +110,7 @@ test("Basalt population artifact canonicalizes chunks and reuses family handles"
             position: { x: 0, y: 0, z: 0 },
             rotation: [0, 0, 0, 1],
             scale: 1.1,
+            footprint: { contactRadiusStuds: 0.5, restYStuds: 0, dropsStuds: [0, 0, 0, 0] },
           },
         ],
       },
@@ -127,7 +131,9 @@ test("Basalt population resolves families against indexed surfaces", () => {
     styleContractHash: contentHash("basalt-style"),
     familyPlans: [familyPlan()],
   });
-  const population = populateBasaltWorld(foundation, plan);
+  const population = populateBasaltWorld(foundation, plan, {
+    groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
+  });
   assert.ok(population.instanceCount > 0);
   assert.ok(population.instanceCount <= 24);
   assert.ok(population.chunks.every((chunk) => chunk.familyIds.includes("basaltFoliage")));
@@ -145,7 +151,9 @@ test("Basalt lowers population into deterministic connector-sized transaction de
     styleContractHash: contentHash("basalt-style"),
     familyPlans: [familyPlan()],
   });
-  const population = populateBasaltWorld(foundation, plan);
+  const population = populateBasaltWorld(foundation, plan, {
+    groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
+  });
   const first = createBasaltWorldEmission(foundation, population, 64);
   const second = createBasaltWorldEmission(foundation, population, 64);
   assert.deepEqual(first, second);
@@ -153,4 +161,161 @@ test("Basalt lowers population into deterministic connector-sized transaction de
   assert.ok(first.chunks.length > 0);
   assert.ok(first.chunks.every((chunk) => chunk.transactionId.startsWith("basalt_tx_")));
   assert.ok(first.chunks.every((chunk) => chunk.surfaceIds.includes("basaltTerrain")));
+});
+
+test("Basalt spacing separates contact discs across families", () => {
+  const foundation = compileBasaltWorldFoundation(fixture());
+  const trunkPlan: WorldFamilyPopulationPlan = {
+    ...familyPlan(),
+    familyId: "basaltTrunks",
+    minimumCount: 6,
+    maximumCount: 6,
+    variationSeed: 11,
+  };
+  const plan = createBasaltWorldCompilerPlan({
+    foundation,
+    styleContractHash: contentHash("basalt-style"),
+    familyPlans: [familyPlan(), trunkPlan],
+  });
+  const foliage = groundingEvidenceFixture("basaltFoliage", 1);
+  const trunks = groundingEvidenceFixture("basaltTrunks", 1);
+  const population = populateBasaltWorld(foundation, plan, {
+    groundingEvidence: { ...foliage, evidence: [...foliage.evidence, ...trunks.evidence] },
+  });
+  const instances = population.chunks.flatMap((chunk) => chunk.instances);
+  assert.ok(instances.some((instance) => instance.familyId === "basaltFoliage"));
+  assert.ok(instances.some((instance) => instance.familyId === "basaltTrunks"));
+  // Fixture evidence is rebased, so origins coincide with contact patches.
+  for (let left = 0; left < instances.length; left += 1) {
+    for (let right = left + 1; right < instances.length; right += 1) {
+      const a = instances[left]!;
+      const b = instances[right]!;
+      const clearance = Math.max(0.5 * a.scale, 0.25) + Math.max(0.5 * b.scale, 0.25);
+      const distance = Math.hypot(a.position.x - b.position.x, a.position.z - b.position.z);
+      assert.ok(distance + 1e-9 >= clearance);
+    }
+  }
+});
+
+test("Basalt population keeps support footprints over the surface", () => {
+  const foundation = compileBasaltWorldFoundation(fixture());
+  const slabs: WorldFamilyPopulationPlan = {
+    ...familyPlan(),
+    familyId: "basaltSlabs",
+    minimumCount: 4,
+    maximumCount: 6,
+    variationSeed: 21,
+  };
+  const poles: WorldFamilyPopulationPlan = {
+    ...familyPlan(),
+    familyId: "basaltPoles",
+    minimumCount: 6,
+    maximumCount: 6,
+    variationSeed: 22,
+  };
+  const plan = createBasaltWorldCompilerPlan({
+    foundation,
+    styleContractHash: contentHash("basalt-style"),
+    familyPlans: [slabs, poles],
+  });
+  const evidence = {
+    kind: "BasaltFamilyGroundingEvidence",
+    abi: "basalt-family-grounding-evidence@1",
+    inventoryHash: "0".repeat(64),
+    evidence: [
+      {
+        familyId: "basaltSlabs",
+        archetypes: [
+          {
+            assetId: "basaltSlabs_asset_0",
+            boundsMinimumStuds: { x: -9, y: 0, z: -9 },
+            boundsMaximumStuds: { x: 9, y: 0.5, z: 9 },
+            contactRadiusStuds: 0.1,
+          },
+        ],
+      },
+      {
+        familyId: "basaltPoles",
+        archetypes: [
+          {
+            assetId: "basaltPoles_asset_0",
+            boundsMinimumStuds: { x: -13, y: 0, z: -10 },
+            boundsMaximumStuds: { x: 13, y: 44, z: 10 },
+            contactRadiusStuds: 0.2,
+          },
+        ],
+      },
+    ],
+  } as unknown as GroundingEvidenceFile;
+  const first = populateBasaltWorld(foundation, plan, { groundingEvidence: evidence });
+  const second = populateBasaltWorld(foundation, plan, { groundingEvidence: evidence });
+  assert.deepEqual(first, second);
+  const instances = first.chunks.flatMap((chunk) => chunk.instances);
+  const byFamily = (familyId: string) => instances.filter((i) => i.familyId === familyId);
+  assert.equal(byFamily("basaltSlabs").length, 4);
+  assert.equal(byFamily("basaltPoles").length, 6);
+  // Full-quaternion render math, independent of the yaw-only gate: evidence
+  // bounds are rebased (pivot at the bounds-frame origin), so corners render
+  // at position + R(corner * scale) with no pivot compensation, and must stay
+  // over the ±30 fixture surface.
+  const rotate = (q: readonly number[], p: { x: number; y: number; z: number }) => {
+    const [qx, qy, qz, qw] = q;
+    return {
+      x:
+        (1 - 2 * (qy! * qy! + qz! * qz!)) * p.x +
+        2 * (qx! * qy! - qz! * qw!) * p.y +
+        2 * (qx! * qz! + qy! * qw!) * p.z,
+      z:
+        2 * (qx! * qz! - qy! * qw!) * p.x +
+        2 * (qy! * qz! + qx! * qw!) * p.y +
+        (1 - 2 * (qx! * qx! + qy! * qy!)) * p.z,
+    };
+  };
+  for (const instance of byFamily("basaltSlabs")) {
+    for (const cx of [-9, 9])
+      for (const cz of [-9, 9]) {
+        const corner = rotate(instance.rotation, {
+          x: cx * instance.scale,
+          y: 0,
+          z: cz * instance.scale,
+        });
+        const x = instance.position.x + corner.x;
+        const z = instance.position.z + corner.z;
+        assert.ok(
+          x >= -30 - 1e-9 && x <= 30 + 1e-9 && z >= -30 - 1e-9 && z <= 30 + 1e-9,
+          `slab corner renders past the surface at ${x}, ${z}`,
+        );
+      }
+  }
+  for (const instance of byFamily("basaltPoles")) {
+    // Rebased bounds put the contact disk at the sealed position verbatim.
+    const radius = 0.2 * instance.scale;
+    assert.ok(
+      instance.position.x - radius >= -30 - 1e-9 &&
+        instance.position.x + radius <= 30 + 1e-9 &&
+        instance.position.z - radius >= -30 - 1e-9 &&
+        instance.position.z + radius <= 30 + 1e-9,
+      `pole contact disk leaves the surface at ${instance.position.x}, ${instance.position.z}`,
+    );
+  }
+});
+
+test("Basalt cluster distribution fills counts deterministically", () => {
+  const foundation = compileBasaltWorldFoundation(fixture());
+  const clustered: WorldFamilyPopulationPlan = {
+    ...familyPlan(),
+    distribution: "cluster",
+    minimumCount: 12,
+    maximumCount: 12,
+  };
+  const plan = createBasaltWorldCompilerPlan({
+    foundation,
+    styleContractHash: contentHash("basalt-style"),
+    familyPlans: [clustered],
+  });
+  const options = { groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1) };
+  const first = populateBasaltWorld(foundation, plan, options);
+  const second = populateBasaltWorld(foundation, plan, options);
+  assert.deepEqual(first, second);
+  assert.equal(first.instanceCount, 12);
 });

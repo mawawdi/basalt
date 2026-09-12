@@ -47,8 +47,19 @@ local function checkExportConvention(mod: any): any
 	if convention.instanceComposition ~= Constants.SCENE_EXPORT_COMPOSITION then
 		fail("scene export instance composition is unsupported")
 	end
-	for _, key in ipairs({ "instances", "assets", "parts", "terrain", "roads", "payloads" }) do
+	for _, key in ipairs({ "instances", "assets", "parts", "terrain", "roads", "skirts", "payloads" }) do
 		if typeof(mod[key]) ~= "table" then fail("scene export lacks " .. key) end
+	end
+	for _, skirt in ipairs(mod.skirts) do
+		if typeof(skirt.faces) ~= "table" or #skirt.faces ~= 4 then
+			fail("skirt " .. tostring(skirt.instanceId) .. " lacks four curtain faces")
+		end
+		for _, face in ipairs(skirt.faces) do
+			requireVector(face.topLeft, "skirt " .. tostring(skirt.instanceId) .. " topLeft")
+			requireVector(face.topRight, "skirt " .. tostring(skirt.instanceId) .. " topRight")
+			requireVector(face.bottomLeft, "skirt " .. tostring(skirt.instanceId) .. " bottomLeft")
+			requireVector(face.bottomRight, "skirt " .. tostring(skirt.instanceId) .. " bottomRight")
+		end
 	end
 	return mod
 end
@@ -129,6 +140,7 @@ function SceneData.load(chunkId: string): any
 			roadSegmentsById[segment.id] = { segment = segment, routeId = road.routeId }
 		end
 	end
+	local skirtsByInstanceId = indexBy(mod.skirts, "instanceId", "scene export skirts")
 
 	local sidecar = BridgeClient.getJson("/sidecar")
 	if sidecar == nil then fail("bridge has no engine sidecar; restart it with --sidecar") end
@@ -138,11 +150,19 @@ function SceneData.load(chunkId: string): any
 	if sidecar.exportHash ~= mod.hash then fail("engine sidecar binds a different scene export") end
 	if typeof(sidecar.bindings) ~= "table" then fail("engine sidecar lacks bindings") end
 	local assetByPartHash: { [string]: number } = {}
+	local importFactorByPartHash: { [string]: number } = {}
 	for _, binding in ipairs(sidecar.bindings) do
 		requireHash(binding.contentHash, "sidecar binding contentHash")
 		local assetId = tonumber(binding.assetId)
 		if assetId == nil then fail("sidecar binding is not a bare asset id") end
 		assetByPartHash[binding.contentHash] = assetId
+		if binding.importFactor ~= nil then
+			local factor = requireNumber(binding.importFactor, "sidecar binding importFactor")
+			if not (factor > 0 and factor < math.huge) then
+				fail("sidecar binding importFactor is not a positive finite number")
+			end
+			importFactorByPartHash[binding.contentHash] = factor
+		end
 	end
 
 	local materialMap = BridgeClient.getJson("/material-map")
@@ -172,7 +192,9 @@ function SceneData.load(chunkId: string): any
 		terrainById = terrainById,
 		payloadsByHash = payloadsByHash,
 		roadSegmentsById = roadSegmentsById,
+		skirtsByInstanceId = skirtsByInstanceId,
 		assetByPartHash = assetByPartHash,
+		importFactorByPartHash = importFactorByPartHash,
 		materialById = materialById,
 	}
 end
@@ -207,6 +229,12 @@ function SceneData.checkAvailability(scene: any, transaction: any): ()
 		end
 		if scene.materialById[resolved.segment.materialId] == nil then
 			fail("road segment " .. segmentId .. " has no mapped material")
+		end
+	end
+	for _, instanceId in ipairs(transaction.instanceIds) do
+		local skirt = scene.skirtsByInstanceId[instanceId]
+		if skirt ~= nil and scene.materialById[skirt.materialId] == nil then
+			fail("skirt " .. instanceId .. " has no mapped material")
 		end
 	end
 	for _, surfaceId in ipairs(scene.chunkDelta.surfaceIds) do

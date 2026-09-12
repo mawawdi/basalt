@@ -38,6 +38,7 @@
     "packages/studio-bridge/**/*.ts",
     "packages/cli/**/*.ts",
     "test/helpers/production-world-fixtures.ts",
+    "test/helpers/grounding-evidence.ts",
     "test/world-compiler.test.ts",
     "test/world-family-resolver.test.ts",
     "test/world-factory-dispatch.test.ts",
@@ -57,7 +58,12 @@
     "test/trim-sheet.test.ts",
     "test/socket-extraction.test.ts",
     "test/road-assembly.test.ts",
-    "test/scene-export.test.ts"
+    "test/scene-export.test.ts",
+    "test/scene-upload.test.ts",
+    "test/grounding.test.ts",
+    "test/spacing.test.ts",
+    "test/voxel-spots.test.ts",
+    "test/voxel-field.test.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

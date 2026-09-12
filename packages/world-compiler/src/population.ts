@@ -10,10 +10,82 @@ import {
 } from "./contracts.js";
 import type { BasaltWorldFoundation } from "./index.js";
 import { compareWorldStrings } from "./primitives.js";
+import {
+  calibrateGroundingSurface,
+  groundPlacement,
+  groundingKindFromSpan,
+  groundingPolicyFor,
+  indexGroundingEvidence,
+  type GroundingArchetypeEvidence,
+  type GroundingEvidenceFile,
+  type GroundingKind,
+  type SurfaceCalibration,
+} from "./grounding.js";
+import { validateInterlockClearance } from "./relations.js";
+import { clearanceRadius, createCrossFamilySpacing, maximumClearanceRadius } from "./spacing.js";
 
 export interface BasaltPopulationOptions {
   readonly chunkSize?: number;
   readonly maxAttemptsPerFamilySurface?: number;
+  /** Measured per-family grounding evidence; population never places blind. */
+  readonly groundingEvidence: GroundingEvidenceFile;
+}
+
+/**
+ * True when the candidate's support stays over the surface. Flats and
+ * compacts rest their full bottom, so every yaw-rotated bounds corner (about
+ * the bounds center, which grounding carries onto the sample verbatim) must
+ * map inside the surface domain; talls stand on their contact disk, so the disk
+ * must sit inside while canopies may overhang the edge. Corners test the
+ * yaw-only rotation; tilted flats on slopes can shift sideways by a fraction
+ * of their height, which stays sub-visual against the slope that caused it.
+ */
+function footprintInsideSurface(
+  foundation: BasaltWorldFoundation,
+  surfaceId: string,
+  bounds: { u: { minimum: number; maximum: number }; v: { minimum: number; maximum: number } },
+  position: { x: number; y: number; z: number },
+  yaw: number,
+  scale: number,
+  kind: GroundingKind,
+  evidence: GroundingArchetypeEvidence,
+): boolean {
+  const inside = (x: number, z: number): boolean => {
+    const coordinate = foundation.worldPlan.surfaces.coordinatesFromWorld(surfaceId, {
+      x,
+      y: position.y,
+      z,
+    });
+    return (
+      coordinate.u >= bounds.u.minimum &&
+      coordinate.u <= bounds.u.maximum &&
+      coordinate.v >= bounds.v.minimum &&
+      coordinate.v <= bounds.v.maximum
+    );
+  };
+  if (kind === "tall") {
+    const radius = evidence.contactRadiusStuds * scale;
+    return (
+      inside(position.x - radius, position.z) &&
+      inside(position.x + radius, position.z) &&
+      inside(position.x, position.z - radius) &&
+      inside(position.x, position.z + radius)
+    );
+  }
+  const min = evidence.boundsMinimumStuds;
+  const max = evidence.boundsMaximumStuds;
+  const centerX = (min.x + max.x) / 2;
+  const centerZ = (min.z + max.z) / 2;
+  const cos = Math.cos(yaw);
+  const sin = Math.sin(yaw);
+  for (const cornerX of [min.x, max.x])
+    for (const cornerZ of [min.z, max.z]) {
+      const localX = (cornerX - centerX) * scale;
+      const localZ = (cornerZ - centerZ) * scale;
+      if (!inside(position.x + localX * cos + localZ * sin, position.z - localX * sin + localZ * cos))
+        return false;
+    }
+  return true;
 }
 
 /**
@@ -24,13 +96,19 @@ export interface BasaltPopulationOptions {
 export function populateBasaltWorld(
   foundation: BasaltWorldFoundation,
   plan: WorldCompilerPlan,
-  options: BasaltPopulationOptions = {},
+  options: BasaltPopulationOptions,
 ): WorldPopulationArtifact {
   const chunkSize = options.chunkSize ?? 128;
   if (!Number.isFinite(chunkSize) || chunkSize <= 0) throw new Error("Chunk size must be positive");
   const attemptsPerSurface = options.maxAttemptsPerFamilySurface ?? 20;
   if (!Number.isInteger(attemptsPerSurface) || attemptsPerSurface < 1)
     throw new Error("Population attempt budget must be a positive integer");
+  const evidenceIndex = indexGroundingEvidence(options.groundingEvidence);
+  const calibrations = new Map<string, SurfaceCalibration>();
+  const spacing = createCrossFamilySpacing(
+    maximumClearanceRadius([...plan.familyPlans], evidenceIndex),
+  );
+  const claimed = new Map<string, Array<{ position: { x: number; z: number }; radius: number }>>();
 
   const instances: WorldPopulationInstance[] = [];
   for (const family of [...plan.familyPlans].sort((a, b) =>
@@ -70,53 +148,133 @@ export function populateBasaltWorld(
     for (const { surfaceId, bounds, area } of surfaceAreas) {
       const count = allocations.get(surfaceId) ?? 0;
       if (count === 0 || area <= 0) continue;
+      let calibration = calibrations.get(surfaceId);
+      if (!calibration) {
+        calibration = calibrateGroundingSurface(foundation.worldPlan.surfaces, surfaceId);
+        calibrations.set(surfaceId, calibration);
+      }
       const rng = seededRandom(
         contentHash(stableJson([family.variationSeed, family.familyId, surfaceId])),
       );
-      const accepted: Array<{ sample: PlacementSurfaceSample; yaw: number }> = [];
-      const minDistance = Math.max(0.5, Math.sqrt(Math.max(area, 1) / Math.max(count, 1)) * 0.55);
+      const clustered = family.distribution === "cluster";
+      const clusterCount = clustered ? Math.max(1, Math.ceil(Math.sqrt(count))) : 0;
+      const clusterRadius =
+        Math.sqrt(Math.max(area, 1) / Math.max(count, 1)) / Math.max(clusterCount, 1);
+      const clusterCenters = Array.from({ length: clusterCount }, () => ({
+        u: bounds.u.minimum + rng() * (bounds.u.maximum - bounds.u.minimum),
+        v: bounds.v.minimum + rng() * (bounds.v.maximum - bounds.v.minimum),
+      }));
+      const accepted: Array<{
+        sample: PlacementSurfaceSample;
+        yaw: number;
+        variant: number;
+        scale: number;
+        radius: number;
+      }> = [];
       let attempts = 0;
       while (accepted.length < count && attempts < Math.max(count * attemptsPerSurface, 32)) {
         attempts += 1;
-        const coordinate = {
-          u: bounds.u.minimum + rng() * (bounds.u.maximum - bounds.u.minimum),
-          v: bounds.v.minimum + rng() * (bounds.v.maximum - bounds.v.minimum),
-        };
+        const coordinate = clustered
+          ? clusterCoordinate(clusterCenters, clusterRadius, calibration, bounds, rng)
+          : {
+              u: bounds.u.minimum + rng() * (bounds.u.maximum - bounds.u.minimum),
+              v: bounds.v.minimum + rng() * (bounds.v.maximum - bounds.v.minimum),
+            };
         const sample = foundation.worldPlan.surfaces.sample(surfaceId, coordinate);
         if (!family.regionIds.some((regionId) => (sample.regionWeights[regionId] ?? 0) >= 0.25))
           continue;
         if (isRouteExcluded(foundation, family.excludedRouteIds, surfaceId, sample.position))
           continue;
-        if (
-          accepted.some(
-            (entry) =>
-              distance2(entry.sample.position, sample.position) < minDistance * minDistance,
-          )
-        )
-          continue;
-        accepted.push({ sample, yaw: rng() * Math.PI * 2 });
-      }
-      for (const [ordinal, entry] of accepted.entries()) {
-        const position = entry.sample.position;
-        const chunkId = `chunk_${Math.floor(position.x / chunkSize)}_${Math.floor(position.z / chunkSize)}`;
+        const ordinal = accepted.length;
         const variantSeed = contentHash(
           stableJson([family.variationSeed, family.familyId, surfaceId, ordinal, "variant"]),
         );
         const variant = parseInt(variantSeed.slice(0, 8), 16) % archetypeCount;
         const scaleSeed = parseInt(variantSeed.slice(8, 16), 16) / 0xffff_ffff;
         const scale = scaleRange[0] + (scaleRange[1] - scaleRange[0]) * scaleSeed;
+        const yawSeed = contentHash(
+          stableJson([family.variationSeed, family.familyId, surfaceId, ordinal, "yaw"]),
+        );
+        const yaw = (parseInt(yawSeed.slice(0, 8), 16) / 0xffff_ffff) * Math.PI * 2;
+        const archetypes = evidenceIndex.get(family.familyId);
+        const variantEvidence = archetypes?.[variant];
+        if (!variantEvidence)
+          throw new Error(
+            `Population has no grounding evidence for ${family.familyId} archetype ${variant}`,
+          );
+        const span = {
+          x: variantEvidence.boundsMaximumStuds.x - variantEvidence.boundsMinimumStuds.x,
+          y: variantEvidence.boundsMaximumStuds.y - variantEvidence.boundsMinimumStuds.y,
+          z: variantEvidence.boundsMaximumStuds.z - variantEvidence.boundsMinimumStuds.z,
+        };
+        const kind = groundingKindFromSpan(span);
+        if (sample.slopeDegrees > groundingPolicyFor(kind).maximumSlopeDegrees) continue;
+        if (
+          !footprintInsideSurface(
+            foundation,
+            surfaceId,
+            bounds,
+            sample.position,
+            yaw,
+            scale,
+            kind,
+            variantEvidence,
+          )
+        )
+          continue;
+        const radius = clearanceRadius(variantEvidence.contactRadiusStuds, scale);
+        if (!spacing.tryClaim(surfaceId, sample.position.x, sample.position.z, radius)) continue;
+        const surfaceClaims = claimed.get(surfaceId);
+        const claim = { position: { x: sample.position.x, z: sample.position.z }, radius };
+        if (surfaceClaims) surfaceClaims.push(claim);
+        else claimed.set(surfaceId, [claim]);
+        accepted.push({ sample, yaw, variant, scale, radius });
+      }
+      for (const [ordinal, entry] of accepted.entries()) {
+        const id = `instance_${contentHash(stableJson([plan.hash, family.familyId, surfaceId, ordinal])).slice(0, 24)}`;
+        const evidence = evidenceIndex.get(family.familyId)?.[entry.variant];
+        if (!evidence)
+          throw new Error(
+            `Population has no grounding evidence for ${family.familyId} archetype ${entry.variant}`,
+          );
+        const grounded = groundPlacement({
+          surfaceId,
+          coordinate: entry.sample.coordinate,
+          yaw: entry.yaw,
+          scale: entry.scale,
+          seed: id,
+          evidence,
+          sampler: foundation.worldPlan.surfaces,
+          calibration,
+        });
+        const position = grounded.position;
+        const chunkId = `chunk_${Math.floor(position.x / chunkSize)}_${Math.floor(position.z / chunkSize)}`;
         instances.push({
-          id: `instance_${contentHash(stableJson([plan.hash, family.familyId, surfaceId, ordinal])).slice(0, 24)}`,
+          id,
           familyId: family.familyId,
-          archetypeId: `${family.familyId}_archetype_${variant}`,
+          archetypeId: `${family.familyId}_archetype_${entry.variant}`,
           chunkId,
           position,
-          rotation: surfaceRotation(entry.sample.normal, entry.yaw),
-          scale,
+          rotation: grounded.rotation,
+          scale: entry.scale,
+          footprint: {
+            contactRadiusStuds: grounded.footprint.contactRadiusStuds,
+            restYStuds: grounded.footprint.restYStuds,
+            dropsStuds: [...grounded.footprint.dropsStuds] as [number, number, number, number],
+          },
         });
       }
     }
   }
+
+  for (const placements of claimed.values())
+    validateInterlockClearance(
+      placements.map((claim) => ({
+        position: { x: claim.position.x, y: 0, z: claim.position.z },
+        radius: claim.radius,
+      })),
+      0,
+    );
 
   const chunks = new Map<
     string,
@@ -182,56 +340,29 @@ function isRouteExcluded(
   );
 }
 
-function distance2(
-  a: { x: number; y: number; z: number },
-  b: { x: number; y: number; z: number },
-): number {
-  const dx = a.x - b.x;
-  const dy = a.y - b.y;
-  const dz = a.z - b.z;
-  return dx * dx + dy * dy + dz * dz;
-}
-
-function surfaceRotation(
-  normal: { x: number; y: number; z: number },
-  yaw: number,
-): [number, number, number, number] {
-  const length = Math.hypot(normal.x, normal.y, normal.z) || 1;
-  const nx = normal.x / length;
-  const ny = normal.y / length;
-  const nz = normal.z / length;
-  const dot = Math.max(-1, Math.min(1, ny));
-  let align: [number, number, number, number];
-  if (dot > 1 - 1e-8) align = [0, 0, 0, 1];
-  else if (dot < -1 + 1e-8) align = [1, 0, 0, 0];
-  else {
-    const scale = Math.sqrt((1 + dot) * 2);
-    align = [nz / scale, 0, -nx / scale, scale / 2];
-  }
-  const half = yaw / 2;
-  const spin: [number, number, number, number] = [
-    nx * Math.sin(half),
-    ny * Math.sin(half),
-    nz * Math.sin(half),
-    Math.cos(half),
-  ];
-  return multiplyQuaternion(spin, align);
-}
-
-function multiplyQuaternion(
-  a: readonly [number, number, number, number],
-  b: readonly [number, number, number, number],
-): [number, number, number, number] {
-  const [ax, ay, az, aw] = a;
-  const [bx, by, bz, bw] = b;
-  const result: [number, number, number, number] = [
-    aw * bx + ax * bw + ay * bz - az * by,
-    aw * by - ax * bz + ay * bw + az * bx,
-    aw * bz + ax * by - ay * bx + az * bw,
-    aw * bw - ax * bx - ay * by - az * bz,
-  ];
-  const length = Math.hypot(...result) || 1;
-  return result.map((value) => value / length) as [number, number, number, number];
+function clusterCoordinate(
+  centers: readonly { u: number; v: number }[],
+  clusterRadius: number,
+  calibration: SurfaceCalibration,
+  bounds: {
+    u: { minimum: number; maximum: number };
+    v: { minimum: number; maximum: number };
+  },
+  rng: () => number,
+): { u: number; v: number } {
+  const center = centers[Math.floor(rng() * centers.length)]!;
+  // Center-weighted scatter: the mean of three uniforms approximates a gaussian.
+  const scatter = () => ((rng() + rng() + rng()) / 3) * 2 - 1;
+  return {
+    u: Math.min(
+      bounds.u.maximum,
+      Math.max(bounds.u.minimum, center.u + (scatter() * clusterRadius) / calibration.worldPerU),
+    ),
+    v: Math.min(
+      bounds.v.maximum,
+      Math.max(bounds.v.minimum, center.v + (scatter() * clusterRadius) / calibration.worldPerV),
+    ),
+  };
 }
 
 function seededRandom(seed: string): () => number {

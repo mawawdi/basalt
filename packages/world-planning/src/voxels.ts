@@ -6,6 +6,14 @@ import type { TerrainFieldArtifact, TerrainFieldSample } from "./contracts.js";
 export const VOXEL_CELL_SIZE_STUDS = 4 as const;
 /** Hard cap on exported voxel cells per terrain surface. */
 export const MAXIMUM_VOXEL_CELLS = 1_048_576 as const;
+/** Hard cap on readback spot cells per terrain surface. */
+export const VOXEL_SPOT_CELL_CAP = 32 as const;
+/**
+ * Observed-vs-sealed occupancy tolerance for readback spots. Covers u8
+ * engine quantization of the sealed f32 occupancy plus float noise; the
+ * connector mirrors this value (see `VOXEL_SPOT_TOLERANCE`).
+ */
+export const VOXEL_SPOT_OCCUPANCY_TOLERANCE = 0.004 as const;
 const VOXEL_MAGIC = "BVX1";
 
 export interface VoxelFieldExport {
@@ -51,7 +59,14 @@ export function exportVoxelField(
   // the declared bounds. Terrain is a solid volume below its surface: extend
   // one cell down so the lowest surface always has solid voxels beneath it
   // (a flat plain exactly on a cell boundary would otherwise export no solid
-  // cells at all).
+  // cells at all). Occupancy measures from the cell CENTER, not the cell
+  // bottom: the engine's dual-contouring mesher overflows geometry into
+  // neighboring voxels, and the rendered surface of the topmost non-empty
+  // cell lands at center + occupancy x cell size (empirically fitted across
+  // 73 sculpted columns; a solid plateau stands a full 2 studs above its
+  // voxel tops). Bottom-measured occupancy buries every placement by half a
+  // cell; center-measured occupancy puts the rendered surface on the plan
+  // height it was sealed from.
   const originX = Math.floor(field.bounds.x.minimum / cell) * cell + 0;
   const originZ = Math.floor(field.bounds.z.minimum / cell) * cell + 0;
   const nx = Math.max(1, Math.ceil((field.bounds.x.maximum - originX) / cell));
@@ -110,10 +125,10 @@ export function exportVoxelField(
       const material = materialAt(cx, cz);
       columnMaterial[iz * nx + ix] = material;
       for (let iy = 0; iy < ny; iy += 1) {
-        const cellBottom = origin[1] + iy * cell;
+        const cellCenter = origin[1] + (iy + 0.5) * cell;
         occupancy[ix + nx * (iz + nz * iy)] = Math.min(
           1,
-          Math.max(0, (surfaceH - cellBottom) / cell),
+          Math.max(0, (surfaceH - cellCenter) / cell),
         );
       }
     }
@@ -237,4 +252,47 @@ export function parseVoxelField(bytes: Uint8Array): {
 
 export function sha256Bytes(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
+}
+
+/**
+ * Deterministic readback spot cells for a field: the 8 corners, the center,
+ * then flat-order samples at an adaptive stride, deduplicated and capped.
+ * The connector implements this exact rule (`VoxelSpots.cells`); the host
+ * requires an exact cell-set match, so any rule drift fails closed at settle.
+ */
+export function voxelSpotCells(
+  dimensions: readonly [number, number, number],
+): Array<readonly [number, number, number]> {
+  const [nx, ny, nz] = dimensions;
+  if (
+    !Number.isSafeInteger(nx) ||
+    !Number.isSafeInteger(ny) ||
+    !Number.isSafeInteger(nz) ||
+    nx < 1 ||
+    ny < 1 ||
+    nz < 1
+  )
+    throw new Error("Voxel spot cells need positive integer dimensions");
+  const total = nx * ny * nz;
+  const seen = new Set<number>();
+  const cells: Array<readonly [number, number, number]> = [];
+  const push = (x: number, y: number, z: number): void => {
+    const flat = x + nx * (z + nz * y);
+    if (seen.has(flat)) return;
+    seen.add(flat);
+    cells.push([x, y, z]);
+  };
+  for (const x of [0, nx - 1])
+    for (const y of [0, ny - 1]) for (const z of [0, nz - 1]) push(x, y, z);
+  push(Math.floor(nx / 2), Math.floor(ny / 2), Math.floor(nz / 2));
+  const step = Math.max(1, Math.floor(total / (VOXEL_SPOT_CELL_CAP - 9)));
+  for (let i = 0; i < VOXEL_SPOT_CELL_CAP - 9 && cells.length < VOXEL_SPOT_CELL_CAP; i += 1) {
+    const flat = (i * step) % total;
+    const x = flat % nx;
+    const rest = (flat - x) / nx;
+    const z = rest % nz;
+    push(x, (rest - z) / nz, z);
+  }
+  cells.sort((left, right) => left[0] - right[0] || left[1] - right[1] || left[2] - right[2]);
+  return cells;
 }

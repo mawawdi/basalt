@@ -125,7 +125,13 @@ function summarize(name) {
 async function writeBridgeFiles() {
   const manifest = readJson(resolve(PATHS.export, "scene-manifest.json"));
   if (!manifest?.hash) throw new Error("Compile first: no scene export");
+  if (!Array.isArray(manifest.materialIds))
+    throw new Error("Compile first: export lacks material ids");
   if (!/^[A-Za-z]{2,32}$/u.test(config.robloxMaterial)) throw new Error("Material name is invalid");
+  const engineMaterials = { sliceMaterial: config.robloxMaterial, asphalt: "Asphalt" };
+  const unmapped = manifest.materialIds.filter((id) => !(id in engineMaterials));
+  if (unmapped.length > 0)
+    throw new Error(`Export material ids lack engine bindings: ${unmapped.join(", ")}`);
   writeFileSync(
     PATHS.materialMap,
     `${JSON.stringify(
@@ -134,7 +140,10 @@ async function writeBridgeFiles() {
         abi: "basalt-material-map@1",
         engine: "roblox",
         exportHash: manifest.hash,
-        bindings: [{ materialId: "sliceMaterial", robloxMaterial: config.robloxMaterial }],
+        bindings: manifest.materialIds.map((materialId) => ({
+          materialId,
+          robloxMaterial: engineMaterials[materialId],
+        })),
       },
       null,
       2,
@@ -281,6 +290,8 @@ const server = createServer(async (request, response) => {
           resolve(PATHS.palette, "family-registry.json"),
           "--family-requests",
           resolve(PATHS.palette, "family-requests.json"),
+          "--family-evidence",
+          resolve(PATHS.palette, "family-evidence.json"),
           "--export-dir",
           PATHS.export,
         ]);

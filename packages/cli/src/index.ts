@@ -11,6 +11,7 @@ import {
   summarizeBasaltWorld,
   assertWorldAssetFamilyRegistry,
   compileResolvedFamilyPopulationPlans,
+  GROUNDING_EVIDENCE_FILE_SCHEMA,
   type BasaltWorldFoundation,
   type WorldBiomeFamilyRequest,
   type WorldFamilyPopulationPlan,
@@ -24,6 +25,7 @@ import {
   BasaltStudioBridge,
   createBasaltStudioBridgeServer,
   defaultBasaltBridgeDiscoveryPath,
+  defaultBasaltBridgeReadbackDir,
   writeBasaltBridgeDiscovery,
 } from "../../studio-bridge/src/index.js";
 
@@ -57,7 +59,7 @@ async function compileWorld(planPath: string | undefined, values: string[]): Pro
   const output = options.get("--output");
   if (!planPath || !output) {
     process.stderr.write(
-      "Usage: basalt world compile <world-plan.json> --output <world-build.json> [--families <family-plans.json> | --family-registry <registry.json> --family-requests <requests.json>] [--style-hash <sha256>] [--stage macro|meso|micro|partition] [--chunk-size <studs>] [--export-dir <dir> [--inventory <source-inventory.json>] [--source-manifest <source-manifest.json>]]\n",
+      "Usage: basalt world compile <world-plan.json> --output <world-build.json> [--families <family-plans.json> | --family-registry <registry.json> --family-requests <requests.json>] [--family-evidence <grounding-evidence.json>] [--style-hash <sha256>] [--stage macro|meso|micro|partition] [--chunk-size <studs>] [--export-dir <dir> [--inventory <source-inventory.json>] [--source-manifest <source-manifest.json>]]\n",
     );
     process.exitCode = 2;
     return;
@@ -78,9 +80,15 @@ async function compileWorld(planPath: string | undefined, values: string[]): Pro
           })
         : undefined;
     const chunkSize = numberOption(options, "--chunk-size", 128);
+    const evidencePath = options.get("--family-evidence");
+    if (compilerPlan && stage !== "meso" && !evidencePath)
+      throw new Error("Population requires --family-evidence <grounding-evidence.json>");
+    const groundingEvidence = evidencePath
+      ? GROUNDING_EVIDENCE_FILE_SCHEMA.parse(await readJson(resolve(evidencePath)))
+      : undefined;
     const population =
-      compilerPlan && stage !== "meso"
-        ? populateBasaltWorld(foundation, compilerPlan, { chunkSize })
+      compilerPlan && stage !== "meso" && groundingEvidence
+        ? populateBasaltWorld(foundation, compilerPlan, { chunkSize, groundingEvidence })
         : undefined;
     const roads =
       population && stage === "partition"
@@ -188,7 +196,7 @@ async function studioBridge(values: string[]): Promise<void> {
   const materialMapPath = options.get("--material-map");
   if (!manifestPath || !revisionHash) {
     process.stderr.write(
-      "Usage: basalt studio bridge --manifest <world-emission.json> --revision <sha256> [--export-dir <dir>] [--sidecar <sidecar.json>] [--material-map <material-map.json>] [--port <number>] [--discovery <path>]\n",
+      "Usage: basalt studio bridge --manifest <world-emission.json> --revision <sha256> [--export-dir <dir>] [--sidecar <sidecar.json>] [--material-map <material-map.json>] [--port <number>] [--discovery <path>] [--readback-dir <dir>]\n",
     );
     process.exitCode = 2;
     return;
@@ -201,7 +209,11 @@ async function studioBridge(values: string[]): Promise<void> {
     return;
   }
   try {
-    const bridge = new BasaltStudioBridge({ maxQueue: numberOption(options, "--max-queue", 4096) });
+    const readbackDir = resolve(options.get("--readback-dir") ?? defaultBasaltBridgeReadbackDir());
+    const bridge = new BasaltStudioBridge({
+      maxQueue: numberOption(options, "--max-queue", 4096),
+      readbackDir,
+    });
     bridge.enqueueManifest(await readJson(resolve(manifestPath)), revisionHash);
     if (exportDir) await enqueueExportDir(bridge, resolve(exportDir));
     if (sidecarPath) bridge.enqueueSidecar(await readJson(resolve(sidecarPath)));
@@ -223,7 +235,7 @@ async function studioBridge(values: string[]): Promise<void> {
       discoveryPath,
     );
     process.stdout.write(
-      `${JSON.stringify({ status: "ready", bridgeId: bridge.bridgeId, port: boundPort, discoveryPath, pendingTransactions: bridge.status().pendingTransactions }, null, 2)}\n`,
+      `${JSON.stringify({ status: "ready", bridgeId: bridge.bridgeId, port: boundPort, discoveryPath, readbackDir, pendingTransactions: bridge.status().pendingTransactions }, null, 2)}\n`,
     );
     await new Promise<void>((resolveServer) => {
       const close = () => {
@@ -394,7 +406,7 @@ function usage(): void {
       "  basalt world compile <world-plan.json> --output <world-build.json>",
       "    [--families <family-plans.json> | --family-registry <registry.json> --family-requests <requests.json>]",
       "    [--style-hash <sha256>] [--stage macro|meso|micro|partition] [--chunk-size <studs>]",
-      "  basalt studio bridge --manifest <world-emission.json> --revision <sha256> [--export-dir <dir>] [--sidecar <sidecar.json>] [--material-map <material-map.json>] [--port <number>] [--discovery <path>]",
+      "  basalt studio bridge --manifest <world-emission.json> --revision <sha256> [--export-dir <dir>] [--sidecar <sidecar.json>] [--material-map <material-map.json>] [--port <number>] [--discovery <path>] [--readback-dir <dir>]",
       "",
       "The compiler emits deterministic terrain, family-level populations, and connector-sized chunk deltas.",
       "Gameplay scripts and whole-world DCC review are outside Basalt.",

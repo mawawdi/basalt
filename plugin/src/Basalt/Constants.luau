@@ -15,6 +15,10 @@ return {
 	ENGINE_SIDECAR_ABI = "basalt-engine-sidecar@1",
 	MATERIAL_MAP_ABI = "basalt-material-map@1",
 	VOXEL_CELL_STUDS = 4,
+	-- Observed-vs-sealed occupancy tolerance for readback spots. Covers u8
+	-- engine quantization of the sealed f32 occupancy plus float noise;
+	-- mirrors the host `VOXEL_SPOT_OCCUPANCY_TOLERANCE`.
+	VOXEL_SPOT_TOLERANCE = 0.004,
 	-- A sealed part whose node name carries this suffix lowers as an invisible
 	-- collision proxy; it never renders. Family membership never comes from
 	-- names -- this suffix only marks the non-renderable companion.
@@ -33,6 +37,10 @@ return {
 	IMPORT_FLIP = CFrame.new(0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, -1),
 	-- Road ribbons are sealed surfaces; the adapter gives them a thin solid
 	-- body lifted half a thickness plus epsilon so they read over terrain.
+	-- Clearance is 0.1 studs: the 0.05 budget buried ribbons under engine
+	-- surface deviations, and the graded roadbed keeps the lift invisible.
 	ROAD_THICKNESS_STUDS = 0.4,
-	ROAD_LIFT_STUDS = 0.25,
+	ROAD_LIFT_STUDS = 0.3,
+	-- Skirt curtains hang plumb from slab edges; no lift, thin body.
+	SKIRT_THICKNESS_STUDS = 0.2,
 }

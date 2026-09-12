@@ -23,6 +23,9 @@ the authored-family path in `packages/catalog-intelligence`.
   socketed kits, shape grammars, and surface-aware assembly.
 - [WorldClaw source](sources/world-claw.md) — global-to-regional planning,
   composition proposals, camera calibration, and localized repair.
+- [Roblox terrain survey](sources/roblox-terrain.md) — voxel channels,
+  Shorelines water, engine grass, material tinting, and custom terrain
+  materials with a Basalt utilization proposal.
 
 ## Evidence policy
 

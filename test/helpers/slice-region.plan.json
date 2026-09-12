@@ -5,13 +5,28 @@
     {
       "bindingName": "sliceSceneSpawn",
       "id": "sliceAnchor",
-      "position": { "x": -18, "y": 0, "z": 0 },
+      "position": {
+        "x": -18,
+        "y": 0,
+        "z": 0
+      },
       "regionId": "slice_bay",
       "type": "spawn"
     }
   ],
   "assetRequirements": [],
-  "bounds": { "center": { "x": 0, "y": 18, "z": 0 }, "size": { "x": 60, "y": 44, "z": 60 } },
+  "bounds": {
+    "center": {
+      "x": 0,
+      "y": 18,
+      "z": 0
+    },
+    "size": {
+      "x": 60,
+      "y": 44,
+      "z": 60
+    }
+  },
   "cameras": [
     {
       "declaredState": "Overview",
@@ -21,14 +36,29 @@
       "framingAssetIds": [],
       "height": 720,
       "id": "sliceCamera",
-      "lookAt": { "x": 4, "y": 6, "z": 8 },
+      "lookAt": {
+        "x": 4,
+        "y": 6,
+        "z": 8
+      },
       "name": "Test overview",
       "nearClip": 0.1,
-      "position": { "x": 28, "y": 18, "z": 32 },
+      "position": {
+        "x": 28,
+        "y": 18,
+        "z": 32
+      },
       "purpose": "Show the bounded test world.",
-      "readabilityIntent": { "kind": "art_directed", "rationale": "Test readability." },
+      "readabilityIntent": {
+        "kind": "art_directed",
+        "rationale": "Test readability."
+      },
       "regionIds": ["slice_bay"],
-      "up": { "x": 0, "y": 1, "z": 0 },
+      "up": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
       "width": 1280
     }
   ],
@@ -36,17 +66,36 @@
     {
       "canCollide": true,
       "id": "sliceSceneGround",
-      "placementAuthority": { "kind": "surface_substrate", "surfaceId": "sliceSurface" },
-      "position": { "x": 0, "y": -1, "z": 0 },
+      "placementAuthority": {
+        "kind": "surface_substrate",
+        "surfaceId": "sliceSurface"
+      },
+      "position": {
+        "x": 0,
+        "y": -1,
+        "z": 0
+      },
       "regionId": "slice_bay",
-      "rotationDegrees": { "x": 0, "y": 0, "z": 0 },
+      "rotationDegrees": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
       "shape": "box",
-      "size": { "x": 60, "y": 2, "z": 60 }
+      "size": {
+        "x": 60,
+        "y": 2,
+        "z": 60
+      }
     }
   ],
   "constructedSurfaces": [],
   "creatorClaims": [
-    { "id": "sliceSceneClaim", "referenceIds": ["sliceSceneBrief"], "statement": "Slice Bay" }
+    {
+      "id": "sliceSceneClaim",
+      "referenceIds": ["sliceSceneBrief"],
+      "statement": "Slice Bay"
+    }
   ],
   "id": "sliceScene",
   "kind": "SpatialWorldPlan",
@@ -67,19 +116,43 @@
       "compositionMeasures": [
         {
           "boundary": [
-            { "u": -30, "v": -30 },
-            { "u": 30, "v": -30 },
-            { "u": 30, "v": 30 },
-            { "u": -30, "v": 30 }
+            {
+              "u": -30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": -30
+            },
+            {
+              "u": 30,
+              "v": 30
+            },
+            {
+              "u": -30,
+              "v": 30
+            }
           ],
           "densityTarget": 1,
           "id": "sliceSceneComposition",
           "minimumNegativeSpace": 0,
-          "origin": { "x": 0, "y": 0, "z": 0 },
+          "origin": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
           "purpose": "Measure the test surface.",
           "surfaceId": "sliceSurface",
-          "uAxis": { "x": 1, "y": 0, "z": 0 },
-          "vAxis": { "x": 0, "y": 0, "z": 1 }
+          "uAxis": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "vAxis": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          }
         }
       ],
       "id": "slice_bay",
@@ -88,13 +161,28 @@
       "refinementPriority": 100,
       "volume": {
         "footprint": [
-          { "x": -30, "z": -30 },
-          { "x": 30, "z": -30 },
-          { "x": 30, "z": 30 },
-          { "x": -30, "z": 30 }
+          {
+            "x": -30,
+            "z": -30
+          },
+          {
+            "x": 30,
+            "z": -30
+          },
+          {
+            "x": 30,
+            "z": 30
+          },
+          {
+            "x": -30,
+            "z": 30
+          }
         ],
         "kind": "extruded_polygon",
-        "verticalRange": { "maximum": 40, "minimum": -4 }
+        "verticalRange": {
+          "maximum": 40,
+          "minimum": -4
+        }
       }
     }
   ],
@@ -105,12 +193,21 @@
       "closed": false,
       "heightClearance": 8,
       "id": "sliceRoute",
+      "materialId": "asphalt",
       "maximumSlopeDegrees": 30,
       "maximumStepHeight": 1,
       "name": "Test route",
       "points": [
-        { "x": -20, "y": 0, "z": 0 },
-        { "x": 20, "y": 0, "z": 0 }
+        {
+          "x": -20,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 20,
+          "y": 0,
+          "z": 0
+        }
       ],
       "reachableAnchorIds": ["sliceAnchor"],
       "regionIds": ["slice_bay"],
@@ -124,30 +221,65 @@
   "terrainPlans": [
     {
       "abi": "basalt-terrain-plan@1",
-      "bounds": { "x": { "maximum": 30, "minimum": -30 }, "z": { "maximum": 30, "minimum": -30 } },
+      "bounds": {
+        "x": {
+          "maximum": 30,
+          "minimum": -30
+        },
+        "z": {
+          "maximum": 30,
+          "minimum": -30
+        }
+      },
       "id": "sliceSceneTerrain",
       "kind": "TerrainPlan",
-      "navigation": { "maximumSlopeDegrees": 30 },
+      "navigation": {
+        "maximumSlopeDegrees": 30
+      },
       "operations": [],
       "regions": [
         {
           "baseElevation": 0,
           "blendWidth": 4,
           "footprint": [
-            { "x": -30, "z": -30 },
-            { "x": 30, "z": -30 },
-            { "x": 30, "z": 30 },
-            { "x": -30, "z": 30 }
+            {
+              "x": -30,
+              "z": -30
+            },
+            {
+              "x": 30,
+              "z": -30
+            },
+            {
+              "x": 30,
+              "z": 30
+            },
+            {
+              "x": -30,
+              "z": 30
+            }
           ],
-          "materialWeights": [{ "materialId": "sliceMaterial", "weight": 1 }],
+          "materialWeights": [
+            {
+              "materialId": "sliceMaterial",
+              "weight": 1
+            }
+          ],
           "noiseLayers": [],
           "regionId": "slice_bay"
         }
       ],
-      "resolution": { "columns": 9, "rows": 9 },
+      "resolution": {
+        "columns": 31,
+        "rows": 31
+      },
       "seed": 42017,
       "surfaceId": "sliceSurface"
     }
   ],
-  "tolerances": { "clearance": 1, "penetration": 0.05, "support": 0.05 }
+  "tolerances": {
+    "clearance": 1,
+    "penetration": 0.05,
+    "support": 0.05
+  }
 }

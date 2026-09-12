@@ -298,6 +298,17 @@ const terrainOperation = z.discriminatedUnion("kind", [
   z
     .object({
       id: entityId,
+      kind: z.literal("roadbed"),
+      ...regionOperation,
+      points: z.array(WORLD_POINT2_SCHEMA).min(2).max(512),
+      width: positive.max(100_000),
+      depth: positive.max(100_000),
+      falloff: positive.max(100_000),
+    })
+    .strict(),
+  z
+    .object({
+      id: entityId,
       kind: z.literal("slope"),
       ...regionOperation,
       directionDegrees: finite,
@@ -485,6 +496,7 @@ const worldRoute = z
     maximumSlopeDegrees: finite.min(0).max(89),
     closed: z.boolean(),
     reachableAnchorIds: z.array(entityId).max(256),
+    materialId: entityId.optional(),
   })
   .strict()
   .refine(

@@ -1,6 +1,7 @@
 import { contentHash, stableJson } from "../../contracts/src/index.js";
 import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
 import { WORLD_PLAN_SCHEMA, type SpatialWorldPlan } from "./contracts.js";
+import { roadbedOperationsForRoutes } from "./roads.js";
 import { PlacementSurfaceIndex } from "./surfaces.js";
 import {
   analyzeRouteGrades,
@@ -33,6 +34,23 @@ export interface CompiledWorldPlan {
 export function compileWorldPlan(input: unknown): CompiledWorldPlan {
   const plan = canonicalWorldPlan(input);
   const worldPlanHash = contentHash(stableJson(plan));
+  for (const { surfaceId, operation } of roadbedOperationsForRoutes(plan.routes)) {
+    const terrainPlan = plan.terrainPlans.find((candidate) => candidate.surfaceId === surfaceId);
+    // Routes on constructed surfaces (boardwalks, bridges) carve nothing.
+    if (!terrainPlan) continue;
+    const stepX =
+      (terrainPlan.bounds.x.maximum - terrainPlan.bounds.x.minimum) /
+      (terrainPlan.resolution.columns - 1);
+    const stepZ =
+      (terrainPlan.bounds.z.maximum - terrainPlan.bounds.z.minimum) /
+      (terrainPlan.resolution.rows - 1);
+    const finest = Math.min(operation.width / 2, operation.falloff);
+    if (finest < Math.max(stepX, stepZ))
+      throw new Error(
+        `Route bed is narrower than the terrain grid step for surface ${surfaceId}; refine the resolution or widen the route`,
+      );
+    terrainPlan.operations.push(operation);
+  }
   const terrainFields = plan.terrainPlans.map(compileTerrainPlan);
   const surfaces = new PlacementSurfaceIndex(terrainFields, plan.constructedSurfaces);
   const routeProfiles = analyzeRouteGrades(plan, surfaces);

@@ -21,6 +21,8 @@ export * from "./emission.js";
 export * from "./scene-export.js";
 export * from "./tiers.js";
 export * from "./relations.js";
+export * from "./grounding.js";
+export * from "./spacing.js";
 
 export interface BasaltWorldFoundation {
   readonly kind: "BasaltWorldFoundation";

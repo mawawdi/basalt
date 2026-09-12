@@ -15,10 +15,12 @@ import {
   assessMeshPartBudget,
   compileHierarchicalWorld,
   emitSceneExport,
+  emitSkirts,
   sealWorldAssetFamilyRegistry,
   type BasaltHierarchicalWorld,
 } from "../packages/world-compiler/src/index.js";
 import { productionWorldPlanFixture } from "./helpers/production-world-fixtures.js";
+import { groundingEvidenceFixture } from "./helpers/grounding-evidence.js";
 
 /** Minimal valid single-triangle GLB; optional node matrix for mirror tests. */
 function triangleGlb(nodeMatrix?: readonly number[]): Uint8Array {
@@ -107,6 +109,7 @@ function compilePartitionWorld(): BasaltHierarchicalWorld {
       },
     ],
     stage: "partition",
+    population: { groundingEvidence: groundingEvidenceFixture("FamilyGroundCover", 3) },
   });
 }
 
@@ -237,11 +240,157 @@ test("Scene export carries connector-complete lowering evidence", () => {
   }
 });
 
+test("Scene export skirts flat instances over relief gaps", () => {
+  const flatBounds = {
+    minimum: { x: -5, y: 0, z: -5 },
+    maximum: { x: 5, y: 0.5, z: 5 },
+  };
+  const tallBounds = {
+    minimum: { x: -1, y: 0, z: -1 },
+    maximum: { x: 1, y: 8, z: 1 },
+  };
+  const slabEntry = {
+    assetId: "assetSlab",
+    unitsToMeters: 0.28,
+    pivotOffsetMeters: { x: 0, y: 0, z: 0 },
+  };
+  const skirts = emitSkirts({
+    resolved: [
+      {
+        population: {
+          id: "instanceSkirt",
+          familyId: "FamilySlab",
+          archetypeId: "FamilySlab_archetype_0",
+          chunkId: "chunk_0_0",
+          position: { x: 10, y: 0.1, z: 20 },
+          rotation: [0, 0, 0, 1] as [number, number, number, number],
+          scale: 1,
+          footprint: {
+            contactRadiusStuds: 2,
+            restYStuds: 0,
+            dropsStuds: [0, -0.3, -0.1, 0] as [number, number, number, number],
+          },
+        },
+        assetId: "assetSlab",
+      },
+      {
+        population: {
+          id: "instanceTall",
+          familyId: "FamilySlab",
+          archetypeId: "FamilySlab_archetype_1",
+          chunkId: "chunk_0_0",
+          position: { x: 0, y: 0, z: 0 },
+          rotation: [0, 0, 0, 1] as [number, number, number, number],
+          scale: 1,
+          footprint: {
+            contactRadiusStuds: 0.5,
+            restYStuds: 0,
+            dropsStuds: [-1, -1, -1, -1] as [number, number, number, number],
+          },
+        },
+        assetId: "assetTall",
+      },
+      {
+        population: {
+          id: "instanceShallow",
+          familyId: "FamilySlab",
+          archetypeId: "FamilySlab_archetype_0",
+          chunkId: "chunk_0_0",
+          position: { x: 0, y: 0.05, z: 0 },
+          rotation: [0, 0, 0, 1] as [number, number, number, number],
+          scale: 1,
+          footprint: {
+            contactRadiusStuds: 2,
+            restYStuds: 0,
+            dropsStuds: [0, -0.01, 0, 0] as [number, number, number, number],
+          },
+        },
+        assetId: "assetSlab",
+      },
+    ],
+    parts: [
+      { assetId: "assetSlab", boundsSourceUnits: flatBounds },
+      { assetId: "assetTall", boundsSourceUnits: tallBounds },
+    ],
+    assets: new Map([
+      ["assetSlab", slabEntry],
+      ["assetTall", { ...slabEntry, assetId: "assetTall" }],
+    ]),
+    terrainMaterialId: "terrainMat",
+  });
+  assert.equal(skirts.length, 1);
+  const skirt = skirts[0]!;
+  assert.equal(skirt.instanceId, "instanceSkirt");
+  assert.equal(skirt.materialId, "terrainMat");
+  assert.equal(skirt.faces.length, 4);
+  for (const face of skirt.faces) {
+    assert.ok(Math.abs(face.topLeft.y - 0.1 * 0.28) < 1e-9);
+    assert.ok(Math.abs(face.bottomLeft.y - -0.35 * 0.28) < 1e-9);
+    assert.ok(Math.abs(face.bottomRight.y - -0.35 * 0.28) < 1e-9);
+    assert.equal(face.bottomLeft.x, face.topLeft.x);
+    assert.equal(face.bottomLeft.z, face.topLeft.z);
+  }
+  const topXs = skirt.faces.flatMap((face) => [face.topLeft.x, face.topRight.x]);
+  assert.ok(Math.abs(Math.min(...topXs) - 5 * 0.28) < 1e-9);
+  assert.ok(Math.abs(Math.max(...topXs) - 15 * 0.28) < 1e-9);
+});
+
+test("Scene export refuses skirts without terrain material or asset", () => {
+  const population = {
+    id: "instanceSkirt",
+    familyId: "FamilySlab",
+    archetypeId: "FamilySlab_archetype_0",
+    chunkId: "chunk_0_0",
+    position: { x: 10, y: 0.1, z: 20 },
+    rotation: [0, 0, 0, 1] as [number, number, number, number],
+    scale: 1,
+    footprint: {
+      contactRadiusStuds: 2,
+      restYStuds: 0,
+      dropsStuds: [0, -0.3, -0.1, 0] as [number, number, number, number],
+    },
+  };
+  const bounds = {
+    minimum: { x: -5, y: 0, z: -5 },
+    maximum: { x: 5, y: 0.5, z: 5 },
+  };
+  const entry = {
+    assetId: "assetSlab",
+    unitsToMeters: 0.28,
+    pivotOffsetMeters: { x: 0, y: 0, z: 0 },
+  };
+  assert.throws(
+    () =>
+      emitSkirts({
+        resolved: [{ population, assetId: "assetSlab" }],
+        parts: [{ assetId: "assetSlab", boundsSourceUnits: bounds }],
+        assets: new Map([["assetSlab", entry]]),
+        terrainMaterialId: undefined,
+      }),
+    /no terrain material/,
+  );
+  assert.throws(
+    () =>
+      emitSkirts({
+        resolved: [{ population, assetId: "assetMissing" }],
+        parts: [{ assetId: "assetSlab", boundsSourceUnits: bounds }],
+        assets: new Map([["assetSlab", entry]]),
+        terrainMaterialId: "terrainMat",
+      }),
+    /unknown asset/,
+  );
+});
+
+test("Scene export emits no skirts on flat contact", () => {
+  const { manifest } = emit();
+  assert.deepEqual(manifest.skirts, []);
+});
+
 test("Scene export seals the conformance golden", () => {
   // Fixed-timestamp worlds emit byte-identical exports across processes;
   // future engine adapters validate against this locked manifest hash.
   const { manifest } = emit();
-  assert.equal(manifest.hash, "a413374f7a6a89b86fe1daff50b3f961cb11f2f9a54a023da9b1d7ef98da73e5");
+  assert.equal(manifest.hash, "40bb4d7dc7587a9e1fe467a63776282c6d004e654a5bd72e79ead0223a819079");
 });
 
 test("Scene export matches the checked-in conformance fixture", async () => {

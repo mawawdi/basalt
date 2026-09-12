@@ -84,7 +84,7 @@ export function productionWorldPlanFixture(input: {
         surfaceId: input.surfaceId,
         seed: 42017,
         bounds: { x: { minimum: -30, maximum: 30 }, z: { minimum: -30, maximum: 30 } },
-        resolution: { columns: 9, rows: 9 },
+        resolution: { columns: 31, rows: 31 },
         regions: [
           {
             regionId: input.regionId,

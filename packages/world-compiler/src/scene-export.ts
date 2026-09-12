@@ -12,6 +12,7 @@ import {
 import { worldEntityId, worldHash, compareWorldStrings } from "./primitives.js";
 import type { BasaltHierarchicalWorld } from "./tiers.js";
 import type { WorldPopulationInstance } from "./contracts.js";
+import { groundingKindFromSpan } from "./grounding.js";
 
 export const BASALT_SCENE_EXPORT_ABI = "basalt-scene-export@1" as const;
 
@@ -69,6 +70,24 @@ const sceneInstanceSchema = z
     scale: finite.positive(),
   })
   .strict();
+
+const sceneSkirtFaceSchema = z
+  .object({
+    topLeft: vector3Finite,
+    topRight: vector3Finite,
+    bottomLeft: vector3Finite,
+    bottomRight: vector3Finite,
+  })
+  .strict();
+
+const sceneSkirtSchema = z
+  .object({
+    instanceId: worldEntityId,
+    materialId: z.string().min(1),
+    faces: z.array(sceneSkirtFaceSchema).min(4).max(4),
+  })
+  .strict();
+export type SceneSkirt = z.infer<typeof sceneSkirtSchema>;
 
 const sceneTerrainSchema = z
   .object({
@@ -130,6 +149,7 @@ const sceneExportMaterialSchema = z
     parts: z.array(scenePartSchema),
     terrain: z.array(sceneTerrainSchema),
     roads: z.array(sceneRoadSchema),
+    skirts: z.array(sceneSkirtSchema),
     materialIds: z.array(z.string().min(1)),
     payloads: z.array(scenePayloadSchema),
   })
@@ -164,6 +184,154 @@ export interface EmittedSceneExport {
   readonly payloads: ReadonlyMap<string, Uint8Array>;
 }
 
+/** Deepest relief gap that still reads as contact; deeper gaps get a skirt. */
+export const SKIRT_MIN_DROP_STUDS = 0.05;
+/** Skirt curtain bite below the deepest footprint sample, in studs. */
+export const SKIRT_EMBED_STUDS = 0.05;
+/** Minimum curtain lip so buried corners never emit degenerate faces. */
+export const SKIRT_MIN_LIP_STUDS = 0.02;
+
+export interface SkirtPartBounds {
+  readonly assetId: string;
+  readonly boundsSourceUnits: { readonly minimum: Vector3Like; readonly maximum: Vector3Like };
+}
+
+export interface SkirtAssetEntry {
+  readonly assetId: string;
+  readonly unitsToMeters: number;
+  readonly pivotOffsetMeters: Vector3Like;
+}
+
+export interface SkirtEmissionInput {
+  readonly resolved: readonly {
+    readonly population: WorldPopulationInstance;
+    readonly assetId: string;
+  }[];
+  readonly parts: readonly SkirtPartBounds[];
+  readonly assets: ReadonlyMap<string, SkirtAssetEntry>;
+  /** First terrain surface material, when terrain exists. */
+  readonly terrainMaterialId: string | undefined;
+}
+
+interface Vector3Like {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}
+
+function applyQuaternionToVector(
+  rotation: readonly [number, number, number, number],
+  value: Vector3Like,
+): Vector3Like {
+  const [x, y, z, w] = rotation;
+  return {
+    x:
+      value.x * (1 - 2 * (y * y + z * z)) +
+      value.y * 2 * (x * y - z * w) +
+      value.z * 2 * (x * z + y * w),
+    y:
+      value.x * 2 * (x * y + z * w) +
+      value.y * (1 - 2 * (x * x + z * z)) +
+      value.z * 2 * (y * z - x * w),
+    z:
+      value.x * 2 * (x * z - y * w) +
+      value.y * 2 * (y * z + x * w) +
+      value.z * (1 - 2 * (x * x + y * y)),
+  };
+}
+
+/**
+ * Emit blend skirts for flat-kind instances whose footprint relief leaves a
+ * visible gap. Each skirt is a four-face vertical curtain in the terrain
+ * material hanging from the slab bottom edge past the deepest sample.
+ */
+export function emitSkirts(input: SkirtEmissionInput): SceneSkirt[] {
+  const boundsByAsset = new Map<string, { minimum: Vector3Like; maximum: Vector3Like }>();
+  for (const part of input.parts) {
+    const union = boundsByAsset.get(part.assetId);
+    if (!union) {
+      boundsByAsset.set(part.assetId, {
+        minimum: { ...part.boundsSourceUnits.minimum },
+        maximum: { ...part.boundsSourceUnits.maximum },
+      });
+    } else {
+      union.minimum = {
+        x: Math.min(union.minimum.x, part.boundsSourceUnits.minimum.x),
+        y: Math.min(union.minimum.y, part.boundsSourceUnits.minimum.y),
+        z: Math.min(union.minimum.z, part.boundsSourceUnits.minimum.z),
+      };
+      union.maximum = {
+        x: Math.max(union.maximum.x, part.boundsSourceUnits.maximum.x),
+        y: Math.max(union.maximum.y, part.boundsSourceUnits.maximum.y),
+        z: Math.max(union.maximum.z, part.boundsSourceUnits.maximum.z),
+      };
+    }
+  }
+  const skirts: SceneSkirt[] = [];
+  for (const { population, assetId } of input.resolved) {
+    const deepest = Math.min(...population.footprint.dropsStuds);
+    if (!(deepest < -SKIRT_MIN_DROP_STUDS)) continue;
+    const bounds = boundsByAsset.get(assetId);
+    const asset = input.assets.get(assetId);
+    if (!bounds || !asset) throw new Error(`Skirt references unknown asset: ${assetId}`);
+    const spanStuds = {
+      x: ((bounds.maximum.x - bounds.minimum.x) * asset.unitsToMeters) / STUD_METERS,
+      y: ((bounds.maximum.y - bounds.minimum.y) * asset.unitsToMeters) / STUD_METERS,
+      z: ((bounds.maximum.z - bounds.minimum.z) * asset.unitsToMeters) / STUD_METERS,
+    };
+    if (groundingKindFromSpan(spanStuds) !== "flat") continue;
+    if (!input.terrainMaterialId)
+      throw new Error(`Skirt for ${population.id} has no terrain material to blend into`);
+    const sourceToStuds = asset.unitsToMeters / STUD_METERS;
+    const pivotStuds = {
+      x: asset.pivotOffsetMeters.x / STUD_METERS,
+      y: asset.pivotOffsetMeters.y / STUD_METERS,
+      z: asset.pivotOffsetMeters.z / STUD_METERS,
+    };
+    const corners = [
+      { x: bounds.minimum.x, y: bounds.minimum.y, z: bounds.minimum.z },
+      { x: bounds.maximum.x, y: bounds.minimum.y, z: bounds.minimum.z },
+      { x: bounds.maximum.x, y: bounds.minimum.y, z: bounds.maximum.z },
+      { x: bounds.minimum.x, y: bounds.minimum.y, z: bounds.maximum.z },
+    ].map((corner) => {
+      const scaled = {
+        x: (corner.x * sourceToStuds - pivotStuds.x) * population.scale,
+        y: (corner.y * sourceToStuds - pivotStuds.y) * population.scale,
+        z: (corner.z * sourceToStuds - pivotStuds.z) * population.scale,
+      };
+      const rotated = applyQuaternionToVector(population.rotation, scaled);
+      return {
+        x: population.position.x + rotated.x,
+        y: population.position.y + rotated.y,
+        z: population.position.z + rotated.z,
+      };
+    });
+    const bottomY = population.footprint.restYStuds + deepest - SKIRT_EMBED_STUDS;
+    const toMeters = (point: Vector3Like) => ({
+      x: point.x * STUD_METERS,
+      y: point.y * STUD_METERS,
+      z: point.z * STUD_METERS,
+    });
+    const drop = (top: Vector3Like) => ({
+      x: top.x,
+      y: Math.min(top.y - SKIRT_MIN_LIP_STUDS, bottomY),
+      z: top.z,
+    });
+    const faces = [0, 1, 2, 3].map((side) => {
+      const topLeft = corners[side]!;
+      const topRight = corners[(side + 1) % 4]!;
+      return {
+        topLeft: toMeters(topLeft),
+        topRight: toMeters(topRight),
+        bottomLeft: toMeters(drop(topLeft)),
+        bottomRight: toMeters(drop(topRight)),
+      };
+    });
+    skirts.push({ instanceId: population.id, materialId: input.terrainMaterialId, faces });
+  }
+  return skirts.sort((left, right) => compareWorldStrings(left.instanceId, right.instanceId));
+}
+
 /**
  * Lower a compiled partition world to the engine-neutral scene export.
  * Every instance resolves to content-hashed GLB part bytes; placements are
@@ -181,11 +349,22 @@ export function emitSceneExport(input: EmitSceneExportInput): EmittedSceneExport
   const parts: Array<z.infer<typeof scenePartSchema>> = [];
   const assetEntries = new Map<string, z.infer<typeof sceneAssetSchema>>();
 
+  const resolved: Array<{ population: WorldPopulationInstance; assetId: string }> = [];
   const instances = population.chunks
     .flatMap((chunk) => chunk.instances)
-    .map((instance) =>
-      resolveInstance(input, instance, revisionsById, assetsById, payloads, parts, assetEntries),
-    )
+    .map((instance) => {
+      const entry = resolveInstance(
+        input,
+        instance,
+        revisionsById,
+        assetsById,
+        payloads,
+        parts,
+        assetEntries,
+      );
+      resolved.push({ population: instance, assetId: entry.assetId });
+      return entry;
+    })
     .sort((left, right) => compareWorldStrings(left.id, right.id));
 
   const terrain = input.world.foundation.worldPlan.terrainFields.map((field) => {
@@ -206,10 +385,17 @@ export function emitSceneExport(input: EmitSceneExportInput): EmittedSceneExport
   });
 
   const roadEntries = roads.map((road) => exportRoad(road));
+  const skirts = emitSkirts({
+    resolved,
+    parts,
+    assets: assetEntries,
+    terrainMaterialId: terrain[0]?.materials[0],
+  });
   const materialIds = [
     ...new Set([
       ...terrain.flatMap((entry) => entry.materials),
       ...roadEntries.flatMap((road) => road.segments.map((segment) => segment.materialId)),
+      ...skirts.map((skirt) => skirt.materialId),
     ]),
   ].sort(compareWorldStrings);
 
@@ -233,6 +419,7 @@ export function emitSceneExport(input: EmitSceneExportInput): EmittedSceneExport
     parts: parts.sort((left, right) => compareWorldStrings(left.contentHash, right.contentHash)),
     terrain,
     roads: roadEntries.sort((left, right) => compareWorldStrings(left.routeId, right.routeId)),
+    skirts,
     materialIds,
     payloads: [...payloads.entries()]
       .map(([contentHashValue, bytes]) => ({

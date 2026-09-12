@@ -2,14 +2,63 @@
 // Uploads scene-export mesh payloads through the Open Cloud Assets API and
 // writes the adapter-owned sidecar binding content hashes to asset IDs.
 // Creator-run: the API key comes from the environment and is never stored.
+// One uploader per sidecar (lockfile); bindings persist per upload so reruns
+// rebind finished uploads instead of duplicating them.
 // --dry-run reports budget verdicts without touching the network.
+// --record-import-factors merges Studio-observed import factors from sealed
+// readbacks into the sidecar bindings without touching the network.
 import { createHash } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
+import { open, readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertRuntimeBuildCurrent } from "./runtime-build-manifest.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+let activeUploadLockRelease;
+
+/** Best-effort release; a missed release self-heals via holder liveness. */
+async function releaseActiveUploadLock() {
+  const release = activeUploadLockRelease;
+  activeUploadLockRelease = undefined;
+  if (release) await release();
+}
+
+/**
+ * Exclusive per-sidecar lock. Refuses when a live process holds it; reclaims
+ * the lock when the holder is dead (crashed runs never block the next run).
+ */
+async function acquireUploadLock(lockPath) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const handle = await open(lockPath, "wx", 0o600);
+      await handle.writeFile(String(process.pid));
+      await handle.close();
+      let released = false;
+      return async () => {
+        if (released) return;
+        released = true;
+        await unlink(lockPath).catch(() => {});
+      };
+    } catch (error) {
+      if (error?.code !== "EEXIST") throw error;
+      const holder = await readFile(lockPath, "utf8").catch(() => "");
+      const pid = Number.parseInt(holder.trim(), 10);
+      let alive = true;
+      if (Number.isSafeInteger(pid)) {
+        try {
+          process.kill(pid, 0);
+        } catch (signal) {
+          if (signal?.code === "ESRCH") alive = false;
+          else if (signal?.code !== "EPERM") throw signal;
+        }
+      }
+      if (alive) throw new Error(`Another scene-mesh upload holds ${lockPath}`, { cause: error });
+      await unlink(lockPath).catch(() => {});
+    }
+  }
+  throw new Error(`Could not acquire the scene-mesh upload lock at ${lockPath}`);
+}
 
 function option(args, name) {
   const index = args.indexOf(name);
@@ -20,7 +69,7 @@ function option(args, name) {
 }
 
 function usage() {
-  return "Usage: npm run scene:upload -- --export-dir <dir> --sidecar-out <sidecar.json> [--dry-run] [--creator-user-id <id> | --creator-group-id <id>] [--api-key-env <NAME>] [--api-base <url>] [--max-uploads <n>] [--include-incomplete] [--poll-interval-ms <ms>] [--poll-timeout-ms <ms>]";
+  return "Usage: npm run scene:upload -- --export-dir <dir> --sidecar-out <sidecar.json> [--dry-run] [--record-import-factors <readbacks-dir>] [--creator-user-id <id> | --creator-group-id <id>] [--api-key-env <NAME>] [--api-base <url>] [--max-uploads <n>] [--include-incomplete] [--poll-interval-ms <ms>] [--poll-timeout-ms <ms>]";
 }
 
 async function main() {
@@ -30,10 +79,12 @@ async function main() {
   const sidecarOut = option(args, "--sidecar-out");
   if (!exportDir || !sidecarOut) throw new Error(usage());
   const dryRun = args.includes("--dry-run");
+  const recordDir = option(args, "--record-import-factors");
+  if (dryRun && recordDir) throw new Error("--dry-run and --record-import-factors are exclusive");
   const includeIncomplete = args.includes("--include-incomplete");
   const userId = option(args, "--creator-user-id");
   const groupId = option(args, "--creator-group-id");
-  if (!dryRun && (userId ? groupId : !groupId))
+  if (!dryRun && !recordDir && (userId ? groupId : !groupId))
     throw new Error("Uploads require exactly one of --creator-user-id or --creator-group-id");
   const apiBase = option(args, "--api-base") ?? "https://apis.roblox.com/assets/v1";
   const maxUploads = Number(option(args, "--max-uploads") ?? Number.MAX_SAFE_INTEGER);
@@ -52,12 +103,21 @@ async function main() {
   const { inspectGlbTopology } = await import(
     pathToFileURL(resolve(repositoryRoot, "dist/packages/asset-inspection/src/glb.js")).href
   );
-  const { stableJson } = await import(
+  const { contentHash, stableJson } = await import(
     pathToFileURL(resolve(repositoryRoot, "dist/packages/contracts/src/index.js")).href
   );
 
   const manifest = JSON.parse(await readFile(resolve(exportDir, "scene-manifest.json"), "utf8"));
   assertSceneExport(manifest);
+  if (recordDir) {
+    activeUploadLockRelease = await acquireUploadLock(`${resolve(sidecarOut)}.lock`);
+    try {
+      await recordImportFactors({ manifest, sidecarOut, recordDir, contentHash, stableJson });
+    } finally {
+      await releaseActiveUploadLock();
+    }
+    return;
+  }
   const partByHash = new Map(manifest.parts.map((part) => [part.contentHash, part]));
   const verdicts = [];
   for (const entry of [...manifest.payloads].sort((a, b) =>
@@ -92,7 +152,9 @@ async function main() {
   }
 
   const apiKey = process.env[option(args, "--api-key-env") ?? "BASALT_ROBLOX_API_KEY"];
-  if (!apiKey) throw new Error("Uploads require the API key environment variable to be set");
+  if (!apiKey && !recordDir)
+    throw new Error("Uploads require the API key environment variable to be set");
+  activeUploadLockRelease = await acquireUploadLock(`${resolve(sidecarOut)}.lock`);
   let sidecar;
   let rebound = 0;
   try {
@@ -116,10 +178,29 @@ async function main() {
     sidecar = undefined;
   }
   const bindings = new Map((sidecar?.bindings ?? []).map((b) => [b.contentHash, b]));
-  const uploadable = verdicts.filter(
-    (v) =>
-      v.verdict.status === "eligible" || (includeIncomplete && v.verdict.status === "incomplete"),
-  );
+  const persistSidecar = () =>
+    writeFile(
+      resolve(sidecarOut),
+      `${stableJson({
+        kind: "BasaltEngineSidecar",
+        abi: "basalt-engine-sidecar@1",
+        engine: "roblox",
+        exportHash: manifest.hash,
+        bindings: [...bindings.values()].sort((a, b) => (a.contentHash < b.contentHash ? -1 : 1)),
+      })}\n`,
+      { encoding: "utf8", mode: 0o600 },
+    );
+  const seenHashes = new Set();
+  const uploadable = verdicts
+    .filter(
+      (v) =>
+        v.verdict.status === "eligible" || (includeIncomplete && v.verdict.status === "incomplete"),
+    )
+    .filter((v) => {
+      if (seenHashes.has(v.contentHash)) return false;
+      seenHashes.add(v.contentHash);
+      return true;
+    });
   const alreadyBound = uploadable.filter((v) => bindings.has(v.contentHash)).length;
   const queue = uploadable.filter((v) => !bindings.has(v.contentHash)).slice(0, maxUploads);
   const failures = [];
@@ -146,6 +227,9 @@ async function main() {
             item.topology.boundaryEdgeCount === 0 && item.topology.nonManifoldEdgeCount === 0,
         },
       });
+      // Persist per upload: a killed run rebinds finished uploads instead of
+      // duplicating them, leaving at most the in-flight upload orphaned.
+      await persistSidecar();
     } catch (error) {
       failures.push({
         contentHash: item.contentHash,
@@ -153,21 +237,88 @@ async function main() {
       });
     }
   }
-  const output = {
-    kind: "BasaltEngineSidecar",
-    abi: "basalt-engine-sidecar@1",
-    engine: "roblox",
-    exportHash: manifest.hash,
-    bindings: [...bindings.values()].sort((a, b) => (a.contentHash < b.contentHash ? -1 : 1)),
-  };
-  await writeFile(resolve(sidecarOut), `${stableJson(output)}\n`, {
-    encoding: "utf8",
-    mode: 0o600,
-  });
+  await persistSidecar();
+  await releaseActiveUploadLock();
   process.stdout.write(
     `${stableJson({ sidecar: resolve(sidecarOut), exportHash: manifest.hash, eligible: eligible.length, incomplete: incomplete.length, rejected: rejected.length, uploaded: queue.length - failures.length, skippedBound: alreadyBound, rebound, failures })}\n`,
   );
   if (failures.length > 0) process.exitCode = 1;
+}
+
+/**
+ * Stamp Studio-observed import factors onto the sidecar bindings. Only
+ * readbacks sealed for the current export contribute; a part observed with
+ * two different factors (or disagreeing with a recorded one) fails closed
+ * instead of picking a winner, because that disagreement is import drift.
+ */
+async function recordImportFactors({ manifest, sidecarOut, recordDir, contentHash, stableJson }) {
+  let sidecar;
+  try {
+    sidecar = JSON.parse(await readFile(resolve(sidecarOut), "utf8"));
+  } catch (error) {
+    if (error?.code === "ENOENT")
+      throw new Error("Import factors need an uploaded sidecar first", { cause: error });
+    throw error;
+  }
+  if (sidecar?.kind !== "BasaltEngineSidecar" || !Array.isArray(sidecar.bindings))
+    throw new Error("Existing sidecar has an unexpected shape");
+  if (sidecar.exportHash !== manifest.hash)
+    throw new Error("Sidecar binds a different scene export; upload it first");
+  const observed = new Map();
+  let readbacks = 0;
+  let matched = 0;
+  for (const name of (await readdir(resolve(recordDir))).sort()) {
+    if (!name.endsWith(".json")) continue;
+    const readback = JSON.parse(await readFile(resolve(recordDir, name), "utf8"));
+    readbacks += 1;
+    if (readback?.kind !== "BasaltWorldReadback" || !Array.isArray(readback.observedImportFactors))
+      throw new Error(`Readback file is not a sealed readback: ${name}`);
+    const { hash, ...material } = readback;
+    if (hash !== contentHash(stableJson(material)))
+      throw new Error(`Readback seal mismatch: ${name}`);
+    if (readback.exportHash !== manifest.hash) continue;
+    matched += 1;
+    for (const entry of readback.observedImportFactors) {
+      if (
+        typeof entry?.contentHash !== "string" ||
+        typeof entry?.factor !== "number" ||
+        !Number.isFinite(entry.factor) ||
+        entry.factor <= 0
+      )
+        throw new Error(`Readback carries an invalid import factor: ${name}`);
+      if (observed.has(entry.contentHash) && observed.get(entry.contentHash) !== entry.factor)
+        throw new Error(`Part ${entry.contentHash} was observed with conflicting import factors`);
+      observed.set(entry.contentHash, entry.factor);
+    }
+  }
+  let stamped = 0;
+  let alreadyStamped = 0;
+  const bindings = sidecar.bindings.map((binding) => {
+    const factor = observed.get(binding?.contentHash);
+    if (factor === undefined) return binding;
+    if (binding.importFactor !== undefined) {
+      if (binding.importFactor !== factor)
+        throw new Error(`Part ${binding.contentHash} drifts past its recorded import factor`);
+      alreadyStamped += 1;
+      return binding;
+    }
+    stamped += 1;
+    return { ...binding, importFactor: factor };
+  });
+  await writeFile(
+    resolve(sidecarOut),
+    `${stableJson({
+      kind: "BasaltEngineSidecar",
+      abi: "basalt-engine-sidecar@1",
+      engine: "roblox",
+      exportHash: manifest.hash,
+      bindings: [...bindings].sort((a, b) => (a.contentHash < b.contentHash ? -1 : 1)),
+    })}\n`,
+    { encoding: "utf8", mode: 0o600 },
+  );
+  process.stdout.write(
+    `${stableJson({ sidecar: resolve(sidecarOut), exportHash: manifest.hash, readbacks, matchedReadbacks: matched, stamped, alreadyStamped, unstamped: bindings.length - stamped - alreadyStamped })}\n`,
+  );
 }
 
 async function uploadPart({ apiBase, apiKey, creator, item }, pollIntervalMs, pollTimeoutMs) {
@@ -223,7 +374,8 @@ async function uploadPart({ apiBase, apiKey, creator, item }, pollIntervalMs, po
   }
 }
 
-await main().catch((error) => {
+await main().catch(async (error) => {
+  await releaseActiveUploadLock().catch(() => {});
   process.stderr.write(
     `Scene mesh upload failed: ${error instanceof Error ? error.message : String(error)}\n`,
   );

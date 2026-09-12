@@ -9,6 +9,7 @@ import {
   sealWorldAssetFamilyRegistry,
 } from "../packages/world-compiler/src/index.js";
 import { productionWorldPlanFixture } from "./helpers/production-world-fixtures.js";
+import { groundingEvidenceFixture } from "./helpers/grounding-evidence.js";
 
 test("Basalt can stop after the macro foundation while workers are offline", () => {
   const world = compileHierarchicalWorld({
@@ -70,6 +71,7 @@ test("Basalt resolves families once, then emits deterministic partition deltas",
       },
     ],
     stage: "partition",
+    population: { groundingEvidence: groundingEvidenceFixture("FamilyGroundCover", 3) },
   });
   assert.ok(world.mesoPlan);
   assert.ok(world.microPopulation);
@@ -120,6 +122,7 @@ test("Basalt assembles route roads and binds segments to partition chunks", () =
         },
       ],
       stage: "partition",
+      population: { groundingEvidence: groundingEvidenceFixture("FamilyGroundCover", 3) },
     });
   const first = compile();
   const second = compile();

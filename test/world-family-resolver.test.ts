@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   adaptSealedCatalogToRegistry,
   compileResolvedFamilyPopulationPlans,
+  densityEnvelopeFromPerHectare,
   resolveCanonicalAssetFamilies,
   resolveWorldAssetFamilies,
   sealWorldAssetFamilyRegistry,
@@ -312,4 +313,58 @@ test("catalog adapter tags sealed families from handles and drops unadmitted one
   assert.deepEqual(first.families[0]?.styleTags, ["stylized_low_poly"]);
   assert.deepEqual(first.families[0]?.roleTags, ["clutter"]);
   assert.equal(first.families[0]?.variantCount, 1);
+});
+
+test("per-hectare conversion matches the population area normalization", () => {
+  // 500/ha over a 3600-stud² pad: floor(3600/256 × 1.00352) = 14 instances.
+  const envelope = densityEnvelopeFromPerHectare(500);
+  assert.equal(envelope.minimum, 0);
+  assert.equal(envelope.maximum, envelope.target);
+  assert.ok(Math.abs(envelope.target - 1.00352) < 1e-9);
+  const empty = densityEnvelopeFromPerHectare(0);
+  assert.deepEqual(empty, { minimum: 0, target: 0, maximum: 0 });
+  assert.throws(() => densityEnvelopeFromPerHectare(-1), /non-negative/);
+  assert.throws(() => densityEnvelopeFromPerHectare(Number.NaN), /non-negative/);
+});
+
+test("population lowering divides role-total density across resolved families", () => {
+  const registry = sealWorldAssetFamilyRegistry([
+    {
+      familyId: "FamilyStone",
+      semanticTags: ["masonry"],
+      styleTags: ["weathered"],
+      roleTags: ["wall"],
+      variantCount: 4,
+    },
+    {
+      familyId: "FamilyBrick",
+      semanticTags: ["masonry"],
+      styleTags: ["weathered"],
+      roleTags: ["wall"],
+      variantCount: 2,
+    },
+  ]);
+  const plans = compileResolvedFamilyPopulationPlans({
+    registry,
+    requests: [
+      {
+        biomeId: "RegionA",
+        regionIds: ["RegionA"],
+        semanticTags: ["masonry"],
+        styleTags: ["weathered"],
+        roleTags: ["wall"],
+        minimumFamilies: 2,
+        maximumFamilies: 2,
+        maximumCount: 10,
+        minimumCount: 2,
+        density: { minimum: 0, target: 1.5, maximum: 1.5 },
+      },
+    ],
+  });
+  assert.equal(plans.length, 2);
+  for (const plan of plans) {
+    assert.equal(plan.density.target, 0.75);
+    assert.equal(plan.density.maximum, 0.75);
+    assert.equal(plan.minimumCount, 1);
+  }
 });

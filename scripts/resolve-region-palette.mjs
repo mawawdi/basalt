@@ -32,9 +32,11 @@ async function main() {
   if (!Number.isSafeInteger(maxCards) || maxCards < 1 || maxCards > 20)
     throw new Error("--max-cards must be an integer from 1 to 20");
   const {
+    GROUNDING_EVIDENCE_FILE_SCHEMA,
     adaptSealedCatalogToRegistry,
     assertWorldAssetFamilyRegistry,
     briefMissedFamilyFactoryJobs,
+    densityEnvelopeFromPerHectare,
     resolveWorldAssetFamilies,
   } = await import(
     pathToFileURL(resolve(repositoryRoot, "dist/packages/world-compiler/src/index.js")).href
@@ -49,6 +51,9 @@ async function main() {
     await import(
       pathToFileURL(resolve(repositoryRoot, "dist/packages/basalt-types/src/index.js")).href
     );
+  const { dequantizeQ32_32 } = await import(
+    pathToFileURL(resolve(repositoryRoot, "dist/packages/basalt-types/src/fixed.js")).href
+  );
   const { assertCatalogInventoryIdentity } = await import(
     pathToFileURL(resolve(repositoryRoot, "dist/packages/catalog-intelligence/src/index.js")).href
   );
@@ -66,6 +71,10 @@ async function main() {
     assets: inventory.assets,
   });
   const cardsById = new Map(inventory.familyCards.map((card) => [card.fid, card]));
+  const revisionsById = new Map(
+    inventory.families.map((revision) => [revision.familyId, revision]),
+  );
+  const assetsById = new Map(inventory.assets.map((asset) => [asset.record.assetId, asset]));
   const requests = [];
   const bound = [];
   const seenBiomes = new Set();
@@ -100,7 +109,10 @@ async function main() {
       maximumFamilies: role.families,
       ...(role.surfaceKinds ? { surfaceKinds: role.surfaceKinds } : {}),
       ...(role.distribution ? { distribution: role.distribution } : {}),
-      ...(role.density ? { density: role.density } : {}),
+      ...(role.density
+        ? { density: role.density }
+        : { density: densityEnvelopeFromPerHectare(role.targetDensityPerHectare) }),
+      ...(role.targetDensityPerHectare > 0 ? { minimumCount: role.families } : {}),
     });
     bound.push({ ...role, biomeId });
   }
@@ -152,6 +164,49 @@ async function main() {
     throw new Error(
       `Brief selects ${selected.length} families, exceeding --max-cards ${maxCards}; narrow the brief`,
     );
+  const dequantized = (vector) => ({
+    x: dequantizeQ32_32(vector.x),
+    y: dequantizeQ32_32(vector.y),
+    z: dequantizeQ32_32(vector.z),
+  });
+  const evidence = [...seen].sort().map((familyId) => {
+    const revision = revisionsById.get(familyId);
+    if (!revision) throw new Error(`Revision missing for family: ${familyId}`);
+    return {
+      familyId,
+      archetypes: revision.archetypes.map((archetype) => {
+        const asset = assetsById.get(archetype.assetId);
+        if (!asset) throw new Error(`Inventory asset missing: ${archetype.assetId}`);
+        const measurement = asset.measurement;
+        const boundsMinimum = dequantized(measurement.boundsMinimumQ32_32);
+        const boundsMaximum = dequantized(measurement.boundsMaximumQ32_32);
+        const spanX = boundsMaximum.x - boundsMinimum.x;
+        const spanZ = boundsMaximum.z - boundsMinimum.z;
+        const fitRadius = measurement.supportPlaneFits?.[0]?.boundaryRadiusStuds;
+        const contactArea = measurement.bottomContactAreaStuds2;
+        const contactRadius =
+          typeof fitRadius === "number" && Number.isFinite(fitRadius) && fitRadius > 0
+            ? fitRadius
+            : typeof contactArea === "number" && Number.isFinite(contactArea) && contactArea > 0
+              ? Math.sqrt(contactArea / Math.PI)
+              : 0.25 * Math.min(spanX, spanZ);
+        if (!Number.isFinite(contactRadius) || contactRadius <= 0)
+          throw new Error(`Asset has no measurable contact patch: ${archetype.assetId}`);
+        return {
+          assetId: archetype.assetId,
+          boundsMinimumStuds: boundsMinimum,
+          boundsMaximumStuds: boundsMaximum,
+          contactRadiusStuds: contactRadius,
+        };
+      }),
+    };
+  });
+  const evidenceFile = GROUNDING_EVIDENCE_FILE_SCHEMA.parse({
+    kind: "BasaltFamilyGroundingEvidence",
+    abi: "basalt-family-grounding-evidence@1",
+    inventoryHash: inventory.hash,
+    evidence,
+  });
   const outDir = resolve(outputDir);
   await mkdir(outDir, { recursive: true });
   if (factoryJobs.length > 0) {
@@ -188,6 +243,10 @@ async function main() {
   await writeFile(resolve(outDir, "palette-menu.txt"), `${serializePaletteMenu(selected)}\n`);
   await writeFile(resolve(outDir, "family-registry.json"), `${registryJson}\n`);
   await writeFile(resolve(outDir, "family-requests.json"), `${requestsJson}\n`);
+  await writeFile(
+    resolve(outDir, "family-evidence.json"),
+    `${JSON.stringify(evidenceFile, null, 2)}\n`,
+  );
   assertWorldAssetFamilyRegistry(JSON.parse(registryJson));
   const replayed = resolveWorldAssetFamilies({
     registry: JSON.parse(registryJson),

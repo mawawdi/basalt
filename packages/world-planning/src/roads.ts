@@ -17,6 +17,39 @@ import {
 export const ROAD_ASSEMBLY_ABI = "basalt-road-assembly@1" as const;
 export const DEFAULT_ROAD_CHUNK_SIZE = 128 as const;
 export const MAXIMUM_ROAD_ASSEMBLY_SEGMENTS = MAXIMUM_ROUTE_PROFILE_SAMPLES;
+/** Graded bed depth below surrounding grade, in studs. */
+export const ROADBED_DEPTH_STUDS = 0.3 as const;
+/** Shoulder width as a fraction of route width on each side of the bed. */
+export const ROADBED_FALLOFF_FRACTION = 0.5 as const;
+
+/**
+ * Derive one roadbed carve op per route. The bed is flat across the route
+ * width at full depth with smooth shoulders, so the assembled ribbon rests in
+ * a graded swale instead of balancing on unmodified terrain.
+ */
+export function roadbedOperationsForRoutes(routes: readonly WorldRoute[]): Array<{
+  surfaceId: string;
+  operation: {
+    id: string;
+    kind: "roadbed";
+    points: Array<{ x: number; z: number }>;
+    width: number;
+    depth: number;
+    falloff: number;
+  };
+}> {
+  return routes.map((route) => ({
+    surfaceId: route.surfaceId,
+    operation: {
+      id: `roadbed_${route.id.slice(0, 32)}_${contentHash(stableJson(route.id)).slice(0, 8)}`,
+      kind: "roadbed",
+      points: route.points.map((point) => ({ x: point.x, z: point.z })),
+      width: route.width,
+      depth: ROADBED_DEPTH_STUDS,
+      falloff: route.width * ROADBED_FALLOFF_FRACTION,
+    },
+  }));
+}
 
 const roadRibbonVertex = z
   .object({ position: WORLD_VECTOR3_SCHEMA, normal: WORLD_VECTOR3_SCHEMA })
@@ -188,7 +221,7 @@ export function compileRoadAssembly(
     const dominantRegionId = dominantAllowedRegion(sample.regionWeights, route.regionIds);
     if (!dominantRegionId)
       throw new Error(`Route ${route.id} leaves its declared regions at sample ${index}`);
-    const materialId = dominantKey(sample.materialWeights);
+    const materialId = route.materialId ?? dominantKey(sample.materialWeights);
     if (!materialId) throw new Error(`Route ${route.id} has no bound material at sample ${index}`);
     return {
       left: f32Vector({
@@ -209,27 +242,33 @@ export function compileRoadAssembly(
   });
 
   const runs = splitRuns(frames);
-  const segments = runs.map((run, runIndex) => {
-    const start = run.start > 0 ? run.start - 1 : run.start;
+  const segments = runs.flatMap((run, runIndex) => {
+    const start = run.start;
     const end = run.end < frames.length - 1 ? run.end + 1 : run.end;
+    // A lone trailing frame is already the previous segment's joint frame, so
+    // it carries no quad of its own and is absorbed instead of emitted alone.
+    if (end - start < 1) return [];
     const vertices = frames.slice(start, end + 1).flatMap((frame) => [
       { position: frame.left, normal: frame.normal },
       { position: frame.right, normal: frame.normal },
     ]);
-    return {
-      id: worldEntityId.parse(
-        `road_${contentHash(stableJson({ routeId: route.id, runIndex })).slice(0, 24)}`,
-      ),
-      routeId: route.id,
-      dominantRegionId: run.dominantRegionId,
-      materialId: run.materialId,
-      chunkId: run.chunkId,
-      startStationStuds: f32(stations[start]!),
-      endStationStuds: f32(stations[end]!),
-      vertices,
-      bounds: ribbonBounds(vertices.map((vertex) => vertex.position)),
-    };
+    return [
+      {
+        id: worldEntityId.parse(
+          `road_${contentHash(stableJson({ routeId: route.id, runIndex })).slice(0, 24)}`,
+        ),
+        routeId: route.id,
+        dominantRegionId: run.dominantRegionId,
+        materialId: run.materialId,
+        chunkId: run.chunkId,
+        startStationStuds: f32(stations[start]!),
+        endStationStuds: f32(stations[end]!),
+        vertices,
+        bounds: ribbonBounds(vertices.map((vertex) => vertex.position)),
+      },
+    ];
   });
+  if (segments.length === 0) throw new Error(`Route ${route.id} yields no road quads`);
   if (segments.length > MAXIMUM_ROAD_ASSEMBLY_SEGMENTS)
     throw new Error(`Route ${route.id} exceeds ${MAXIMUM_ROAD_ASSEMBLY_SEGMENTS} road segments`);
 
