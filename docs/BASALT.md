@@ -20,9 +20,9 @@ live in [Architecture](ARCHITECTURE.md), and unfinished work lives in the
   requirements.
 - Substitution means genuine independent interchangeability, not similar naming or
   visual proximity.
-- Corpus scale comes from evidence-coherent cohort decisions and active audit
-  samples, never from converting model confidence into authority or requiring one
-  manual decision per asset.
+- Corpus scale comes from calibrated factorized predictions, explicit pairwise
+  compatibility evidence, and risk-bounded audits, never from converting model
+  confidence into authority or requiring one manual decision per asset.
 - Terrain and routes compile even when catalog-dependent stages are incomplete.
 - Typed solvers own geometry, transforms, constraints, occupancy, and budgets.
 - Every missing requirement remains visible as `incomplete`; invalid evidence is

@@ -1,0 +1,26 @@
+{
+  "kind": "CatalogInferenceModelDeclarations",
+  "models": [
+    {
+      "modelId": "dinov3_vitl16_lvd1689m",
+      "source": "huggingface",
+      "repository": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+      "revision": "ea8dc2863c51be0a264bab82070e3e8836b02d51",
+      "purpose": "multiview_shape"
+    },
+    {
+      "modelId": "siglip2_so400m_patch14_384",
+      "source": "huggingface",
+      "repository": "google/siglip2-so400m-patch14-384",
+      "revision": "e8e487298228002f3d8a82e0cd5c8ea9c567f57f",
+      "purpose": "multiview_semantics_and_appearance"
+    },
+    {
+      "modelId": "source_name_lexicon",
+      "source": "basalt",
+      "repository": "workers/catalog-admission/pilot.py",
+      "revision": "c2e99a8f411ec7db27e56778589511dbb6accc63808b86a98b1c477863cee600",
+      "purpose": "source_name_hint"
+    }
+  ]
+}

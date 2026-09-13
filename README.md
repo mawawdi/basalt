@@ -34,14 +34,11 @@ node bin/basalt.js catalog measure --workers 4
 node bin/basalt.js catalog render --workers 4
 node bin/basalt.js catalog calibration prepare
 node bin/basalt.js catalog calibration
-node bin/basalt.js catalog hypothesize
-node bin/basalt.js catalog panel
-node bin/basalt.js catalog cluster
-node bin/basalt.js catalog review
-node bin/basalt.js catalog decide <cohort-id> \
-  --action admit --entry <stable-handle> --authority <curator-id> \
-  --findings path/to/review-findings.json --rationale "..."
-node bin/basalt.js catalog admit
+node bin/basalt.js catalog pilot prepare
+node bin/basalt.js catalog pilot infer
+node bin/basalt.js catalog pilot evaluate
+# or run all three stages:
+node bin/basalt.js catalog pilot run
 node bin/basalt.js catalog commit
 node bin/basalt.js catalog validate
 node bin/basalt.js catalog seal
@@ -66,10 +63,18 @@ the current baseline, so preserve those local payloads independently. The exact
 implemented storage and admission boundaries live in the
 [architecture](docs/ARCHITECTURE.md) and [visual evidence](docs/VISUALS.md) docs.
 
+The pilot executor defaults to one Modal L40S and reads `HUGGINGFACE_TOKEN`,
+`MODAL_TOKEN_ID`, and `MODAL_TOKEN_SECRET` from `.env` without writing them into
+artifacts or logs. It runs the pinned DINOv3 ViT-L and SigLIP2 So400M/384
+backbones one at a time. `--executor local` is available for debugging. A pilot
+run intentionally remains `incomplete` until its leakage-disjoint human reference
+judgments and independent acceptance-audit receipts satisfy the tracked policy.
+Model scores never admit an asset by themselves.
+
 Imported GLBs are deduplicated into one source-neutral pool at
 `registry/source-assets/sha256/`. Archive names, vendor folders, and original file
 paths are retained in `registry/source-provenance.json` for rights and
-traceability. `catalog hypothesize` derives basename-only `CatalogSourceNameHint`
+traceability. Pilot preparation derives basename-only `CatalogSourceNameHint`
 artifacts from every observed original GLB filename for a content hash. These are
 labeled weak supervision for hypothesis adapters only. Pack identity, archive
 names, and directories stay excluded, and no name hint can affect physical

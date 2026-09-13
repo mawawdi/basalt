@@ -54,8 +54,8 @@ outputs bind lit RGBA, alpha silhouette, linear normalized depth, world-space
 encoded surface normals, and linear unlit base color. Contact sheets are derived
 review UI and changing their layout does not invalidate those views.
 Origin archives, vendor folders, and directory paths are absent from inference and
-review contracts. Original GLB basenames are the one deliberate exception:
-`catalog hypothesize` aggregates every name observed for the same content bytes,
+review contracts. Original GLB basenames are the one deliberate exception: pilot
+preparation aggregates every name observed for the same content bytes,
 normalizes it with a hashed deterministic tokenizer, and binds the resulting
 `CatalogSourceNameHint` into each model request. The artifact is explicitly
 non-authoritative and pack-neutral. It may improve candidate generation for nouns,
@@ -94,12 +94,15 @@ It compares every rendered source pair at the sealed threshold and binds the ima
 decoder and worker bytes. This is a split-safety signal, not semantic evidence and
 not proof of substitutability.
 
-The current code has a conservative prototype: distinct implementation hashes vote
-on exact signatures, one quantized visual channel forms complete-link cohorts, and
-deterministic medoid/outlier/boundary/audit samples lead to a finite-cohort curator
-decision. This machinery preserves abstention and provenance, but it is not yet
-qualified for unattended full-corpus admission. The exact replacement work is the
-[catalog admission cutover](ROADMAP.md#catalog-admission-cutover), grounded in the
+The implemented qualification pilot uses separately hashed DINOv3 shape features,
+SigLIP2 image-text evidence, and basename weak supervision. It emits visual-only,
+name-only, and combined hypotheses, calibrates each facet and declared dependency
+group against leakage-disjoint human references, applies bounded prediction sets
+and novelty refusal, and requires explicit pairwise compatibility before a
+substitution proposal exists. Discovery review is deliberately non-statistical;
+acceptance uses a separate deterministic finite-population sample and exact audit
+receipts. Until those human references and audits meet the policy, qualification
+remains `incomplete`. The rationale is in the
 [admission research](research/catalog-admission-state-of-the-art.md).
 
 ## Neural fulfillment

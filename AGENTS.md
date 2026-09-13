@@ -10,6 +10,41 @@ documentation authority is split deliberately:
 - `docs/ROADMAP.md` defines future work and acceptance criteria.
 - `docs/RESEARCH.md` indexes current rationale and source evidence.
 
+## Problem framing and experimental discipline
+
+- Before designing a bespoke subsystem for a problem that may be common in industry or
+  research, first inspect maintained open-source implementations, production systems, and
+  primary literature. Record the closest proven baseline, what can be reused, and the
+  specifically Basalt-owned remainder. Prefer the smallest proven pattern over recreating an
+  entire external stack or inventing a framework from first principles.
+- Separate commodity capability from the actual product differentiator. Reuse established
+  approaches for ingestion, metadata extraction, indexing, retrieval, rendering, and similar
+  infrastructure; spend custom complexity only on guarantees Basalt uniquely needs, such as
+  deterministic realization, substitutability, spatial correctness, and engine verification.
+- Match every model and metric to the job it was validated to perform. Retrieval embeddings
+  are not calibrated classifiers, class probabilities are not novelty estimates, and model
+  confidence is not evidence of correctness. Do not derive authoritative thresholds from an
+  unvalidated score transformation. Calibrate against representative labeled examples and
+  retain model outputs as hypotheses until the relevant gate admits them.
+- Establish the simplest credible baseline and run a small, deliberately varied pilot before
+  scaling a corpus run or expanding the architecture. Include obvious positive cases,
+  negatives, out-of-vocabulary cases, style variation, and known boundary cases. Define the
+  expected outputs and stop conditions before running it, then inspect actual examples rather
+  than relying only on aggregate scores.
+- Treat systematic failure as evidence against the formulation before blaming model size,
+  data volume, or compute. Class collapse, near-universal rejection, nonsensical confidence,
+  or identical errors across diverse inputs require an immediate stop and framing audit:
+  verify input evidence, task/label coverage, prompt and score semantics, reference behavior,
+  and whether the problem should be retrieval, ranking, generation, or classification.
+- Avoid requiring global certainty when the product only needs a local decision. Prefer
+  broad searchable evidence plus requirement-specific retrieval and verification over eager,
+  exhaustive classification of an entire corpus. Escalate only ambiguous candidates and
+  boundary decisions to review.
+- A more capable model or larger infrastructure is justified only by a measured improvement
+  on the bounded pilot. Compare it against the simpler baseline with the same inputs and
+  acceptance criteria. Do not scale a failed experiment, and do not promote experimental
+  artifacts or terminology into canonical contracts or active documentation.
+
 - Make clean breaks. Delete superseded schemas, commands, packages, and storage paths;
   do not add compatibility readers, migrations, deprecated aliases, or old/new fallbacks.
 - Do not version asset or entry handles, directory names, or registry identities. Entry

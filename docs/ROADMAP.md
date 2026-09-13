@@ -19,16 +19,16 @@ admission invariants belong in [Visuals](VISUALS.md).
   no admitted entries; unresolved sources correctly remain incomplete. `basalt
 catalog inventory` is the live count authority.
 - A tracked admission rubric, seven-channel evidence contract, physical-leakage
-  analysis and grouping contracts, deterministic whole-group assignment, and a
-  complete physical calibration split. Original basenames are available only as
-  separately hashed weak hints to semantic hypothesis adapters; source origin,
-  archive identity, and directories are forbidden from inference and split
-  construction. The split is structurally eligible but the admission policy is
-  not yet statistically qualified.
-- An executable admission prototype with implementation-distinct hypothesis
-  receipts, exact-signature consensus, one visual embedding channel,
-  complete-link cohorts, deterministic review samples, curator decisions, and
-  audits. It is not statistically qualified for unattended corpus admission.
+  analysis, deterministic whole-group assignment, and a complete physical
+  calibration split. Original basenames are separately hashed weak hints;
+  archive identity and directories are forbidden from inference and split
+  construction.
+- An executable bounded qualification pilot with pinned DINOv3 and SigLIP2
+  backbones, visual/name ablations, factorized hypotheses, facet and dependency
+  calibration, hierarchy-aware prediction sets, novelty refusal, explicit
+  pairwise substitution evidence, separate discovery review and acceptance
+  audits, and fail-closed qualification receipts. It is not statistically
+  qualified until human references and independent audit receipts pass policy.
 - Offline catalog-fulfillment contracts for reuse, restyling, set extension, and
   synthesis. TRELLIS.2 has executable worker code; Hunyuan3D 2.1 and Pixal3D are
   fail-closed scaffolds. None is production-qualified.
@@ -38,42 +38,31 @@ catalog inventory` is the live count authority.
   and render payloads remain local-only and are not recoverable from a clean Git
   clone.
 
-## Catalog admission cutover
+## Catalog admission qualification
 
-This is the next milestone. Do not launch paid full-corpus model inference until
-the pilot gates below exist.
+This is the next milestone. The execution and evidence contracts exist; the
+remaining work is empirical qualification, not another authority path.
 
-1. Qualify the completed physical leakage analysis across the canonical source
-   pool. Exact canonical geometry, component containment, contextual shared-texture
-   evidence, an all-pairs rendered-shape pre-pass, and whole-component assignment
-   are implemented with full coverage. Benchmark near-duplicate recall before
-   treating the split as statistically qualified; never use archive provenance as
-   a feature or split.
-2. Replace the single mixed visual signal with independently hashed evidence
-   channels: integrity, geometry, material, appearance, silhouette/depth/normals,
-   installation, and semantics. Add deterministic point or mesh samples and keep
-   per-view features.
-3. Benchmark a deliberately diverse adapter slate on the same gold set. Calibrate
-   each facet and dependency group; report visual-only, basename-only, and combined
-   ablations; implement hierarchy-aware prediction sets, explicit abstention,
-   novelty detection, and distribution-shift gating. Reject any policy whose
-   apparent quality depends on pack identity or directory leakage.
-4. Replace whole-signature majority voting with factorized aggregation followed by
-   semantic constraint validation. A model score remains evidence, never an
-   admitted assertion.
-5. Replace embedding cohorts as substitution authority with an exact-site
-   candidate graph, pairwise compatibility evidence, deterministic constrained
-   partitioning, and a final whole-set invariant proof.
-6. Separate active discovery samples from random acceptance audits. Express the
-   audit as a finite-population risk policy with declared false-merge and defect
-   bounds; distinguish direct curator assertions from policy-qualified assertions.
-7. Implement the new receipts, calibration artifacts, prediction sets,
-   substitution evidence, qualification receipts, and deterministic tests. Delete
-   the superseded panel/cohort authority path in the same clean break.
-8. Run one low-risk pilot over whole, ground-supported props. Expand by calibrated
-   risk stratum only after disjoint evaluation and audit results meet the policy.
-   Unknown, shifted, component, attachment, route, and assembly cases may remain
-   incomplete.
+1. Complete leakage-group-disjoint human reference judgments for every required
+   facet and dependency group in the bounded low-risk pilot. Review disagreements,
+   abstentions, novel items, and boundary cases without using source-pack identity.
+2. Measure visual-only, basename-only, and combined calibration. Keep only
+   adapters whose held-out Wilson precision lower bounds meet policy with enough
+   samples; otherwise retain the affected predictions as `incomplete`. Benchmark
+   larger DINOv3/SigLIP2 backbones and one instruction-tuned multiview VLM on the
+   same locked references before adopting them; model size alone is not evidence
+   of better catalog decisions.
+3. Adjudicate all proposed substitution pairs and whole-set invariants. Shared
+   labels or embedding proximity alone are never sufficient evidence.
+4. Perform the independently selected finite-population acceptance audits. A
+   discovery sample cannot be reused as a statistical acceptance sample; any
+   excess defect or false merge blocks qualification.
+5. Commit eligible qualification receipts, assertions, entries, and dispositions
+   through the single catalog root. Keep all residual unknown, shifted, component,
+   attachment, route, and assembly cases explicitly incomplete.
+6. Expand to the next risk stratum only after the prior stratum qualifies. Run the
+   full corpus only after the bounded pilot establishes that the evidence gain
+   justifies its GPU and review cost.
 
 The evidence and statistical rationale is preserved in
 [Catalog Admission for an Open-World 3D Asset Registry](research/catalog-admission-state-of-the-art.md).
@@ -119,8 +108,8 @@ After the admission pilot is qualified:
 
 ## Known limits
 
-- Current admission code is a provenance-safe prototype, not a qualified
-  autonomous catalog curator.
+- Current admission code is a provenance-safe qualification pipeline, not a
+  qualified autonomous catalog curator.
 - The live catalog lacks admitted semantic assertions, entries, qualified vision
   adapters, and calibrated visual embeddings.
 - Git preserves current authority and compact JSON evidence, but not all source or

@@ -10,10 +10,11 @@ must be reflected in the relevant active document before code relies on them.
   identity, facet, closure, and governance decisions behind the implemented
   registry. The registry and [Architecture](ARCHITECTURE.md) remain authoritative.
 - [Catalog admission research](research/catalog-admission-state-of-the-art.md)
-  records the current no-go/full-run readiness decision, the asset-rights gate, and
-  the bounded qualification pilot. It recommends calibrated multimodal prediction,
-  substitution proofs, and risk-limiting review. Its remote-storage analysis is
-  retained as a future option; the accepted current decision is local-only storage.
+  records the evidence design behind the implemented bounded qualification pilot:
+  calibrated multimodal prediction, explicit substitution proofs, discovery
+  review, and independent risk-bounded acceptance audits. Its remote-storage
+  analysis is retained as a future option; the accepted current decision is
+  local-only storage.
 - [Roblox asset lowering](research/mesh-strategy.md) records platform-specific mesh,
   material, and performance rationale. The implemented adapter boundary is owned by
   [Architecture](ARCHITECTURE.md#roblox-boundary).

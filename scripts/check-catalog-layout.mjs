@@ -36,11 +36,14 @@ const required = [
   "registry/dispositions.json",
   "registry/admission-policy.json",
   "registry/admission-rubric.json",
+  "registry/catalog-inference-models.json",
   "registry/leakage-grouping-policy.json",
   "registry/near-duplicate-search.json",
   "registry/leakage-analysis.json",
   "registry/calibration-split.json",
   "registry/catalog.json",
+  "registry/acceptance-audits/README.md",
+  "registry/qualifications/README.md",
 ];
 const forbidden = [
   `registry/${["family", "manifest"].join("-")}.json`,

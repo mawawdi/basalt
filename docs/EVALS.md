@@ -43,10 +43,11 @@ for abstention or review.
 - Catalog: source accounting, substitution invariants, exact evidence,
   composition, deterministic filtering/ranking/weights, rights, resources, and
   typed gaps.
-- Current admission prototype: independent implementation identity,
-  exact-signature consensus, confidence isolation, complete-link visual coherence,
-  input-order independence, medoid/outlier/boundary/audit sampling, finite-cohort
-  decisions, failed-audit blocking, and deterministic tracked commits.
+- Catalog qualification: exact request/model/evidence bindings, visual/name
+  ablations, facet and dependency-group calibration, Wilson lower bounds,
+  hierarchy-aware prediction sets, novelty refusal, pairwise substitution proofs,
+  discovery/acceptance sample separation, exact finite-population audit sizing,
+  failed-audit blocking, input-order independence, and deterministic commits.
 - Spatial: immutable plans, route-first foundations, meter contracts, complete
   footprint clearance, occupancy, qualified sockets, and explicit underfill.
 - Constraints: directed/symmetric edges, AC-3 propagation, weighted entropy,
@@ -70,4 +71,4 @@ substitution false-merge risk, perceptual quality, playability, or remote
 recoverability. Current calibration and evaluation must keep all physically
 related identities in one leakage group; a future acquisition remains the final
 out-of-distribution durability test. The missing admission qualification is tracked in the
-[catalog admission cutover](ROADMAP.md#catalog-admission-cutover).
+[catalog admission qualification](ROADMAP.md#catalog-admission-qualification).

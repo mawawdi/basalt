@@ -41,9 +41,9 @@ imports and internal deep imports are rejected.
 `semantic-kernel` alone owns commitments, facets, assertions, requirements,
 closures, and the lexicon contract. `catalog-model` owns measured assets,
 dispositions, entry declarations, resolution requirements, and typed gaps.
-`catalog-authoring` owns non-authoritative model/embedding receipts, hypothesis
-panels, admission cohorts, sampled review plans, explicit curator decisions,
-audits, and the tracked catalog transaction root.
+`catalog-authoring` owns non-authoritative model/embedding receipts, calibrated
+prediction sets, substitution evidence, discovery review plans, acceptance
+audits, qualification receipts, and the tracked catalog transaction root.
 Provider names never enter semantic, catalog, planning, or world identities.
 
 All generic geometry is right-handed, positive-Y-up, and measured in meters.
@@ -60,8 +60,9 @@ materialized ancestry, set inclusion, state equality, evidence ordering, and
 declared inverse or symmetric relations.
 
 Labels, examples, translations, counterexamples, and search terms live outside
-commitment hashes. Filenames, source folders, archive identities, and vendors are
-provenance only and do not enter semantic interpretation or review. A task binds
+commitment hashes. Source folders, archive identities, and vendors are provenance
+only. Original basenames may enter interpretation only through separately hashed
+weak-hint artifacts; they cannot enter authority, grouping, or splitting. A task binds
 the smallest closure of commitment and facet hashes it consumes. Adding an
 unrelated sibling therefore does not invalidate existing catalog entries or
 builds.
@@ -91,24 +92,27 @@ canonical source identity
   -> measured asset + orthogonal 12-view render channels
   -> basename-only weak hints for semantic hypotheses
   -> source-neutral physical leakage graph and whole-group split
-  -> independent semantic hypothesis receipts
-  -> exact-signature panel consensus
-  -> visual-embedding complete-link cohorts
-  -> medoid, outlier, boundary, and deterministic audit samples
-  -> explicit finite-cohort decision
+  -> bounded, leakage-group-disjoint qualification pilot
+  -> visual-only, name-only, and combined hypothesis receipts
+  -> facet and dependency-group calibration against human references
+  -> hierarchy-aware prediction sets, abstention, and novelty detection
+  -> explicit pairwise substitution compatibility and whole-set proof
+  -> non-statistical discovery review + independent random acceptance audit
+  -> qualification receipt
   -> admitted assertions, entries, and dispositions
   -> tracked CatalogAuthorityCommit
 ```
 
-This is the executable baseline, not a claim that unattended corpus admission is
-qualified. The panel requires distinct adapter/model implementation hashes and
-ignores confidence when voting, but it does not yet establish statistical error
-independence or robustness to a genuinely unseen acquisition. A source without
-semantic consensus or an exact visual embedding remains an exception; it is never
-forced into a nearby cohort. Cohort materialization automates only genuine
-whole/aggregate substitution sets with measured ground, wall, or ceiling support.
-Assemblies, attachments, routes, socket-hosted assets, and environment realizers
-still require their typed authoring contracts.
+The qualification machinery is implemented, but running strong encoders does not
+qualify it. The current pilot uses pinned DINOv3 ViT-L normalized-depth features,
+SigLIP2 So400M/384 RGB-text alignment, and a separately identified basename model.
+One Modal GPU executes the two visual models sequentially; Modal is an execution
+adapter and never appears in semantic or catalog authority. Missing human
+reference judgments, insufficient Wilson precision bounds, novelty, dependency
+failure, unresolved pair evidence, or missing acceptance-audit receipts leave the
+result `incomplete`. Only genuine whole/aggregate substitution sets can be
+automatically proposed. Assemblies, attachments, routes, socket-hosted assets,
+and environment realizers still require their typed authoring contracts.
 
 `registry/catalog.json` is the single replaceable transaction root, not a journal
 or compatibility stream. It embeds all compiler authority and the sealed runtime
@@ -119,10 +123,10 @@ live tree after atomic root publication; Git provides history. A stale root fail
 `catalog validate --require-commit true`; `world compile` accepts the committed
 root and its retained measurements rather than unrelated local state.
 
-The stronger admission policy is intentionally not described here as current
-behavior. Its evidence basis is recorded in the
-[catalog-admission research](research/catalog-admission-state-of-the-art.md), and
-the unimplemented cutover is ordered in the [roadmap](ROADMAP.md#catalog-admission-cutover).
+The statistical and evidence rationale is recorded in the
+[catalog-admission research](research/catalog-admission-state-of-the-art.md); the
+remaining human calibration and qualification work is ordered in the
+[roadmap](ROADMAP.md#catalog-admission-qualification).
 
 ## Storage and recovery
 

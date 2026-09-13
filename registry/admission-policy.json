@@ -1,22 +1,81 @@
 {
   "kind": "CatalogAdmissionPolicy",
-  "policyId": "sampled_panel_admission",
-  "minimumIndependentHypotheses": 2,
-  "consensus": {
-    "numerator": 2,
-    "denominator": 3
+  "policyId": "catalog_qualification",
+  "pilot": {
+    "groupsPerRole": 64,
+    "selectionSeedHash": "0dc9eb6317083df9ab92352cb4c2563f91b01d56d6b5a447e43689e056dafeb4",
+    "requireStatic": true,
+    "requireSinglePart": true,
+    "requireSingleMaterial": true,
+    "requireBottomContact": true
   },
-  "minimumVisualSimilarity": {
-    "numerator": 9,
-    "denominator": 10
+  "prediction": {
+    "requiredAssertionKinds": [
+      "affordance",
+      "denotation",
+      "realization_form",
+      "state",
+      "surface_treatment"
+    ],
+    "minimumDependencyGroups": 2,
+    "minimumCalibrationSamples": 50,
+    "calibrationConfidenceMillionths": 950000,
+    "minimumPrecisionLowerBoundMillionths": 950000,
+    "maximumPredictionSetSize": 4,
+    "noveltyThresholdMillionths": 700000
   },
-  "reviewSampling": {
-    "minimumPerCohort": 3,
-    "deterministicAuditPermille": 20,
-    "maximumAuditPerCohort": 8
+  "substitution": {
+    "requiredFeatureChannels": [
+      "appearance",
+      "shape"
+    ],
+    "minimumSimilarityMillionthsByChannel": {
+      "appearance": 880000,
+      "semantics": 950000,
+      "shape": 900000
+    },
+    "maximumAxisRatioMillionths": 2500000
   },
+  "riskTargets": [
+    {
+      "riskId": "appearance_identity",
+      "stratumId": "material_textured",
+      "defectDomain": "appearance",
+      "subjectKind": "asset",
+      "maximumDefectRateMillionths": 50000,
+      "confidenceMillionths": 950000,
+      "acceptanceNumber": 0
+    },
+    {
+      "riskId": "realization_identity",
+      "stratumId": "whole_or_aggregate",
+      "defectDomain": "realization",
+      "subjectKind": "asset",
+      "maximumDefectRateMillionths": 50000,
+      "confidenceMillionths": 950000,
+      "acceptanceNumber": 0
+    },
+    {
+      "riskId": "semantic_identity",
+      "stratumId": "semantic_boundary",
+      "defectDomain": "semantics",
+      "subjectKind": "asset",
+      "maximumDefectRateMillionths": 50000,
+      "confidenceMillionths": 950000,
+      "acceptanceNumber": 0
+    },
+    {
+      "riskId": "substitution_false_merge",
+      "stratumId": "substitution_boundary",
+      "defectDomain": "substitution",
+      "subjectKind": "pair",
+      "maximumDefectRateMillionths": 10000,
+      "confidenceMillionths": 950000,
+      "acceptanceNumber": 0
+    }
+  ],
   "automaticallyAdmissibleEntryKinds": [
     "substitution_set"
   ],
-  "hash": "2214f9b838775539250bcc172831749499aa5a7aabe5bd6a804a7b4454c8d284"
+  "hash": "6602f549f06690c165f74598249da70f6fe95625366de8e46c3d3e68caed5eaf"
 }

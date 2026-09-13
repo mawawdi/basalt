@@ -3,7 +3,7 @@
 > **Status:** Non-authoritative research decision, recorded 2026-09-13. The
 > implemented baseline is described in [Architecture](../ARCHITECTURE.md), accepted
 > admission policy in [Visuals](../VISUALS.md), and unfinished work in the
-> [Roadmap](../ROADMAP.md#catalog-admission-cutover). Basalt currently keeps bulk
+> [Roadmap](../ROADMAP.md#catalog-admission-qualification). Basalt currently keeps bulk
 > content local. Remote CAS replication is explicitly deferred and is not a claim
 > about present behavior or a gate for the local admission pilot.
 
