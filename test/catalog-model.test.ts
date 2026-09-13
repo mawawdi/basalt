@@ -35,6 +35,25 @@ test("catalog sealing preserves genuine substitution and exact evidence", async 
   );
 });
 
+test("catalog measurement cannot disguise deformable rest-pose evidence as static geometry", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await catalogFixture(module);
+  const { kind: _kind, assetId: _assetId, hash: _hash, ...material } = fixture.asset;
+  assert.throws(
+    () =>
+      sealCatalogAssetArtifact({
+        ...material,
+        deformation: {
+          mode: "static",
+          measuredPose: "rest_pose",
+          animationCount: 0,
+          skinCount: 1,
+        },
+      }),
+    /Static geometry cannot carry animation, skin, or rest-pose evidence/u,
+  );
+});
+
 test("resolver filters substitution members before deterministic weighted selection", async () => {
   const module = await loadSemanticRegistry();
   const fixture = await catalogFixture(module);
@@ -50,7 +69,11 @@ test("resolver filters substitution members before deterministic weighted select
     source: {
       ...originalSource,
       contentHash: contentHash("catalog-fixture-oversized-source"),
-      commercialUsePermitted: false,
+      rights: {
+        ...originalSource.rights,
+        commercialUsePermitted: false,
+        evidenceHash: contentHash("catalog-fixture-oversized-rights"),
+      },
       sourceArtifact: {
         artifactHash: contentHash("catalog-fixture-oversized-bytes"),
         bytes: 8192,

@@ -876,6 +876,7 @@ function validateReceiptBinding(
     receipt.sourceContentHash !== request.sourceContentHash ||
     receipt.measurementHash !== request.measurementHash ||
     receipt.renderEvidenceHash !== request.renderEvidenceHash ||
+    receipt.sourceNameHintHash !== request.sourceNameHintHash ||
     receipt.semanticModuleHash !== request.semanticModuleHash ||
     receipt.semanticLexiconHash !== request.semanticLexiconHash
   )

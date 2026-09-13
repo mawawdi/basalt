@@ -19,15 +19,6 @@ const canonical = <T>(values: readonly T[], key: (value: T) => string): T[] => {
   return result;
 };
 
-const REVIEW_HINTS_SCHEMA = z
-  .object({
-    relativePath: z.string().trim().min(1).max(4096).optional(),
-    filenameStem: z.string().trim().min(1).max(256).optional(),
-    vendorDirectory: z.string().trim().min(1).max(4096).optional(),
-    authority: z.literal("review_hint_only"),
-  })
-  .strict();
-
 const AUTHORING_STATUS_FIELDS = {
   status: COMPILATION_STATUS_SCHEMA,
   diagnostics: z.array(z.string().trim().min(1).max(1024)).max(100_000),
@@ -56,6 +47,8 @@ const CATALOG_RENDER_VIEW_SCHEMA = z
     rgbHash: HASH_SCHEMA,
     silhouetteHash: HASH_SCHEMA,
     normalizedDepthHash: HASH_SCHEMA,
+    surfaceNormalHash: HASH_SCHEMA,
+    unlitBaseColorHash: HASH_SCHEMA,
   })
   .strict();
 
@@ -67,8 +60,8 @@ export const CATALOG_RENDER_EVIDENCE_SCHEMA = z
     cameraRigHash: HASH_SCHEMA,
     lightingHash: HASH_SCHEMA,
     materialModeHash: HASH_SCHEMA,
+    channelEncodingHash: HASH_SCHEMA,
     views: z.array(CATALOG_RENDER_VIEW_SCHEMA).length(12),
-    contactSheetHash: HASH_SCHEMA,
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -94,8 +87,6 @@ export type CatalogRenderEvidence = z.output<typeof CATALOG_RENDER_EVIDENCE_SCHE
 const CATALOG_VISUAL_REVIEW_ITEM_SCHEMA = z
   .object({
     sourceContentHash: HASH_SCHEMA,
-    packageId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u),
-    reviewHints: REVIEW_HINTS_SCHEMA,
     contactSheetRelativePath: z.string().trim().min(1).max(4096),
     viewArtifacts: z
       .array(
@@ -105,6 +96,8 @@ const CATALOG_VISUAL_REVIEW_ITEM_SCHEMA = z
             rgbRelativePath: z.string().trim().min(1).max(4096),
             silhouetteRelativePath: z.string().trim().min(1).max(4096),
             normalizedDepthRelativePath: z.string().trim().min(1).max(4096),
+            surfaceNormalRelativePath: z.string().trim().min(1).max(4096),
+            unlitBaseColorRelativePath: z.string().trim().min(1).max(4096),
           })
           .strict(),
       )
@@ -122,6 +115,7 @@ export const CATALOG_VISUAL_REVIEW_INDEX_SCHEMA = z
     cameraRigHash: HASH_SCHEMA,
     lightingHash: HASH_SCHEMA,
     materialModeHash: HASH_SCHEMA,
+    channelEncodingHash: HASH_SCHEMA,
     items: z.array(CATALOG_VISUAL_REVIEW_ITEM_SCHEMA).max(100_000),
     diagnostics: z.array(z.string().trim().min(1).max(1024)).max(100_000),
     hash: HASH_SCHEMA,
@@ -148,7 +142,8 @@ export const CATALOG_VISUAL_REVIEW_INDEX_SCHEMA = z
         item.evidence.rendererImplementationHash !== value.rendererImplementationHash ||
         item.evidence.cameraRigHash !== value.cameraRigHash ||
         item.evidence.lightingHash !== value.lightingHash ||
-        item.evidence.materialModeHash !== value.materialModeHash
+        item.evidence.materialModeHash !== value.materialModeHash ||
+        item.evidence.channelEncodingHash !== value.channelEncodingHash
       )
         context.addIssue({
           code: "custom",
@@ -165,6 +160,7 @@ export const ASSET_SEMANTIC_HYPOTHESIS_REQUEST_SCHEMA = z
     sourceContentHash: HASH_SCHEMA,
     measurementHash: HASH_SCHEMA,
     renderEvidenceHash: HASH_SCHEMA,
+    sourceNameHintHash: HASH_SCHEMA,
     semanticModuleHash: HASH_SCHEMA,
     semanticLexiconHash: HASH_SCHEMA,
     requestedConceptIds: z.array(CONCEPT_ID_SCHEMA).max(512),
@@ -183,6 +179,7 @@ export const ASSET_SEMANTIC_HYPOTHESIS_RECEIPT_SCHEMA = z
     sourceContentHash: HASH_SCHEMA,
     measurementHash: HASH_SCHEMA,
     renderEvidenceHash: HASH_SCHEMA,
+    sourceNameHintHash: HASH_SCHEMA,
     semanticModuleHash: HASH_SCHEMA,
     semanticLexiconHash: HASH_SCHEMA,
     adapterHash: HASH_SCHEMA,
@@ -219,6 +216,7 @@ export const CATALOG_HYPOTHESIS_REQUEST_SET_SCHEMA = z
     ...AUTHORING_STATUS_FIELDS,
     measurementSetHash: HASH_SCHEMA,
     visualReviewIndexHash: HASH_SCHEMA,
+    sourceNameHintSetHash: HASH_SCHEMA,
     semanticModuleHash: HASH_SCHEMA,
     semanticLexiconHash: HASH_SCHEMA,
     requests: z.array(ASSET_SEMANTIC_HYPOTHESIS_REQUEST_SCHEMA).max(100_000),
@@ -233,6 +231,16 @@ export const CATALOG_HYPOTHESIS_REQUEST_SET_SCHEMA = z
       "hypothesis requests",
       context,
     );
+    for (const [index, request] of value.requests.entries())
+      if (
+        request.semanticModuleHash !== value.semanticModuleHash ||
+        request.semanticLexiconHash !== value.semanticLexiconHash
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["requests", index],
+          message: "Hypothesis request does not bind the request set's semantic inputs",
+        });
   });
 export type CatalogHypothesisRequestSet = z.output<typeof CATALOG_HYPOTHESIS_REQUEST_SET_SCHEMA>;
 
@@ -356,3 +364,9 @@ function canonicalIssue<T>(
 export * from "./triage.js";
 export * from "./admission.js";
 export * from "./commit.js";
+export * from "./evidence.js";
+export * from "./rubric.js";
+export * from "./leakage.js";
+export * from "./calibration.js";
+export * from "./limits.js";
+export * from "./source-name-hints.js";

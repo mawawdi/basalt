@@ -511,9 +511,9 @@ export function sealCatalogSnapshot(input: SealCatalogSnapshotInput): CatalogSna
         triangleCount: asset.parts.reduce((sum, part) => sum + part.triangleCount, 0),
         sourceBytes: asset.source.sourceArtifact?.bytes ?? 0,
         rights: {
-          commercialUsePermitted: asset.source.commercialUsePermitted,
-          redistributionPermitted: asset.source.redistributionPermitted,
-          licenseId: asset.source.licenseId,
+          commercialUsePermitted: asset.source.rights.commercialUsePermitted,
+          redistributionPermitted: asset.source.rights.redistributionPermitted,
+          licenseId: asset.source.rights.licenseId,
         },
       };
     });
@@ -582,13 +582,13 @@ export function sealCatalogSnapshot(input: SealCatalogSnapshotInput): CatalogSna
             ...(envelope ? { metricEnvelope: envelope } : {}),
             rights: {
               commercialUsePermitted: uniqueAssets.every(
-                (entry) => entry.source.commercialUsePermitted,
+                (entry) => entry.source.rights.commercialUsePermitted,
               ),
               redistributionPermitted: uniqueAssets.every(
-                (entry) => entry.source.redistributionPermitted,
+                (entry) => entry.source.rights.redistributionPermitted,
               ),
               licenseIds: canonicalUniqueStrings(
-                [...new Set(uniqueAssets.map((entry) => entry.source.licenseId))],
+                [...new Set(uniqueAssets.map((entry) => entry.source.rights.licenseId))],
                 `${handle} licenses`,
               ),
             },

@@ -24,6 +24,7 @@ import {
   sealCatalogAssetArtifact,
   sealCatalogMeasurementSet,
   sealCatalogSnapshot,
+  sourceAssetRelativePath,
 } from "@basalt/catalog-model";
 import { contentHash, stableJson } from "@basalt/contracts";
 import { sealSemanticAssertionBundle } from "@basalt/semantic-kernel";
@@ -37,13 +38,15 @@ test("catalog render evidence requires the canonical multiview rig and all chann
     cameraRigHash: contentHash("camera"),
     lightingHash: contentHash("lighting"),
     materialModeHash: contentHash("materials"),
+    channelEncodingHash: contentHash("channel-encoding"),
     views: CATALOG_REVIEW_VIEWPOINTS.map((view) => ({
       ...view,
       rgbHash: contentHash(`${view.viewId}:rgb`),
       silhouetteHash: contentHash(`${view.viewId}:silhouette`),
       normalizedDepthHash: contentHash(`${view.viewId}:depth`),
+      surfaceNormalHash: contentHash(`${view.viewId}:normal`),
+      unlitBaseColorHash: contentHash(`${view.viewId}:base-color`),
     })),
-    contactSheetHash: contentHash("sheet"),
   });
   assert.equal(evidence.views.length, 12);
   assert.equal(CATALOG_RENDER_EVIDENCE_SCHEMA.parse(evidence).hash, evidence.hash);
@@ -62,6 +65,7 @@ test("vision receipts are deterministic provenance with hypothesis-only authorit
     sourceContentHash: contentHash("hypothesis-source"),
     measurementHash: contentHash("hypothesis-measurement"),
     renderEvidenceHash: contentHash("hypothesis-render"),
+    sourceNameHintHash: contentHash("hypothesis-source-name-hint"),
     semanticModuleHash: contentHash("hypothesis-module"),
     semanticLexiconHash: contentHash("hypothesis-lexicon"),
     requestedConceptIds: ["bsc_000003"],
@@ -77,6 +81,7 @@ test("vision receipts are deterministic provenance with hypothesis-only authorit
     sourceContentHash: request.sourceContentHash,
     measurementHash: request.measurementHash,
     renderEvidenceHash: request.renderEvidenceHash,
+    sourceNameHintHash: request.sourceNameHintHash,
     semanticModuleHash: request.semanticModuleHash,
     semanticLexiconHash: request.semanticLexiconHash,
     adapterHash: contentHash("vision-adapter"),
@@ -120,6 +125,7 @@ test("independent hypotheses form a sampled cohort without making confidence aut
     sourceContentHash: fixture.asset.source.contentHash,
     measurementHash: fixture.asset.hash,
     renderEvidenceHash: contentHash("panel-render"),
+    sourceNameHintHash: contentHash("panel-source-name-hint"),
     semanticModuleHash: module.snapshot.hash,
     semanticLexiconHash: contentHash("panel-lexicon"),
     requestedConceptIds: [fixture.declaration.semantic.denotation.conceptId],
@@ -128,6 +134,7 @@ test("independent hypotheses form a sampled cohort without making confidence aut
     status: "incomplete",
     measurementSetHash: contentHash("panel-measurements"),
     visualReviewIndexHash: contentHash("panel-review"),
+    sourceNameHintSetHash: contentHash("panel-source-name-hint-set"),
     semanticModuleHash: request.semanticModuleHash,
     semanticLexiconHash: request.semanticLexiconHash,
     requests: [request],
@@ -139,6 +146,7 @@ test("independent hypotheses form a sampled cohort without making confidence aut
       sourceContentHash: request.sourceContentHash,
       measurementHash: request.measurementHash,
       renderEvidenceHash: request.renderEvidenceHash,
+      sourceNameHintHash: request.sourceNameHintHash,
       semanticModuleHash: request.semanticModuleHash,
       semanticLexiconHash: request.semanticLexiconHash,
       adapterHash: contentHash(`adapter:${model}`),
@@ -179,6 +187,34 @@ test("independent hypotheses form a sampled cohort without making confidence aut
   });
   assert.equal(panel.items[0]?.outcome, "consensus");
   assert.equal("confidence" in panel.items[0]!.consensusSignature!, false);
+
+  const matchingReceipt = receipt("first", 0.99);
+  const {
+    kind: _receiptKind,
+    compilerAuthority: _receiptAuthority,
+    hash: _receiptHash,
+    ...receiptMaterial
+  } = matchingReceipt;
+  const mismatchedNameReceipt = sealAssetSemanticHypothesisReceipt({
+    ...receiptMaterial,
+    sourceNameHintHash: contentHash("another-source-name-hint"),
+  });
+  const mismatchedReceipts = sealCatalogHypothesisReceiptSet({
+    status: "eligible",
+    requestSetHash: requests.hash,
+    receipts: [mismatchedNameReceipt, receipt("second", 0.51)],
+    missingRequestHashes: [],
+    diagnostics: [],
+  });
+  assert.throws(
+    () =>
+      buildCatalogHypothesisPanel({
+        policy: DEFAULT_CATALOG_ADMISSION_POLICY,
+        requests,
+        receipts: mismatchedReceipts,
+      }),
+    /exact request/iu,
+  );
 
   const embedding = sealCatalogVisualEmbeddingReceipt({
     sourceContentHash: fixture.asset.source.contentHash,
@@ -284,6 +320,7 @@ test("a failed independent audit blocks cohort materialization", async () => {
     sourceContentHash: fixture.asset.source.contentHash,
     measurementHash: fixture.asset.hash,
     renderEvidenceHash: contentHash("audit-render"),
+    sourceNameHintHash: contentHash("audit-source-name-hint"),
     semanticModuleHash: module.snapshot.hash,
     semanticLexiconHash: contentHash("audit-lexicon"),
     requestedConceptIds: [fixture.declaration.semantic.denotation.conceptId],
@@ -292,6 +329,7 @@ test("a failed independent audit blocks cohort materialization", async () => {
     status: "eligible",
     measurementSetHash: contentHash("audit-measurements"),
     visualReviewIndexHash: contentHash("audit-review"),
+    sourceNameHintSetHash: contentHash("audit-source-name-hint-set"),
     semanticModuleHash: request.semanticModuleHash,
     semanticLexiconHash: request.semanticLexiconHash,
     requests: [request],
@@ -303,6 +341,7 @@ test("a failed independent audit blocks cohort materialization", async () => {
       sourceContentHash: request.sourceContentHash,
       measurementHash: request.measurementHash,
       renderEvidenceHash: request.renderEvidenceHash,
+      sourceNameHintHash: request.sourceNameHintHash,
       semanticModuleHash: request.semanticModuleHash,
       semanticLexiconHash: request.semanticLexiconHash,
       adapterHash: contentHash(`audit-adapter:${suffix}`),
@@ -463,6 +502,7 @@ test("visual evidence splits semantic peers deterministically and independently 
       sourceContentHash: asset.source.contentHash,
       measurementHash: asset.hash,
       renderEvidenceHash: contentHash(`visual-cluster-render:${suffix}`),
+      sourceNameHintHash: contentHash(`visual-cluster-source-name-hint:${suffix}`),
       semanticModuleHash: module.snapshot.hash,
       semanticLexiconHash: lexiconHash,
       requestedConceptIds: [fixture.declaration.semantic.denotation.conceptId],
@@ -475,6 +515,7 @@ test("visual evidence splits semantic peers deterministically and independently 
       status: "eligible",
       measurementSetHash: measurementSet.hash,
       visualReviewIndexHash,
+      sourceNameHintSetHash: contentHash("visual-cluster-source-name-hint-set"),
       semanticModuleHash: module.snapshot.hash,
       semanticLexiconHash: lexiconHash,
       requests: reverse ? [secondRequest, firstRequest] : [firstRequest, secondRequest],
@@ -490,6 +531,7 @@ test("visual evidence splits semantic peers deterministically and independently 
         sourceContentHash: request.sourceContentHash,
         measurementHash: request.measurementHash,
         renderEvidenceHash: request.renderEvidenceHash,
+        sourceNameHintHash: request.sourceNameHintHash,
         semanticModuleHash: request.semanticModuleHash,
         semanticLexiconHash: request.semanticLexiconHash,
         adapterHash: contentHash(`visual-cluster-adapter:${implementation}`),
@@ -576,26 +618,23 @@ test("visual evidence splits semantic peers deterministically and independently 
 test("the tracked catalog commit is deterministic and self-contained for authority", async () => {
   const module = await loadSemanticRegistry();
   const fixture = await catalogFixture(module);
+  const provenanceHash = contentHash("fixture-source-provenance");
   const sourceManifest = {
     kind: "TrustedSourceManifest" as const,
     rightsNotice: "registry/rights-note.md",
-    packages: [
+    assetRoot: "registry/source-assets/sha256" as const,
+    assets: [
       {
-        packageId: "fixture_pack",
-        archivePaths: [],
-        assetRoots: ["registry/source-assets/fixture_pack"],
-        sourceKind: "creator_owned" as const,
-        licenseId: "fixture-license",
-        commercialUsePermitted: true,
-        redistributionPermitted: true,
-        attribution: "Synthetic test fixture",
-        files: [
-          {
-            relativePath: "registry/source-assets/fixture_pack/tree.glb",
-            sha256: fixture.asset.source.contentHash,
-            metersPerSourceUnit: 1,
-          },
-        ],
+        contentHash: fixture.asset.source.contentHash,
+        relativePath: sourceAssetRelativePath(fixture.asset.source.contentHash),
+        metersPerSourceUnit: 1,
+        rights: {
+          licenseId: "fixture-license",
+          commercialUsePermitted: true,
+          redistributionPermitted: true,
+          attribution: "Synthetic test fixture",
+          evidenceHash: provenanceHash,
+        },
       },
     ],
   };
@@ -646,5 +685,23 @@ test("the tracked catalog commit is deterministic and self-contained for authori
   assert.throws(
     () => sealCatalogAuthorityCommit({ ...input, retainedEvidence: [] }),
     /measurement set must be retained/iu,
+  );
+  const requestHash = contentHash("retained-request-set");
+  assert.throws(
+    () =>
+      sealCatalogAuthorityCommit({
+        ...input,
+        retainedEvidence: [
+          retainedMeasurements,
+          {
+            kind: "CatalogHypothesisRequestSet",
+            relativePath: `registry/evidence/${requestHash}.json`,
+            artifactHash: requestHash,
+            bytesHash: contentHash("retained-request-bytes"),
+            bytes: 1,
+          },
+        ],
+      }),
+    /CatalogSourceNameHintSet/u,
   );
 });

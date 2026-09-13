@@ -11,6 +11,7 @@ import {
 } from "@basalt/contracts";
 import {
   CATALOG_AABB_FIXED_SCHEMA,
+  CATALOG_RIGHTS_SCHEMA,
   CATALOG_VECTOR3_FIXED_SCHEMA,
   NONNEGATIVE_Q32_SCHEMA,
   POSITIVE_Q32_SCHEMA,
@@ -43,12 +44,17 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
     source: z
       .object({
         contentHash: HASH_SCHEMA,
-        packageId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u),
-        licenseId: z.string().trim().min(1).max(160),
-        commercialUsePermitted: z.boolean(),
-        redistributionPermitted: z.boolean(),
-        attribution: z.string().max(2048),
+        rights: CATALOG_RIGHTS_SCHEMA,
         sourceArtifact: sourceArtifact.optional(),
+      })
+      .strict(),
+    geometryHash: HASH_SCHEMA,
+    deformation: z
+      .object({
+        mode: z.enum(["static", "rigid_animation", "skinned"]),
+        measuredPose: z.enum(["static", "rest_pose"]),
+        animationCount: z.number().int().nonnegative().max(1_000_000),
+        skinCount: z.number().int().nonnegative().max(1_000_000),
       })
       .strict(),
     coordinateFrame: z
@@ -66,7 +72,7 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
         z
           .object({
             partId: z.string().min(1).max(128),
-            contentHash: HASH_SCHEMA,
+            geometryHash: HASH_SCHEMA,
             role: z.enum(["render_static", "render_interactive", "collision_proxy"]),
             transform,
             bounds: CATALOG_AABB_FIXED_SCHEMA,
@@ -81,6 +87,7 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
         z
           .object({
             appearanceHash: HASH_SCHEMA,
+            payloadHashes: z.array(HASH_SCHEMA).max(16),
             pbrChannels: z
               .array(
                 z.enum([
@@ -153,6 +160,47 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
   })
   .strict()
   .superRefine((value, context) => {
+    if (
+      value.deformation.mode === "static" &&
+      (value.deformation.measuredPose !== "static" ||
+        value.deformation.animationCount !== 0 ||
+        value.deformation.skinCount !== 0)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["deformation"],
+        message: "Static geometry cannot carry animation, skin, or rest-pose evidence",
+      });
+    if (
+      value.deformation.mode === "rigid_animation" &&
+      (value.deformation.measuredPose !== "rest_pose" ||
+        value.deformation.animationCount === 0 ||
+        value.deformation.skinCount !== 0)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["deformation"],
+        message: "Rigid animation requires animations, no skins, and rest-pose measurement",
+      });
+    if (
+      value.deformation.mode === "skinned" &&
+      (value.deformation.measuredPose !== "rest_pose" || value.deformation.skinCount === 0)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["deformation"],
+        message: "Skinned geometry requires skin evidence and rest-pose measurement",
+      });
+    for (const [index, material] of value.materials.entries())
+      if (
+        stableJson(canonicalUniqueStrings(material.payloadHashes, "material payload hashes")) !==
+        stableJson(material.payloadHashes)
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["materials", index, "payloadHashes"],
+          message: "Material payload hashes must be canonical",
+        });
     for (const [name, values] of [
       ["collision.companionAssetHashes", value.collision.companionAssetHashes],
       ["measurementEvidenceHashes", value.measurementEvidenceHashes],

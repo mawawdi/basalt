@@ -1,0 +1,392 @@
+{
+  "kind": "CatalogAdmissionRubric",
+  "rubricId": "catalog_gold_standard",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "evidenceChannels": [
+    "appearance",
+    "geometry",
+    "installation",
+    "integrity",
+    "material",
+    "semantics",
+    "shape"
+  ],
+  "defects": [
+    {
+      "defectId": "appearance_identity_mismatch",
+      "domain": "appearance",
+      "subjectKind": "asset",
+      "gateStatus": "incomplete",
+      "definition": "Canonical appearance evidence does not support the intended visual identity."
+    },
+    {
+      "defectId": "external_resource_missing",
+      "domain": "integrity",
+      "subjectKind": "asset",
+      "gateStatus": "incomplete",
+      "definition": "A referenced external texture, buffer, or other required payload is absent."
+    },
+    {
+      "defectId": "geometry_unusable",
+      "domain": "geometry",
+      "subjectKind": "asset",
+      "gateStatus": "rejected",
+      "definition": "Geometry is degenerate, malformed, empty, or outside bounded processing policy."
+    },
+    {
+      "defectId": "installation_contract_mismatch",
+      "domain": "installation",
+      "subjectKind": "asset",
+      "gateStatus": "rejected",
+      "definition": "Measured support, contact, collision, or interface evidence cannot satisfy the asserted installation contract."
+    },
+    {
+      "defectId": "material_evidence_missing",
+      "domain": "material",
+      "subjectKind": "asset",
+      "gateStatus": "incomplete",
+      "definition": "Material inventory or unlit base-color evidence is insufficient to assess the asset."
+    },
+    {
+      "defectId": "metric_contract_mismatch",
+      "domain": "metric",
+      "subjectKind": "asset",
+      "gateStatus": "rejected",
+      "definition": "Measured dimensions or units conflict with the asserted physical contract."
+    },
+    {
+      "defectId": "realization_form_misclassification",
+      "domain": "realization",
+      "subjectKind": "asset",
+      "gateStatus": "rejected",
+      "definition": "The asserted whole, aggregate, component, attachment, surface, or environment form conflicts with evidence."
+    },
+    {
+      "defectId": "rights_insufficient",
+      "domain": "rights",
+      "subjectKind": "asset",
+      "gateStatus": "rejected",
+      "definition": "Bound rights evidence does not permit the intended catalog use."
+    },
+    {
+      "defectId": "semantic_misclassification",
+      "domain": "semantics",
+      "subjectKind": "asset",
+      "gateStatus": "rejected",
+      "definition": "The admitted denotation or semantic facets conflict with the reviewed evidence."
+    },
+    {
+      "defectId": "source_integrity_invalid",
+      "domain": "integrity",
+      "subjectKind": "asset",
+      "gateStatus": "rejected",
+      "definition": "The source payload fails format, hash, resource, or bounded-parse integrity."
+    },
+    {
+      "defectId": "style_incoherent",
+      "domain": "style",
+      "subjectKind": "asset",
+      "gateStatus": "incomplete",
+      "definition": "The asset cannot be shown coherent with the target style from isolated appearance and material evidence."
+    },
+    {
+      "defectId": "substitution_installation_mismatch",
+      "domain": "installation",
+      "subjectKind": "pair",
+      "gateStatus": "rejected",
+      "definition": "The two assets cannot satisfy the same support, contact, collision, and interface site."
+    },
+    {
+      "defectId": "substitution_semantic_mismatch",
+      "domain": "substitution",
+      "subjectKind": "pair",
+      "gateStatus": "rejected",
+      "definition": "The two assets do not independently satisfy the same exact semantic site."
+    },
+    {
+      "defectId": "substitution_shape_mismatch",
+      "domain": "substitution",
+      "subjectKind": "pair",
+      "gateStatus": "rejected",
+      "definition": "The two assets cannot replace each other within the declared geometric and metric envelope."
+    },
+    {
+      "defectId": "substitution_style_mismatch",
+      "domain": "style",
+      "subjectKind": "pair",
+      "gateStatus": "rejected",
+      "definition": "The two assets are not mutually coherent under the declared style contract."
+    }
+  ],
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "subjectKind": "asset",
+      "definition": "Determine whether canonical lit appearance supports the reviewed visual identity.",
+      "passCondition": "All canonical views expose a stable, intelligible appearance without lighting artifacts deciding identity.",
+      "failureDefectId": "appearance_identity_mismatch",
+      "requiredEvidenceChannels": [
+        "appearance"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "subjectKind": "asset",
+      "definition": "Verify that every payload required to render and measure the asset is present.",
+      "passCondition": "Every referenced buffer, image, and material payload resolves by exact content hash.",
+      "failureDefectId": "external_resource_missing",
+      "requiredEvidenceChannels": [
+        "integrity",
+        "material"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "geometry_health",
+      "subjectKind": "asset",
+      "definition": "Assess bounded geometry validity independently from texture and lighting.",
+      "passCondition": "Geometry is non-empty, non-degenerate, bounded, and suitable for deterministic measurement.",
+      "failureDefectId": "geometry_unusable",
+      "requiredEvidenceChannels": [
+        "geometry",
+        "shape"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "installation_contract",
+      "subjectKind": "asset",
+      "definition": "Review support, contact, collision, and interface evidence as one installation contract.",
+      "passCondition": "The asserted placement signature is directly supported by measured evidence without semantic inference from bounds.",
+      "failureDefectId": "installation_contract_mismatch",
+      "requiredEvidenceChannels": [
+        "geometry",
+        "installation"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "material_readability",
+      "subjectKind": "asset",
+      "definition": "Separate actual material content from renderer or lighting failures.",
+      "passCondition": "Material inventory and unlit base color make all appearance-driving channels inspectable.",
+      "failureDefectId": "material_evidence_missing",
+      "requiredEvidenceChannels": [
+        "appearance",
+        "material"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "metric_contract",
+      "subjectKind": "asset",
+      "definition": "Verify canonical meter scale and dimensional plausibility.",
+      "passCondition": "Units and measured extents agree with the asserted physical role and configured bounds.",
+      "failureDefectId": "metric_contract_mismatch",
+      "requiredEvidenceChannels": [
+        "geometry"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "pair_installation_equivalence",
+      "subjectKind": "pair",
+      "definition": "Compare whether both assets can occupy the same typed installation site.",
+      "passCondition": "Support, contact, interfaces, collision, and clearances are mutually compatible.",
+      "failureDefectId": "substitution_installation_mismatch",
+      "requiredEvidenceChannels": [
+        "geometry",
+        "installation"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "pair_semantic_site",
+      "subjectKind": "pair",
+      "definition": "Compare independent satisfaction of one exact semantic site.",
+      "passCondition": "Both assets satisfy the same denotation, states, affordances, treatments, realization form, and evidence floor.",
+      "failureDefectId": "substitution_semantic_mismatch",
+      "requiredEvidenceChannels": [
+        "semantics"
+      ],
+      "requiresAdmittedAssertions": true
+    },
+    {
+      "criterionId": "pair_shape_envelope",
+      "subjectKind": "pair",
+      "definition": "Compare shape and metric substitutability independently from material.",
+      "passCondition": "Both assets fit the site envelope and preserve its required occupied-space behavior.",
+      "failureDefectId": "substitution_shape_mismatch",
+      "requiredEvidenceChannels": [
+        "geometry",
+        "shape"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "pair_style_coherence",
+      "subjectKind": "pair",
+      "definition": "Compare mutual visual coherence under one style profile.",
+      "passCondition": "Either asset can replace the other without violating the site style contract.",
+      "failureDefectId": "substitution_style_mismatch",
+      "requiredEvidenceChannels": [
+        "appearance",
+        "material"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "realization_identity",
+      "subjectKind": "asset",
+      "definition": "Determine the asset realization form independently of its noun label.",
+      "passCondition": "Admitted realization form agrees with composition, connectivity, and multiview shape evidence.",
+      "failureDefectId": "realization_form_misclassification",
+      "requiredEvidenceChannels": [
+        "geometry",
+        "semantics",
+        "shape"
+      ],
+      "requiresAdmittedAssertions": true
+    },
+    {
+      "criterionId": "rights_contract",
+      "subjectKind": "asset",
+      "definition": "Verify the exact rights evidence selected for catalog use.",
+      "passCondition": "The bound rights record permits every required use and is tied to the exact source bytes.",
+      "failureDefectId": "rights_insufficient",
+      "requiredEvidenceChannels": [
+        "integrity"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "semantic_identity",
+      "subjectKind": "asset",
+      "definition": "Adjudicate denotation and orthogonal semantic facets against the sealed kernel.",
+      "passCondition": "Every admitted assertion is supported, exact, internally consistent, and no narrower unsupported claim is made.",
+      "failureDefectId": "semantic_misclassification",
+      "requiredEvidenceChannels": [
+        "semantics"
+      ],
+      "requiresAdmittedAssertions": true
+    },
+    {
+      "criterionId": "source_integrity",
+      "subjectKind": "asset",
+      "definition": "Verify source bytes and bounded format integrity before interpretation.",
+      "passCondition": "The exact bytes parse within policy with no malformed, unsupported, or ambiguous resource state.",
+      "failureDefectId": "source_integrity_invalid",
+      "requiredEvidenceChannels": [
+        "integrity"
+      ],
+      "requiresAdmittedAssertions": false
+    },
+    {
+      "criterionId": "style_contract",
+      "subjectKind": "asset",
+      "definition": "Assess style without using denotation, filename, source folder, or vendor origin.",
+      "passCondition": "Appearance and material evidence satisfy the declared style profile across canonical views.",
+      "failureDefectId": "style_incoherent",
+      "requiredEvidenceChannels": [
+        "appearance",
+        "material"
+      ],
+      "requiresAdmittedAssertions": false
+    }
+  ],
+  "strata": [
+    {
+      "stratumId": "artifact_clean",
+      "dimension": "evidence_quality",
+      "definition": "Sources whose deterministic integrity and render evidence is complete.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 0
+    },
+    {
+      "stratumId": "artifact_failure",
+      "dimension": "evidence_quality",
+      "definition": "Malformed, unsupported, missing-resource, or visually failed sources.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 0
+    },
+    {
+      "stratumId": "component_attachment_route",
+      "dimension": "realization",
+      "definition": "Components, attachments, surfaces, route pieces, and environment realizers.",
+      "minimumAssetJudgments": 32,
+      "minimumPairJudgments": 24
+    },
+    {
+      "stratumId": "ground_supported",
+      "dimension": "installation",
+      "definition": "Whole or component assets supported primarily from below.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 12
+    },
+    {
+      "stratumId": "hosted_or_socketed",
+      "dimension": "installation",
+      "definition": "Wall, ceiling, surface, or socket-hosted assets.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 12
+    },
+    {
+      "stratumId": "material_sparse",
+      "dimension": "material",
+      "definition": "Sources with absent, flat, transparent, or otherwise sparse material evidence.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 12
+    },
+    {
+      "stratumId": "material_textured",
+      "dimension": "material",
+      "definition": "Sources with texture- or vertex-color-driven appearance.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 12
+    },
+    {
+      "stratumId": "metric_large",
+      "dimension": "metric_scale",
+      "definition": "Large structures, terrain pieces, and environment-scale assets.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 12
+    },
+    {
+      "stratumId": "metric_medium",
+      "dimension": "metric_scale",
+      "definition": "Human-scale props and structural components.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 12
+    },
+    {
+      "stratumId": "metric_small",
+      "dimension": "metric_scale",
+      "definition": "Small props, trim, and attachment-scale assets.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 12
+    },
+    {
+      "stratumId": "semantic_boundary",
+      "dimension": "semantic_boundary",
+      "definition": "Cases near a concept, realization, state, affordance, or treatment boundary.",
+      "minimumAssetJudgments": 24,
+      "minimumPairJudgments": 24
+    },
+    {
+      "stratumId": "substitution_boundary",
+      "dimension": "semantic_boundary",
+      "definition": "Hard positive and hard negative pairs near a substitution decision boundary.",
+      "minimumAssetJudgments": 0,
+      "minimumPairJudgments": 48
+    },
+    {
+      "stratumId": "whole_or_aggregate",
+      "dimension": "realization",
+      "definition": "Independent whole objects and intentional multi-object aggregates.",
+      "minimumAssetJudgments": 32,
+      "minimumPairJudgments": 24
+    }
+  ],
+  "hash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a"
+}

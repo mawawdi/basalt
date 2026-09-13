@@ -30,8 +30,10 @@ node bin/basalt.js semantics explain bsc_000003
 
 node bin/basalt.js catalog inventory
 node bin/basalt.js catalog providers
-node bin/basalt.js catalog measure --workers 8
-node bin/basalt.js catalog render
+node bin/basalt.js catalog measure --workers 4
+node bin/basalt.js catalog render --workers 4
+node bin/basalt.js catalog calibration prepare
+node bin/basalt.js catalog calibration
 node bin/basalt.js catalog hypothesize
 node bin/basalt.js catalog panel
 node bin/basalt.js catalog cluster
@@ -63,6 +65,20 @@ rendered images are content-identified but local-only. There is no remote CAS in
 the current baseline, so preserve those local payloads independently. The exact
 implemented storage and admission boundaries live in the
 [architecture](docs/ARCHITECTURE.md) and [visual evidence](docs/VISUALS.md) docs.
+
+Imported GLBs are deduplicated into one source-neutral pool at
+`registry/source-assets/sha256/`. Archive names, vendor folders, and original file
+paths are retained in `registry/source-provenance.json` for rights and
+traceability. `catalog hypothesize` derives basename-only `CatalogSourceNameHint`
+artifacts from every observed original GLB filename for a content hash. These are
+labeled weak supervision for hypothesis adapters only. Pack identity, archive
+names, and directories stay excluded, and no name hint can affect physical
+grouping, calibration assignment, admission authority, or catalog resolution.
+
+Local measurement and rendering share one enforced four-worker ceiling. Physical
+split manifests—including the source-neutral near-duplicate search, leakage graph,
+and whole-component assignments—are tracked under `registry/`; their PNG inputs
+remain local bulk evidence.
 
 ## Development
 

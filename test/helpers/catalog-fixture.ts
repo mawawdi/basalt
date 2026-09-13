@@ -32,16 +32,25 @@ export async function catalogFixture(module: SemanticModule): Promise<{
   const asset = sealCatalogAssetArtifact({
     source: {
       contentHash: contentHash("catalog-fixture-source"),
-      packageId: "fixture_pack",
-      licenseId: "fixture-license",
-      commercialUsePermitted: true,
-      redistributionPermitted: true,
-      attribution: "Synthetic test fixture",
+      rights: {
+        licenseId: "fixture-license",
+        commercialUsePermitted: true,
+        redistributionPermitted: true,
+        attribution: "Synthetic test fixture",
+        evidenceHash: contentHash("catalog-fixture-rights"),
+      },
       sourceArtifact: {
         artifactHash: contentHash("catalog-fixture-bytes"),
         bytes: 1024,
         mediaType: "model/gltf-binary",
       },
+    },
+    geometryHash: contentHash("catalog-fixture-geometry"),
+    deformation: {
+      mode: "static",
+      measuredPose: "static",
+      animationCount: 0,
+      skinCount: 0,
     },
     coordinateFrame: {
       handedness: "right_handed",
@@ -54,7 +63,7 @@ export async function catalogFixture(module: SemanticModule): Promise<{
     parts: [
       {
         partId: "trunk_and_canopy",
-        contentHash: contentHash("catalog-fixture-part"),
+        geometryHash: contentHash("catalog-fixture-part"),
         role: "render_static",
         transform: transform(),
         bounds: { min: vector(-0.5, 0, -0.5), max: vector(0.5, 2, 0.5) },
@@ -65,6 +74,7 @@ export async function catalogFixture(module: SemanticModule): Promise<{
     materials: [
       {
         appearanceHash: contentHash("catalog-fixture-material"),
+        payloadHashes: [],
         pbrChannels: ["base_color", "metallic_roughness"],
       },
     ],

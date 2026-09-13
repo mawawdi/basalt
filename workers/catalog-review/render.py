@@ -103,6 +103,33 @@ def configure_compositor(scene, temporary_directory, camera):
     depth.file_output_items.new("FLOAT", "Depth")
     tree.links.new(depth_map.outputs[0], depth.inputs["Depth"])
 
+    normal_channels = tree.nodes.new("CompositorNodeSeparateColor")
+    normal_channels.mode = "RGB"
+    tree.links.new(layers.outputs["Normal"], normal_channels.inputs["Image"])
+    encoded_channels = []
+    for channel in ("Red", "Green", "Blue"):
+        encode = tree.nodes.new("ShaderNodeMath")
+        encode.operation = "MULTIPLY_ADD"
+        encode.inputs[1].default_value = 0.5
+        encode.inputs[2].default_value = 0.5
+        tree.links.new(normal_channels.outputs[channel], encode.inputs[0])
+        encoded_channels.append(encode)
+    encoded_normal = tree.nodes.new("CompositorNodeCombineColor")
+    encoded_normal.mode = "RGB"
+    for channel, encode in zip(("Red", "Green", "Blue"), encoded_channels):
+        tree.links.new(encode.outputs[0], encoded_normal.inputs[channel])
+    normal = tree.nodes.new("CompositorNodeOutputFile")
+    normal.directory = str(temporary_directory)
+    normal.file_name = "normal"
+    normal.file_output_items.new("VECTOR", "Normal")
+    tree.links.new(encoded_normal.outputs["Image"], normal.inputs["Normal"])
+
+    base_color = tree.nodes.new("CompositorNodeOutputFile")
+    base_color.directory = str(temporary_directory)
+    base_color.file_name = "base-color"
+    base_color.file_output_items.new("RGBA", "BaseColor")
+    tree.links.new(layers.outputs["Diffuse Color"], base_color.inputs["BaseColor"])
+
 
 def convert_compositor_output(directory, stem, destination, pixel_type):
     candidates = sorted(directory.glob(f"{stem}.*"))
@@ -173,6 +200,18 @@ def render_view(scene, camera, center, extent, view, paths, quiet):
         Path(paths["normalizedDepthPath"]),
         oiio.UINT16,
     )
+    convert_compositor_output(
+        temporary_directory,
+        "normal",
+        Path(paths["surfaceNormalPath"]),
+        oiio.UINT8,
+    )
+    convert_compositor_output(
+        temporary_directory,
+        "base-color",
+        Path(paths["unlitBaseColorPath"]),
+        oiio.UINT8,
+    )
     has_foreground = validate_rgb_output(rgb_path)
     temporary_directory.rmdir()
     return has_foreground
@@ -222,6 +261,8 @@ def render_item(item):
     scene.render.image_settings.color_mode = "RGBA"
     scene.render.film_transparent = True
     scene.view_layers[0].use_pass_z = True
+    scene.view_layers[0].use_pass_normal = True
+    scene.view_layers[0].use_pass_diffuse_color = True
     scene.view_settings.look = "AgX - Medium High Contrast"
     scene.view_settings.exposure = 0.35
 

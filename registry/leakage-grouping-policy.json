@@ -1,0 +1,26 @@
+{
+  "kind": "CatalogLeakageGroupingPolicy",
+  "observedRelationKinds": [
+    "canonical_geometry_identity",
+    "exact_content_identity",
+    "geometry_containment",
+    "near_duplicate_shape",
+    "shared_material_payload"
+  ],
+  "groupingRelationKinds": [
+    "canonical_geometry_identity",
+    "exact_content_identity",
+    "geometry_containment",
+    "near_duplicate_shape"
+  ],
+  "contextRelationKinds": [
+    "shared_material_payload"
+  ],
+  "nearDuplicateSimilarity": {
+    "numerator": 97,
+    "denominator": 100
+  },
+  "transitiveClosureRequired": true,
+  "sourceMetadataPermitted": false,
+  "hash": "d95e755713c1f57cdca899b6e4902b9493764bb2d821bac77494596374d3ebe0"
+}

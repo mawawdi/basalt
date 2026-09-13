@@ -30,9 +30,10 @@ asset, never a standalone entry.
 
 Measurement is independent of semantic admission. Each source identity retains
 source and rights hashes, coordinate frame, units, transforms, bounds, parts,
-topology, material/PBR channels, contact/support facts, collision geometry, and
-measured interfaces. Measurement proves geometry; an author declares interface
-meaning.
+topology, deformation/rest-pose state, material/PBR channels, contact/support
+facts, collision geometry, and measured interfaces. Measurement proves geometry;
+an author declares interface meaning. Pose-dependent support and interfaces are
+refused rather than inferred from a skinned rest pose.
 
 Evidence remains separated by what it can prove:
 
@@ -47,9 +48,21 @@ Evidence remains separated by what it can prove:
 | Semantics    | Hypotheses grounded in exact evidence and the pinned semantic module and lexicon                          |
 
 Renderer, camera, lighting, material mode, source, and implementation hashes bind
-render receipts. Existing evidence is reusable only when every relevant input hash
-matches. Folder and filename hints may be displayed to a reviewer but cannot enter
-an admitted assertion, semantic-site signature, or runtime catalog hash.
+render receipts, together with an explicit channel-encoding hash. Existing evidence
+is reusable only when every relevant input hash matches. The canonical 12-view
+outputs bind lit RGBA, alpha silhouette, linear normalized depth, world-space
+encoded surface normals, and linear unlit base color. Contact sheets are derived
+review UI and changing their layout does not invalidate those views.
+Origin archives, vendor folders, and directory paths are absent from inference and
+review contracts. Original GLB basenames are the one deliberate exception:
+`catalog hypothesize` aggregates every name observed for the same content bytes,
+normalizes it with a hashed deterministic tokenizer, and binds the resulting
+`CatalogSourceNameHint` into each model request. The artifact is explicitly
+non-authoritative and pack-neutral. It may improve candidate generation for nouns,
+components, numbered alternatives, and `_Collision` companions, but it cannot
+decide semantics, placement, entry kind, or substitution membership. Conflicting
+names are retained as disagreement evidence; image and measurement evidence remain
+independent channels.
 
 ## Admission policy
 
@@ -63,11 +76,23 @@ world, so admission prefers abstention and smaller sets.
 Model and embedding adapters emit non-authoritative receipts with confidence,
 abstention, provenance, and resource use. Compiler authority requires an explicit
 curator assertion or a separately qualified policy receipt. Qualification must be
-based on pack-grouped calibration and holdouts, factorized facet predictions,
-explicit unknown/shift behavior, pairwise substitution evidence, a whole-set
-invariant check, active discovery review, and a distinct random acceptance audit
-whose risk is declared. Model self-confidence and raw majority vote cannot become
-authority.
+based on leakage-group-disjoint calibration and evaluation, factorized facet
+predictions, explicit unknown/shift behavior, pairwise substitution evidence, a
+whole-set invariant check, active discovery review, and a distinct random
+acceptance audit whose risk is declared. Exact and near-duplicate geometry and
+contained components must remain in one split. Shared material payloads are
+contextual stratification evidence rather than identity proof because one atlas
+can serve many unrelated objects. Source-pack membership is neither a feature nor
+a grouping rule. Model
+self-confidence and raw majority vote cannot become authority.
+
+The implemented leakage pre-pass uses canonical metric geometry for exact matches,
+records exact texture bytes as material context, and uses a source-neutral
+perceptual signature over silhouette, normalized depth, and surface-normal views
+for near duplicates.
+It compares every rendered source pair at the sealed threshold and binds the image
+decoder and worker bytes. This is a split-safety signal, not semantic evidence and
+not proof of substitutability.
 
 The current code has a conservative prototype: distinct implementation hashes vote
 on exact signatures, one quantized visual channel forms complete-link cohorts, and

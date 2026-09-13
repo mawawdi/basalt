@@ -29,6 +29,12 @@ Hypothesis bundles can contain confidence and abstention but cannot satisfy an
 authoritative requirement. Admitted bundles contain exact evidence and provenance
 hashes and forbid model confidence and source-path hints.
 
+Hypothesis requests may bind non-authoritative original-filename hints. Evaluation
+must report visual-only, name-only, and combined ablations on leakage-group-disjoint
+splits. A filename can improve a proposal but can never be counted as admitted
+semantic evidence; name/visual disagreement must remain observable and eligible
+for abstention or review.
+
 ## Automated suites
 
 - Semantic registry: 146 commitments, all facets, identity criteria, ancestry,
@@ -59,7 +65,9 @@ environment realization. Each must compile twice to identical hashes. Final play
 visual judgment, and readback are performed by the user in Roblox Studio.
 
 These suites prove contract behavior and deterministic execution. They do not yet
-prove semantic accuracy across unseen packs, substitution false-merge risk,
-perceptual quality, playability, or remote recoverability. The missing admission
-qualification is tracked in the
+prove semantic accuracy under a genuinely unseen source distribution,
+substitution false-merge risk, perceptual quality, playability, or remote
+recoverability. Current calibration and evaluation must keep all physically
+related identities in one leakage group; a future acquisition remains the final
+out-of-distribution durability test. The missing admission qualification is tracked in the
 [catalog admission cutover](ROADMAP.md#catalog-admission-cutover).

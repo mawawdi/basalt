@@ -59,10 +59,12 @@ facets. Runtime reasoning is intentionally bounded to exact commitments,
 materialized ancestry, set inclusion, state equality, evidence ordering, and
 declared inverse or symmetric relations.
 
-Labels, examples, translations, counterexamples, search terms, filenames, and
-source folders live outside commitment hashes. A task binds the smallest closure
-of commitment and facet hashes it consumes. Adding an unrelated sibling therefore
-does not invalidate existing catalog entries or builds.
+Labels, examples, translations, counterexamples, and search terms live outside
+commitment hashes. Filenames, source folders, archive identities, and vendors are
+provenance only and do not enter semantic interpretation or review. A task binds
+the smallest closure of commitment and facet hashes it consumes. Adding an
+unrelated sibling therefore does not invalidate existing catalog entries or
+builds.
 
 ## Catalog and realization
 
@@ -85,7 +87,10 @@ weights are canonical integers and affect hash-seeded selection.
 Catalog admission deliberately separates inference, review, and authority:
 
 ```text
-measured asset + 12-view render
+canonical source identity
+  -> measured asset + orthogonal 12-view render channels
+  -> basename-only weak hints for semantic hypotheses
+  -> source-neutral physical leakage graph and whole-group split
   -> independent semantic hypothesis receipts
   -> exact-signature panel consensus
   -> visual-embedding complete-link cohorts
@@ -98,12 +103,12 @@ measured asset + 12-view render
 This is the executable baseline, not a claim that unattended corpus admission is
 qualified. The panel requires distinct adapter/model implementation hashes and
 ignores confidence when voting, but it does not yet establish statistical error
-independence or pack-shift robustness. A source without semantic consensus or an
-exact visual embedding remains an exception; it is never forced into a nearby
-cohort. Cohort materialization automates only genuine whole/aggregate substitution
-sets with measured ground, wall, or ceiling support. Assemblies, attachments,
-routes, socket-hosted assets, and environment realizers still require their typed
-authoring contracts.
+independence or robustness to a genuinely unseen acquisition. A source without
+semantic consensus or an exact visual embedding remains an exception; it is never
+forced into a nearby cohort. Cohort materialization automates only genuine
+whole/aggregate substitution sets with measured ground, wall, or ceiling support.
+Assemblies, attachments, routes, socket-hosted assets, and environment realizers
+still require their typed authoring contracts.
 
 `registry/catalog.json` is the single replaceable transaction root, not a journal
 or compatibility stream. It embeds all compiler authority and the sealed runtime
@@ -131,6 +136,53 @@ The current storage boundary is local-first and has two distinct classes:
   frames, point samples, and future embedding buffers. They are identified by
   cryptographic hashes but remain in ignored local roots such as the source asset
   tree and `.basalt/` working state.
+
+All extracted GLBs share the single canonical pool
+`registry/source-assets/sha256/<aa>/<bb>/<content-hash>.glb`. Exact byte identity
+is the only storage partition: duplicate files from different archives resolve to
+one source identity. `registry/source-provenance.json` separately records every
+origin and rights claim; `registry/source-manifest.json` contains only canonical
+content identities, metric scale, and a source-neutral hash of the effective
+rights claim. Adding another origin for identical bytes does not change the
+manifest or compiler inputs.
+
+Semantic hypothesis adapters receive one separately hashed, non-authoritative
+`CatalogSourceNameHint` per content identity. It contains every distinct original
+GLB basename plus deterministic normalized tokens; it contains no origin ID,
+archive path, or directory. Extraction collision suffixes are excluded from the
+normalized form. Multiple names are preserved rather than resolved by pack
+precedence. These hints are weak supervision only: they cannot enter admitted
+assertions, catalog declarations, runtime indices, or compiler requirements.
+
+Calibration/evaluation split construction does not receive name hints. It is
+partitioned by connected components of physical leakage evidence—exact content or
+canonical geometry, component containment, and near-duplicate rendered shape—not
+by the archive in which an asset happened to arrive. Shared texture payload bytes remain contextual
+stratification evidence rather than identity edges because one common atlas can
+serve thousands of unrelated objects. Equal default material parameters do not
+count as shared payload evidence.
+
+`CatalogNearDuplicateSearch` binds every compared source, the exact multiview
+index, the all-pairs comparison count, descriptor-set hash, threshold, worker and
+image-decoder implementation, and pair evidence. Its compact tracked manifest has
+no compiler authority. `CatalogLeakageAnalysis` binds that search plus the exact
+source manifest, measurement set, grouping policy, coverage flags, relation
+evidence, and analysis implementation. `CatalogLeakageGroup` values are derived
+as the deterministic transitive closure of the policy's identity-bearing
+relations. Context relations remain in the analysis without collapsing the split.
+`CatalogCalibrationSplit` binds that exact analysis and assigns whole groups—never
+individual members—to development, calibration, or evaluation. The split stays
+`incomplete` while any physical channel lacks population-wide coverage.
+
+The local renderer and measurement runner import a single resource policy and
+reject concurrency above four. The near-duplicate comparison is one bounded
+process; later distributed scheduling must retain a per-host resource ceiling.
+
+`AssetSemanticHypothesisRequest` binds the exact measurement, multiview render,
+source-name hint, semantic module, and lexicon hashes. Receipts repeat and verify
+those bindings. Filename/model disagreement remains visible to factorized
+aggregation and may result in abstention or `incomplete`; no source-name token is
+promoted directly into a concept, realization form, role, or substitution set.
 
 Local reads and writes use bounded, no-follow, hash-checked artifact-store
 primitives where wired into a pipeline. The catalog does not currently have a

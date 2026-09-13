@@ -53,10 +53,11 @@ clustering, statistical acceptance sampling, and content-addressed provenance. T
 synthesis is the appropriate state-of-the-art baseline.
 
 The immediate consequence is practical: do **not** spend money running several
-frontier models over the whole corpus yet. First implement calibration, pairwise
-substitution evidence, risk-based auditing, and locally verified evidence storage.
-Then run a bounded pilot, qualify the policy on pack-held-out data, and scale only if
-the pilot meets explicit false-admission bounds. Remote replication is a separate
+frontier models over the whole corpus yet. First resolve the asset-rights gate
+identified below, then implement calibration, pairwise substitution evidence,
+risk-based auditing, and locally verified evidence storage. Run a bounded pilot,
+qualify the policy on physical-leakage-group-disjoint data, and scale only if the
+pilot meets explicit false-admission bounds. Remote replication is a separate
 infrastructure decision.
 
 ## What “state of the art” means here
@@ -90,17 +91,34 @@ gold-set evaluation rather than by adopting whichever model has the newest paper
 
 ## Inspected baseline snapshot
 
-At the catalog root inspected on 2026-09-13, Basalt accounted for 3,441 unique content identities
-from 3,447 source paths. Of these, 3,436 have measurement artifacts and five have
-explicit measurement refusals. No source currently has an admitted semantic
-assertion or catalog entry, so all dispositions remain incomplete. The tracked
-evidence manifests occupy approximately 61 MiB of JSON, excluding source archives,
-source assets, and rendered image payloads.
+At the catalog root inspected on 2026-09-13, Basalt accounted for 3,441 unique
+content identities from 3,447 source paths. All 3,441 identities have measurement
+artifacts; five skinned sources are explicitly measured at rest/bind pose while
+refusing pose-dependent support and interface claims. No source currently has an
+admitted semantic assertion or catalog entry, so all dispositions remain
+incomplete. The leakage analysis contains 2,756 connected groups: 1,663 development,
+540 calibration, and 553 evaluation groups, representing 2,064, 689, and 688 source
+identities respectively.
+
+The tracked authority and compact evidence manifests exclude source archives,
+source GLBs, and rendered image payloads. At the inspection point, the ignored
+`.basalt` working state occupied approximately 43 GB, the tracked source-asset area
+approximately 1.5 GB, and the volume had approximately 35 GB free. These are
+operational observations, not stable contracts. A Git clone cannot recover the
+ignored source archives, extracted GLBs, or render corpus.
+
+The deterministic low-risk candidate ceiling is narrower than the corpus total:
+1,531 assets are static, single-part, single-material, and have measured bottom
+contact. This is useful for pilot sampling, but it is not evidence that those assets
+are whole objects or semantically admissible. Those are separate claims.
 
 The implemented prototype path at that snapshot was:
 
 ```text
-measured asset + multiview render
+canonical source identity
+  -> measured asset + orthogonal multiview channels
+  -> basename-only weak hints for semantic hypotheses
+  -> physical leakage graph and whole-group split
   -> independent semantic hypothesis receipts
   -> exact-signature panel consensus
   -> hard semantic/physical partition
@@ -119,19 +137,94 @@ confidence is correctly excluded from semantic authority.
 
 ### Assessment matrix
 
-| Area                | Current mechanism                                                        | Assessment                                                                                                    | Decision                                                               |
-| ------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Source identity     | Content hashes and exact evidence lineage                                | Strong                                                                                                        | Keep                                                                   |
-| Failure semantics   | `eligible`, `incomplete`, `rejected`                                     | Strong and unusually important                                                                                | Keep                                                                   |
-| Semantic authority  | Hypotheses cannot directly satisfy requirements                          | Strong                                                                                                        | Keep                                                                   |
-| Multiview evidence  | Deterministic views, silhouette, depth, measurement                      | Good foundation; missing orthogonal shape/material channels                                                   | Extend                                                                 |
-| Model panel         | Exact two-thirds vote across implementation hashes                       | Reproducible but statistically uncalibrated and correlation-blind                                             | Replace                                                                |
-| Open-set behavior   | Abstention and incomplete outcomes                                       | Correct contract, weak detection policy                                                                       | Strengthen                                                             |
-| Cohort formation    | Exact signature/physical bins, then greedy complete-link cosine grouping | Conservative prototype, not a substitution proof; order-sensitive partition geometry can fragment valid sets  | Replace                                                                |
-| Human review        | Medoid, visual and metric outliers, boundary, deterministic sample       | Good defect discovery                                                                                         | Keep as a distinct discovery queue                                     |
-| Acceptance audit    | Two percent, maximum eight                                               | No useful declared risk guarantee                                                                             | Replace                                                                |
-| Admission authority | Curator decision is copied into assertions for all cohort members        | Clear provenance, but overstates what was individually reviewed                                               | Split curator and policy-qualified authority bases                     |
-| Catalog durability  | Atomic Git-tracked root and retained JSON evidence                       | Good identity boundary; large monolithic evidence will make Git history costly and bulk payloads remain local | Shard authority and use a verified local CAS; defer remote replication |
+| Area                | Current mechanism                                                                    | Assessment                                                                                                   | Decision                                                              |
+| ------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| Source identity     | Content hashes and exact evidence lineage                                            | Strong                                                                                                       | Keep                                                                  |
+| Failure semantics   | `eligible`, `incomplete`, `rejected`                                                 | Strong and unusually important                                                                               | Keep                                                                  |
+| Semantic authority  | Hypotheses cannot directly satisfy requirements                                      | Strong                                                                                                       | Keep                                                                  |
+| Multiview evidence  | Deterministic RGB, silhouette, depth, normal, unlit-albedo, and measurement receipts | Strong source-neutral evidence spine; learned channel qualification remains unfinished                       | Keep and qualify                                                      |
+| Model panel         | Exact two-thirds vote across implementation hashes                                   | Reproducible but statistically uncalibrated and correlation-blind                                            | Replace                                                               |
+| Open-set behavior   | Abstention and incomplete outcomes                                                   | Correct contract, weak detection policy                                                                      | Strengthen                                                            |
+| Cohort formation    | Exact signature/physical bins, then greedy complete-link cosine grouping             | Conservative prototype, not a substitution proof; order-sensitive partition geometry can fragment valid sets | Replace                                                               |
+| Human review        | Medoid, visual and metric outliers, boundary, deterministic sample                   | Good defect discovery                                                                                        | Keep as a distinct discovery queue                                    |
+| Acceptance audit    | Two percent, maximum eight                                                           | No useful declared risk guarantee                                                                            | Replace                                                               |
+| Admission authority | Curator decision is copied into assertions for all cohort members                    | Clear provenance, but overstates what was individually reviewed                                              | Split curator and policy-qualified authority bases                    |
+| Catalog durability  | Atomic Git-tracked root, split manifests, and retained compact JSON evidence         | Good identity boundary; bulk payloads remain local and some evidence is still monolithic                     | Shard evidence and add a verified local CAS; defer remote replication |
+
+## Current readiness verdict
+
+The current system is **ready for preflight engineering, but not for production
+catalog admission or paid full-corpus inference**. “Ready” here means that the
+existing measurement and rendering work should be reused rather than rebuilt. It
+does not mean that the prototype voting and cohort path is qualified to create
+authority.
+
+| Gate                                       | Finding                                                                                                    | Decision before catalog admission                                                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Source identity and deterministic evidence | Complete for all 3,441 content identities                                                                  | Reuse; do not rerender unless an implementation or evidence hash changes                                 |
+| Leakage isolation                          | A whole-group development/calibration/evaluation split exists                                              | Benchmark missed near-duplicate and containment edges before relying on it                               |
+| Semantic authority                         | All 146 commitments seal, but their identity criteria are largely upper-sort templates                     | Red-team and repair identity criteria now, before any admission depends on them                          |
+| Intent lexicon                             | 272 entries exist, but none has alternate labels, positive examples, counterexamples, or external mappings | Enrich the non-authoritative lexicon and freeze a review rubric                                          |
+| Learned evidence                           | No hypothesis receipts or learned visual-embedding receipts exist in the active catalog root               | Implement and qualify receipts on a pilot; do not launch the full run                                    |
+| Admission algorithm                        | Exact-signature voting, one visual vector, greedy cohorts, and a capped-eight audit remain prototypes      | Replace cleanly with calibrated facets, typed unknowns, substitution evidence, and risk-defined auditing |
+| Rights                                     | One blanket record claims commercial use and redistribution for all 3,447 source records                   | Block ML/VLM processing and catalog publication until exact license evidence supports each intended use  |
+| Recoverability                             | Compact authority can live in Git; bulk evidence and source payloads are ignored and local-only            | Commit the current authority baseline and make one independently verified local backup                   |
+| Capacity                                   | The live evidence corpus is larger than the remaining free-space margin                                    | Do not start another full render/inference wave without reclaiming or adding local capacity              |
+| Remote CAS                                 | Explicitly deferred                                                                                        | Not a pilot blocker; retain provider-neutral descriptors so it can be added later                        |
+
+### Hard stop: rights are not represented with enough precision
+
+This is a rights-control finding, not legal advice. The exact purchase channel,
+purchase date, accompanying licence, and any written custom permission govern each
+asset. Those records were not available in the inspected catalog.
+
+Every one of the 3,447 provenance records currently uses the same declaration:
+`commercialUsePermitted: true`, `redistributionPermitted: true`, and a generic
+“creator-provided commercial rights” note. That declaration is not supported by a
+hashed licence document or acquisition record and collapses several legally distinct
+uses into two booleans.
+
+That is materially unsafe for the proposed workflow. Synty's current one-time
+purchase licence, dated 9 July 2026, permits incorporation into products under the
+licensee's direct control but separately prohibits content for game-creation
+software, inclusion in generative-AI datasets or development, generative-AI 3D model
+creation, third-party source/model uploads for 3D generation, and distribution for
+third-party reuse.[^29] Synty's FAQ says a platform owner needs a custom licence and
+names Roblox as an example; it distinguishes that from a Roblox creator embedding
+assets in one game under direct control.[^30] Unity's current Asset Store terms also
+require express provider and/or Unity consent for using assets as AI/ML inputs and
+restrict monetization where a product's primary purpose is user-generated-content
+creation.[^31]
+
+These current public terms do not establish which terms govern an older purchase.
+Synty's current licence explicitly says later changes do not affect already-purchased
+licences, and it publishes prior EULA versions.[^29][^32] The correct response is
+therefore not to infer either permission or infringement. It is to recover the actual
+receipts and licence text for every acquisition origin and obtain written permission
+or qualified legal review where the intended Basalt use is not explicit.
+
+Until that is resolved, covered meshes and renders should not be sent to either local
+or hosted ML/VLM inference, used as inputs to neural generation or texture adaptation,
+or published as a reusable catalog. Running a model locally does not cure a licence
+that restricts the use itself. Deterministic integrity checks can continue only
+within whatever rights the applicable licence actually grants.
+
+Replace the current rights shape outright with an evidence-bound permission profile
+that distinguishes at least:
+
+- commercial end-product use;
+- machine analysis and inference;
+- model training or fine-tuning;
+- third-party processing and upload;
+- use inside game-creation software;
+- source-asset redistribution;
+- compiled or embedded distribution;
+- sharing derived preview and measurement evidence.
+
+Each permission needs an exact acquisition source, licence-document hash, effective
+date, territorial or product constraints where relevant, and an outcome of
+`eligible`, `incomplete`, or `rejected`. Commercial game use must never imply the
+other permissions.
 
 ## Evidence architecture
 
@@ -179,8 +272,8 @@ plausible geometry channels.[^1][^2][^9][^10]
 These names are a benchmark slate, not a hard dependency decision. Each candidate
 must be evaluated on the same content-addressed Basalt gold set for semantic
 precision, pairwise substitution precision, calibration, latency, cost, licensing,
-and pack-level shift. A smaller locally hosted model that satisfies the risk policy
-is preferable to a nominally stronger but uncalibrated frontier service.
+and distribution shift. A smaller locally hosted model that satisfies the risk
+policy is preferable to a nominally stronger but uncalibrated frontier service.
 
 ### Use multimodal diversity, not merely multiple model names
 
@@ -194,6 +287,15 @@ unknown accuracy and correlations of noisy labeling sources rather than resolvin
 disagreement with an unweighted majority vote.[^11] Subsequent work found measurable
 gains from learning source dependency structures compared with assuming conditional
 independence.[^12] Basalt should apply the same principle at the facet level.
+
+An original GLB basename is useful as one such noisy source: names often expose a
+noun, component role, numbered alternative, or collision-companion convention that
+is expensive to recover from pixels alone. Basalt therefore aggregates every
+basename observed for identical bytes and binds a normalized, separately hashed
+hint into hypothesis requests. It excludes archive, vendor, and directory identity;
+preserves contradictory names; and gives the hint no admission authority. Model
+qualification must compare visual-only, basename-only, and combined conditions so
+that systematic naming errors and accidental acquisition leakage are measurable.
 
 A hypothesis receipt should preserve, for each facet:
 
@@ -209,9 +311,10 @@ discarding all numerical evidence is unnecessarily blunt. Vision-language models
 are not inherently calibrated, but empirical work found that post-hoc temperature
 scaling consistently improves their calibration and can work with relatively small
 calibration sets.[^13] For providers that expose no logits, Basalt can calibrate
-observable features—agreement pattern, retrieval margin, output stability, pack,
-and predicted concept depth—against adjudicated data. Those values influence a
-qualification gate; they never directly author a commitment or assertion.
+observable features—agreement pattern, retrieval margin, output stability, and
+predicted concept depth—against adjudicated data. Source origin is deliberately
+excluded. Those values influence a qualification gate; they never directly author
+a commitment or assertion.
 
 The panel should be factorized. A source may correctly identify `chair` while being
 uncertain whether an artifact is a whole object, a connected aggregate, or a modular
@@ -250,14 +353,23 @@ not advertise a universal guarantee.
 The limitation matters: ordinary conformal guarantees rely on exchangeability or
 specified shift assumptions. WILDS shows that real domain shifts can substantially
 reduce performance even when standard in-distribution evaluation looks strong.[^19]
-An unseen asset pack is exactly such a shift. Consequently:
+A genuinely unseen future acquisition may be such a shift, but vendor packs in the
+current corpus are not valid experimental groups: overlapping content and reused
+geometry can cross those packaging boundaries, while shared atlases create broad
+style correlations. Consequently:
 
-- split calibration and evaluation by pack/creator, never randomly by asset alone;
-- report leave-one-pack-out performance across existing packs;
-- keep Office as a final untouched operational holdout if it has not influenced
-  thresholds or prompts;
-- run a shift detector and a small requalification audit on every new pack;
-- route a shifted pack to `incomplete` rather than borrowing old guarantees.
+- compute connected leakage groups from exact content and geometry identity,
+  geometry containment, and near-duplicate shape;
+- retain shared material payloads as contextual strata, not identity edges—a
+  common atlas may connect thousands of otherwise unrelated objects;
+- assign each complete leakage group to exactly one of development, calibration,
+  or evaluation, never randomly by asset and never by vendor/archive origin;
+- report performance by physical, semantic, metric, material, and installation
+  strata within the disjoint evaluation partition;
+- reserve a genuinely unseen future acquisition for the final distribution-shift
+  test, and run a shift detector plus a requalification audit when it arrives;
+- route shifted or unsupported evidence to `incomplete` rather than borrowing old
+  guarantees.
 
 ## Substitution is a relation, not a label
 
@@ -315,7 +427,7 @@ review.
 This does not require human review of every pair. Exact semantic-site filtering makes
 candidate graphs small; cheap machine scorers can evaluate all remaining pairs;
 transitive structure reduces the number of human questions; and review focuses on
-the weakest positive edge, strongest negative edge, cross-pack boundary, medoid,
+the weakest positive edge, strongest negative edge, hard partition boundary, medoid,
 visual outlier, metric extreme, and structural anomaly. The system should optimize
 for substitution precision and accept extra singleton sets or incomplete assets.
 
@@ -449,7 +561,7 @@ following engine-neutral artifacts.
   - no compiler authority.
 - `CalibrationCorpus`
   - exact curator-adjudicated assets and pairwise substitution judgments;
-  - pack/creator groups and frozen train/calibration/evaluation roles;
+  - physical leakage groups and frozen development/calibration/evaluation roles;
   - immutable content identity.
 - `CalibratedSemanticPrediction`
   - per-facet prediction sets and empirical calibration receipts;
@@ -487,7 +599,7 @@ following engine-neutral artifacts.
   - binds every predecessor and is the evidence source for admitted assertions.
 
 All artifacts continue to return `eligible`, `incomplete`, or `rejected`. A missing
-calibration, unknown concept, shifted pack, uncertain pair, failed invariant, or
+calibration, unknown concept, shifted evidence, uncertain pair, failed invariant, or
 failed audit remains incomplete or rejected according to its contract. No fallback
 may weaken the site or silently choose a nearby concept.
 
@@ -527,9 +639,10 @@ per facet with calibrated source weights and dependency groups. Produce hierarch
 prediction sets and explicit novelty/shift results. Exact singleton concepts proceed;
 ambiguous or unknown assets enter targeted review.
 
-Filename and folder signals may remain low-cost, abstaining review hints. They must
-not enter admitted assertions, semantic-site signatures, or catalog hashes that can
-change runtime resolution.
+The original basename may enter only as a separately hashed, ablatable
+weak-supervision input. Directory, archive, vendor, pack, and creator-origin signals
+belong only to the provenance and rights ledger; they are not model features, split
+keys, admitted assertions, semantic-site signatures, or catalog-resolution inputs.
 
 ### Stage D: substitution graph
 
@@ -582,6 +695,128 @@ stable entity ID and moving bulky machine evidence behind locally resolvable
 descriptors should happen before repeated full-corpus runs. Remote replication may
 follow without changing those descriptors.
 
+## Immediate next work package
+
+The next milestone is a **catalog-admission qualification pilot**, not a full-corpus
+admission run. It has four ordered phases. A failed phase stops the next one; no
+manual or model fallback may convert that stop into authority.
+
+### Phase 0: rights and recoverability preflight
+
+1. Reconstruct an acquisition ledger per origin with provider, store, order or
+   receipt, acquisition date, applicable licence artifact, and any written custom
+   permission. Hash the evidence and evaluate each intended use independently.
+2. Replace the two-boolean rights contract with the permission profile above. Mark
+   affected identities `incomplete` until the applicable evidence supports catalog
+   analysis, Basalt's game-creation use, and the intended distribution boundary.
+3. Commit the compact code, registries, policies, and authority manifests as one
+   coherent baseline. This protects semantic work but does not protect ignored
+   binary payloads.
+4. Create and verify an independent local backup of source archives, canonical GLBs,
+   and every authority-reachable evidence payload. Remote CAS remains deferred.
+5. Restore enough disk headroom for the worst-case pilot outputs plus atomic-write
+   duplication. Do not regenerate the existing 43 GB evidence tree merely as a
+   preflight ritual.
+
+If rights cannot be cleared for the current packs, the engineering work can proceed
+against a small corpus with explicit public-domain, self-authored, or otherwise
+compatible rights. The Synty-derived corpus must remain excluded rather than being
+silently used as calibration data.
+
+### Phase 1: freeze meaning and risk
+
+1. Red-team all 146 concept commitments. The current necessary and exclusion
+   criteria are mostly generic upper-sort templates; replace genuine placeholders
+   before any catalog artifact depends on them. Keep labels and examples outside the
+   commitment hash.
+2. Enrich the separate lexicon with alternate labels, positive examples,
+   counterexamples, and external mappings. The current 272 entries have none of
+   these, which makes both human calibration and model abstention needlessly
+   ambiguous.
+3. Author adjudication rubrics for denotation, realization form, state, treatment,
+   affordance, placement, artifact health, and pairwise substitutability.
+4. Define an `AdmissionRiskPolicy` by risk stratum. It must name defect classes,
+   tolerated rates, confidence, random sample design, acceptance number, response to
+   a failure, and which outcomes can be policy-qualified rather than directly
+   curated.
+5. Measure the leakage graph's recall on manually selected exact, near-duplicate,
+   containment, and component/whole cases. Freeze group assignments only after this
+   test; vendor pack is neither a split key nor an admission feature.
+
+### Phase 2: replace the prototype authority path
+
+Implement the following as one clean break before paying for broad inference:
+
+- factorized hypothesis receipts that bind the prompt/template, evidence selector,
+  per-view inputs, adapter and weight hashes, decoding configuration, raw response,
+  normalized assertions, abstentions, diagnostics, and resource use;
+- channel-specific, per-view embedding receipts and explicit view-disagreement
+  evidence rather than one collapsed visual vector;
+- calibrated facet predictions, hierarchical prediction sets, open-set/OOD outcomes,
+  and source-dependency-aware weak-supervision aggregation;
+- separate discovery-review and probability-sampled acceptance-audit artifacts;
+- qualification receipts that distinguish direct curator observations from
+  policy-qualified claims and never imply that every cohort member was viewed;
+- singleton admission before grouping, followed by exact-site pairwise compatibility,
+  deterministic signed-graph partitioning, and a whole-set substitution invariant.
+
+SigLIP 2, DINOv3, and OpenShape are reasonable local benchmark candidates for
+semantic/appearance, self-supervised visual structure, and native 3D structure
+respectively, but none should be hard-coded as authority.[^1][^7][^8] Multiview
+fusion should preserve per-view evidence and benchmark learned fusion against mean
+pooling; recent CAMFusion results reinforce that naïve view aggregation can leave
+substantial performance unused, but the preprint is evidence for an experiment, not
+a production dependency.[^33]
+
+### Phase 3: run a bounded qualification pilot
+
+After rights clearance, choose a deterministic sample from leakage groups inside the
+1,531-asset low-risk candidate ceiling. Whole-object status remains an adjudicated
+semantic condition; measured static/single-part/single-material/bottom-supported
+properties do not prove it.
+
+An efficient first experiment is 192 leakage groups:
+
+- 64 development groups for rubric refinement and active error discovery;
+- 64 calibration groups sampled independently within the declared low-risk stratum;
+- 64 locked evaluation groups sampled independently from the same declared stratum.
+
+All identities in one leakage group stay together. Evaluate visual-only,
+basename-only, and combined weak-supervision ablations so a helpful filename channel
+cannot mask a broken visual channel. Report facet calibration, OOD rejection,
+coverage, individual-admission precision, pairwise substitution precision, and
+worst-stratum performance. Freeze the locked evaluation set before tuning.
+
+This 192-group run is a **non-production qualification experiment**. Even zero
+defects in 64 approximately independent locked observations gives a conservative
+one-sided 95% binomial upper defect bound of about 4.6%. A zero-defect claim below 1%
+requires about 299 independent random observations; below 0.5% requires about 598.
+Exact finite-population designs may reduce those counts, but the policy must state
+the calculation rather than relying on a percentage or a cap.[^24][^25]
+
+### Phase 4: expand selectively
+
+If the pilot passes, enlarge the random evaluation and audit populations until each
+declared risk target is met, then admit only qualified low-risk identities. Expand
+from whole ground-supported objects to environment realizers and aggregates, then
+attachments, and only later to route and assembly components with authored
+interfaces and grammars. Each tier requires its own calibration and risk receipt.
+
+The following are deliberately **not prerequisites** for the first pilot:
+
+- remote CAS replication;
+- production qualification of TRELLIS.2, Hunyuan3D, or Pixal3D;
+- attachment, route-kit, or assembly-kit admission;
+- final Roblox import/play verification;
+- a second engine adapter;
+- durable distributed execution; or
+- 100% catalog eligibility.
+
+Neural 3D generation remains an offline response to a qualified catalog gap. It
+should consume the eventual admitted semantic/style requirements and return through
+the same measurement, rights, hypothesis, review, and admission gates. It must not
+be used to compensate for an unqualified catalog pipeline.
+
 ## Calibration and rollout for the current corpus
 
 The rollout should be empirical and stop at failed gates. The numbers below are
@@ -601,16 +836,20 @@ alter old commitments.
 
 ### 2. Build a grouped gold corpus
 
-Select a stratified seed across packs, semantic depths, metric scales, texture/PBR
+Select a stratified seed across semantic depths, metric scales, texture/PBR
 conditions, whole/component/aggregate cases, attachments, collision companions, and
 known failures. An initial budget of several hundred fully adjudicated assets and
 several hundred targeted pair judgments is reasonable for a pilot; continue labeling
-until calibration intervals and pack-held-out performance stabilize.
+until calibration intervals and leakage-group-disjoint performance stabilize.
 
-Use creator/pack groups for all splits. Tune on multiple leave-one-pack-out folds.
-Preserve one untouched pack for the final operational test. If Office has already
-influenced prompts, thresholds, or error analysis, it is no longer a valid untouched
-holdout and a future unseen pack must fill that role.
+First construct connected physical leakage groups. Exact duplicates, shared
+geometry, component/whole containment, and near-duplicate shapes must not cross
+split boundaries. Retain shared material payloads for stratification and exposure
+reporting without treating atlas membership as object identity. Freeze group
+assignments before tuning. Vendor, archive, and original path metadata are not
+visible to this process. The
+final operational shift test requires a future acquisition that did not influence
+prompts, thresholds, adapters, rubrics, or error analysis.
 
 ### 3. Benchmark evidence channels
 
@@ -622,7 +861,7 @@ For every candidate backbone, record exact implementation and weights hashes. Me
 - pairwise substitution precision and recall;
 - appearance/style retrieval precision;
 - latency, peak memory, and cost per asset;
-- performance by held-out pack and failure category.
+- performance by held-out leakage groups, evidence stratum, and failure category.
 
 Choose the smallest channel set that meets the policy. More models are not inherently
 safer; correlated models add cost without proportional evidence.
@@ -651,14 +890,14 @@ interfaces remain explicitly incomplete and are still fully accounted for.
 Run the cost cascade over all evidence-complete assets. Automatically qualify only
 assets inside calibrated strata with singleton predictions, complete substitution
 evidence, passing invariants, and passing audits. Send disagreements, novel concepts,
-shifted packs, and boundary pairs to a compact review queue. Commit the authority
+shifted evidence, and boundary pairs to a compact review queue. Commit the authority
 graph and locally rehash every referenced evidence payload after each accepted
 batch.
 
 ## Acceptance metrics
 
 The admission system is ready to scale when all of the following are measured on
-pack-held-out data and bound in an `AdmissionQualificationReceipt`:
+leakage-group-disjoint data and bound in an `AdmissionQualificationReceipt`:
 
 | Metric                        | Required interpretation                                                                                             |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -668,11 +907,11 @@ pack-held-out data and bound in an `AdmissionQualificationReceipt`:
 | Abstention/coverage           | Fraction auto-qualified, reviewed, incomplete, and rejected; high abstention is acceptable initially                |
 | Installation precision        | Support/contact/interface correctness for admitted members                                                          |
 | Artifact-health recall        | Detection of broken, component, aggregate, collision, animation, and material failures                              |
-| Cross-pack robustness         | Worst-pack and leave-one-pack-out results, not only micro-averages                                                  |
-| Calibration                   | Reliability by facet, model source, semantic depth, and pack                                                        |
+| Disjoint-group robustness     | Worst physical/evidence stratum and leakage-group-disjoint results, not only micro-averages                         |
+| Calibration                   | Reliability by facet, model source, semantic depth, metric scale, material condition, and installation class        |
 | Audit risk                    | Exact finite-population acceptance probability and upper defect bound by defect class                               |
 | Determinism                   | Identical inputs and implementations emit byte-identical proposals, samples, decisions, and roots                   |
-| Stability                     | Adding an unrelated pack leaves semantic commitments, existing admitted assertions, and unrelated entries unchanged |
+| Stability                     | Adding unrelated content leaves semantic commitments, existing admitted assertions, and unrelated entries unchanged |
 | Local recoverability          | Every authority reference resolves from the declared local artifact root and all retrieved hashes verify            |
 
 Coverage must never be optimized alone. The preferred operating point is high
@@ -690,7 +929,8 @@ review evidence accumulates, without weakening compiler guarantees.
 - provider-neutral model adapters;
 - explicit incomplete/rejected dispositions;
 - strict entry kinds and the substitution-set invariant;
-- source paths as review hints only;
+- pack-neutral multimodal hypothesis inference and source-neutral review,
+  calibration, and runtime authority;
 - engine-neutral catalog and compiler contracts;
 - exact catalog root identity.
 
@@ -698,7 +938,7 @@ review evidence accumulates, without weakening compiler guarantees.
 
 - replace exact majority voting with factorized, calibrated, dependency-aware
   aggregation;
-- add explicit open-set, hierarchy-aware prediction sets and pack-shift gates;
+- add explicit open-set, hierarchy-aware prediction sets and distribution-shift gates;
 - replace the single embedding with orthogonal semantic, geometry, appearance, and
   installation evidence;
 - replace visual cohorts as authority candidates with constrained substitution
@@ -712,6 +952,8 @@ review evidence accumulates, without weakening compiler guarantees.
 ### Do not do
 
 - do not classify all assets from filenames or folders;
+- do use original basenames as a separately hashed, ablatable weak-supervision
+  channel while excluding pack, archive, and directory identity;
 - do not force every asset into an existing concept or entry;
 - do not treat agreement among uncalibrated VLMs as truth;
 - do not use one cosine threshold across concepts, styles, and modalities;
@@ -730,7 +972,19 @@ prototype**, not the frozen admission algorithm. Its most important decision—t
 separation of evidence, hypotheses, and authority—is correct. The next iteration
 should preserve that boundary while changing the statistical and relational core.
 
-The best durable baseline is not “three models plus a sample.” It is:
+The immediate go/no-go decision is:
+
+1. **Do not start full-corpus catalog inference or admission.**
+2. Resolve and encode exact rights for machine analysis, game-creation use, and
+   distribution before any model sees the current commercial asset evidence.
+3. Checkpoint the compact authority in Git, independently back up the ignored local
+   corpus, and create safe disk headroom.
+4. Repair semantic identity criteria, enrich the lexicon, define the risk policy,
+   and replace the prototype authority path.
+5. Run the 192-leakage-group qualification pilot, then expand the random evaluation
+   and audit only as the measured risk requires.
+
+The best durable admission baseline is not “three models plus a sample.” It is:
 
 1. deterministic, orthogonal 3D evidence;
 2. calibrated selective prediction with explicit unknowns;
@@ -802,3 +1056,13 @@ cannot silently weaken the world compiler's semantic guarantees.
 [^27]: W3C Provenance Working Group, “[PROV-O: The PROV Ontology](https://www.w3.org/TR/prov-o/),” W3C Recommendation, 2013.
 
 [^28]: Git LFS Project, “[Git Large File Storage](https://git-lfs.com/),” official documentation.
+
+[^29]: Synty Studios, “[One Time Purchase Licence](https://syntystore.com/pages/one-time-purchase-licence),” current text dated 9 July 2026.
+
+[^30]: Synty Studios, “[Frequently Asked Questions: Metaverse and Roblox licensing](https://syntystore.com/community/faq),” accessed 13 September 2026.
+
+[^31]: Unity Technologies, “[Asset Store Terms of Service and EULA](https://unity.com/legal/as-terms),” sections 3.8 and Appendix 1 section 2.2.1.1, accessed 13 September 2026.
+
+[^32]: Synty Studios, “[EULA Version History](https://syntystore.com/pages/eula-versions-history),” accessed 13 September 2026.
+
+[^33]: Fangyu Li et al., “[CAMFusion: End-to-End Multiview Fusion for Robust 3D Object Classification](https://arxiv.org/abs/2604.12551),” preprint, 2026.

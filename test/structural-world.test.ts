@@ -386,16 +386,25 @@ function componentAsset(
   return sealCatalogAssetArtifact({
     source: {
       contentHash: contentHash(`structural-${name}-source`),
-      packageId: "structural_fixture",
-      licenseId: "fixture-license",
-      commercialUsePermitted: true,
-      redistributionPermitted: true,
-      attribution: "Synthetic structural test fixture",
+      rights: {
+        licenseId: "fixture-license",
+        commercialUsePermitted: true,
+        redistributionPermitted: true,
+        attribution: "Synthetic structural test fixture",
+        evidenceHash: contentHash(`structural-${name}-rights`),
+      },
       sourceArtifact: {
         artifactHash: contentHash(`structural-${name}-bytes`),
         bytes: 1024,
         mediaType: "model/gltf-binary",
       },
+    },
+    geometryHash: contentHash(`structural-${name}-geometry`),
+    deformation: {
+      mode: "static",
+      measuredPose: "static",
+      animationCount: 0,
+      skinCount: 0,
     },
     coordinateFrame: {
       handedness: "right_handed",
@@ -408,7 +417,7 @@ function componentAsset(
     parts: [
       {
         partId: name,
-        contentHash: contentHash(`structural-${name}-part`),
+        geometryHash: contentHash(`structural-${name}-part`),
         role: "render_static",
         transform: transform(),
         bounds: { min: vector(-0.5, 0, -0.5), max: vector(0.5, 1, 0.5) },
@@ -417,7 +426,11 @@ function componentAsset(
       },
     ],
     materials: [
-      { appearanceHash: contentHash("structural-material"), pbrChannels: ["base_color"] },
+      {
+        appearanceHash: contentHash("structural-material"),
+        payloadHashes: [],
+        pbrChannels: ["base_color"],
+      },
     ],
     support: { primaryContact: "bottom", contactAreaSquareMeters: q(1), evidenceHash },
     collision: {

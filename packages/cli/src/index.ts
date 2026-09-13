@@ -16,22 +16,37 @@ import {
   CATALOG_HYPOTHESIS_RECEIPT_SET_SCHEMA,
   CATALOG_HYPOTHESIS_REQUEST_SET_SCHEMA,
   CATALOG_ADMISSION_COHORT_SET_SCHEMA,
+  CATALOG_ADMISSION_RUBRIC_SCHEMA,
   CATALOG_ADMISSION_POLICY_SCHEMA,
+  CATALOG_CALIBRATION_SPLIT_SCHEMA,
   CATALOG_AUTHORITY_COMMIT_SCHEMA,
   CATALOG_COHORT_AUDIT_SCHEMA,
   CATALOG_COHORT_DECISION_SCHEMA,
   CATALOG_HYPOTHESIS_PANEL_SCHEMA,
+  CATALOG_LEAKAGE_ANALYSIS_SCHEMA,
+  CATALOG_LEAKAGE_GROUPING_POLICY_SCHEMA,
+  CATALOG_NEAR_DUPLICATE_SEARCH_SCHEMA,
   CATALOG_REVIEW_PLAN_SCHEMA,
+  CATALOG_SOURCE_NAME_HINT_SET_SCHEMA,
   CATALOG_VISUAL_EMBEDDING_SET_SCHEMA,
   CATALOG_VISUAL_REVIEW_INDEX_SCHEMA,
+  MAX_LOCAL_CATALOG_WORKERS,
+  requireLocalCatalogWorkerCount,
   applyCatalogAdmissionDecisions,
+  analyzeCatalogLeakage,
+  assignCatalogCalibrationGroups,
   buildCatalogAdmissionCohorts,
+  buildCatalogLeakageGroups,
   buildCatalogHypothesisPanel,
   buildCatalogReviewPlan,
+  buildCatalogSourceNameHintSet,
   sealCatalogAuthorityCommit,
   sealCatalogCohortAudit,
   sealCatalogCohortDecision,
+  sealCatalogCalibrationSplit,
+  sealCatalogNearDuplicateSearch,
   sealCatalogVisualEmbeddingSet,
+  validateCatalogCalibrationSplit,
   sealAssetSemanticHypothesisRequest,
   sealCatalogHypothesisReceiptSet,
   sealCatalogHypothesisRequestSet,
@@ -45,11 +60,13 @@ import {
   CATALOG_ENTRY_DECLARATION_SCHEMA,
   CATALOG_MEASUREMENT_SET_SCHEMA,
   CATALOG_SNAPSHOT_SCHEMA,
+  SOURCE_PROVENANCE_LEDGER_SCHEMA,
   STYLE_PROFILE_DECLARATION_SCHEMA,
   TRUSTED_SOURCE_MANIFEST_SCHEMA,
   sealCatalogMeasurementSet,
   sealCatalogSnapshot,
   sealStyleProfile,
+  validateSourceAuthority,
   type CatalogAssetArtifact,
 } from "@basalt/catalog-model";
 import { contentHash, stableJson } from "@basalt/contracts";
@@ -85,6 +102,38 @@ const repositoryRoot = resolve(".");
 const args = process.argv.slice(2);
 const execFile = promisify(execFileCallback);
 const CATALOG_COMMIT_LOCK_PATH = ".basalt/locks/catalog-commit.lock";
+const CATALOG_NEAR_DUPLICATE_WORKER = "workers/catalog-review/near_duplicate.py";
+
+const CATALOG_NEAR_DUPLICATE_WORKER_OUTPUT_SCHEMA = z
+  .object({
+    kind: z.literal("CatalogNearDuplicateWorkerOutput"),
+    algorithmId: z.literal("multiview_shape_dhash_ahash_8x8"),
+    runtime: z
+      .object({
+        python: z.string().trim().min(1).max(64),
+        pillow: z.string().trim().min(1).max(64),
+      })
+      .strict(),
+    descriptorSetHash: z.string().regex(/^[a-f0-9]{64}$/u),
+    searchedSourceContentHashes: z.array(z.string().regex(/^[a-f0-9]{64}$/u)).max(100_000),
+    comparedPairCount: z.number().int().nonnegative().max(5_000_000_000),
+    relations: z
+      .array(
+        z
+          .object({
+            leftSourceContentHash: z.string().regex(/^[a-f0-9]{64}$/u),
+            rightSourceContentHash: z.string().regex(/^[a-f0-9]{64}$/u),
+            leftDescriptorHash: z.string().regex(/^[a-f0-9]{64}$/u),
+            rightDescriptorHash: z.string().regex(/^[a-f0-9]{64}$/u),
+            distanceBits: z.number().int().nonnegative(),
+            totalBits: z.number().int().positive(),
+          })
+          .strict(),
+      )
+      .max(1_000_000),
+    diagnostics: z.array(z.string().trim().min(1).max(2048)).max(100_000),
+  })
+  .strict();
 
 async function main(): Promise<void> {
   const [command, subcommand, ...rest] = args;
@@ -92,6 +141,7 @@ async function main(): Promise<void> {
   if (command === "semantics" && subcommand === "seal") return semanticsSeal(rest);
   if (command === "semantics" && subcommand === "explain") return semanticsExplain(rest);
   if (command === "catalog" && subcommand === "inventory") return catalogInventory(rest);
+  if (command === "catalog" && subcommand === "calibration") return catalogCalibration(rest);
   if (command === "catalog" && subcommand === "providers") return catalogProviders();
   if (command === "catalog" && subcommand === "measure") return catalogMeasure(rest);
   if (command === "catalog" && subcommand === "render") return catalogRender(rest);
@@ -170,35 +220,18 @@ async function catalogInventory(values: string[]): Promise<void> {
   const source = options.get("--source") ?? "registry/source-manifest.json";
   const output = options.get("--output") ?? ".basalt/catalog/inventory.json";
   const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(await readJson(source));
-  const identities = new Map<string, { bytes: number; pathCount: number; packages: Set<string> }>();
-  for (const pack of manifest.packages)
-    for (const file of pack.files) {
-      const bytes = await readBoundedWorkspaceBytes(
-        repositoryRoot,
-        file.relativePath,
-        512 * 1024 * 1024,
-      );
-      if (sha256(bytes) !== file.sha256)
-        throw new Error(`Source hash changed: ${file.relativePath}`);
-      const current = identities.get(file.sha256) ?? {
-        bytes: bytes.byteLength,
-        pathCount: 0,
-        packages: new Set<string>(),
-      };
-      if (current.bytes !== bytes.byteLength)
-        throw new Error(`Duplicate identity has inconsistent byte size: ${file.sha256}`);
-      current.pathCount += 1;
-      current.packages.add(pack.packageId);
-      identities.set(file.sha256, current);
-    }
-  const records = [...identities]
-    .sort(([left], [right]) => compare(left, right))
-    .map(([sourceContentHash, value]) => ({
-      sourceContentHash,
-      bytes: value.bytes,
-      pathCount: value.pathCount,
-      packageIds: [...value.packages].sort(compare),
-    }));
+  await requireSourceProvenance(manifest, options.get("--provenance"));
+  const records = [];
+  for (const asset of manifest.assets) {
+    const bytes = await readBoundedWorkspaceBytes(
+      repositoryRoot,
+      asset.relativePath,
+      512 * 1024 * 1024,
+    );
+    if (sha256(bytes) !== asset.contentHash)
+      throw new Error(`Source hash changed: ${asset.relativePath}`);
+    records.push({ sourceContentHash: asset.contentHash, bytes: bytes.byteLength });
+  }
   const material = {
     kind: "CatalogSourceInventory" as const,
     sourceManifestHash: contentHash(stableJson(manifest)),
@@ -210,9 +243,230 @@ async function catalogInventory(values: string[]): Promise<void> {
     status: "eligible",
     output: absolute(output),
     identities: records.length,
-    paths: records.reduce((sum, entry) => sum + entry.pathCount, 0),
+    paths: records.length,
     hash: inventory.hash,
   });
+}
+
+async function catalogCalibration(values: string[]): Promise<void> {
+  const prepare = values[0] === "prepare";
+  const options = parseOptions(prepare ? values.slice(1) : values);
+  const semanticModule = await loadSemanticModule();
+  const sourceManifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
+    await readJson(options.get("--source") ?? "registry/source-manifest.json"),
+  );
+  await requireSourceProvenance(sourceManifest, options.get("--provenance"));
+  const rubric = CATALOG_ADMISSION_RUBRIC_SCHEMA.parse(
+    await readJson(options.get("--rubric") ?? "registry/admission-rubric.json"),
+  );
+  if (rubric.semanticModuleHash !== semanticModule.snapshot.hash)
+    throw new Error("Admission rubric does not bind the current semantic module");
+  const groupingPolicy = CATALOG_LEAKAGE_GROUPING_POLICY_SCHEMA.parse(
+    await readJson(options.get("--grouping-policy") ?? "registry/leakage-grouping-policy.json"),
+  );
+  const analysisPath = options.get("--analysis") ?? "registry/leakage-analysis.json";
+  const splitPath = options.get("--split") ?? "registry/calibration-split.json";
+  if (prepare) {
+    const measurements = CATALOG_MEASUREMENT_SET_SCHEMA.parse(
+      await readJson(options.get("--measurements") ?? ".basalt/catalog/measurements.json"),
+    );
+    const visualReview = CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(
+      await readJson(options.get("--renders") ?? ".basalt/catalog/review/index.json"),
+    );
+    const nearDuplicateSearch = await runCatalogNearDuplicateSearch({
+      sourceManifest,
+      visualReview,
+      groupingPolicy,
+      outputPath: options.get("--near-duplicates") ?? "registry/near-duplicate-search.json",
+      workerOutputPath:
+        options.get("--near-duplicate-worker-output") ??
+        ".basalt/catalog/near-duplicate-worker-output.json",
+    });
+    const analysis = analyzeCatalogLeakage({
+      sourceManifest,
+      measurements,
+      groupingPolicy,
+      nearDuplicateSearch,
+    });
+    const groups = buildCatalogLeakageGroups(sourceManifest, analysis, groupingPolicy);
+    const targets = [
+      { role: "calibration" as const, targetPermille: 200 },
+      { role: "development" as const, targetPermille: 600 },
+      { role: "evaluation" as const, targetPermille: 200 },
+    ];
+    const split = sealCatalogCalibrationSplit({
+      sourceManifest,
+      groupingPolicy,
+      leakageAnalysis: analysis,
+      assignments: assignCatalogCalibrationGroups(groups, targets),
+      targets,
+    });
+    await writeCanonicalJson(analysisPath, analysis);
+    await writeCanonicalJson(splitPath, split);
+  }
+  const nearDuplicateSearch = CATALOG_NEAR_DUPLICATE_SEARCH_SCHEMA.parse(
+    await readJson(options.get("--near-duplicates") ?? "registry/near-duplicate-search.json"),
+  );
+  const analysis = CATALOG_LEAKAGE_ANALYSIS_SCHEMA.parse(await readJson(analysisPath));
+  const split = CATALOG_CALIBRATION_SPLIT_SCHEMA.parse(await readJson(splitPath));
+  if (
+    analysis.nearDuplicateSearchHash !== nearDuplicateSearch.hash ||
+    nearDuplicateSearch.sourceManifestHash !== contentHash(stableJson(sourceManifest)) ||
+    stableJson(nearDuplicateSearch.similarityThreshold) !==
+      stableJson(groupingPolicy.nearDuplicateSimilarity)
+  )
+    throw new Error("Leakage analysis does not bind the current near-duplicate search");
+  const result = validateCatalogCalibrationSplit({
+    split,
+    sourceManifest,
+    groupingPolicy,
+    leakageAnalysis: analysis,
+  });
+  print({
+    status: result.status,
+    rubricHash: rubric.hash,
+    groupingPolicyHash: groupingPolicy.hash,
+    leakageAnalysisHash: analysis.hash,
+    leakageAnalysisStatus: analysis.status,
+    splitHash: split.hash,
+    sourceIdentities: sourceManifest.assets.length,
+    leakageGroups: split.groups.length,
+    assignments: split.assignments.length,
+    diagnostics: result.diagnostics,
+  });
+  if (result.status === "rejected") process.exitCode = 1;
+}
+
+async function runCatalogNearDuplicateSearch(input: {
+  readonly sourceManifest: z.output<typeof TRUSTED_SOURCE_MANIFEST_SCHEMA>;
+  readonly visualReview: z.output<typeof CATALOG_VISUAL_REVIEW_INDEX_SCHEMA>;
+  readonly groupingPolicy: z.output<typeof CATALOG_LEAKAGE_GROUPING_POLICY_SCHEMA>;
+  readonly outputPath: string;
+  readonly workerOutputPath: string;
+}) {
+  const sourceManifestHash = contentHash(stableJson(input.sourceManifest));
+  if (input.visualReview.sourceManifestHash !== sourceManifestHash)
+    throw new Error("Visual evidence does not bind the canonical source manifest");
+  const workerPath = absolute(CATALOG_NEAR_DUPLICATE_WORKER);
+  const workerSourceHash = sha256(
+    await readBoundedWorkspaceBytes(repositoryRoot, workerPath, 4 * 1024 * 1024),
+  );
+  const workerOutputPath = absolute(input.workerOutputPath);
+  const jobPath = ".basalt/catalog/near-duplicate-job.json";
+  const job = {
+    kind: "CatalogNearDuplicateSearchJob",
+    workspaceRoot: repositoryRoot,
+    sourceManifestHash,
+    visualReviewIndexHash: input.visualReview.hash,
+    similarityThreshold: input.groupingPolicy.nearDuplicateSimilarity,
+    outputPath: workerOutputPath,
+    items: input.visualReview.items.map((item) => {
+      const artifacts = new Map(item.viewArtifacts.map((view) => [view.viewId, view]));
+      return {
+        sourceContentHash: item.sourceContentHash,
+        views: item.evidence.views.map((evidence) => {
+          const artifact = artifacts.get(evidence.viewId);
+          if (!artifact) throw new Error(`Missing rendered shape channel ${evidence.viewId}`);
+          return {
+            viewId: evidence.viewId,
+            silhouettePath: absolute(artifact.silhouetteRelativePath),
+            silhouetteHash: evidence.silhouetteHash,
+            normalizedDepthPath: absolute(artifact.normalizedDepthRelativePath),
+            normalizedDepthHash: evidence.normalizedDepthHash,
+            surfaceNormalPath: absolute(artifact.surfaceNormalRelativePath),
+            surfaceNormalHash: evidence.surfaceNormalHash,
+          };
+        }),
+      };
+    }),
+  };
+  await writeCanonicalJson(jobPath, job);
+  const { stdout, stderr } = await execFile("python3", [workerPath, "--job", absolute(jobPath)], {
+    cwd: repositoryRoot,
+    env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" },
+    maxBuffer: 1024 * 1024,
+  });
+  if (stderr) process.stderr.write(stderr);
+  if (stdout) process.stderr.write(stdout);
+  const output = CATALOG_NEAR_DUPLICATE_WORKER_OUTPUT_SCHEMA.parse(
+    await readJson(input.workerOutputPath),
+  );
+  const denominator = input.groupingPolicy.nearDuplicateSimilarity.denominator;
+  const numerator = input.groupingPolicy.nearDuplicateSimilarity.numerator;
+  const relations = output.relations.map((relation) => {
+    if (
+      relation.leftSourceContentHash >= relation.rightSourceContentHash ||
+      relation.distanceBits * denominator > relation.totalBits * (denominator - numerator)
+    )
+      throw new Error("Near-duplicate worker emitted a relation outside its sealed threshold");
+    return {
+      leftSourceContentHash: relation.leftSourceContentHash,
+      rightSourceContentHash: relation.rightSourceContentHash,
+      relationKind: "near_duplicate_shape" as const,
+      evidenceHash: contentHash(
+        stableJson({
+          kind: "NearDuplicateShapeEvidence",
+          implementationSourceHash: workerSourceHash,
+          similarityThreshold: input.groupingPolicy.nearDuplicateSimilarity,
+          ...relation,
+        }),
+      ),
+    };
+  });
+  const renderedSources = new Set(input.visualReview.items.map((item) => item.sourceContentHash));
+  const missingSources = input.sourceManifest.assets
+    .map((asset) => asset.contentHash)
+    .filter((hash) => !renderedSources.has(hash));
+  const diagnostics = [
+    ...output.diagnostics.map((message) => ({
+      code: "near_duplicate_worker_diagnostic",
+      message,
+      gateStatus: "incomplete" as const,
+      path: ["descriptorSetHash"],
+      evidenceHashes: [output.descriptorSetHash],
+    })),
+    ...(input.visualReview.status === "eligible"
+      ? []
+      : [
+          {
+            code: "visual_evidence_incomplete",
+            message: "Near-duplicate search requires complete canonical render evidence",
+            gateStatus: "incomplete" as const,
+            path: ["visualReviewIndexHash"],
+            evidenceHashes: [input.visualReview.hash],
+          },
+        ]),
+    ...(missingSources.length === 0
+      ? []
+      : [
+          {
+            code: "near_duplicate_sources_missing",
+            message: `${missingSources.length} source identities lack render shape descriptors`,
+            gateStatus: "incomplete" as const,
+            path: ["searchedSourceContentHashes"],
+            evidenceHashes: missingSources.slice(0, 256),
+          },
+        ]),
+  ];
+  const search = sealCatalogNearDuplicateSearch({
+    sourceManifestHash,
+    visualReviewIndexHash: input.visualReview.hash,
+    implementationHash: contentHash(
+      stableJson({
+        algorithmId: output.algorithmId,
+        workerSourceHash,
+        runtime: output.runtime,
+      }),
+    ),
+    descriptorSetHash: output.descriptorSetHash,
+    similarityThreshold: input.groupingPolicy.nearDuplicateSimilarity,
+    searchedSourceContentHashes: output.searchedSourceContentHashes,
+    comparedPairCount: output.comparedPairCount,
+    relations,
+    diagnostics,
+  });
+  await writeCanonicalJson(input.outputPath, search);
+  return CATALOG_NEAR_DUPLICATE_SEARCH_SCHEMA.parse(search);
 }
 
 async function catalogMeasure(values: string[]): Promise<void> {
@@ -220,34 +474,24 @@ async function catalogMeasure(values: string[]): Promise<void> {
   const source = options.get("--source") ?? "registry/source-manifest.json";
   const output = options.get("--output") ?? ".basalt/catalog/measurements.json";
   const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(await readJson(source));
+  await requireSourceProvenance(manifest, options.get("--provenance"));
   const assets = new Map<string, CatalogAssetArtifact>();
   const diagnostics: Array<{ sourceContentHash: string; reason: string }> = [];
-  const candidates = new Map<string, Omit<CatalogMeasureTask, "taskId">>();
-  for (const pack of manifest.packages)
-    for (const file of pack.files) {
-      const task = {
-        workspaceRoot: repositoryRoot,
-        relativePath: file.relativePath,
-        source: {
-          contentHash: file.sha256,
-          packageId: pack.packageId,
-          licenseId: pack.licenseId,
-          commercialUsePermitted: pack.commercialUsePermitted,
-          redistributionPermitted: pack.redistributionPermitted,
-          attribution: pack.attribution,
-          metersPerSourceUnit: file.metersPerSourceUnit,
-        },
-      };
-      const existing = candidates.get(file.sha256);
-      if (!existing || compare(task.relativePath, existing.relativePath) < 0)
-        candidates.set(file.sha256, task);
-    }
-  const tasks = [...candidates.values()]
+  const tasks = manifest.assets
+    .map((asset) => ({
+      workspaceRoot: repositoryRoot,
+      relativePath: asset.relativePath,
+      source: {
+        contentHash: asset.contentHash,
+        rights: asset.rights,
+        metersPerSourceUnit: asset.metersPerSourceUnit,
+      },
+    }))
     .sort((left, right) => compare(left.source.contentHash, right.source.contentHash))
     .map((entry, taskId) => ({ ...entry, taskId }));
-  const requestedWorkers = Number(options.get("--workers") ?? Math.min(8, availableParallelism()));
-  if (!Number.isSafeInteger(requestedWorkers) || requestedWorkers < 1 || requestedWorkers > 32)
-    throw new Error("--workers must be an integer from 1 through 32");
+  const requestedWorkers = requireLocalCatalogWorkerCount(
+    Number(options.get("--workers") ?? Math.min(MAX_LOCAL_CATALOG_WORKERS, availableParallelism())),
+  );
   for (const outcome of await measureCatalogTasks(
     tasks,
     Math.min(requestedWorkers, tasks.length),
@@ -273,11 +517,7 @@ async function catalogMeasure(values: string[]): Promise<void> {
 async function catalogRender(values: string[]): Promise<void> {
   const options = parseOptions(values);
   const workers = options.get("--workers");
-  if (
-    workers !== undefined &&
-    (!Number.isSafeInteger(Number(workers)) || Number(workers) < 1 || Number(workers) > 8)
-  )
-    throw new Error("--workers must be an integer from 1 through 8");
+  if (workers !== undefined) requireLocalCatalogWorkerCount(Number(workers));
   const { stdout, stderr } = await execFile(
     process.execPath,
     [resolve(repositoryRoot, "scripts/render-catalog-review.mjs")],
@@ -294,6 +534,14 @@ async function catalogRender(values: string[]): Promise<void> {
 async function catalogHypothesize(values: string[]): Promise<void> {
   const options = parseOptions(values);
   const output = options.get("--output") ?? ".basalt/catalog/hypothesis-requests.json";
+  const nameHintsOutput =
+    options.get("--name-hints-output") ?? ".basalt/catalog/source-name-hints.json";
+  const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
+    await readJson(options.get("--source") ?? "registry/source-manifest.json"),
+  );
+  const provenance = SOURCE_PROVENANCE_LEDGER_SCHEMA.parse(
+    await readJson(options.get("--provenance") ?? "registry/source-provenance.json"),
+  );
   const measured = CATALOG_MEASUREMENT_SET_SCHEMA.parse(
     await readJson(options.get("--measurements") ?? ".basalt/catalog/measurements.json"),
   );
@@ -304,18 +552,34 @@ async function catalogHypothesize(values: string[]): Promise<void> {
   const lexicon = SEMANTIC_LEXICON_SNAPSHOT_SCHEMA.parse(
     await readJson("registry/semantics/lexicon.json"),
   );
+  const sourceManifestHash = contentHash(stableJson(manifest));
+  if (
+    measured.sourceManifestHash !== sourceManifestHash ||
+    visual.sourceManifestHash !== sourceManifestHash
+  )
+    throw new Error("Hypothesis inputs do not bind the current canonical source manifest");
+  const sourceNameHints = buildCatalogSourceNameHintSet({
+    sourceManifest: manifest,
+    provenance,
+  });
+  await writeCanonicalJson(nameHintsOutput, sourceNameHints);
   const renders = new Map(visual.items.map((item) => [item.sourceContentHash, item]));
+  const nameHints = new Map(
+    sourceNameHints.items.map((item) => [item.sourceContentHash, item] as const),
+  );
   const requestedConceptIds = semanticModule.concepts
     .map((concept) => concept.conceptId)
     .sort(compare);
   const requests = measured.assets.flatMap((asset) => {
     const render = renders.get(asset.source.contentHash);
-    return render
+    const nameHint = nameHints.get(asset.source.contentHash);
+    return render && nameHint
       ? [
           sealAssetSemanticHypothesisRequest({
             sourceContentHash: asset.source.contentHash,
             measurementHash: asset.hash,
             renderEvidenceHash: render.evidence.hash,
+            sourceNameHintHash: nameHint.hash,
             semanticModuleHash: semanticModule.snapshot.hash,
             semanticLexiconHash: lexicon.hash,
             requestedConceptIds,
@@ -323,18 +587,19 @@ async function catalogHypothesize(values: string[]): Promise<void> {
         ]
       : [];
   });
-  const missingRenders = measured.assets.length - requests.length;
+  const missingEvidence = measured.assets.length - requests.length;
   const requestSet = sealCatalogHypothesisRequestSet({
     status: "incomplete",
     measurementSetHash: measured.hash,
     visualReviewIndexHash: visual.hash,
+    sourceNameHintSetHash: sourceNameHints.hash,
     semanticModuleHash: semanticModule.snapshot.hash,
     semanticLexiconHash: lexicon.hash,
     requests,
     diagnostics: [
       "Hypothesis requests have no compiler authority and await an external vision adapter",
-      ...(missingRenders > 0
-        ? [`${missingRenders} measured assets lack exact render evidence`]
+      ...(missingEvidence > 0
+        ? [`${missingEvidence} measured assets lack exact render or source-name hint evidence`]
         : []),
     ],
   });
@@ -343,6 +608,8 @@ async function catalogHypothesize(values: string[]): Promise<void> {
     status: requestSet.status,
     output: absolute(output),
     requests: requests.length,
+    sourceNameHints: sourceNameHints.items.length,
+    sourceNameHintsOutput: absolute(nameHintsOutput),
     hash: requestSet.hash,
   });
 }
@@ -459,6 +726,7 @@ async function loadOrCreateReceiptSet(
         request.sourceContentHash !== receipt.sourceContentHash ||
         request.measurementHash !== receipt.measurementHash ||
         request.renderEvidenceHash !== receipt.renderEvidenceHash ||
+        request.sourceNameHintHash !== receipt.sourceNameHintHash ||
         request.semanticModuleHash !== receipt.semanticModuleHash ||
         request.semanticLexiconHash !== receipt.semanticLexiconHash
       )
@@ -822,6 +1090,16 @@ interface CatalogAuthorityInputs {
   readonly audits: z.output<typeof CATALOG_COHORT_AUDIT_SCHEMA>[];
 }
 
+async function requireSourceProvenance(
+  manifest: z.output<typeof TRUSTED_SOURCE_MANIFEST_SCHEMA>,
+  path = "registry/source-provenance.json",
+): Promise<void> {
+  const provenance = SOURCE_PROVENANCE_LEDGER_SCHEMA.parse(await readJson(path));
+  const result = validateSourceAuthority({ manifest, provenance });
+  if (result.status !== "eligible")
+    throw new Error(`Source authority is ${result.status}: ${stableJson(result.diagnostics)}`);
+}
+
 async function loadCatalogAuthority(
   options: ReadonlyMap<string, string>,
 ): Promise<CatalogAuthorityInputs> {
@@ -832,6 +1110,7 @@ async function loadCatalogAuthority(
   const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
     await readJson(options.get("--source") ?? "registry/source-manifest.json"),
   );
+  await requireSourceProvenance(manifest, options.get("--provenance"));
   const measurements = CATALOG_MEASUREMENT_SET_SCHEMA.parse(
     await readJson(options.get("--measurements") ?? ".basalt/catalog/measurements.json"),
   );
@@ -881,11 +1160,7 @@ function sealCatalogAuthoritySnapshot(authority: CatalogAuthorityInputs) {
     assets: authority.measurements.assets,
     declarations: authority.entryDeclarations,
     dispositions: authority.dispositions,
-    sourceContentHashes: [
-      ...new Set(
-        authority.manifest.packages.flatMap((pack) => pack.files.map((file) => file.sha256)),
-      ),
-    ],
+    sourceContentHashes: authority.manifest.assets.map((asset) => asset.contentHash),
   });
 }
 
@@ -931,6 +1206,10 @@ async function retainCatalogEvidence(
     {
       path: options.get("--requests") ?? ".basalt/catalog/hypothesis-requests.json",
       schema: CATALOG_HYPOTHESIS_REQUEST_SET_SCHEMA,
+    },
+    {
+      path: options.get("--name-hints") ?? ".basalt/catalog/source-name-hints.json",
+      schema: CATALOG_SOURCE_NAME_HINT_SET_SCHEMA,
     },
     {
       path: options.get("--receipts") ?? ".basalt/catalog/hypothesis-receipts.json",
@@ -1282,7 +1561,7 @@ function usage(): void {
       "Basalt — semantic world compiler",
       "",
       "  basalt semantics validate|seal|explain",
-      "  basalt catalog inventory|providers|measure|render|hypothesize|panel|cluster|review",
+      "  basalt catalog inventory|calibration|providers|measure|render|hypothesize|panel|cluster|review",
       "  basalt catalog decide|audit|admit|validate|seal|commit",
       "  basalt world compile <plan> --catalog <committed-catalog>",
       "  basalt roblox install-plugin",

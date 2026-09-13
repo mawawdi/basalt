@@ -5,12 +5,14 @@ import { createHash } from "node:crypto";
 import { constants } from "node:fs";
 import { lstat, mkdir, open, readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
 import { availableParallelism } from "node:os";
-import { basename, dirname, extname, relative, resolve } from "node:path";
+import { basename, dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import {
   CATALOG_VISUAL_REVIEW_INDEX_SCHEMA,
   CATALOG_REVIEW_VIEWPOINTS,
+  MAX_LOCAL_CATALOG_WORKERS,
+  requireLocalCatalogWorkerCount,
   sealCatalogRenderEvidence,
   sealCatalogVisualReviewIndex,
 } from "@basalt/catalog-authoring";
@@ -44,6 +46,13 @@ const materialMode = {
   roughness: 0.72,
   emissionStrength: 0,
 };
+const channelEncoding = {
+  rgb: "agx_medium_high_contrast_rgba",
+  silhouette: "linear_alpha_u8",
+  normalizedDepth: "camera_clip_linear_u16",
+  surfaceNormal: "world_xyz_mapped_to_rgb_u8",
+  unlitBaseColor: "linear_diffuse_color_rgba_u8",
+};
 const compare = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 const renderPolicyReceiptSchema = z
   .object({
@@ -52,6 +61,7 @@ const renderPolicyReceiptSchema = z
     cameraRigHash: z.string().regex(/^[a-f0-9]{64}$/u),
     lightingHash: z.string().regex(/^[a-f0-9]{64}$/u),
     materialModeHash: z.string().regex(/^[a-f0-9]{64}$/u),
+    channelEncodingHash: z.string().regex(/^[a-f0-9]{64}$/u),
   })
   .passthrough();
 
@@ -112,11 +122,12 @@ function run(command, args, capture = false, filterProgress = false) {
 }
 
 function boundedWorkerCount(itemCount) {
-  const requested = Number(
-    process.env.BASALT_REVIEW_WORKERS ?? Math.min(4, availableParallelism()),
+  const requested = requireLocalCatalogWorkerCount(
+    Number(
+      process.env.BASALT_REVIEW_WORKERS ??
+        Math.min(MAX_LOCAL_CATALOG_WORKERS, availableParallelism()),
+    ),
   );
-  if (!Number.isSafeInteger(requested) || requested < 1 || requested > 8)
-    throw new Error("BASALT_REVIEW_WORKERS must be an integer from 1 through 8");
   return Math.min(requested, itemCount);
 }
 
@@ -165,19 +176,19 @@ async function writeJsonAtomic(path, value) {
   await rename(temporary, path);
 }
 
-function reviewItem(pack, file) {
-  const outputDirectory = resolve(previewRoot, file.sha256);
+function reviewItem(asset) {
+  const outputDirectory = resolve(previewRoot, asset.contentHash);
   return {
-    sourceContentHash: file.sha256,
-    packageId: pack.packageId,
-    sourcePath: resolve(root, file.relativePath),
-    relativePath: file.relativePath,
+    sourceContentHash: asset.contentHash,
+    sourcePath: resolve(root, asset.relativePath),
     contactSheetPath: resolve(outputDirectory, "contact-sheet.png"),
     views: CATALOG_REVIEW_VIEWPOINTS.map((view) => ({
       ...view,
       rgbPath: resolve(outputDirectory, `${view.viewId}-rgb.png`),
       silhouettePath: resolve(outputDirectory, `${view.viewId}-silhouette.png`),
       normalizedDepthPath: resolve(outputDirectory, `${view.viewId}-depth.png`),
+      surfaceNormalPath: resolve(outputDirectory, `${view.viewId}-normal.png`),
+      unlitBaseColorPath: resolve(outputDirectory, `${view.viewId}-base-color.png`),
     })),
   };
 }
@@ -191,6 +202,8 @@ async function renderOutputsComplete(item) {
     view.rgbPath,
     view.silhouettePath,
     view.normalizedDepthPath,
+    view.surfaceNormalPath,
+    view.unlitBaseColorPath,
   ]);
   return (await Promise.all(paths.map(realPng))).every(Boolean);
 }
@@ -213,6 +226,8 @@ async function resetItemOutputs(item) {
       removeRegularOutput(view.rgbPath),
       removeRegularOutput(view.silhouettePath),
       removeRegularOutput(view.normalizedDepthPath),
+      removeRegularOutput(view.surfaceNormalPath),
+      removeRegularOutput(view.unlitBaseColorPath),
     ]),
   ]);
 }
@@ -236,25 +251,17 @@ async function main() {
     ?.trim();
   const rendererImplementationHash = createHash("sha256")
     .update(await readFile(rendererPath))
-    .update(await readFile(contactSheetPath))
     .update(blenderIdentity)
     .digest("hex");
   const cameraRigHash = contentHash(stableJson(cameraRig));
   const lightingHash = contentHash(stableJson(lighting));
   const materialModeHash = contentHash(stableJson(materialMode));
+  const channelEncodingHash = contentHash(stableJson(channelEncoding));
   const source = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
     JSON.parse(await readFile(resolve(root, "registry/source-manifest.json"), "utf8")),
   );
   const sourceManifestHash = contentHash(stableJson(source));
-  const byHash = new Map();
-  for (const pack of source.packages)
-    for (const file of pack.files) {
-      const candidate = reviewItem(pack, file);
-      const existing = byHash.get(file.sha256);
-      if (!existing || compare(candidate.relativePath, existing.relativePath) < 0)
-        byHash.set(file.sha256, candidate);
-    }
-  const items = [...byHash.values()].sort((left, right) =>
+  const items = source.assets.map(reviewItem).sort((left, right) =>
     compare(left.sourceContentHash, right.sourceContentHash),
   );
   const indexPath = resolve(reviewRoot, "index.json");
@@ -269,7 +276,8 @@ async function main() {
     value?.rendererImplementationHash === rendererImplementationHash &&
     value.cameraRigHash === cameraRigHash &&
     value.lightingHash === lightingHash &&
-    value.materialModeHash === materialModeHash;
+    value.materialModeHash === materialModeHash &&
+    value.channelEncodingHash === channelEncodingHash;
   const reusableEvidence = policyMatches(previous) || policyMatches(previousJob);
   if (!reusableEvidence) await resetGeneratedDirectory(previewRoot);
   else await mkdir(previewRoot, { recursive: true, mode: 0o700 });
@@ -286,6 +294,7 @@ async function main() {
     cameraRigHash,
     lightingHash,
     materialModeHash,
+    channelEncodingHash,
     items: pending,
   };
   await writeJsonAtomic(jobPath, job);
@@ -359,6 +368,7 @@ async function main() {
       cameraRigHash,
       lightingHash,
       materialModeHash,
+      channelEncodingHash,
       views: await Promise.all(
         item.views.map(async (view) => ({
           viewId: view.viewId,
@@ -367,26 +377,21 @@ async function main() {
           rgbHash: await hashFile(view.rgbPath),
           silhouetteHash: await hashFile(view.silhouettePath),
           normalizedDepthHash: await hashFile(view.normalizedDepthPath),
+          surfaceNormalHash: await hashFile(view.surfaceNormalPath),
+          unlitBaseColorHash: await hashFile(view.unlitBaseColorPath),
         })),
       ),
-      contactSheetHash: await hashFile(item.contactSheetPath),
     });
-    const fileName = basename(item.relativePath);
     indexedItems.push({
       sourceContentHash: item.sourceContentHash,
-      packageId: item.packageId,
-      reviewHints: {
-        relativePath: item.relativePath,
-        filenameStem: fileName.slice(0, fileName.length - extname(fileName).length),
-        vendorDirectory: dirname(item.relativePath).split("\\").join("/"),
-        authority: "review_hint_only",
-      },
       contactSheetRelativePath: portableRelative(item.contactSheetPath),
       viewArtifacts: item.views.map((view) => ({
         viewId: view.viewId,
         rgbRelativePath: portableRelative(view.rgbPath),
         silhouetteRelativePath: portableRelative(view.silhouettePath),
         normalizedDepthRelativePath: portableRelative(view.normalizedDepthPath),
+        surfaceNormalRelativePath: portableRelative(view.surfaceNormalPath),
+        unlitBaseColorRelativePath: portableRelative(view.unlitBaseColorPath),
       })),
       evidence,
     });
@@ -402,6 +407,7 @@ async function main() {
     cameraRigHash,
     lightingHash,
     materialModeHash,
+    channelEncodingHash,
     items: indexedItems,
     diagnostics,
   });

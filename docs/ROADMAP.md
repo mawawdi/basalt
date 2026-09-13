@@ -11,10 +11,20 @@ admission invariants belong in [Visuals](VISUALS.md).
 - Engine-neutral metric catalog and world contracts, strict entry kinds, typed
   gaps, deterministic resolution, immutable staged artifacts, bounded CSP solving,
   and shared 3D occupancy.
-- Complete source accounting and semantic-free measurement for nearly the entire
-  local corpus. The current tracked catalog has no admitted entries; unresolved
-  sources correctly remain incomplete. `basalt catalog inventory` is the live
-  count authority.
+- Complete source accounting, multiview rendering, and semantic-free physical
+  measurement for the local corpus. Animated and skinned sources retain explicit
+  rest-pose evidence without claiming pose-dependent support or interfaces.
+  Extracted GLBs occupy one content-addressed, source-neutral pool; archive
+  provenance and rights are recorded separately. The current tracked catalog has
+  no admitted entries; unresolved sources correctly remain incomplete. `basalt
+catalog inventory` is the live count authority.
+- A tracked admission rubric, seven-channel evidence contract, physical-leakage
+  analysis and grouping contracts, deterministic whole-group assignment, and a
+  complete physical calibration split. Original basenames are available only as
+  separately hashed weak hints to semantic hypothesis adapters; source origin,
+  archive identity, and directories are forbidden from inference and split
+  construction. The split is structurally eligible but the admission policy is
+  not yet statistically qualified.
 - An executable admission prototype with implementation-distinct hypothesis
   receipts, exact-signature consensus, one visual embedding channel,
   complete-link cohorts, deterministic review samples, curator decisions, and
@@ -33,17 +43,21 @@ admission invariants belong in [Visuals](VISUALS.md).
 This is the next milestone. Do not launch paid full-corpus model inference until
 the pilot gates below exist.
 
-1. Define the gold-set rubric and defect taxonomy for semantic facets, asset
-   health, installation, entry kind, rights, style coherence, and pairwise
-   substitutability. Split calibration and evaluation by source pack, preserving
-   an untouched pack for the final operational check.
+1. Qualify the completed physical leakage analysis across the canonical source
+   pool. Exact canonical geometry, component containment, contextual shared-texture
+   evidence, an all-pairs rendered-shape pre-pass, and whole-component assignment
+   are implemented with full coverage. Benchmark near-duplicate recall before
+   treating the split as statistically qualified; never use archive provenance as
+   a feature or split.
 2. Replace the single mixed visual signal with independently hashed evidence
    channels: integrity, geometry, material, appearance, silhouette/depth/normals,
    installation, and semantics. Add deterministic point or mesh samples and keep
    per-view features.
 3. Benchmark a deliberately diverse adapter slate on the same gold set. Calibrate
-   each facet and dependency group; implement hierarchy-aware prediction sets,
-   explicit abstention, novelty detection, and pack-shift gating.
+   each facet and dependency group; report visual-only, basename-only, and combined
+   ablations; implement hierarchy-aware prediction sets, explicit abstention,
+   novelty detection, and distribution-shift gating. Reject any policy whose
+   apparent quality depends on pack identity or directory leakage.
 4. Replace whole-signature majority voting with factorized aggregation followed by
    semantic constraint validation. A model score remains evidence, never an
    admitted assertion.
@@ -56,9 +70,10 @@ the pilot gates below exist.
 7. Implement the new receipts, calibration artifacts, prediction sets,
    substitution evidence, qualification receipts, and deterministic tests. Delete
    the superseded panel/cohort authority path in the same clean break.
-8. Run one low-risk pilot over whole, ground-supported props. Proceed pack by pack
-   only after held-out and audit results meet the policy. Unknown, shifted,
-   component, attachment, route, and assembly cases may remain incomplete.
+8. Run one low-risk pilot over whole, ground-supported props. Expand by calibrated
+   risk stratum only after disjoint evaluation and audit results meet the policy.
+   Unknown, shifted, component, attachment, route, and assembly cases may remain
+   incomplete.
 
 The evidence and statistical rationale is preserved in
 [Catalog Admission for an Open-World 3D Asset Registry](research/catalog-admission-state-of-the-art.md).
@@ -76,7 +91,7 @@ After the admission pilot is qualified:
 4. Requalify TRELLIS.2 against pinned worker bytes, dependency and rights evidence,
    metric finishing, and creator-reviewed outputs. Implement Hunyuan3D 2.1 and
    Pixal3D workers only from pinned upstream code and their own measured contracts.
-5. Run a genuinely unseen asset pack through the frozen kernel. Existing
+5. Run a genuinely unseen future acquisition through the frozen kernel. Existing
    commitments and unrelated dependency closures must remain byte-identical.
 
 ## World verification

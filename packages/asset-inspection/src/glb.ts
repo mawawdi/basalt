@@ -259,6 +259,10 @@ export interface GlbInspectionReport {
   hash: string;
   byteLength: number;
   jsonHash: string;
+  deformationMode: "static" | "rigid_animation" | "skinned";
+  measuredPose: "static" | "rest_pose";
+  animationCount: number;
+  skinCount: number;
   nodeCount: number;
   meshCount: number;
   triangleCount: number;
@@ -275,6 +279,7 @@ export interface GlbInspectionReport {
   materials: Array<{
     name: string;
     appearanceHash: string;
+    texturePayloadHashes: string[];
     textureChannels: Array<
       "base_color" | "metallic_roughness" | "normal" | "occlusion" | "opacity" | "emissive"
     >;
@@ -317,6 +322,9 @@ export interface GlbInspectionOptions {
   maximumTextures?: number;
   maximumTexturePixels?: number;
   expectedNodeNames?: readonly string[];
+  /** Permit physical inspection of animated/skinned sources at their authored
+   * rest/bind pose. This does not validate animation playback or deformation. */
+  allowDeformableGeometry?: boolean;
   /** Uniform metric scale of the adapted GLB. Required for admission-grade
    * pixels-per-meter measurements; defaults to one for generic inspection. */
   assetUnitsToMeters?: number;
@@ -1069,7 +1077,7 @@ export function inspectGlb(
     throw new Error("GLB JSON chunk is invalid UTF-8 JSON");
   }
   const gltf = gltfSchema.parse(decoded);
-  if (gltf.animations?.length || gltf.skins?.length)
+  if ((gltf.animations?.length || gltf.skins?.length) && !options.allowDeformableGeometry)
     throw new Error("Animations and skins are outside the current Blender scene contract");
   const extensions = [
     ...new Set([...(gltf.extensionsUsed ?? []), ...(gltf.extensionsRequired ?? [])]),
@@ -1167,9 +1175,27 @@ export function inspectGlb(
             ![5121, 5123, 5126].includes(accessor.componentType))
         )
           throw new Error(`GLB ${attribute} accessor is unsupported: ${name}`);
+        const isJointAttribute = /^JOINTS_[01]$/u.test(attribute);
+        const isWeightAttribute = /^WEIGHTS_[01]$/u.test(attribute);
+        if (
+          isJointAttribute &&
+          (accessor.type !== "VEC4" || ![5121, 5123].includes(accessor.componentType))
+        )
+          throw new Error(`GLB ${attribute} accessor is unsupported: ${name}`);
+        if (
+          isWeightAttribute &&
+          (accessor.type !== "VEC4" || ![5121, 5123, 5126].includes(accessor.componentType))
+        )
+          throw new Error(`GLB ${attribute} accessor is unsupported: ${name}`);
+        if ((isJointAttribute || isWeightAttribute) && !options.allowDeformableGeometry)
+          throw new Error(
+            `GLB deformable attribute ${attribute} is outside this contract: ${name}`,
+          );
         if (
           !["POSITION", "NORMAL", "TANGENT", "COLOR_0", "COLOR_1"].includes(attribute) &&
-          !/^TEXCOORD_[0-7]$/u.test(attribute)
+          !/^TEXCOORD_[0-7]$/u.test(attribute) &&
+          !isJointAttribute &&
+          !isWeightAttribute
         )
           throw new Error(`GLB attribute ${attribute} is unsupported: ${name}`);
         validateVertexAttributeValues(gltf, binary, accessorIndex, attribute, name);
@@ -1270,6 +1296,18 @@ export function inspectGlb(
     kind: "GlbInspectionReport" as const,
     byteLength: bytes.byteLength,
     jsonHash: contentHash(new TextDecoder().decode(jsonBytes)),
+    deformationMode:
+      (gltf.skins?.length ?? 0) > 0
+        ? ("skinned" as const)
+        : (gltf.animations?.length ?? 0) > 0
+          ? ("rigid_animation" as const)
+          : ("static" as const),
+    measuredPose:
+      (gltf.animations?.length ?? 0) > 0 || (gltf.skins?.length ?? 0) > 0
+        ? ("rest_pose" as const)
+        : ("static" as const),
+    animationCount: gltf.animations?.length ?? 0,
+    skinCount: gltf.skins?.length ?? 0,
     nodeCount: gltf.nodes.length,
     meshCount: gltf.meshes.length,
     triangleCount: totalTriangles,
@@ -1293,6 +1331,7 @@ export function inspectGlb(
       return {
         name: entry.name || `material-${index}`,
         appearanceHash: materialAppearanceHash(gltf, imageReports, entry),
+        texturePayloadHashes: materialTexturePayloadHashes(gltf, imageReports, entry),
         textureChannels,
         pbrChannels: materialPbrChannels(entry, textureChannels),
         properties,
@@ -1752,6 +1791,24 @@ function materialAppearanceHash(
   );
 }
 
+function materialTexturePayloadHashes(
+  gltf: z.infer<typeof gltfSchema>,
+  images: GlbInspectionReport["images"],
+  material: z.infer<typeof gltfSchema>["materials"][number],
+): string[] {
+  return [
+    material.pbrMetallicRoughness?.baseColorTexture,
+    material.pbrMetallicRoughness?.metallicRoughnessTexture,
+    material.normalTexture,
+    material.occlusionTexture,
+    material.emissiveTexture,
+  ]
+    .map((reference) => referencedTextureImage(gltf, images, reference)?.sha256)
+    .filter((hash): hash is string => hash !== undefined)
+    .filter((hash, index, values) => values.indexOf(hash) === index)
+    .sort();
+}
+
 function validateBufferViews(gltf: z.infer<typeof gltfSchema>, binaryLength: number): void {
   for (const [index, bufferView] of gltf.bufferViews.entries()) {
     if (bufferView.buffer !== 0) throw new Error(`GLB bufferView ${index} uses missing buffer`);
@@ -1829,6 +1886,14 @@ function validateVertexAttributeValues(
     accessor.normalized !== true
   )
     throw new Error(`GLB integer ${attribute} accessor must be normalized: ${name}`);
+  if (/^JOINTS_[01]$/u.test(attribute) && accessor.normalized === true)
+    throw new Error(`GLB ${attribute} accessor cannot be normalized: ${name}`);
+  if (
+    /^WEIGHTS_[01]$/u.test(attribute) &&
+    accessor.componentType !== 5126 &&
+    accessor.normalized !== true
+  )
+    throw new Error(`GLB integer ${attribute} accessor must be normalized: ${name}`);
   for (let element = 0; element < accessor.count; element += 1) {
     const values = Array.from({ length: componentCount }, (_, component) =>
       readAccessorComponent(
@@ -1849,6 +1914,12 @@ function validateVertexAttributeValues(
       throw new Error(
         `GLB TANGENT contains an invalid frame vector: ${name}/${stableJson(values)}`,
       );
+    if (
+      /^WEIGHTS_[01]$/u.test(attribute) &&
+      (values.some((value) => value < 0 || value > 1) ||
+        Math.abs(values.reduce((sum, value) => sum + value, 0) - 1) > 2e-2)
+    )
+      throw new Error(`GLB ${attribute} contains invalid normalized weights: ${name}`);
   }
 }
 

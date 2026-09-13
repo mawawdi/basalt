@@ -1,4 +1,8 @@
-import { sealCatalogAssetArtifact, type CatalogAssetArtifact } from "@basalt/catalog-model";
+import {
+  sealCatalogAssetArtifact,
+  type CatalogAssetArtifact,
+  type CatalogRights,
+} from "@basalt/catalog-model";
 import { contentHash, quantizeQ32_32, stableJson } from "@basalt/contracts";
 import type { NormalizedMesh } from "./geometry.js";
 import { inspectGlb, inspectGlbMeshes } from "./glb.js";
@@ -7,11 +11,7 @@ import { fitSupportPlane, seedFromAssetId, type SupportPlanePatch } from "./supp
 
 export interface CatalogGlbSource {
   readonly contentHash: string;
-  readonly packageId: string;
-  readonly licenseId: string;
-  readonly commercialUsePermitted: boolean;
-  readonly redistributionPermitted: boolean;
-  readonly attribution: string;
+  readonly rights: CatalogRights;
   readonly metersPerSourceUnit: number;
 }
 
@@ -25,6 +25,7 @@ export function measureCatalogGlb(
     maximumTriangles: 20_000_000,
     maximumTrianglesPerMesh: 20_000_000,
     assetUnitsToMeters: source.metersPerSourceUnit,
+    allowDeformableGeometry: true,
   });
   const meshNodes = report.nodes.filter(
     (node) => node.meshIndex !== undefined && node.bounds !== undefined,
@@ -41,18 +42,29 @@ export function measureCatalogGlb(
     y: Math.max(...meshNodes.map((node) => node.bounds!.maximum[1])) * scale,
     z: Math.max(...meshNodes.map((node) => node.bounds!.maximum[2])) * scale,
   };
-  const geometry = combineMeshes(
-    inspectGlbMeshes(bytes).map((mesh) => scaleMesh(mesh, source.metersPerSourceUnit)),
+  const measuredMeshes = inspectGlbMeshes(bytes).map((mesh) =>
+    scaleMesh(mesh, source.metersPerSourceUnit),
   );
-  const supportResult = fitSupportPlane(
-    bottomContactPatches(geometry),
-    seedFromAssetId(source.contentHash),
-  );
+  if (measuredMeshes.length !== meshNodes.length)
+    throw new Error("Measured mesh inventory does not match bounded mesh nodes");
+  const geometry = combineMeshes(measuredMeshes);
+  const deformable = report.deformationMode !== "static";
+  const supportResult = deformable
+    ? ({
+        status: "refused",
+        reason: "Support is pose-dependent for animated or skinned geometry",
+      } as const)
+    : fitSupportPlane(bottomContactPatches(geometry), seedFromAssetId(source.contentHash));
   const supportEvidence =
     supportResult.status === "fit"
       ? contentHash(stableJson({ policy: MEASUREMENT_POLICY_HASH, result: supportResult }))
       : undefined;
-  const jointResult = fitJointPlanes(geometry);
+  const jointResult = deformable
+    ? ({
+        status: "refused",
+        reason: "Interfaces are pose-dependent for animated or skinned geometry",
+      } as const)
+    : fitJointPlanes(geometry);
   const socketEvidence =
     jointResult.status === "fit"
       ? contentHash(stableJson({ policy: MEASUREMENT_POLICY_HASH, result: jointResult }))
@@ -78,16 +90,19 @@ export function measureCatalogGlb(
   return sealCatalogAssetArtifact({
     source: {
       contentHash: source.contentHash,
-      packageId: source.packageId,
-      licenseId: source.licenseId,
-      commercialUsePermitted: source.commercialUsePermitted,
-      redistributionPermitted: source.redistributionPermitted,
-      attribution: source.attribution,
+      rights: source.rights,
       sourceArtifact: {
         artifactHash: source.contentHash,
         bytes: report.byteLength,
         mediaType: "model/gltf-binary",
       },
+    },
+    geometryHash: catalogGeometryHash(geometry),
+    deformation: {
+      mode: report.deformationMode,
+      measuredPose: report.measuredPose,
+      animationCount: report.animationCount,
+      skinCount: report.skinCount,
     },
     coordinateFrame: {
       handedness: "right_handed",
@@ -99,8 +114,8 @@ export function measureCatalogGlb(
     bounds: { min: fixedVector(minimum), max: fixedVector(maximum) },
     parts: meshNodes.map((node, index) => ({
       partId: `part_${index.toString(16).padStart(8, "0")}`,
-      contentHash: contentHash(stableJson({ source: source.contentHash, node: node.name, index })),
-      role: "render_static" as const,
+      geometryHash: catalogGeometryHash(measuredMeshes[index]!),
+      role: deformable ? ("render_interactive" as const) : ("render_static" as const),
       transform: identityTransform(),
       bounds: {
         min: fixedVector({
@@ -122,6 +137,7 @@ export function measureCatalogGlb(
     })),
     materials: report.materials.map((material) => ({
       appearanceHash: material.appearanceHash,
+      payloadHashes: material.texturePayloadHashes,
       pbrChannels: material.pbrChannels.filter(
         (
           channel,
@@ -190,6 +206,98 @@ function combineMeshes(meshes: readonly NormalizedMesh[]): NormalizedMesh {
   if (vertices.length === 0 || triangles.length === 0)
     throw new Error("Source GLB contains no measurable triangle geometry");
   return { vertices, triangles };
+}
+
+/** Hash exact measured geometry independently of source bytes, names, materials,
+ * node ordering metadata, and translation. Near-duplicate matching remains a
+ * separate evidence channel; this digest intentionally proves only identical
+ * normalized triangle serialization. */
+export function catalogGeometryHash(mesh: NormalizedMesh): string {
+  const minimum = {
+    x: Number.POSITIVE_INFINITY,
+    y: Number.POSITIVE_INFINITY,
+    z: Number.POSITIVE_INFINITY,
+  };
+  for (const vertex of mesh.vertices) {
+    minimum.x = Math.min(minimum.x, vertex.x);
+    minimum.y = Math.min(minimum.y, vertex.y);
+    minimum.z = Math.min(minimum.z, vertex.z);
+  }
+  const fixedVertices = mesh.vertices.map((vertex) => {
+    const fixed = {
+      x: quantizeQ32_32(vertex.x - minimum.x),
+      y: quantizeQ32_32(vertex.y - minimum.y),
+      z: quantizeQ32_32(vertex.z - minimum.z),
+    };
+    return { fixed, key: `${fixed.x},${fixed.y},${fixed.z}` };
+  });
+  const canonicalVertices = [
+    ...new Map(fixedVertices.map((vertex) => [vertex.key, vertex.fixed] as const)).values(),
+  ].sort(compareFixedVectors);
+  const canonicalIndices = new Map<string, number>(
+    canonicalVertices.map(
+      (vertex, index) => [`${vertex.x},${vertex.y},${vertex.z}`, index] as const,
+    ),
+  );
+  const canonicalTriangles = mesh.triangles
+    .map((triangle) =>
+      triangle
+        .map((vertexIndex) => {
+          const vertex = fixedVertices[vertexIndex];
+          const canonicalIndex = vertex ? canonicalIndices.get(vertex.key) : undefined;
+          if (canonicalIndex === undefined)
+            throw new Error("Triangle references an unknown canonical vertex");
+          return canonicalIndex;
+        })
+        .sort((left, right) => left - right),
+    )
+    .sort(compareIntegerArrays);
+  const chunkSize = 4096;
+  const vertexChunkHashes: string[] = [];
+  for (let offset = 0; offset < canonicalVertices.length; offset += chunkSize)
+    vertexChunkHashes.push(
+      contentHash(stableJson(canonicalVertices.slice(offset, offset + chunkSize))),
+    );
+  const triangleChunkHashes: string[] = [];
+  for (let offset = 0; offset < canonicalTriangles.length; offset += chunkSize)
+    triangleChunkHashes.push(
+      contentHash(stableJson(canonicalTriangles.slice(offset, offset + chunkSize))),
+    );
+  return contentHash(
+    stableJson({
+      coordinateSystem: "right_handed_y_up_meters",
+      canonicalization: "translation_normalized_q32_vertex_and_unoriented_triangle_order",
+      vertexCount: canonicalVertices.length,
+      triangleCount: canonicalTriangles.length,
+      vertexChunkHashes,
+      triangleChunkHashes,
+    }),
+  );
+}
+
+function compareFixedVectors(
+  left: { readonly x: string; readonly y: string; readonly z: string },
+  right: { readonly x: string; readonly y: string; readonly z: string },
+): number {
+  return (
+    compareBigIntegers(left.x, right.x) ||
+    compareBigIntegers(left.y, right.y) ||
+    compareBigIntegers(left.z, right.z)
+  );
+}
+
+function compareBigIntegers(left: string, right: string): number {
+  const leftValue = BigInt(left);
+  const rightValue = BigInt(right);
+  return leftValue < rightValue ? -1 : leftValue > rightValue ? 1 : 0;
+}
+
+function compareIntegerArrays(left: readonly number[], right: readonly number[]): number {
+  for (let index = 0; index < Math.min(left.length, right.length); index += 1) {
+    const difference = left[index]! - right[index]!;
+    if (difference !== 0) return difference;
+  }
+  return left.length - right.length;
 }
 
 function bottomContactPatches(mesh: NormalizedMesh): SupportPlanePatch[] {

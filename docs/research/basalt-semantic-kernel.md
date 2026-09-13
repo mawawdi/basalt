@@ -28,6 +28,9 @@ A commitment contains an opaque concept ID, one upper sort, a normative
 definition, necessary and excluded identity criteria, exact direct-parent
 references, and materialized ancestor references. Labels, examples, aliases,
 translations, mappings, filenames, and search terms are excluded.
+Original asset basenames may still inform non-authoritative hypotheses as described
+in [Visuals](../VISUALS.md); they never become commitment fields or admitted
+semantic evidence.
 
 After admission, a commitment is immutable. A future asset pack may reuse an
 existing commitment, propose a genuinely new leaf for explicit review, or remain

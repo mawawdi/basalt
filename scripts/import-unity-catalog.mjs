@@ -19,7 +19,15 @@ import { tmpdir } from "node:os";
 import { basename, dirname, extname, relative, resolve, sep } from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { CATALOG_DISPOSITION_SCHEMA, TRUSTED_SOURCE_MANIFEST_SCHEMA } from "@basalt/catalog-model";
+import {
+  CATALOG_DISPOSITION_SCHEMA,
+  SOURCE_PROVENANCE_LEDGER_SCHEMA,
+  TRUSTED_SOURCE_MANIFEST_SCHEMA,
+  sealSourceProvenanceLedger,
+  sealSourceProvenanceRecord,
+  sourceAssetRelativePath,
+  sourceRightsEvidenceHash,
+} from "@basalt/catalog-model";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const registryRoot = resolve(repositoryRoot, "registry");
@@ -29,6 +37,7 @@ const blenderExecutable =
   process.env.BASALT_BLENDER ?? "/Applications/Blender.app/Contents/MacOS/Blender";
 const blenderWorker = resolve(repositoryRoot, "workers", "catalog-import", "worker.py");
 const sourceManifestPath = resolve(registryRoot, "source-manifest.json");
+const sourceProvenancePath = resolve(registryRoot, "source-provenance.json");
 const dispositionsPath = resolve(registryRoot, "dispositions.json");
 
 const ARCHIVE_ENTRY = /^[a-f0-9]{32}(?:\/(?:asset|asset\.meta|pathname|preview\.png)\/?|\/?)$/u;
@@ -334,7 +343,7 @@ function defaultMaterialFor(model, materials) {
   return ranked[0];
 }
 
-async function buildJob(project, assetPrefix, outputRoot, packageId) {
+async function buildJob(project, assetPrefix, outputRoot, originId) {
   const recordsByGuid = new Map(project.records.map((record) => [record.guid, record]));
   const textRecords = [];
   for (const record of project.records) {
@@ -428,13 +437,13 @@ async function buildJob(project, assetPrefix, outputRoot, packageId) {
       sourceUnityPath: model.pathname,
       outputPath,
       unityGlobalScale: model.importSettings.globalScale,
-      materialAuthority: selected ? `prefab:${selected.prefabPath}` : "pack_default",
+      materialAuthority: selected ? `prefab:${selected.prefabPath}` : "archive_default",
       materials: selectedMaterials.map((entry) => entry.material),
     };
   });
   return {
     kind: "UnityCatalogImportJob",
-    packageId,
+    originId,
     jobs,
     archiveRecords: project.records.length,
     prefabBindings: bindings.length,
@@ -460,39 +469,85 @@ async function writeJsonAtomic(path, value) {
 }
 
 async function registerOutputs(job, archiveRelativePath, outputRoot, rights) {
+  const previousManifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
+    JSON.parse(await readFile(sourceManifestPath, "utf8")),
+  );
+  const previousLedger = SOURCE_PROVENANCE_LEDGER_SCHEMA.parse(
+    JSON.parse(await readFile(sourceProvenancePath, "utf8")),
+  );
+  const records = previousLedger.records.filter((record) => record.originId !== job.originId);
   const files = [];
   for (const item of job.jobs) {
     await canonicalRegularFile(item.outputPath, outputRoot, "Imported GLB");
-    files.push({
-      relativePath: relative(repositoryRoot, item.outputPath).split(sep).join("/"),
-      sha256: await sha256File(item.outputPath),
-      metersPerSourceUnit: 1,
+    const contentHash = await sha256File(item.outputPath);
+    const relativePath = sourceAssetRelativePath(contentHash);
+    const destination = resolve(repositoryRoot, relativePath);
+    const current = await lstat(destination).catch((error) => {
+      if (error?.code === "ENOENT") return undefined;
+      throw error;
     });
+    if (current) {
+      if (
+        !current.isFile() ||
+        current.isSymbolicLink() ||
+        (await sha256File(destination)) !== contentHash
+      )
+        throw new Error(`Canonical source collision: ${relativePath}`);
+    } else {
+      await mkdir(dirname(destination), { recursive: true, mode: 0o700 });
+      await copyFile(item.outputPath, destination);
+    }
+    const provenance = sealSourceProvenanceRecord({
+      sourceContentHash: contentHash,
+      originId: job.originId,
+      archivePaths: [archiveRelativePath],
+      originalPath: item.sourceUnityPath,
+      sourceKind: rights.sourceKind,
+      metersPerSourceUnit: 1,
+      rights: {
+        licenseId: rights.licenseId,
+        commercialUsePermitted: rights.commercialUsePermitted,
+        redistributionPermitted: rights.redistributionPermitted,
+        attribution: rights.attribution,
+      },
+    });
+    records.push(provenance);
+    files.push({ contentHash, relativePath, provenanceHash: provenance.hash });
   }
-  files.sort((left, right) => compare(left.relativePath, right.relativePath));
-  const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
-    JSON.parse(await readFile(sourceManifestPath, "utf8")),
-  );
-  const packageEntry = {
-    packageId: job.packageId,
-    archivePaths: [archiveRelativePath],
-    assetRoots: [relative(repositoryRoot, outputRoot).split(sep).join("/")],
-    sourceKind: rights.sourceKind,
-    licenseId: rights.licenseId,
-    commercialUsePermitted: rights.commercialUsePermitted,
-    redistributionPermitted: rights.redistributionPermitted,
-    attribution: rights.attribution,
-    files,
-  };
-  manifest.packages = manifest.packages
-    .filter((entry) => entry.packageId !== job.packageId)
-    .concat(packageEntry)
-    .sort((left, right) => compare(left.packageId, right.packageId));
+  const ledger = sealSourceProvenanceLedger(records);
+  const recordsBySource = new Map();
+  for (const record of ledger.records) {
+    const values = recordsBySource.get(record.sourceContentHash) ?? [];
+    values.push(record);
+    recordsBySource.set(record.sourceContentHash, values);
+  }
+  const assets = [...recordsBySource]
+    .sort(([left], [right]) => compare(left, right))
+    .map(([contentHash, sourceRecords]) => {
+      const meterScales = new Set(sourceRecords.map((record) => record.metersPerSourceUnit));
+      if (meterScales.size !== 1)
+        throw new Error(`Conflicting source-unit scales for ${contentHash}`);
+      const rightsClaims = new Set(sourceRecords.map((record) => JSON.stringify(record.rights)));
+      if (rightsClaims.size !== 1) throw new Error(`Conflicting source rights for ${contentHash}`);
+      const rightsRecord = sourceRecords[0];
+      if (!rightsRecord) throw new Error(`Missing source provenance for ${contentHash}`);
+      return {
+        contentHash,
+        relativePath: sourceAssetRelativePath(contentHash),
+        metersPerSourceUnit: rightsRecord.metersPerSourceUnit,
+        rights: { ...rightsRecord.rights, evidenceHash: sourceRightsEvidenceHash(rightsRecord) },
+      };
+    });
+  const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse({
+    kind: "TrustedSourceManifest",
+    rightsNotice: previousManifest.rightsNotice,
+    assetRoot: previousManifest.assetRoot,
+    assets,
+  });
+  await writeJsonAtomic(sourceProvenancePath, ledger);
   await writeJsonAtomic(sourceManifestPath, manifest);
 
-  const liveHashes = new Set(
-    manifest.packages.flatMap((entry) => entry.files.map((file) => file.sha256)),
-  );
+  const liveHashes = new Set(manifest.assets.map((asset) => asset.contentHash));
   const existingDispositions = new Map(
     CATALOG_DISPOSITION_SCHEMA.array()
       .parse(JSON.parse(await readFile(dispositionsPath, "utf8")))
@@ -508,21 +563,28 @@ async function registerOutputs(job, archiveRelativePath, outputRoot, rights) {
   );
   dispositions.sort((left, right) => compare(left.sourceContentHash, right.sourceContentHash));
   await writeJsonAtomic(dispositionsPath, dispositions);
-  return files;
+  for (const previous of previousManifest.assets)
+    if (!liveHashes.has(previous.contentHash)) {
+      const path = resolve(repositoryRoot, previous.relativePath);
+      await canonicalRegularFile(
+        path,
+        resolve(repositoryRoot, previousManifest.assetRoot),
+        "Orphaned source",
+      );
+      await rm(path);
+    }
+  return files.sort((left, right) => compare(left.contentHash, right.contentHash));
 }
 
 async function main() {
   const options = parseArguments(process.argv.slice(2));
   const archivePath = resolve(repositoryRoot, required(options, "--archive"));
-  const outputRoot = resolve(repositoryRoot, required(options, "--output"));
-  const packageId = required(options, "--package-id");
+  const originId = required(options, "--origin-id");
   const assetPrefix = required(options, "--asset-prefix").replace(/\/$/u, "");
-  if (!/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u.test(packageId))
-    throw new Error(`Invalid package ID: ${packageId}`);
+  if (!/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u.test(originId))
+    throw new Error(`Invalid origin ID: ${originId}`);
   if (!inside(archiveRoot, archivePath))
     throw new Error("--archive must be under registry/source-archives");
-  if (!inside(registryRoot, outputRoot) || outputRoot === registryRoot)
-    throw new Error("--output must be a bounded directory under registry");
   await canonicalRegularFile(archivePath, archiveRoot, "Unity archive");
   await canonicalRegularFile(blenderExecutable, resolve("/Applications"), "Blender executable");
   await canonicalRegularFile(blenderWorker, repositoryRoot, "Catalog import worker");
@@ -530,12 +592,14 @@ async function main() {
   try {
     const unpacked = await unpackArchive(archivePath, temporaryRoot);
     const project = await reconstructProject(unpacked, temporaryRoot);
-    const job = await buildJob(project, assetPrefix, outputRoot, packageId);
+    const outputRoot = resolve(temporaryRoot, "glb-output");
+    await mkdir(outputRoot, { recursive: true, mode: 0o700 });
+    const job = await buildJob(project, assetPrefix, outputRoot, originId);
     await mkdir(generatedRoot, { recursive: true, mode: 0o700 });
-    const jobPath = resolve(generatedRoot, `${packageId}-job.json`);
+    const jobPath = resolve(generatedRoot, `${originId}-job.json`);
     await writeJsonAtomic(jobPath, job);
     process.stdout.write(
-      `${JSON.stringify({ status: "pending", packageId, models: job.jobs.length, job: jobPath })}\n`,
+      `${JSON.stringify({ status: "pending", originId, models: job.jobs.length, job: jobPath })}\n`,
     );
     await run(blenderExecutable, [
       "--background",
@@ -562,10 +626,10 @@ async function main() {
     });
     const report = {
       kind: "UnityCatalogImportReport",
-      packageId,
+      originId,
       archivePath: archiveRelativePath,
       assetPrefix,
-      outputRoot: relative(repositoryRoot, outputRoot).split(sep).join("/"),
+      assetRoot: "registry/source-assets/sha256",
       importedModels: files.length,
       archiveRecords: job.archiveRecords,
       prefabBindings: job.prefabBindings,
@@ -573,10 +637,10 @@ async function main() {
       skippedRecords: job.skippedRecords,
       outputs: files,
     };
-    const reportPath = resolve(generatedRoot, `${packageId}-report.json`);
+    const reportPath = resolve(generatedRoot, `${originId}-report.json`);
     await writeJsonAtomic(reportPath, report);
     process.stdout.write(
-      `${JSON.stringify({ status: "eligible", packageId, imported: files.length, report: reportPath }, null, 2)}\n`,
+      `${JSON.stringify({ status: "eligible", originId, imported: files.length, report: reportPath }, null, 2)}\n`,
     );
   } finally {
     await rm(temporaryRoot, { recursive: true, force: true });

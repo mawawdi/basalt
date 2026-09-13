@@ -1,5 +1,8 @@
 # Authored catalog entries
 
 Each JSON file in this directory is one canonical `CatalogEntryDeclaration`.
-Source paths and filenames may be shown by review tooling, but are never catalog
-authority and must not be copied here as evidence of semantic membership.
+Catalog declarations reference canonical content identities and admitted evidence.
+Origin archives, vendor folders, directories, and filenames must not be copied into
+declarations. Authoring tools may derive basename-only, non-authoritative weak hints
+from the provenance ledger for semantic hypothesis review; those hints never enter
+an entry seal or runtime catalog index.

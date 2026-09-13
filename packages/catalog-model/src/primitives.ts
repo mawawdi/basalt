@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   AABB_FIXED_SCHEMA,
   CANONICAL_HANDLE_SCHEMA,
+  HASH_SCHEMA,
   Q32_32_SCHEMA,
   Q32_VECTOR3_SCHEMA,
   compareCanonicalStrings,
@@ -11,6 +12,17 @@ export const ENTRY_HANDLE_SCHEMA = CANONICAL_HANDLE_SCHEMA;
 export const STYLE_PROFILE_HANDLE_SCHEMA = CANONICAL_HANDLE_SCHEMA;
 export const MEMBER_ID_SCHEMA = CANONICAL_HANDLE_SCHEMA;
 export const INTERFACE_ID_SCHEMA = CANONICAL_HANDLE_SCHEMA;
+
+export const CATALOG_RIGHTS_SCHEMA = z
+  .object({
+    licenseId: z.string().trim().min(1).max(160),
+    commercialUsePermitted: z.boolean(),
+    redistributionPermitted: z.boolean(),
+    attribution: z.string().max(2048),
+    evidenceHash: HASH_SCHEMA,
+  })
+  .strict();
+export type CatalogRights = z.output<typeof CATALOG_RIGHTS_SCHEMA>;
 
 export const CATALOG_ENTRY_KINDS = [
   "substitution_set",

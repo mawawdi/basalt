@@ -162,6 +162,7 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
       });
     const retainedKinds = new Set(evidenceKinds);
     const dependencies = [
+      ["CatalogHypothesisRequestSet", ["CatalogSourceNameHintSet"]],
       ["CatalogHypothesisPanel", ["CatalogHypothesisRequestSet", "CatalogHypothesisReceiptSet"]],
       ["CatalogVisualEmbeddingSet", ["CatalogVisualReviewIndex"]],
       [

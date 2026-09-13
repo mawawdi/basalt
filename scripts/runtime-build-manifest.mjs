@@ -19,6 +19,7 @@ const fixedInputs = [
   "scripts/render-catalog-review.mjs",
   "workers/catalog-review/render.py",
   "workers/catalog-review/contact_sheets.py",
+  "workers/catalog-review/near_duplicate.py",
   "tsconfig.json",
   "tsconfig.test.json",
 ];
