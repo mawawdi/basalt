@@ -1,6 +1,8 @@
 # Architecture
 
-This document is the authority for Basalt’s implemented architecture.
+This document is the authority for Basalt’s implemented architecture. Product
+invariants, visual/admission policy, evaluation claims, and future work have
+separate owners in the [documentation map](README.md).
 
 ## Authority flow
 
@@ -78,7 +80,7 @@ Resolution performs hard filtering before deterministic lexicographic ranking.
 Missing candidates become typed semantic, evidence, or catalog gaps. Member
 weights are canonical integers and affect hash-seeded selection.
 
-### Scalable admission
+### Current admission implementation
 
 Catalog admission deliberately separates inference, review, and authority:
 
@@ -93,10 +95,12 @@ measured asset + 12-view render
   -> tracked CatalogAuthorityCommit
 ```
 
-The panel requires independent adapter/model implementations and ignores their
-confidence values when voting. A source without semantic consensus or exact visual
-embedding remains an exception; it is never forced into a nearby cohort. Cohort
-materialization currently automates only genuine whole/aggregate substitution
+This is the executable baseline, not a claim that unattended corpus admission is
+qualified. The panel requires distinct adapter/model implementation hashes and
+ignores confidence when voting, but it does not yet establish statistical error
+independence or pack-shift robustness. A source without semantic consensus or an
+exact visual embedding remains an exception; it is never forced into a nearby
+cohort. Cohort materialization automates only genuine whole/aggregate substitution
 sets with measured ground, wall, or ceiling support. Assemblies, attachments,
 routes, socket-hosted assets, and environment realizers still require their typed
 authoring contracts.
@@ -109,6 +113,35 @@ measurement set needed by compilation. Unreferenced evidence is removed from the
 live tree after atomic root publication; Git provides history. A stale root fails
 `catalog validate --require-commit true`; `world compile` accepts the committed
 root and its retained measurements rather than unrelated local state.
+
+The stronger admission policy is intentionally not described here as current
+behavior. Its evidence basis is recorded in the
+[catalog-admission research](research/catalog-admission-state-of-the-art.md), and
+the unimplemented cutover is ordered in the [roadmap](ROADMAP.md#catalog-admission-cutover).
+
+## Storage and recovery
+
+The current storage boundary is local-first and has two distinct classes:
+
+- Tracked authority consists of `registry/semantics/`, `registry/catalog.json`,
+  authored declarations and decisions, and content-addressed compact JSON under
+  `registry/evidence/`. `catalog commit` atomically replaces the one current root;
+  Git supplies history.
+- Bulk payloads consist of source archives, source GLBs, generated RGB/depth/mask
+  frames, point samples, and future embedding buffers. They are identified by
+  cryptographic hashes but remain in ignored local roots such as the source asset
+  tree and `.basalt/` working state.
+
+Local reads and writes use bounded, no-follow, hash-checked artifact-store
+primitives where wired into a pipeline. The catalog does not currently have a
+remote CAS transport, replication guarantee, retention service, or garbage
+collector. A clean clone therefore recovers semantic and catalog authority plus
+retained JSON evidence, but not every bulk payload. Do not delete the local source
+or render corpus on the assumption that Git can restore it.
+
+Remote replication is deliberately deferred. It is a future durability layer,
+not a prerequisite silently embedded in current catalog semantics; see
+[Deferred infrastructure](ROADMAP.md#deferred-infrastructure).
 
 ### Catalog fulfillment
 
@@ -148,9 +181,9 @@ or structural targets are rejected at the plan boundary.
 
 `CompilationTaskResult` describes world, region, route, lot, structure, floor, and
 room scopes. It binds exact inputs, policy, outputs, status, resources, and
-diagnostics. The executor is currently local and bounded. The content-addressed
-shape supports later durable scheduling without provider or queue concepts leaking
-into the compiler.
+diagnostics. The executor is local and bounded. Durable or distributed execution
+is not implemented; the artifact contracts keep that future concern out of core
+compiler semantics.
 
 ## Roblox boundary
 

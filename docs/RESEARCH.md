@@ -1,20 +1,35 @@
 # Research Index
 
-Implemented authority lives in [Architecture](ARCHITECTURE.md), [Product thesis](BASALT.md),
-[Visual evidence](VISUALS.md), and [Evaluation](EVALS.md). These documents retain the
-rationale and external evidence that still informs the baseline:
+Everything indexed here is non-authoritative. Implemented truth and document
+ownership are defined by the [documentation map](README.md); accepted mechanics
+must be reflected in the relevant active document before code relies on them.
 
-- [Semantic kernel](research/basalt-semantic-kernel.md): the implemented identity,
-  facet, closure, and governance model.
-- [Deterministic asset resolution](research/deterministic-asset-resolution.md):
-  admissibility, filtering, ranking, weights, and typed gaps.
-- [Roblox mesh lowering](research/mesh-strategy.md): platform-specific asset,
-  material, and performance tradeoffs.
-- [TRELLIS.2 worker](../workers/trellis2/README.md),
-  [Hunyuan3D 2.1 worker](../workers/hunyuan3d/README.md), and
-  [Pixal3D worker](../workers/pixal3d/README.md): restored offline provider
-  boundaries and their current qualification limits.
-- [World-claw source](sources/world-claw.md): broad inspiration for hierarchical
-  world decomposition, not operational instruction.
-- [Roblox terrain source](sources/roblox-terrain.md): platform terrain constraints
-  and API evidence.
+## Current rationale
+
+- [Semantic kernel rationale](research/basalt-semantic-kernel.md) explains the
+  identity, facet, closure, and governance decisions behind the implemented
+  registry. The registry and [Architecture](ARCHITECTURE.md) remain authoritative.
+- [Catalog admission research](research/catalog-admission-state-of-the-art.md)
+  evaluates the current admission prototype and recommends calibrated multimodal
+  prediction, substitution proofs, and risk-limiting review. Its remote-storage
+  analysis is retained as a future option; the accepted current decision is
+  local-only storage.
+- [Roblox asset lowering](research/mesh-strategy.md) records platform-specific mesh,
+  material, and performance rationale. The implemented adapter boundary is owned by
+  [Architecture](ARCHITECTURE.md#roblox-boundary).
+
+## Provider implementation notes
+
+- [TRELLIS.2 worker](../workers/trellis2/README.md)
+- [Hunyuan3D 2.1 worker](../workers/hunyuan3d/README.md)
+- [Pixal3D worker](../workers/pixal3d/README.md)
+
+These describe offline adapters and qualification limits. Provider documentation
+cannot grant catalog admission or compiler authority.
+
+## Preserved sources
+
+- [WorldClaw](sources/world-claw.md) is broad inspiration for hierarchical world
+  decomposition, not an instruction set or Basalt design specification.
+- [Roblox terrain survey](sources/roblox-terrain.md) records dated platform facts
+  and opportunities. Current lowering behavior remains owned by Architecture.

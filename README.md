@@ -1,9 +1,8 @@
 # Basalt
 
-Basalt is an engine-neutral, deterministic hierarchical world compiler. Language
-models may interpret creator intent and propose semantic hypotheses. Only admitted
-semantic assertions, measured catalog evidence, and typed spatial solvers can
-authorize a build.
+Basalt is an engine-neutral, deterministic hierarchical world compiler. Models
+interpret intent and produce hypotheses; admitted semantic assertions, measured
+catalog evidence, and typed spatial solvers authorize builds.
 
 ```text
 intent + lexicon
@@ -16,8 +15,8 @@ intent + lexicon
   -> Roblox lowering and authoritative readback
 ```
 
-Every gate reports `eligible`, `incomplete`, or `rejected`. Basalt never turns a
-missing decision, missing asset, or unsatisfied constraint into a silent fallback.
+Every gate reports `eligible`, `incomplete`, or `rejected`. A missing decision,
+asset, or solver result never becomes a silent success.
 
 ## Commands
 
@@ -58,35 +57,12 @@ embeds a private local credential, materializes the plugin at
 bounded local port range automatically. Its single primary action imports all
 stages sequentially; Cancel is shown only while work is active.
 
-Generated working state uses stable paths under `.basalt/` and can be rebuilt.
-`catalog commit` atomically replaces the single tracked root at
-`registry/catalog.json`. That root embeds the exact runtime snapshot,
-dispositions, entry declarations, admitted assertions, policy, decisions, and
-audits. The exact measurements, request set, render index, inference receipts,
-panel, embeddings, cohorts, and review plan used by the root are copied to
-immutable `registry/evidence/<hash>.json` files; unreferenced evidence is removed
-from the live tree after publication because Git supplies history. World
-compilation reads the retained measurement set rather than ignored state. A
-normal Git commit therefore preserves the complete catalog metadata even if
-`.basalt/` is deleted. Source GLBs and rendered images remain external
-content-addressed payloads rather than bloating Git; their hashes and lineage are
-preserved, so those payloads still need ordinary artifact/archive backup.
-
-Catalog triage is cohort-based, not one click per asset. At least two independent
-semantic hypothesis implementations must agree exactly; a separately hashed
-visual embedding splits look-alikes by complete-link similarity; then Basalt
-selects visual medoids, visual and metric outliers, semantic boundaries, and a
-deterministic audit sample. A curator decides the finite cohort after reviewing
-only that sample. Model confidence never becomes compiler authority, and failed
-independent audits block admission.
-
-Catalog gaps may enter an offline fulfillment loop: reuse an exact coherent
-binding, restyle retained geometry, extend an existing substitution set, or
-synthesize a new substitution set. TRELLIS.2, Hunyuan3D 2.1, and Pixal3D are
-declared provider routes. `catalog providers` reports their real qualification
-state and never performs a paid run. Generated output must still pass generic
-asset finishing, metric measurement, visual review, semantic admission, and a
-new catalog seal before resolution can use it.
+`catalog commit` atomically replaces `registry/catalog.json` and retains the
+compact evidence needed by current authority. Bulk source GLBs, archives, and
+rendered images are content-identified but local-only. There is no remote CAS in
+the current baseline, so preserve those local payloads independently. The exact
+implemented storage and admission boundaries live in the
+[architecture](docs/ARCHITECTURE.md) and [visual evidence](docs/VISUALS.md) docs.
 
 ## Development
 
@@ -103,6 +79,7 @@ Studio.
 
 ## Documentation
 
+- [Documentation authority](docs/README.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Product thesis](docs/BASALT.md)
 - [Visual and catalog evidence](docs/VISUALS.md)

@@ -1,75 +1,118 @@
 # Roadmap
 
+This document contains only work that is not yet implemented or not yet
+qualified. Current mechanics belong in [Architecture](ARCHITECTURE.md); visual and
+admission invariants belong in [Visuals](VISUALS.md).
+
 ## Current baseline
 
-- Seven-sort semantic kernel, 146 content-addressed commitments, orthogonal facets,
-  separate lexicon, admitted/hypothesis assertions, and minimal dependency closures.
-- Engine-neutral metric catalog, typed entry kinds and gaps, complete source
-  accounting, and deterministic resolution.
-- Immutable plan, foundation, meso, micro, and `WorldBuild` artifacts.
-- AC-3 propagation, weighted entropy, bounded backtracking, shared 3D occupancy,
-  explicit lots, routes, and realization-intent dispatch.
-- npm workspaces, TypeScript project references, package exports, dependency gates,
-  and public-union exhaustiveness checks.
-- Isolated Roblox adapter with automatic credential embedding, discovery, sequential
-  docked import UI, authenticated local service, terrain voxel rollback, and exact
-  readback gating.
-- Offline catalog-fulfillment contracts for reuse, restyling, substitution-set
-  extension, and synthesis; immutable neural requests, receipts, execution budgets,
-  and provider-neutral raw mesh tensors.
-- Restored TRELLIS.2 inference internals plus an exact semantic-kernel-to-worker
-  boundary. Restored Hunyuan3D 2.1 and Pixal3D routes are explicit incomplete
-  scaffolds rather than falsely advertised inference providers.
-- Multi-implementation semantic panels, quantized visual-embedding cohorts,
-  deterministic active-review samples, finite cohort decisions, independent
-  audits, and an atomic tracked catalog root. Catalog authority, exact measurement
-  metadata, and costly compact inference evidence now survive deletion of
-  `.basalt/` after a Git commit.
+- A sealed seven-sort semantic kernel with orthogonal facets, separate lexicon,
+  admitted versus hypothesis assertions, and minimal semantic closures.
+- Engine-neutral metric catalog and world contracts, strict entry kinds, typed
+  gaps, deterministic resolution, immutable staged artifacts, bounded CSP solving,
+  and shared 3D occupancy.
+- Complete source accounting and semantic-free measurement for nearly the entire
+  local corpus. The current tracked catalog has no admitted entries; unresolved
+  sources correctly remain incomplete. `basalt catalog inventory` is the live
+  count authority.
+- An executable admission prototype with implementation-distinct hypothesis
+  receipts, exact-signature consensus, one visual embedding channel,
+  complete-link cohorts, deterministic review samples, curator decisions, and
+  audits. It is not statistically qualified for unattended corpus admission.
+- Offline catalog-fulfillment contracts for reuse, restyling, set extension, and
+  synthesis. TRELLIS.2 has executable worker code; Hunyuan3D 2.1 and Pixal3D are
+  fail-closed scaffolds. None is production-qualified.
+- An isolated Roblox adapter with credential embedding, authenticated local
+  discovery, sequential docked import, rollback, and creator-run readback.
+- One tracked catalog root and compact content-addressed JSON evidence. Bulk source
+  and render payloads remain local-only and are not recoverable from a clean Git
+  clone.
 
-The current 3,441 unique source identities are fully accounted for. All remain
-deliberately incomplete until their regenerated evidence is reviewed and their
-assertions are admitted; none is promoted merely to make the catalog look full.
-Complete accounting is not the same as complete classification.
+## Catalog admission cutover
 
-## Evidence work, in order
+This is the next milestone. Do not launch paid full-corpus model inference until
+the pilot gates below exist.
 
-1. Requalify TRELLIS.2 against the rewritten worker bytes, provisioned snapshot
-   seals, current rights evidence, and a small creator-reviewed pilot. Implement
-   isolated Hunyuan3D 2.1 and Pixal3D inference workers only from pinned upstream
-   bytes; do not copy TRELLIS-specific assumptions into their adapters.
-2. Add a provider-neutral material-restyling adapter and verifier so style-only
-   misses can preserve geometry. Keep whole-object regeneration as a separately
-   evidenced plan after restyling fails.
-3. Implement and qualify at least two independent semantic-vision adapters plus one
-   visual-embedding adapter, then run the existing 3,436 measurable identities
-   through the panel/cohort pipeline. Adjudicate only selected medoids, disagreements,
-   outliers, boundaries, and audit samples. Keep the Office pack as the operational
-   holdout until review rules freeze.
-4. Measure richer interfaces and author assembly grammars, including opening,
-   terminal, transition, and coverage evidence.
-5. Add visibility, navigation, gameplay, physics, and experiential verifier loops.
-6. Run a truly unseen future asset pack through the frozen kernel as the durability
-   gate. Existing commitments must remain byte-identical.
-7. Implement a second engine adapter to test whether `WorldBuild` is a sufficient
-   boundary before defining an adapter abstraction.
-8. Add durable/distributed task execution and feed representative production
-   failures back into deterministic regression fixtures.
+1. Define the gold-set rubric and defect taxonomy for semantic facets, asset
+   health, installation, entry kind, rights, style coherence, and pairwise
+   substitutability. Split calibration and evaluation by source pack, preserving
+   an untouched pack for the final operational check.
+2. Replace the single mixed visual signal with independently hashed evidence
+   channels: integrity, geometry, material, appearance, silhouette/depth/normals,
+   installation, and semantics. Add deterministic point or mesh samples and keep
+   per-view features.
+3. Benchmark a deliberately diverse adapter slate on the same gold set. Calibrate
+   each facet and dependency group; implement hierarchy-aware prediction sets,
+   explicit abstention, novelty detection, and pack-shift gating.
+4. Replace whole-signature majority voting with factorized aggregation followed by
+   semantic constraint validation. A model score remains evidence, never an
+   admitted assertion.
+5. Replace embedding cohorts as substitution authority with an exact-site
+   candidate graph, pairwise compatibility evidence, deterministic constrained
+   partitioning, and a final whole-set invariant proof.
+6. Separate active discovery samples from random acceptance audits. Express the
+   audit as a finite-population risk policy with declared false-merge and defect
+   bounds; distinguish direct curator assertions from policy-qualified assertions.
+7. Implement the new receipts, calibration artifacts, prediction sets,
+   substitution evidence, qualification receipts, and deterministic tests. Delete
+   the superseded panel/cohort authority path in the same clean break.
+8. Run one low-risk pilot over whole, ground-supported props. Proceed pack by pack
+   only after held-out and audit results meet the policy. Unknown, shifted,
+   component, attachment, route, and assembly cases may remain incomplete.
+
+The evidence and statistical rationale is preserved in
+[Catalog Admission for an Open-World 3D Asset Registry](research/catalog-admission-state-of-the-art.md).
+
+## Catalog capability
+
+After the admission pilot is qualified:
+
+1. Adjudicate residual unknown and disputed clusters without weakening existing
+   commitments.
+2. Measure richer interfaces and author attachment, route, and assembly grammars,
+   including openings, terminals, transitions, topology, and coverage.
+3. Implement and qualify a provider-neutral material-restyling path before using
+   whole-object regeneration for style-only gaps.
+4. Requalify TRELLIS.2 against pinned worker bytes, dependency and rights evidence,
+   metric finishing, and creator-reviewed outputs. Implement Hunyuan3D 2.1 and
+   Pixal3D workers only from pinned upstream code and their own measured contracts.
+5. Run a genuinely unseen asset pack through the frozen kernel. Existing
+   commitments and unrelated dependency closures must remain byte-identical.
+
+## World verification
+
+1. Expand assembly grammars and constructed-surface/portal evidence across real
+   multi-floor structures.
+2. Add visibility, navigation, gameplay, physics, and experiential verifier loops.
+3. Expand visual evals beyond the lake/forest region to a modular city block and a
+   mixed multi-region world, requiring byte-identical recompilation.
+4. Implement a second engine adapter to test whether `WorldBuild` is sufficient
+   before defining a generic adapter interface.
+
+## Deferred infrastructure
+
+- Consolidate bulk payloads behind one local content-addressed store with explicit
+  reachability, verification, retention, and garbage-collection rules. Until then,
+  preserve the current local source and render roots.
+- Add remote replication and clean-clone recovery only after the local descriptor
+  contract and admission evidence shapes stabilize. No cloud provider belongs in
+  semantic, catalog, or compiler contracts.
+- Add durable or distributed compilation task execution after local artifact
+  invalidation and resumability are proven.
+- Feed representative production failures into deterministic regression fixtures
+  once production traces exist.
 
 ## Known limits
 
-- The admission machinery is implemented, but the live corpus still has zero
-  semantic receipts and zero visual embeddings. Consequently all 3,441 identities
-  correctly remain incomplete. Qualified vision adapters are the immediate data
-  bottleneck.
-- Human authority acts once per finite evidence-coherent cohort and reviews a
-  deterministic active sample, rather than inspecting every asset. Fully unattended
-  admission remains disallowed until holdout error bounds justify a stricter policy.
-- Structural output has a bounded local solver but needs broader authored grammar
-  coverage and richer constructed-surface/portal evidence.
-- Environment modes are typed but only Roblox modes with explicit lowering can be
-  eligible.
-- No requested neural provider is production-eligible today. TRELLIS.2 contains
-  executable inference; Hunyuan3D 2.1 and Pixal3D currently contain only probes and
-  provisioning declarations. No material-restyling provider is implemented.
-- Visual quality remains a separate creator-evaluated claim until perceptual and
-  gameplay verifiers are calibrated.
+- Current admission code is a provenance-safe prototype, not a qualified
+  autonomous catalog curator.
+- The live catalog lacks admitted semantic assertions, entries, qualified vision
+  adapters, and calibrated visual embeddings.
+- Git preserves current authority and compact JSON evidence, but not all source or
+  render bytes. Local loss can still make evidence irreproducible.
+- Structural realization needs broader authored grammar and interface coverage.
+- Environment modes are eligible only when the target adapter has an exact typed
+  lowering.
+- Neural providers and material restyling are not production-eligible.
+- Visual quality remains a creator-evaluated claim until perceptual and gameplay
+  verifiers are calibrated.

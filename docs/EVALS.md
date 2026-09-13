@@ -1,5 +1,9 @@
 # Evaluation and Claim Semantics
 
+This document owns Basalt’s gate statuses, evidence ordering, and the claims made
+by automated or creator-run evaluation. Test presence never upgrades an
+unqualified subsystem into production authority.
+
 Every local gate returns exactly one status:
 
 - `eligible`: every required claim has sufficient evidence.
@@ -33,10 +37,10 @@ hashes and forbid model confidence and source-path hints.
 - Catalog: source accounting, substitution invariants, exact evidence,
   composition, deterministic filtering/ranking/weights, rights, resources, and
   typed gaps.
-- Admission: independent implementation identity, exact-signature consensus,
-  confidence isolation, complete-link visual coherence, input-order independence,
-  medoid/outlier/boundary/audit sampling, finite-cohort decisions, failed-audit
-  blocking, and deterministic tracked commits.
+- Current admission prototype: independent implementation identity,
+  exact-signature consensus, confidence isolation, complete-link visual coherence,
+  input-order independence, medoid/outlier/boundary/audit sampling, finite-cohort
+  decisions, failed-audit blocking, and deterministic tracked commits.
 - Spatial: immutable plans, route-first foundations, meter contracts, complete
   footprint clearance, occupancy, qualified sockets, and explicit underfill.
 - Constraints: directed/symmetric edges, AC-3 propagation, weighted entropy,
@@ -53,3 +57,9 @@ The production gates are a lake/forest region, a multi-floor modular city block
 with attachments, and a mixed multi-region world with route transitions and
 environment realization. Each must compile twice to identical hashes. Final play,
 visual judgment, and readback are performed by the user in Roblox Studio.
+
+These suites prove contract behavior and deterministic execution. They do not yet
+prove semantic accuracy across unseen packs, substitution false-merge risk,
+perceptual quality, playability, or remote recoverability. The missing admission
+qualification is tracked in the
+[catalog admission cutover](ROADMAP.md#catalog-admission-cutover).

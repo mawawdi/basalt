@@ -5,6 +5,10 @@ thin model wrapper. Its product is a closed verification loop: creator intent is
 interpreted, semantic claims are admitted or refused, deterministic systems realize
 them, and evidence explains each result.
 
+This document owns the product thesis and invariants only. Implemented mechanics
+live in [Architecture](ARCHITECTURE.md), and unfinished work lives in the
+[Roadmap](ROADMAP.md).
+
 ## Invariants
 
 - Creator intent, model hypotheses, semantic authority, platform policy, and
@@ -41,5 +45,6 @@ measurement, or admit itself.
 
 Catalog authority has one tracked, atomically replaced root. Git preserves its
 history; Basalt does not maintain schema streams or an internal decision journal.
-Heavy source/render payloads remain content-addressed outside Git, while current
-authority and expensive compact inference evidence are commit-ready.
+Compact authority and evidence are commit-ready. Bulk source and render payloads
+are content-identified but local-only in the current baseline; this is an explicit
+recovery limitation, not an implied remote durability guarantee.

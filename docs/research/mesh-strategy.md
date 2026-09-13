@@ -1,5 +1,9 @@
 # Roblox Asset Lowering Strategy
 
+> **Status:** Non-authoritative platform rationale. Current adapter behavior is
+> defined by [Architecture](../ARCHITECTURE.md#roblox-boundary); pending work is
+> defined by the [Roadmap](../ROADMAP.md#world-verification).
+
 The generic catalog stores engine-neutral GLB source identity, metric evidence,
 materials, collision evidence, interfaces, and provenance. It never stores a
 Roblox asset ID. `WorldBuild` likewise contains exact catalog identities and

@@ -33,17 +33,74 @@ async function main() {
     diagrams.push(...extractMermaid(file, source));
   }
 
+  const authorityFailures = await validateDocumentationAuthority(markdownFiles);
+
   if (linkFailures.length > 0) {
     throw new Error(`Local Markdown link check failed:\n${linkFailures.join("\n")}`);
   }
   if (legacyFailures.length > 0) {
     throw new Error(`Legacy terminology check failed:\n${legacyFailures.join("\n")}`);
   }
+  if (authorityFailures.length > 0) {
+    throw new Error(`Documentation authority check failed:\n${authorityFailures.join("\n")}`);
+  }
 
   await renderMermaid(diagrams);
   process.stdout.write(
     `Docs check passed: ${markdownFiles.length} Markdown files, ${diagrams.length} Mermaid diagrams\n`,
   );
+}
+
+async function validateDocumentationAuthority(markdownFiles) {
+  const failures = [];
+  const names = new Set(markdownFiles.map((file) => portableRelative(file)));
+  const activeDocuments = [
+    "README.md",
+    "docs/README.md",
+    "docs/ARCHITECTURE.md",
+    "docs/BASALT.md",
+    "docs/EVALS.md",
+    "docs/RESEARCH.md",
+    "docs/ROADMAP.md",
+    "docs/VISUALS.md",
+  ];
+
+  for (const name of activeDocuments) {
+    if (!names.has(name)) failures.push(`missing declared authority document: ${name}`);
+  }
+
+  for (const name of names) {
+    if (
+      name.startsWith("docs/") &&
+      !name.slice("docs/".length).includes("/") &&
+      !activeDocuments.includes(name)
+    ) {
+      failures.push(`unowned top-level document: ${name}`);
+    }
+  }
+
+  const indexPath = resolve(root, "docs", "RESEARCH.md");
+  const index = await readRegularUtf8(indexPath);
+  for (const file of markdownFiles) {
+    const name = portableRelative(file);
+    if (!name.startsWith("docs/research/") && !name.startsWith("docs/sources/")) continue;
+
+    const source = await readRegularUtf8(file);
+    if (!source.includes("> **Status:**")) {
+      failures.push(`${name}: research and source documents require an explicit status`);
+    }
+
+    const link = relative(dirname(indexPath), file).split(sep).join("/");
+    if (!index.includes(`(${link})`)) {
+      failures.push(`${name}: not indexed by docs/RESEARCH.md`);
+    }
+  }
+
+  return failures;
+}
+
+function portableRelative(path) {
+  return relative(root, path).split(sep).join("/");
 }
 
 function validateCurrentVocabulary(file, source) {

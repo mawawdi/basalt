@@ -1,5 +1,9 @@
 # Roblox terrain capability survey
 
+> **Status:** Dated source survey, not Basalt authority or operational instruction.
+> Current lowering behavior is defined by
+> [Architecture](../ARCHITECTURE.md#roblox-boundary).
+
 - Sources: [Terrain class](https://create.roblox.com/docs/en-us/reference/engine/classes/Terrain.md),
   [TerrainDetail](https://create.roblox.com/docs/en-us/reference/engine/classes/TerrainDetail.md),
   [MaterialVariant](https://create.roblox.com/docs/en-us/reference/engine/classes/MaterialVariant.md),
@@ -41,7 +45,7 @@
 - No runtime heightmap import (`ImportHeightMap` is Studio-only) and no
   EditableMesh-style terrain sculpting; exact voxels remain the precise path.
 
-## Utilization proposal for Basalt
+## Non-authoritative opportunities
 
 Ordered by value per risk. Nothing here moves geometry authority; all
 writes stay inside fixed-connector source interpreting canonical plans.

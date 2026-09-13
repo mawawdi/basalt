@@ -1,5 +1,9 @@
 # WorldClaw: Agentic 3D Open-World Generation at Scale
 
+> **Status:** Preserved research source, not Basalt authority or operational
+> instruction. Basalt’s current design is defined by
+> [Architecture](../ARCHITECTURE.md).
+
 - Authors: Chunchao Guo, Jinpeng Li, Yang Li, Zilong Huang
 - arXiv: [2608.05248](https://arxiv.org/abs/2608.05248)
 - Project page: [Hunyuan3D WorldClaw](https://tencent-hunyuan.github.io/Hunyuan3D-WorldClaw)

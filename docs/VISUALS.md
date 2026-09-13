@@ -1,8 +1,13 @@
 # Visual and Catalog Evidence
 
+This document owns Basalt’s visual, physical-evidence, catalog-entry, and
+admission policies. The implemented dataflow lives in
+[Architecture](ARCHITECTURE.md); unfinished qualification work lives in the
+[Roadmap](ROADMAP.md).
+
 Visual compilation keeps denotation, realization form, state, affordance,
 treatment, contextual role, placement, interfaces, style, and evidence level
-orthogonal.
+orthogonal. Neither a noun nor an embedding is a placement contract.
 
 ## Entry kinds
 
@@ -18,65 +23,75 @@ orthogonal.
 
 Multi-object dumps, broken objects, animation-only payloads, ambiguous components,
 and unbound collision geometry remain incomplete until their exact identity and
-use are adjudicated. A collision companion is never a standalone entry.
+use are adjudicated. A collision companion is evidence attached to a renderable
+asset, never a standalone entry.
 
-## Measurement and review
+## Evidence channels
 
-Each source identity is measured independently of classification. Evidence includes
-source hashes and rights, coordinate frame, units, transforms, bounds, parts,
+Measurement is independent of semantic admission. Each source identity retains
+source and rights hashes, coordinate frame, units, transforms, bounds, parts,
 topology, material/PBR channels, contact/support facts, collision geometry, and
-measured sockets. Authors declare interface meaning; measurement proves geometry.
+measured interfaces. Measurement proves geometry; an author declares interface
+meaning.
 
-Visual triage uses deterministic multiview RGB, silhouette, normalized-depth, and
-contact-sheet evidence. Renderer, camera, lighting, material mode, and source hashes
-are part of the receipt. Existing evidence is reusable only when all those hashes
-match. Folder and filename hints are displayed separately and never enter an
-admitted assertion.
+Evidence remains separated by what it can prove:
 
-Provider adapters may emit hypothesis receipts with confidence and abstentions.
-Those receipts have `compilerAuthority: false`. Basalt requires exact semantic
-agreement from at least two independent implementations; confidence is retained
-for diagnostics but removed from the panel signature. A separate, implementation-
-bound quantized visual embedding prevents semantically similar but visually
-incoherent assets from becoming one substitution set.
+| Channel      | Purpose                                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| Integrity    | Parse closure, empty or degenerate geometry, components, animation, skinning, and external resources      |
+| Geometry     | Point or mesh samples, normals, topology, connected components, oriented bounds, and metric compatibility |
+| Appearance   | Canonical multiview RGB and appearance features                                                           |
+| Material     | Unlit base color, UV coverage, texture/PBR channels, transparency, and material count                     |
+| Shape        | Silhouette, normalized depth, normals, and shape features independent of texture                          |
+| Installation | Contact surfaces, support direction, sockets, collision companions, and host requirements                 |
+| Semantics    | Hypotheses grounded in exact evidence and the pinned semantic module and lexicon                          |
 
-Within each exact semantic, metric, material-capability, support, and visual
-cohort, review is active rather than exhaustive. Basalt deterministically selects
-the visual medoid, visual outlier, metric outlier, nearest semantic/visual boundary,
-and a hash-seeded audit sample. A curator decision names the complete finite cohort
-and records the reviewed findings. A later independent audit can invalidate that
-decision. Only the decision—not the model votes—creates declared assertions and
-eligible dispositions.
+Renderer, camera, lighting, material mode, source, and implementation hashes bind
+render receipts. Existing evidence is reusable only when every relevant input hash
+matches. Folder and filename hints may be displayed to a reviewer but cannot enter
+an admitted assertion, semantic-site signature, or runtime catalog hash.
 
-`catalog commit` retains the exact inference and review artifacts used by current
-authority under `registry/evidence/`, including the exact measurement, request,
-and render-index metadata, then atomically writes `registry/catalog.json`.
-Unreferenced metadata is pruned from the live tree because Git supplies history.
-Rendered images stay external and rebuildable because their implementation and
-source hashes are bound throughout the evidence graph.
+## Admission policy
+
+A substitution set is a relation stronger than shared classification or visual
+similarity. Every member must independently satisfy the complete denotation,
+realization, state, affordance, treatment, placement, interface, evidence, metric,
+rights, and style signature. The set exposes only capability intersections and
+measured envelopes. False splits reduce variety; false merges can silently break a
+world, so admission prefers abstention and smaller sets.
+
+Model and embedding adapters emit non-authoritative receipts with confidence,
+abstention, provenance, and resource use. Compiler authority requires an explicit
+curator assertion or a separately qualified policy receipt. Qualification must be
+based on pack-grouped calibration and holdouts, factorized facet predictions,
+explicit unknown/shift behavior, pairwise substitution evidence, a whole-set
+invariant check, active discovery review, and a distinct random acceptance audit
+whose risk is declared. Model self-confidence and raw majority vote cannot become
+authority.
+
+The current code has a conservative prototype: distinct implementation hashes vote
+on exact signatures, one quantized visual channel forms complete-link cohorts, and
+deterministic medoid/outlier/boundary/audit samples lead to a finite-cohort curator
+decision. This machinery preserves abstention and provenance, but it is not yet
+qualified for unattended full-corpus admission. The exact replacement work is the
+[catalog admission cutover](ROADMAP.md#catalog-admission-cutover), grounded in the
+[admission research](research/catalog-admission-state-of-the-art.md).
+
+## Neural fulfillment
 
 Neural 3D output follows the same evidence spine as imported assets. A generation
 receipt is only source evidence: raw provider coordinates may be normalized and
-unscaled, and the receipt explicitly records that fact. `asset-production` owns
-orientation baking, scale establishment, geometry repair, UVs, PBR baking, and
-preview generation. `asset-inspection` then measures the finished GLB. Nothing is
-admitted merely because TRELLIS.2, Hunyuan3D 2.1, or Pixal3D returned bytes.
+unscaled, and the receipt records that fact. `asset-production` owns orientation
+baking, scale establishment, geometry repair, UVs, PBR baking, and previews;
+`asset-inspection` measures the finished GLB. A provider response cannot admit
+itself.
 
-Style mismatch and missing coverage are different operations. Restyling retains
-an exact source-geometry hash and changes material evidence; extending or
-synthesizing a substitution set generates independently admissible members with
-content-derived seeds. A failed restyle returns evidence to the planner rather
-than silently becoming whole-object regeneration.
-
-The evidence workflow uses the scalable multiview annotation pattern demonstrated
-by [Cap3D](https://arxiv.org/abs/2306.07279), and calibration/medoid/outlier review
-follows the expert-quality framing of
-[Objaverse++](https://openaccess.thecvf.com/content/ICCV2025W/CDEL/papers/Lin_Objaverse_Curated_3D_Object_Dataset_with_Quality_Annotations_ICCVW_2025_paper.pdf).
-Filename and folder signals are abstaining review hints, analogous to weak labeling
-functions in [Snorkel](https://arxiv.org/abs/1711.10160). Request, adapter, model,
-measurement, render, output, abstention, diagnostic, and resource-use hashes remain
-separate provenance claims in the spirit of
-[W3C PROV-O](https://www.w3.org/TR/prov-o/); none grants compiler authority.
+Style mismatch and missing coverage are different operations. Restyling binds the
+retained source-geometry hash and changes material evidence. Extending or
+synthesizing a substitution set creates independently admissible members with
+content-derived seeds. A failed restyle returns evidence to planning rather than
+silently becoming whole-object regeneration. Provider names and transports remain
+outside catalog and compiler contracts.
 
 ## Style and placement
 
@@ -89,4 +104,6 @@ or environment layer. Intent kinds have exhaustive validator and realizer maps; 
 kind degrades into scatter. Occupancy uses full 3D bounds and measured narrow-phase
 geometry. Attachments use qualified `{instanceId, socketId}` endpoints.
 
-Basalt makes no visibility claim until a real visibility solver exists.
+Basalt makes no visibility claim until a real visibility solver exists. Catalog
+storage and recovery are defined only in
+[Architecture](ARCHITECTURE.md#storage-and-recovery).
