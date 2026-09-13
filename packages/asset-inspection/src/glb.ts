@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createHash } from "node:crypto";
-import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { compareSpatialStrings } from "../../spatial-core/src/primitives.js";
+import { contentHash, stableJson } from "@basalt/contracts";
+import { compareSpatialStrings } from "@basalt/spatial-core";
 import type { NormalizedMesh } from "./geometry.js";
 
 const GLB_MAGIC = 0x46546c67;
@@ -251,7 +251,7 @@ export interface GlbMaterialUvMetrics {
   unitAtlasOccupancyFraction: number;
   unitAtlasOverlapFraction: number;
   stretchRatio: GlbMetricDistribution;
-  pixelsPerStud: GlbMetricDistribution;
+  pixelsPerMeter: GlbMetricDistribution;
 }
 
 export interface GlbInspectionReport {
@@ -317,9 +317,9 @@ export interface GlbInspectionOptions {
   maximumTextures?: number;
   maximumTexturePixels?: number;
   expectedNodeNames?: readonly string[];
-  /** Uniform physical scale of the adapted GLB. Required for admission-grade
-   * pixels-per-stud measurements; defaults to one for generic inspection. */
-  assetUnitsToStuds?: number;
+  /** Uniform metric scale of the adapted GLB. Required for admission-grade
+   * pixels-per-meter measurements; defaults to one for generic inspection. */
+  assetUnitsToMeters?: number;
 }
 
 export type GltfExternalResourceResolver = (uri: string) => Uint8Array | Promise<Uint8Array>;
@@ -342,7 +342,7 @@ export async function packGltfToGlb(
   }
   const gltf = gltfSchema.parse(decoded);
   if (gltf.animations?.length || gltf.skins?.length)
-    throw new Error("Animations and skins are outside the current BlenderSceneSpec ABI");
+    throw new Error("Animations and skins are outside the current Blender scene contract");
   const sourceBuffers = await Promise.all(
     gltf.buffers.map(async (buffer, index) => {
       if (!buffer.uri)
@@ -490,7 +490,7 @@ export interface GlbCollisionSupportPatch {
 
 /** Extract normalized triangle buffers for deterministic offline geometry gates. */
 export function inspectGlbMeshes(bytes: Uint8Array): readonly NormalizedMesh[] {
-  if (bytes.byteLength < 20 || bytes.byteLength > 256 * 1024 * 1024)
+  if (bytes.byteLength < 20 || bytes.byteLength > 512 * 1024 * 1024)
     throw new Error("GLB byte length is outside the admitted range");
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (view.getUint32(0, true) !== GLB_MAGIC || view.getUint32(4, true) !== GLB_VERSION)
@@ -740,20 +740,16 @@ export function inspectGlbPrimitiveBindings(
   const jsonLength = input.readUInt32LE(12);
   if (20 + jsonLength > input.byteLength)
     throw new Error("Primitive binding GLB JSON is truncated");
-  const document = JSON.parse(
-    new TextDecoder("utf-8", { fatal: true }).decode(input.subarray(20, 20 + jsonLength)).trim(),
-  ) as {
-    nodes?: Array<{ name?: string; mesh?: number }>;
-    meshes?: Array<{
-      primitives?: Array<{ attributes?: Record<string, number>; material?: number }>;
-    }>;
-  };
-  const node = document.nodes?.find((entry) => entry.name === nodeName && entry.mesh !== undefined);
-  const mesh = node?.mesh === undefined ? undefined : document.meshes?.[node.mesh];
-  if (!mesh?.primitives?.length)
-    throw new Error(`GLB node has no primitive inventory: ${nodeName}`);
+  const document = gltfSchema.parse(
+    JSON.parse(
+      new TextDecoder("utf-8", { fatal: true }).decode(input.subarray(20, 20 + jsonLength)).trim(),
+    ),
+  );
+  const node = document.nodes.find((entry) => entry.name === nodeName && entry.mesh !== undefined);
+  const mesh = node?.mesh === undefined ? undefined : document.meshes[node.mesh];
+  if (!mesh?.primitives.length) throw new Error(`GLB node has no primitive inventory: ${nodeName}`);
   return mesh.primitives.map((primitive) => ({
-    attributes: Object.keys(primitive.attributes ?? {}).sort(),
+    attributes: Object.keys(primitive.attributes).sort(),
     ...(primitive.material === undefined ? {} : { materialIndex: primitive.material }),
   }));
 }
@@ -1036,8 +1032,8 @@ export function inspectGlb(
     maximumTextures: options.maximumTextures ?? 512,
     maximumTexturePixels: options.maximumTexturePixels ?? 4096 * 4096,
   };
-  const assetUnitsToStuds = options.assetUnitsToStuds ?? 1;
-  if (!Number.isFinite(assetUnitsToStuds) || assetUnitsToStuds <= 0)
+  const assetUnitsToMeters = options.assetUnitsToMeters ?? 1;
+  if (!Number.isFinite(assetUnitsToMeters) || assetUnitsToMeters <= 0)
     throw new Error("GLB physical scale must be finite and positive");
   if (
     !(bytes instanceof Uint8Array) ||
@@ -1074,7 +1070,7 @@ export function inspectGlb(
   }
   const gltf = gltfSchema.parse(decoded);
   if (gltf.animations?.length || gltf.skins?.length)
-    throw new Error("Animations and skins are outside the current BlenderSceneSpec ABI");
+    throw new Error("Animations and skins are outside the current Blender scene contract");
   const extensions = [
     ...new Set([...(gltf.extensionsUsed ?? []), ...(gltf.extensionsRequired ?? [])]),
   ].sort();
@@ -1247,7 +1243,7 @@ export function inspectGlb(
             triangles,
             gltf.materials[materialIndex]!.name || `material-${materialIndex}`,
             baseColorTextureDimensions(gltf, imageReports, gltf.materials[materialIndex]!),
-            assetUnitsToStuds,
+            assetUnitsToMeters,
           ),
         )
         .sort((left, right) => compareSpatialStrings(left.materialName, right.materialName)),
@@ -1458,8 +1454,10 @@ export function namespaceGlbMaterials(bytes: Uint8Array, sourceId: string): Uint
   inspectGlb(bytes, { maximumBytes: bytes.byteLength });
   const input = Buffer.from(bytes);
   const jsonLength = input.readUInt32LE(12);
-  const document = JSON.parse(input.subarray(20, 20 + jsonLength).toString("utf8"));
-  for (const [index, material] of (document.materials ?? []).entries())
+  const document = gltfSchema.parse(
+    JSON.parse(input.subarray(20, 20 + jsonLength).toString("utf8")),
+  );
+  for (const [index, material] of document.materials.entries())
     material.name = `Source_${contentHash(sourceId).slice(0, 20)}_${index}`;
   const json = Buffer.from(JSON.stringify(document));
   const padded = Buffer.alloc(Math.ceil(json.length / 4) * 4, 0x20);
@@ -1971,7 +1969,7 @@ function summarizeUvMetricTriangles(
   triangles: readonly UvMetricTriangle[],
   materialName: string,
   texture: { width: number; height: number } | undefined,
-  assetUnitsToStuds: number,
+  assetUnitsToMeters: number,
 ): GlbMaterialUvMetrics {
   const surfaceArea = triangles.reduce((sum, triangle) => sum + triangle.surfaceArea, 0);
   if (!(surfaceArea > 0))
@@ -2013,8 +2011,8 @@ function summarizeUvMetricTriangles(
       c * (texture?.height ?? 0),
       d * (texture?.height ?? 0),
     );
-    const scaledMinimum = pixelMinimum / assetUnitsToStuds;
-    const scaledMaximum = pixelMaximum / assetUnitsToStuds;
+    const scaledMinimum = pixelMinimum / assetUnitsToMeters;
+    const scaledMaximum = pixelMaximum / assetUnitsToMeters;
     densitySamples.push(
       { value: scaledMinimum, weight: triangle.surfaceArea / 2 },
       { value: scaledMaximum, weight: triangle.surfaceArea / 2 },
@@ -2037,7 +2035,7 @@ function summarizeUvMetricTriangles(
     unitAtlasOccupancyFraction: coverage.occupancy,
     unitAtlasOverlapFraction: coverage.overlap,
     stretchRatio: metricDistribution(stretchSamples),
-    pixelsPerStud: metricDistribution(densitySamples),
+    pixelsPerMeter: metricDistribution(densitySamples),
   };
 }
 

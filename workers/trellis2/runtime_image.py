@@ -27,9 +27,9 @@ CUMESH_COMMIT = "12289e1062f0603f2f0d0771b02e1395d247f26f"
 FLEX_GEMM_COMMIT = "6dd94a859c26ee8246888502eada3dd8ad85532e"
 UTILS3D_COMMIT = "9a4eb15e4021b67b12c460c7057d642626897ec8"
 
-MODEL_VOLUME_NAME = "basalt-trellis2-model-af44b45f2e35a493"
-SPARSE_DECODER_VOLUME_NAME = "basalt-trellis2-sparse-decoder-model-25e0d31ffbebe4b5"
-DINOV3_VOLUME_NAME = "basalt-dinov3-model-ea8dc2863c51be0a"
+MODEL_VOLUME_NAME = "basalt-trellis2-model"
+SPARSE_DECODER_VOLUME_NAME = "basalt-trellis2-sparse-decoder-model"
+DINOV3_VOLUME_NAME = "basalt-dinov3-model"
 MODEL_ROOT = "/mnt/trellis2-model"
 SPARSE_DECODER_ROOT = "/mnt/trellis2-sparse-decoder"
 DINOV3_ROOT = "/mnt/trellis2-dinov3"
@@ -61,7 +61,7 @@ def require(condition: bool, message: str) -> None:
 def local_contract() -> dict[str, Any]:
     material = {
         "kind": "Trellis2RuntimeImageBuildContract",
-        "abi": "basalt-trellis2-runtime-image-build-contract@1",
+        "contract": "basalt-trellis2-runtime-image-build-contract",
         "status": "incomplete",
         "code": "runtime_image_not_built_or_probed",
         "remoteInvocationOccurred": False,
@@ -328,12 +328,12 @@ def probe_runtime_image(execution_literal: str) -> dict[str, Any]:
         raise ValueError("Modal image identity is absent")
     return {
         "kind": "Trellis2RuntimeImageProbe",
-        "abi": "basalt-trellis2-runtime-image-probe@2",
+        "contract": "basalt-trellis2-runtime-image-probe",
         "status": "eligible",
         "modalImageId": modal_image_id,
         "runtimeManifestHash": manifest["hash"],
         "dependencyInventoryHash": manifest["dependencyInventoryHash"],
-        "workerSha256": manifest["workerSha256"],
+        "workerImplementationHash": manifest["workerImplementationHash"],
         "modelSnapshotSealHashes": {
             name: seal["hash"] for name, seal in sorted(seals.items())
         },

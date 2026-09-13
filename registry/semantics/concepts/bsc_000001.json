@@ -1,0 +1,20 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000001",
+  "upperSort": "object",
+  "normativeDefinition": "A living or once-living individual considered as one entity.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A living or once-living individual considered as one entity.",
+      "Its object identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than object is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [],
+  "ancestors": [],
+  "commitmentHash": "0a55bc37ae8cc0ff64a3c8546cee6d62db35760a434191dc3f83d0991a3325c9"
+}

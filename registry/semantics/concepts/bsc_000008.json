@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000008",
+  "upperSort": "object",
+  "normativeDefinition": "A fungal organism represented as an individual.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A fungal organism represented as an individual.",
+      "Its object identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than object is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000001",
+      "commitmentHash": "0a55bc37ae8cc0ff64a3c8546cee6d62db35760a434191dc3f83d0991a3325c9"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000001",
+      "commitmentHash": "0a55bc37ae8cc0ff64a3c8546cee6d62db35760a434191dc3f83d0991a3325c9"
+    }
+  ],
+  "commitmentHash": "93baf2f0a86c46be5884a104f3bf3acc7e766dcb9ad7e8c60b083d6a836f7bdb"
+}

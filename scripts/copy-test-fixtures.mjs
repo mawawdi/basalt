@@ -1,6 +1,6 @@
 import { constants } from "node:fs";
-import { copyFile, lstat, mkdir, readdir, realpath } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { copyFile, lstat, mkdir, readdir, realpath, rename, unlink } from "node:fs/promises";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -27,7 +27,26 @@ async function copyTree(source, destination) {
     const info = await lstat(sourceRealPath);
     if (info.size <= 0 || info.size > 4 * 1024 * 1024)
       throw new Error("Test fixture is not a bounded regular file");
-    await copyFile(sourceRealPath, destinationPath, constants.COPYFILE_EXCL);
+    const temporaryPath = join(
+      dirname(destinationPath),
+      `.${basename(destinationPath)}.${process.pid}.tmp`,
+    );
+    const temporaryInfo = await lstat(temporaryPath).catch((error) => {
+      if (error?.code === "ENOENT") return undefined;
+      throw error;
+    });
+    if (temporaryInfo) {
+      if (!temporaryInfo.isFile() || temporaryInfo.isSymbolicLink())
+        throw new Error(`Refusing to replace unsafe fixture temporary: ${temporaryPath}`);
+      await unlink(temporaryPath);
+    }
+    try {
+      await copyFile(sourceRealPath, temporaryPath, constants.COPYFILE_EXCL);
+      await rename(temporaryPath, destinationPath);
+    } catch (error) {
+      await unlink(temporaryPath).catch(() => undefined);
+      throw error;
+    }
   }
 }
 

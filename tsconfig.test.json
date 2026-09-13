@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "test",
+    "outDir": "dist/test",
+    "tsBuildInfoFile": "dist/test.tsbuildinfo"
+  },
+  "include": ["test/**/*.ts"],
+  "references": [
+    { "path": "packages/contracts" },
+    { "path": "packages/artifact-store" },
+    { "path": "packages/spatial-core" },
+    { "path": "packages/semantic-kernel" },
+    { "path": "packages/catalog-model" },
+    { "path": "packages/catalog-authoring" },
+    { "path": "packages/asset-inspection" },
+    { "path": "packages/asset-factory" },
+    { "path": "packages/neural-asset" },
+    { "path": "packages/world-planning" },
+    { "path": "packages/world-compiler" },
+    { "path": "packages/roblox" }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000504",
+  "upperSort": "phenomenon",
+  "normativeDefinition": "An atmospheric phenomenon in which material falls through the air.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: An atmospheric phenomenon in which material falls through the air.",
+      "Its phenomenon identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than phenomenon is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000501",
+      "commitmentHash": "096f68b70fa1d5647eced4d7fb90dfc409b9759baacf083cfc66ec71e4bd5b61"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000501",
+      "commitmentHash": "096f68b70fa1d5647eced4d7fb90dfc409b9759baacf083cfc66ec71e4bd5b61"
+    }
+  ],
+  "commitmentHash": "fb2ecb7c1fdeaef8fb71da60a8355e9a100c48d94021d7cd6c10c80910915e30"
+}

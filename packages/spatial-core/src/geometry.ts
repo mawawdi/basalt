@@ -29,17 +29,19 @@ export function sceneEulerXyz(degrees: SceneVector): SceneRotation {
     sy = Math.sin(y),
     cz = Math.cos(z),
     sz = Math.sin(z);
-  return [
-    cy * cz,
-    -cy * sz,
-    sy,
-    sx * sy * cz + cx * sz,
-    -sx * sy * sz + cx * cz,
-    -sx * cy,
-    -cx * sy * cz + sx * sz,
-    cx * sy * sz + sx * cz,
-    cx * cy,
-  ].map(f32) as unknown as SceneRotation;
+  return sceneRotation(
+    [
+      cy * cz,
+      -cy * sz,
+      sy,
+      sx * sy * cz + cx * sz,
+      -sx * sy * sz + cx * cz,
+      -sx * cy,
+      -cx * sy * cz + sx * sz,
+      cx * sy * sz + sx * cz,
+      cx * cy,
+    ].map(f32),
+  );
 }
 export function sceneMultiply(
   a: SceneRotation,
@@ -55,7 +57,7 @@ export function sceneMultiply(
         a[row * 3 + 2]! * b[column + 6]!;
       out.push(canonical ? f32(value) : value);
     }
-  return out as unknown as SceneRotation;
+  return sceneRotation(out);
 }
 export function sceneTransformVector(rotation: SceneRotation, vector: SceneVector): SceneVector {
   return {
@@ -69,17 +71,35 @@ export function sceneInverse(rotation: SceneRotation): SceneRotation {
   const determinant = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
   if (!Number.isFinite(determinant) || Math.abs(determinant) < 0.5)
     throw new Error("Scene rotation lost its invertible rigid-frame representation");
+  return sceneRotation(
+    [
+      e * i - f * h,
+      c * h - b * i,
+      b * f - c * e,
+      f * g - d * i,
+      a * i - c * g,
+      c * d - a * f,
+      d * h - e * g,
+      b * g - a * h,
+      a * e - b * d,
+    ].map((value) => value / determinant),
+  );
+}
+
+function sceneRotation(values: readonly number[]): SceneRotation {
+  if (values.length !== 9 || values.some((value) => !Number.isFinite(value)))
+    throw new Error("Scene rotation must contain nine finite values");
   return [
-    e * i - f * h,
-    c * h - b * i,
-    b * f - c * e,
-    f * g - d * i,
-    a * i - c * g,
-    c * d - a * f,
-    d * h - e * g,
-    b * g - a * h,
-    a * e - b * d,
-  ].map((value) => value / determinant) as unknown as SceneRotation;
+    values[0]!,
+    values[1]!,
+    values[2]!,
+    values[3]!,
+    values[4]!,
+    values[5]!,
+    values[6]!,
+    values[7]!,
+    values[8]!,
+  ];
 }
 export function sceneHalfExtents(rotation: SceneRotation, size: SceneVector): SceneVector {
   const half = {

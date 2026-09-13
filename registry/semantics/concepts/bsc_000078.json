@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000078",
+  "upperSort": "object",
+  "normativeDefinition": "A portable artifact intended to be worn, carried, or used on a person.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A portable artifact intended to be worn, carried, or used on a person.",
+      "Its object identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than object is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    }
+  ],
+  "commitmentHash": "3e65be98d0e10da02aed38a23ffe0a8a28d0bad66909e3305f1770f9a5910393"
+}

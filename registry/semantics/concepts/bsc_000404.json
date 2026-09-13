@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000404",
+  "upperSort": "boundary",
+  "normativeDefinition": "A constructed physical boundary intended to support interior occupancy.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A constructed physical boundary intended to support interior occupancy.",
+      "Its boundary identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than boundary is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    }
+  ],
+  "commitmentHash": "865f1b00156d2ce49d633f651e3e425d212ebd9b4ed68c79519902bd18c4dc32"
+}

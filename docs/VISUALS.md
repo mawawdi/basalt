@@ -1,101 +1,92 @@
-# Basalt visual world compiler
+# Visual and Catalog Evidence
 
-Basalt's visual product is a coherent world, not a contact sheet of unrelated
-generated meshes. The compiler directs art hierarchically and resolves repeated
-content at the family level.
+Visual compilation keeps denotation, realization form, state, affordance,
+treatment, contextual role, placement, interfaces, style, and evidence level
+orthogonal.
 
-## Art direction hierarchy
+## Entry kinds
 
-The global style contract defines shape language, silhouette hierarchy, edge
-profiles, material response, palette, texel-density range, wear policy, lighting
-intent, and anti-goals. It uses ranges and policies rather than universal
-centimeter values.
+- `substitution_set`: independently interchangeable realizations of one complete
+  semantic and placement signature.
+- `assembly_kit`: leaf providers plus authored roles, interfaces, lattice,
+  transitions, terminal rules, topology, and coverage.
+- `attachment_set`: members that require a host surface or typed socket.
+- `route_kit`: network components and admitted topology transitions.
+- `environment_realizer`: typed sky, atmosphere, water-surface, overhead, or
+  far-field realization.
+- `collection`: authoring organization that runtime resolution cannot return.
 
-Each region adds a bounded overlay for palette shifts, atmosphere, terrain
-materials, density gradients, negative space, motifs, detail bands, and effects.
-An asset-family revision binds a declared taxonomy handle to validated
-archetypes and measured evidence. A family may be a foliage population, rock
-group, clutter set, architectural kit, or hero variant set. Socketed structural
-families use `ModularKitRequirement`; ordinary families do not need sockets.
+Multi-object dumps, broken objects, animation-only payloads, ambiguous components,
+and unbound collision geometry remain incomplete until their exact identity and
+use are adjudicated. A collision companion is never a standalone entry.
 
-Family members share a visual grammar and material realization policy. They do
-not have to share one texture atlas when that would damage quality. The policy
-may select tiling PBR, trim sheets, per-family atlases, or bounded unique detail.
-Roblox batching and memory assumptions remain hypotheses until Studio evidence.
+## Measurement and review
 
-The asset finisher writes a linear contact-blend vertex-color attribute over the
-bottom 0.5 meters of each admitted archetype. This provides moss, dirt, and
-ground blending while leaving the authored mesh and runtime transform intact.
+Each source identity is measured independently of classification. Evidence includes
+source hashes and rights, coordinate frame, units, transforms, bounds, parts,
+topology, material/PBR channels, contact/support facts, collision geometry, and
+measured sockets. Authors declare interface meaning; measurement proves geometry.
 
-## From brief to world
+Visual triage uses deterministic multiview RGB, silhouette, normalized-depth, and
+contact-sheet evidence. Renderer, camera, lighting, material mode, and source hashes
+are part of the receipt. Existing evidence is reusable only when all those hashes
+match. Folder and filename hints are displayed separately and never enter an
+admitted assertion.
 
-```text
-brief and references
-  -> global style and world plan
-  -> regional family and density plan
-  -> exact sealed-family lookup
-  -> hard catalog and admission filters
-  -> accepted family cohort
-  -> offline neural/procedural family factory on miss
-  -> common adaptation, material realization, and admission
-  -> deterministic surface-aware population
-  -> partitioned Roblox world
-```
+Provider adapters may emit hypothesis receipts with confidence and abstentions.
+Those receipts have `compilerAuthority: false`. Basalt requires exact semantic
+agreement from at least two independent implementations; confidence is retained
+for diagnostics but removed from the panel signature. A separate, implementation-
+bound quantized visual embedding prevents semantically similar but visually
+incoherent assets from becoming one substitution set.
 
-The creative model chooses family roles, visual relationships, landmarks, and
-regional density intent. It never chooses thousands of raw meshes or final
-coordinates. The compiler derives counts from density fields, valid surfaces,
-routes, exclusion masks, support footprints, and memory/triangle budgets.
+Within each exact semantic, metric, material-capability, support, and visual
+cohort, review is active rather than exhaustive. Basalt deterministically selects
+the visual medoid, visual outlier, metric outlier, nearest semantic/visual boundary,
+and a hash-seeded audit sample. A curator decision names the complete finite cohort
+and records the reviewed findings. A later independent audit can invalidate that
+decision. Only the decision—not the model votes—creates declared assertions and
+eligible dispositions.
 
-## Catalog and neural routes
+`catalog commit` retains the exact inference and review artifacts used by current
+authority under `registry/evidence/`, including the exact measurement, request,
+and render-index metadata, then atomically writes `registry/catalog.json`.
+Unreferenced metadata is pruned from the live tree because Git supplies history.
+Rendered images stay external and rebuildable because their implementation and
+source hashes are bound throughout the evidence graph.
 
-Catalog intelligence measures source assets offline and validates explicit
-cohorts. Retrieval filters by exact taxonomy handle/family ID, rights, bounds,
-surface kind, capability, and delivery budget. A bounded contact sheet may be
-used for creator review; it does not invent family membership.
+Neural 3D output follows the same evidence spine as imported assets. A generation
+receipt is only source evidence: raw provider coordinates may be normalized and
+unscaled, and the receipt explicitly records that fact. `asset-production` owns
+orientation baking, scale establishment, geometry repair, UVs, PBR baking, and
+preview generation. `asset-inspection` then measures the finished GLB. Nothing is
+admitted merely because TRELLIS.2, Hunyuan3D 2.1, or Pixal3D returned bytes.
 
-TRELLIS, Hunyuan, Pixal3D, Qwen, and other qualified routes are peer factories.
-They generate coordinated family cohorts or hero exceptions offline. They do not run inline
-for every instance and never block terrain, routes, blockout, or population.
-Every accepted result becomes a content-addressed library entry and is reusable
-without another model call.
+Style mismatch and missing coverage are different operations. Restyling retains
+an exact source-geometry hash and changes material evidence; extending or
+synthesizing a substitution set generates independently admissible members with
+content-derived seeds. A failed restyle returns evidence to the planner rather
+than silently becoming whole-object regeneration.
 
-Concept sheets are advisory style anchors. SAM segmentation and crop calibration
-can produce candidate references, but each lifted archetype still passes geometry,
-material, bounds, support, socket, and Roblox-budget checks.
+The evidence workflow uses the scalable multiview annotation pattern demonstrated
+by [Cap3D](https://arxiv.org/abs/2306.07279), and calibration/medoid/outlier review
+follows the expert-quality framing of
+[Objaverse++](https://openaccess.thecvf.com/content/ICCV2025W/CDEL/papers/Lin_Objaverse_Curated_3D_Object_Dataset_with_Quality_Annotations_ICCVW_2025_paper.pdf).
+Filename and folder signals are abstaining review hints, analogous to weak labeling
+functions in [Snorkel](https://arxiv.org/abs/1711.10160). Request, adapter, model,
+measurement, render, output, abstention, diagnostic, and resource-use hashes remain
+separate provenance claims in the spirit of
+[W3C PROV-O](https://www.w3.org/TR/prov-o/); none grants compiler authority.
 
-## Spatial realization
+## Style and placement
 
-Terrain and constructed surfaces share `PlacementSurfaceIndex`. Placement starts
-with proposals and resolves through deterministic relations: `on_surface`,
-`support`, `attach_socket`, `inside_region`, `maintain_clearance`, `visible_from`,
-and route constraints. Full quaternions or orthonormal frames preserve slope and
-surface orientation. No fixed-height or arbitrary coordinate path is final
-authority.
+Style profiles are independent of semantics. The neutral profile preserves source
+shape, materials, and measured detail without inventing art direction.
 
-Population uses Poisson, cluster, along-path, surface-grid, and socket assembly
-distributions. Shared mesh/material handles and chunked transform artifacts keep
-large worlds instanced. A failed requirement remains incomplete; Basalt never
-inserts a visible generic proxy to hide a missing family.
+Every placement uses one typed intent: single, surface scatter, cluster, along
+route, surface grid, socket attachment, wall attachment, route network, assembly,
+or environment layer. Intent kinds have exhaustive validator and realizer maps; no
+kind degrades into scatter. Occupancy uses full 3D bounds and measured narrow-phase
+geometry. Attachments use qualified `{instanceId, socketId}` endpoints.
 
-## Evidence and repair
-
-Early evidence is cheap and partitioned:
-
-1. region, height, slope, material, navigability, and route-grade maps;
-2. macro surface and route blockout;
-3. family cards and priority-region population previews;
-4. local beauty, albedo, depth, normal, object-ID, material-ID, contact, and
-   clearance passes;
-5. final gameplay-camera and Studio captures.
-
-Blender is only an isolated asset-finishing worker. It handles source transform
-baking, normal/tangent repair, UV generation or re-atlasing, PBR baking, support
-and collision proxies, explicit socket welding, and bounded asset previews. It
-does not render or gate an entire world.
-
-Deterministic diagnostics repair pose, scale, orientation, support, sockets,
-clearance, density, and budgets. A visual critic can rank family candidates and
-report typed issues tied to exact views and object IDs; it cannot author geometry
-or certify Studio behavior. Repairs remain scoped to affected families, chunks,
-and regions while unrelated hashes stay unchanged.
+Basalt makes no visibility claim until a real visibility solver exists.

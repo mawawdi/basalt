@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000204",
+  "upperSort": "substance",
+  "normativeDefinition": "Earth material supporting terrain or vegetation.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: Earth material supporting terrain or vegetation.",
+      "Its substance identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than substance is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000203",
+      "commitmentHash": "271a3e02c5fd7911a0c5a6b0c3e37c87f472c2b17e188d8cb77d2778b3eb1b1a"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000203",
+      "commitmentHash": "271a3e02c5fd7911a0c5a6b0c3e37c87f472c2b17e188d8cb77d2778b3eb1b1a"
+    }
+  ],
+  "commitmentHash": "2122bd38da7d2af4042e7ce81b8e0e31a1aa395dc822afef4079f770891b7acc"
+}

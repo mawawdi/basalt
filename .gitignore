@@ -2,14 +2,16 @@ node_modules/
 .env
 dist/
 *dist/
+*.tsbuildinfo
 .DS_Store
 .basalt/
-registry/
 target/
 *.rbxl.lock
 *.rbxlx.lock
-reference-plugin/
 .agents/
 **.png
 **__pycache__/
 *.dmg
+# Vendor/source payloads are preserved locally but are not semantic authority.
+registry/**/*.glb
+registry/source-archives/

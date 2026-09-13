@@ -3,7 +3,7 @@
 
 `python3 modal_app.py --local-probe` is dependency-free and never contacts
 Modal. The Modal app itself only accepts an already-built immutable Image ID,
-mounts revision-named model Volumes read-only, and requires both an explicit
+mounts stable seal-verified model Volumes read-only, and requires both an explicit
 execution literal and an external Modal Secret before allocating a GPU.
 """
 
@@ -22,9 +22,9 @@ from gpu_profile import selected_gpu, selected_gpu_profile, selected_minimum_vra
 
 
 APP_NAME = "basalt-trellis2-qualification"
-CONTRACT_ABI = "basalt-trellis2-modal-runtime-contract@3"
-HANDOFF_ABI = "basalt-trellis2-modal-handoff@4"
-REMOTE_HANDOFF_ABI = "basalt-trellis2-remote-output-handoff@1"
+RUNTIME_CONTRACT = "basalt-trellis2-modal-runtime-contract"
+HANDOFF_CONTRACT = "basalt-trellis2-modal-handoff"
+REMOTE_HANDOFF_CONTRACT = "basalt-trellis2-remote-output-handoff"
 SOURCE_COMMIT = "75fbf0183001ed9876c8dbb35de6b68552ee08bd"
 MODEL_REVISION = "af44b45f2e35a493886929c6d786e563ec68364d"
 SPARSE_DECODER_MODEL_REVISION = "25e0d31ffbebe4b5a97464dd851910efc3002d96"
@@ -54,11 +54,11 @@ EXECUTION_LITERAL = "RUN_ONE_QUALIFIED_BASALT_TRELLIS2_ASSET"
 IMAGE_ID_ENV = "BASALT_TRELLIS2_MODAL_IMAGE_ID"
 LOCAL_GATE_ENV = "BASALT_TRELLIS2_PAID_RUN_AUTHORIZATION"
 MODAL_GATE_SECRET_NAME = "basalt-trellis2-execution-gate"
-MODEL_VOLUME_NAME = f"basalt-trellis2-model-{MODEL_REVISION[:16]}"
+MODEL_VOLUME_NAME = "basalt-trellis2-model"
 SPARSE_DECODER_VOLUME_NAME = (
-    f"basalt-trellis2-sparse-decoder-model-{SPARSE_DECODER_MODEL_REVISION[:16]}"
+    "basalt-trellis2-sparse-decoder-model"
 )
-DINOV3_VOLUME_NAME = f"basalt-dinov3-model-{DINOV3_MODEL_REVISION[:16]}"
+DINOV3_VOLUME_NAME = "basalt-dinov3-model"
 OUTPUT_VOLUME_NAME = "basalt-neural-output"
 
 MODEL_ROOT = Path("/mnt/trellis2-model")
@@ -122,7 +122,7 @@ def local_contract() -> dict[str, Any]:
     image_configured = MODAL_IMAGE_ID_PATTERN.fullmatch(os.environ.get(IMAGE_ID_ENV, "")) is not None
     material = {
         "kind": "Trellis2ModalRuntimeContract",
-        "abi": CONTRACT_ABI,
+        "contract": RUNTIME_CONTRACT,
         "status": "incomplete",
         "code": "remote_execution_not_authorized",
         "modelWillRun": False,
@@ -168,9 +168,9 @@ def local_contract() -> dict[str, Any]:
             "secretValueRetainedInRepository": False,
         },
         "handoff": {
-            "abi": HANDOFF_ABI,
+            "contract": HANDOFF_CONTRACT,
             "tensorMediaType": "application/x-safetensors",
-            "workerReportAbi": "basalt-trellis2-worker-result@4",
+            "workerReportContract": "basalt-trellis2-worker-result",
             "hostAdmission": "retainTrellis2WorkerCandidate",
             "paidReplayPolicy": "claim_before_remote_and_fail_closed",
             "newAttemptOverridePattern": NEW_ATTEMPT_OVERRIDE_PATTERN.pattern,
@@ -257,13 +257,20 @@ def validate_worker_outputs(
         content_hash({key: value for key, value in report.items() if key != "hash"}) == report_hash,
         "worker report identity is invalid",
     )
-    require(report.get("abi") == "basalt-trellis2-worker-result@4", "worker report ABI differs")
-    require(report.get("requestHash") == request.get("hash"), "worker report request differs")
+    require(report.get("contract") == "basalt-trellis2-worker-result", "worker report contract differs")
+    require(
+        report.get("requestHash") == request.get("neuralRequestHash"),
+        "worker report neural request differs",
+    )
+    require(report.get("workerRequestHash") == request.get("hash"), "worker report request differs")
     binding = report.get("executionBinding")
     require(isinstance(binding, dict), "worker execution binding is absent")
     require(binding.get("modalImageId") == manifest["modalImageId"], "worker Modal image differs")
     require(binding.get("runtimeImageHash") == manifest["hash"], "worker runtime image differs")
-    require(binding.get("workerSha256") == manifest["workerSha256"], "worker hash differs")
+    require(
+        binding.get("workerImplementationHash") == manifest["workerImplementationHash"],
+        "worker implementation hash differs",
+    )
     require(
         binding.get("dependencyInventoryHash") == manifest["dependencyInventoryHash"],
         "worker dependency inventory differs",
@@ -311,7 +318,7 @@ def validate_worker_outputs(
 )
 def execute_qualified_asset(
     request_bytes: bytes,
-    execution_qualification_bytes: bytes,
+    runtime_qualification_bytes: bytes,
     reference_bytes: bytes,
     output_key: str,
     execution_flag: str,
@@ -411,10 +418,10 @@ def execute_qualified_asset(
     )
 
     request = decoded(request_bytes, maximum_request_bytes, "generation request")
-    execution_qualification = decoded(
-        execution_qualification_bytes,
+    runtime_qualification = decoded(
+        runtime_qualification_bytes,
         maximum_request_bytes,
-        "execution qualification",
+        "runtime qualification",
     )
     request_hash = checked_hash(request.get("hash"), "generation request hash")
     checked(
@@ -424,28 +431,76 @@ def execute_qualified_asset(
     checked(request.get("sourceCommit") == source_commit, "generation source commit differs")
     checked(request.get("modelRevision") == model_revision, "generation model revision differs")
     qualification_hash = checked_hash(
-        execution_qualification.get("hash"),
-        "execution qualification hash",
+        runtime_qualification.get("hash"),
+        "runtime qualification hash",
     )
     checked(
         identity(
             {
                 key: value
-                for key, value in execution_qualification.items()
+                for key, value in runtime_qualification.items()
                 if key != "hash"
             }
         )
         == qualification_hash,
-        "execution qualification identity is invalid",
+        "runtime qualification identity is invalid",
     )
     checked(
-        execution_qualification.get("kind") == "Trellis2ExecutionQualification"
-        and execution_qualification.get("abi") == "basalt-trellis2-execution-qualification@1",
-        "execution qualification type differs",
+        runtime_qualification.get("kind") == "Trellis2RuntimeQualification"
+        and runtime_qualification.get("contract") == "basalt-trellis2-runtime-qualification",
+        "runtime qualification type differs",
     )
     checked(
-        request.get("qualificationHash") == qualification_hash,
-        "request does not bind the supplied execution qualification",
+        set(runtime_qualification)
+        == {
+            "kind",
+            "contract",
+            "neuralQualificationHash",
+            "providerDeclarationHash",
+            "modalImageId",
+            "runtimeImageHash",
+            "workerImplementationHash",
+            "volumeSnapshotHashes",
+            "dependencyInventoryHash",
+            "hardwareEvidenceHash",
+            "rightsEvidenceHash",
+            "dinoV3TermsSnapshotHash",
+            "modelTermsSnapshotHash",
+            "modelIdentityHash",
+            "egressPolicyHash",
+            "inputPolicyHash",
+            "hash",
+        },
+        "runtime qualification shape differs",
+    )
+    for hash_key in (
+        "neuralQualificationHash",
+        "providerDeclarationHash",
+        "runtimeImageHash",
+        "workerImplementationHash",
+        "dependencyInventoryHash",
+        "hardwareEvidenceHash",
+        "rightsEvidenceHash",
+        "dinoV3TermsSnapshotHash",
+        "modelTermsSnapshotHash",
+        "modelIdentityHash",
+        "egressPolicyHash",
+        "inputPolicyHash",
+    ):
+        checked_hash(runtime_qualification.get(hash_key), f"runtime qualification {hash_key}")
+    checked(
+        request.get("runtimeQualificationHash") == qualification_hash,
+        "request does not bind the supplied runtime qualification",
+    )
+    checked(
+        request.get("neuralQualificationHash")
+        == runtime_qualification.get("neuralQualificationHash"),
+        "request does not bind the neural qualification",
+    )
+    checked(
+        request.get("providerDeclarationHash")
+        == runtime_qualification.get("providerDeclarationHash"),
+        "request does not bind the provider declaration",
     )
     checked(
         isinstance(output_key, str)
@@ -479,13 +534,13 @@ def execute_qualified_asset(
     )
     expected_manifest_keys = {
         "kind",
-        "abi",
+        "contract",
         "baseImage",
         "python",
         "torch",
         "sourceCommits",
         "modelArtifacts",
-        "workerSha256",
+        "workerImplementationHash",
         "oVoxelRuntimePatchSha256",
         "dependencyInventoryHash",
         "dependencyInventory",
@@ -497,7 +552,7 @@ def execute_qualified_asset(
     }
     checked(set(manifest) == expected_manifest_keys, "runtime manifest shape is invalid")
     checked(manifest["kind"] == "Trellis2ModalRuntimeImage", "runtime manifest kind is invalid")
-    checked(manifest["abi"] == "basalt-trellis2-modal-runtime-image@3", "runtime manifest ABI is invalid")
+    checked(manifest["contract"] == "basalt-trellis2-modal-runtime-image", "runtime manifest contract is invalid")
     checked(manifest["baseImage"] == base_image, "runtime base image differs")
     checked(manifest.get("sourceCommits", {}).get("trellis2") == source_commit, "runtime source commit differs")
     model_artifacts = manifest.get("modelArtifacts")
@@ -515,44 +570,44 @@ def execute_qualified_asset(
         model_artifacts.get("dinoV3", {}).get("revision") == dino_revision,
         "runtime DINOv3 revision differs",
     )
-    worker_hash = checked_hash(manifest["workerSha256"], "runtime worker hash")
+    worker_hash = checked_hash(
+        manifest["workerImplementationHash"], "runtime worker implementation hash"
+    )
     checked_hash(manifest["dependencyInventoryHash"], "runtime dependency inventory hash")
     manifest_hash = checked_hash(manifest["hash"], "runtime manifest hash")
     checked(
         identity({key: value for key, value in manifest.items() if key != "hash"}) == manifest_hash,
         "runtime manifest identity is invalid",
     )
-    request_binding = request.get("qualificationBinding")
-    checked(isinstance(request_binding, dict), "request qualification binding is absent")
+    request_binding = request.get("runtimeBinding")
+    checked(isinstance(request_binding, dict), "request runtime binding is absent")
     checked(
-        execution_qualification.get("modalImageId") == runtime_modal_image_id,
-        "execution qualification Modal image differs",
+        runtime_qualification.get("modalImageId") == runtime_modal_image_id,
+        "runtime qualification Modal image differs",
     )
     checked(
-        execution_qualification.get("runtimeImageHash") == manifest_hash,
-        "execution qualification runtime image differs",
+        runtime_qualification.get("runtimeImageHash") == manifest_hash,
+        "runtime qualification runtime image differs",
     )
     checked(
-        execution_qualification.get("workerSha256") == worker_hash,
-        "execution qualification worker differs",
+        runtime_qualification.get("workerImplementationHash") == worker_hash,
+        "runtime qualification worker differs",
     )
-    volume_snapshot_hashes = execution_qualification.get("volumeSnapshotHashes")
+    volume_snapshot_hashes = runtime_qualification.get("volumeSnapshotHashes")
     expected_snapshot_hashes = sorted(
         artifact["snapshotSealHash"] for artifact in model_artifacts.values()
     )
     checked(
         volume_snapshot_hashes == expected_snapshot_hashes,
-        "execution qualification volume snapshots differ",
+        "runtime qualification volume snapshots differ",
     )
-    qualification_dependency = execution_qualification.get("dependencyInventory")
-    checked(isinstance(qualification_dependency, dict), "qualification dependency inventory is absent")
     qualification_dependency_hash = checked_hash(
-        qualification_dependency.get("hash"),
+        runtime_qualification.get("dependencyInventoryHash"),
         "qualification dependency inventory hash",
     )
     checked(
-        qualification_dependency.get("runtimeImageHash") == manifest_hash,
-        "qualification dependency inventory runtime image differs",
+        qualification_dependency_hash == manifest["dependencyInventoryHash"],
+        "qualification dependency inventory differs from the runtime manifest",
     )
     checked(
         request_binding.get("modalImageId") == runtime_modal_image_id,
@@ -563,7 +618,28 @@ def execute_qualified_asset(
         request_binding.get("dependencyInventoryHash") == qualification_dependency_hash,
         "request dependency inventory differs",
     )
-    checked(request_binding.get("workerSha256") == worker_hash, "request worker hash differs")
+    checked(
+        request_binding.get("workerImplementationHash") == worker_hash,
+        "request worker implementation hash differs",
+    )
+    for binding_key in (
+        "modalImageId",
+        "runtimeImageHash",
+        "workerImplementationHash",
+        "dependencyInventoryHash",
+        "dinoV3TermsSnapshotHash",
+        "modelIdentityHash",
+        "termsSnapshotHash",
+        "egressPolicyHash",
+        "inputPolicyHash",
+    ):
+        qualification_key = (
+            "modelTermsSnapshotHash" if binding_key == "termsSnapshotHash" else binding_key
+        )
+        checked(
+            request_binding.get(binding_key) == runtime_qualification.get(qualification_key),
+            f"request runtime binding {binding_key} differs from its qualification",
+        )
     checked(
         hashlib.sha256(worker_path.read_bytes()).hexdigest() == worker_hash,
         "runtime worker bytes differ from the image manifest",
@@ -634,8 +710,12 @@ def execute_qualified_asset(
             identity({key: value for key, value in report.items() if key != "hash"}) == report_hash,
             "worker report identity is invalid",
         )
-        checked(report.get("abi") == "basalt-trellis2-worker-result@4", "worker report ABI differs")
-        checked(report.get("requestHash") == request_hash, "worker report request differs")
+        checked(report.get("contract") == "basalt-trellis2-worker-result", "worker report contract differs")
+        checked(
+            report.get("requestHash") == request.get("neuralRequestHash"),
+            "worker report neural request differs",
+        )
+        checked(report.get("workerRequestHash") == request_hash, "worker report request differs")
         execution_binding = report.get("executionBinding")
         checked(isinstance(execution_binding, dict), "worker execution binding is absent")
         checked(
@@ -643,7 +723,10 @@ def execute_qualified_asset(
             "worker Modal image differs",
         )
         checked(execution_binding.get("runtimeImageHash") == manifest_hash, "worker runtime image differs")
-        checked(execution_binding.get("workerSha256") == worker_hash, "worker hash differs")
+        checked(
+            execution_binding.get("workerImplementationHash") == worker_hash,
+            "worker implementation hash differs",
+        )
         checked(
             execution_binding.get("dependencyInventoryHash") == qualification_dependency_hash,
             "worker dependency inventory differs",
@@ -664,7 +747,7 @@ def execute_qualified_asset(
         )
         remote_material = {
             "kind": "Trellis2RemoteOutputHandoff",
-            "abi": "basalt-trellis2-remote-output-handoff@1",
+            "contract": "basalt-trellis2-remote-output-handoff",
             "requestHash": request_hash,
             "modalImageId": runtime_modal_image_id,
             "runtimeImageHash": manifest_hash,
@@ -761,7 +844,7 @@ def claim_modal_attempt(
         ) from error
     material = {
         "kind": "Trellis2ModalAttemptClaim",
-        "abi": "basalt-trellis2-modal-attempt-claim@1",
+        "contract": "basalt-trellis2-modal-attempt-claim",
         "requestHash": request_hash,
         "attemptOverride": override or None,
         "state": "remote_result_unknown",
@@ -789,7 +872,7 @@ def retain_modal_handoff(
         set(result)
         == {
             "kind",
-            "abi",
+            "contract",
             "requestHash",
             "modalImageId",
             "runtimeImageHash",
@@ -807,7 +890,7 @@ def retain_modal_handoff(
         "Modal result handoff shape differs",
     )
     require(result.get("kind") == "Trellis2RemoteOutputHandoff", "Modal result kind differs")
-    require(result.get("abi") == REMOTE_HANDOFF_ABI, "Modal result ABI differs")
+    require(result.get("contract") == REMOTE_HANDOFF_CONTRACT, "Modal result contract differs")
     remote_hash = require_sha256(result.get("hash"), "Modal result hash")
     require(
         content_hash({key: value for key, value in result.items() if key != "hash"}) == remote_hash,
@@ -838,8 +921,8 @@ def retain_modal_handoff(
         {
             "modalImageId": result.get("modalImageId"),
             "hash": result.get("runtimeImageHash"),
-            "workerSha256": request["qualificationBinding"]["workerSha256"],
-            "dependencyInventoryHash": request["qualificationBinding"]["dependencyInventoryHash"],
+            "workerImplementationHash": request["runtimeBinding"]["workerImplementationHash"],
+            "dependencyInventoryHash": request["runtimeBinding"]["dependencyInventoryHash"],
         },
         tensor_bytes,
         report_bytes,
@@ -848,14 +931,14 @@ def retain_modal_handoff(
     require(result.get("tensorSha256") == report["output"]["sha256"], "Modal tensor hash differs")
     require(
         result.get("modalImageId") == RUNTIME_IMAGE_ID
-        and result.get("modalImageId") == request["qualificationBinding"]["modalImageId"],
+        and result.get("modalImageId") == request["runtimeBinding"]["modalImageId"],
         "Modal result image ID differs from the configured request",
     )
     write_absent(job_root / "candidate.safetensors", tensor_bytes)
     write_absent(job_root / "worker-result.json", report_bytes)
     material = {
         "kind": "Trellis2ModalHandoff",
-        "abi": HANDOFF_ABI,
+        "contract": HANDOFF_CONTRACT,
         "requestHash": request_hash,
         "modalApp": APP_NAME,
         "modalImageId": result["modalImageId"],
@@ -882,7 +965,7 @@ def retain_modal_handoff(
 @app.local_entrypoint()
 def main(
     request: str = "",
-    execution_qualification: str = "",
+    runtime_qualification: str = "",
     reference: str = "",
     output_root: str = "",
     execution_flag: str = "",
@@ -893,31 +976,31 @@ def main(
         return
     require(
         request != ""
-        and execution_qualification != ""
+        and runtime_qualification != ""
         and reference != ""
         and output_root != "",
-        "request, execution qualification, reference, and output paths are required",
+        "request, runtime qualification, reference, and output paths are required",
     )
     execution_gate = os.environ.get(LOCAL_GATE_ENV, "")
     require(len(execution_gate) >= 32, f"{LOCAL_GATE_ENV} must be exported outside the repository")
     execution_gate_commitment = hashlib.sha256(execution_gate.encode("utf-8")).hexdigest()
     del execution_gate
     request_bytes = read_regular_file(request, MAX_REQUEST_BYTES, "generation request")
-    execution_qualification_bytes = read_regular_file(
-        execution_qualification,
+    runtime_qualification_bytes = read_regular_file(
+        runtime_qualification,
         MAX_REQUEST_BYTES,
-        "execution qualification",
+        "runtime qualification",
     )
     reference_bytes = read_regular_file(reference, MAX_REFERENCE_BYTES, "reference")
     request_value = decode_canonical_json(request_bytes, MAX_REQUEST_BYTES, "generation request")
     qualification_value = decode_canonical_json(
-        execution_qualification_bytes,
+        runtime_qualification_bytes,
         MAX_REQUEST_BYTES,
-        "execution qualification",
+        "runtime qualification",
     )
     require(
-        request_value.get("qualificationHash") == qualification_value.get("hash"),
-        "generation request does not bind the supplied execution qualification",
+        request_value.get("runtimeQualificationHash") == qualification_value.get("hash"),
+        "generation request does not bind the supplied runtime qualification",
     )
     validate_reference(request_value, reference_bytes)
     claimed_root, _override = claim_modal_attempt(
@@ -927,7 +1010,7 @@ def main(
     )
     result = execute_qualified_asset.remote(
         request_bytes,
-        execution_qualification_bytes,
+        runtime_qualification_bytes,
         reference_bytes,
         claimed_root.name,
         execution_flag,

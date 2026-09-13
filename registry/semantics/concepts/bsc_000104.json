@@ -1,0 +1,20 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000104",
+  "upperSort": "aggregate",
+  "normativeDefinition": "A piled plurality whose members share an asserted object denotation.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A piled plurality whose members share an asserted object denotation.",
+      "Its aggregate identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than aggregate is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [],
+  "ancestors": [],
+  "commitmentHash": "fb461204e29b8f45eae7470f13c7763cd464953796aeb9216189c1e44f58a0f2"
+}

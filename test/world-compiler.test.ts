@@ -1,441 +1,340 @@
-import test from "node:test";
 import assert from "node:assert/strict";
-import { contentHash, stableJson } from "../packages/contracts/src/index.js";
+import test from "node:test";
+import { contentHash, stableJson } from "@basalt/contracts";
 import {
-  attachInstancesToPopulation,
-  chunkRoomGraphContent,
-  compileBasaltWorldFoundation,
-  createBasaltWorldEmission,
-  createBasaltWorldCompilerPlan,
-  planRooms,
-  populateBasaltWorld,
-  sealWorldPopulationArtifact,
-  type GroundingEvidenceFile,
-  type WorldFamilyPopulationPlan,
-  type WorldPopulationInstance,
-} from "../packages/world-compiler/src/index.js";
-import { productionWorldPlanFixture } from "./helpers/production-world-fixtures.js";
-import { groundingEvidenceFixture } from "./helpers/grounding-evidence.js";
-import { testKit, testProgram, testRecipe } from "./helpers/room-fixtures.js";
+  createSemanticDependencyClosure,
+  sealSemanticAssertionBundle,
+} from "@basalt/semantic-kernel";
+import { compileBasaltWorld, sealCompilationTaskResult } from "@basalt/world-compiler";
+import { sealSpatialWorldPlan, SPATIAL_WORLD_PLAN_SCHEMA } from "@basalt/world-planning";
+import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
+import { worldFixture } from "./helpers/world-fixture.js";
 
-function fixture() {
-  return productionWorldPlanFixture({
-    sceneId: "basaltWorld",
-    regionId: "basaltRegion",
-    surfaceId: "basaltTerrain",
-    routeId: "basaltRoute",
-    anchorId: "basaltAnchor",
-    cameraId: "basaltCamera",
-    materialId: "basaltMaterial",
-    name: "A layered world compiler fixture",
-  });
-}
-
-function familyPlan(): WorldFamilyPopulationPlan {
-  return {
-    familyId: "basaltFoliage",
-    regionIds: ["basaltRegion"],
-    surfaceKinds: ["terrain"],
-    distribution: "poisson_scatter",
-    minimumCount: 8,
-    maximumCount: 24,
-    density: { minimum: 0.1, target: 0.35, maximum: 0.6 },
-    variationSeed: 7,
-    excludedRouteIds: ["basaltRoute"],
-    excludedRegionIds: [],
+test("foundation, resolution, and realization are deterministic and keep the plan immutable", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
+  const before = JSON.stringify(fixture.plan);
+  const input = {
+    semanticModule: module,
+    catalogSnapshot: fixture.snapshot,
+    catalogAssets: [fixture.asset],
+    spatialPlan: fixture.plan,
   };
-}
-
-test("Basalt compiles macro world authority before family work", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  assert.equal(foundation.kind, "BasaltWorldFoundation");
-  assert.deepEqual(foundation.regionIds, ["basaltRegion"]);
-  assert.deepEqual(foundation.routeIds, ["basaltRoute"]);
-  assert.equal(foundation.worldPlanHash.length, 64);
-  assert.equal(foundation.surfaceIndexHash.length, 64);
+  const first = compileBasaltWorld(input);
+  const second = compileBasaltWorld(input);
+  assert.equal(first.worldBuildHash, second.worldBuildHash);
+  assert.equal(first.status, "eligible");
+  assert.equal(first.foundation.worldPlanHash, fixture.plan.planHash);
+  assert.equal(first.foundation.terrainFields[0]?.samples.length, 9);
+  assert.ok((first.foundation.roadAssemblies[0]?.segments.length ?? 0) > 1);
+  assert.equal(first.instances.length, 1);
+  assert.equal(first.instances[0]?.entryHandle, "tree_whole_ground");
+  assert.equal(JSON.stringify(fixture.plan), before);
 });
 
-test("Basalt family plans are deterministic and region-bound", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const first = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [familyPlan()],
+test("compilation task identity names inputs while result hashes include outcomes", () => {
+  const input = {
+    scope: "region" as const,
+    stage: "micro" as const,
+    inputHashes: [contentHash("task-input")],
+    policyHash: contentHash("task-policy"),
+    resourceUse: { wallMilliseconds: 0, decisions: 0, backtracks: 0 },
+  };
+  const first = sealCompilationTaskResult({
+    ...input,
+    outputHashes: [contentHash("first-output")],
+    status: "eligible",
+    diagnostics: [],
   });
-  const second = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [{ ...familyPlan(), regionIds: ["basaltRegion"] }],
+  const second = sealCompilationTaskResult({
+    ...input,
+    outputHashes: [],
+    status: "incomplete",
+    diagnostics: ["No solver result"],
   });
-  assert.deepEqual(first, second);
-  assert.ok(!("createdAt" in first), "sealed plans carry no wall-clock evidence");
+  assert.equal(first.taskId, second.taskId);
+  assert.notEqual(first.taskHash, second.taskHash);
+});
+
+test("invalid spatial references are rejected instead of coerced", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
   assert.throws(
     () =>
-      createBasaltWorldCompilerPlan({
-        foundation,
-        styleContractHash: contentHash("basalt-style"),
-        familyPlans: [{ ...familyPlan(), regionIds: ["unknownRegion"] }],
+      SPATIAL_WORLD_PLAN_SCHEMA.parse({
+        ...fixture.plan,
+        routes: [{ ...fixture.plan.routes[0]!, surfaceId: "MissingSurface" }],
       }),
-    /unknown region/i,
+    /unknown surface|hash mismatch/iu,
   );
 });
 
-test("Basalt population artifact canonicalizes chunks and reuses family handles", () => {
-  const worldPlanHash = contentHash("world");
-  const populationPlanHash = contentHash("population");
-  const artifact = sealWorldPopulationArtifact({
-    worldPlanHash,
-    populationPlanHash,
-    chunks: [
+test("semantic hypotheses cannot enter a sealed spatial plan", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
+  const {
+    kind: _kind,
+    coordinateSystem: _coordinateSystem,
+    planHash: _planHash,
+    ...input
+  } = fixture.plan;
+  const hypothesis = sealSemanticAssertionBundle({
+    authority: "hypothesis",
+    hypothesisSourceHash: contentHash("world-plan-hypothesis"),
+    assertions: [],
+    abstentions: ["Awaiting admission"],
+  });
+  assert.throws(
+    () =>
+      sealSpatialWorldPlan({
+        ...input,
+        admittedAssertions: [hypothesis] as never,
+      }),
+    /invalid input|authority/iu,
+  );
+});
+
+test("a planned relation bundle must exist and bind an exact subject relation", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
+  assert.throws(
+    () =>
+      SPATIAL_WORLD_PLAN_SCHEMA.parse({
+        ...fixture.plan,
+        semanticEntities: fixture.plan.semanticEntities.map((entity, index) =>
+          index === 0 ? { ...entity, relationAssertionBundleHash: "f".repeat(64) } : entity,
+        ),
+      }),
+    /lacks its relation assertions|hash mismatch/iu,
+  );
+});
+
+test("changing one region invalidates only that region task and world ancestors", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
+  const regionConcept = module.concepts.find((entry) => entry.conceptId === "bsc_000316")!;
+  const secondAssertions = sealSemanticAssertionBundle({
+    authority: "admitted",
+    assertions: [
       {
-        chunkId: "chunkB",
-        familyIds: ["basaltFoliage"],
-        instances: [
-          {
-            id: "instanceB",
-            familyId: "basaltFoliage",
-            archetypeId: "treeA",
-            chunkId: "chunkB",
-            position: { x: 1, y: 0, z: 2 },
-            rotation: [0, 0, 0, 1],
-            scale: 1,
-            footprint: { contactRadiusStuds: 0.5, restYStuds: 0, dropsStuds: [0, 0, 0, 0] },
-          },
-        ],
-      },
-      {
-        chunkId: "chunkA",
-        familyIds: ["basaltFoliage"],
-        instances: [
-          {
-            id: "instanceA",
-            familyId: "basaltFoliage",
-            archetypeId: "treeB",
-            chunkId: "chunkA",
-            position: { x: 0, y: 0, z: 0 },
-            rotation: [0, 0, 0, 1],
-            scale: 1.1,
-            footprint: { contactRadiusStuds: 0.5, restYStuds: 0, dropsStuds: [0, 0, 0, 0] },
-          },
-        ],
+        assertionKind: "denotation",
+        subject: { kind: "planned_entity", id: "RegionEntityB" },
+        concept: {
+          conceptId: regionConcept.conceptId,
+          commitmentHash: regionConcept.commitmentHash,
+        },
+        evidence: {
+          level: "declared",
+          evidenceHashes: [contentHash("RegionEntityB:declared")],
+        },
       },
     ],
   });
-  assert.equal(artifact.instanceCount, 2);
-  assert.deepEqual(
-    artifact.chunks.map((chunk) => chunk.chunkId),
-    ["chunkA", "chunkB"],
-  );
-  assert.equal(stableJson(artifact.chunks[0]!.familyIds), stableJson(["basaltFoliage"]));
-});
-
-test("Basalt population resolves families against indexed surfaces", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const plan = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [familyPlan()],
-  });
-  const population = populateBasaltWorld(foundation, plan, {
-    groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
-  });
-  assert.ok(population.instanceCount > 0);
-  assert.ok(population.instanceCount <= 24);
-  assert.ok(population.chunks.every((chunk) => chunk.familyIds.includes("basaltFoliage")));
-  assert.ok(
-    population.chunks
-      .flatMap((chunk) => chunk.instances)
-      .every((instance) => Math.abs(Math.hypot(...instance.rotation) - 1) < 1e-6),
-  );
-});
-
-test("Basalt lowers population into deterministic connector-sized transaction deltas", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const plan = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [familyPlan()],
-  });
-  const population = populateBasaltWorld(foundation, plan, {
-    groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
-  });
-  const first = createBasaltWorldEmission(foundation, population, 64);
-  const second = createBasaltWorldEmission(foundation, population, 64);
-  assert.deepEqual(first, second);
-  assert.equal(first.kind, "BasaltWorldEmissionManifest");
-  assert.ok(first.chunks.length > 0);
-  assert.ok(first.chunks.every((chunk) => chunk.transactionId.startsWith("basalt_tx_")));
-  assert.ok(first.chunks.every((chunk) => chunk.surfaceIds.includes("basaltTerrain")));
-  assert.ok(first.chunks.every((chunk) => chunk.stairIds.length === 0));
-  assert.ok(first.chunks.every((chunk) => chunk.portalIds.length === 0));
-});
-
-test("Basalt attaches assembly instances to the sealed population", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const plan = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [familyPlan()],
-  });
-  const population = populateBasaltWorld(foundation, plan, {
-    groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
-  });
-  assert.deepEqual(attachInstancesToPopulation(population, []), population);
-  const home = population.chunks[0]!.chunkId;
-  const extra: WorldPopulationInstance[] = [
-    {
-      id: "asm_test_home_00",
-      familyId: "family_test_huts",
-      archetypeId: "family_test_huts_archetype_0",
-      chunkId: home,
-      position: { x: 1, y: 0, z: 2 },
-      rotation: [0, 0, 0, 1],
-      scale: 1,
-      footprint: { contactRadiusStuds: 1, restYStuds: 0, dropsStuds: [0, 0, 0, 0] },
+  assert.equal(secondAssertions.authority, "admitted");
+  const {
+    kind: _kind,
+    coordinateSystem: _coordinateSystem,
+    planHash: _planHash,
+    ...base
+  } = fixture.plan;
+  const secondRegion = {
+    regionId: "SecondaryRegion",
+    semanticEntityId: "RegionEntityB",
+    volume: {
+      kind: "box" as const,
+      bounds: { min: { x: 0, y: -2, z: 10 }, max: { x: 10, y: 12, z: 20 } },
     },
-    {
-      id: "asm_test_far_00",
-      familyId: "family_test_huts",
-      archetypeId: "family_test_huts_archetype_0",
-      chunkId: "chunk_9_9",
-      position: { x: 1153, y: 0, z: 1154 },
-      rotation: [0, 0, 0, 1],
-      scale: 1,
-      footprint: { contactRadiusStuds: 1, restYStuds: 0, dropsStuds: [0, 0, 0, 0] },
-    },
-  ];
-  const merged = attachInstancesToPopulation(population, extra);
-  assert.equal(merged.instanceCount, population.instanceCount + 2);
-  assert.equal(merged.worldPlanHash, population.worldPlanHash);
-  assert.equal(merged.populationPlanHash, population.populationPlanHash);
-  const homeChunk = merged.chunks.find((chunk) => chunk.chunkId === home)!;
-  assert.ok(homeChunk.familyIds.includes("family_test_huts"));
-  assert.ok(homeChunk.instances.some((instance) => instance.id === "asm_test_home_00"));
-  const farChunk = merged.chunks.find((chunk) => chunk.chunkId === "chunk_9_9")!;
-  assert.deepEqual(farChunk.familyIds, ["family_test_huts"]);
-  assert.throws(() => attachInstancesToPopulation(merged, extra), /already carries instance/);
-});
-
-test("Basalt emission deltas carry chunked room stairs and portals", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const plan = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [familyPlan()],
-  });
-  const population = populateBasaltWorld(foundation, plan, {
-    groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
-  });
-  const graph = planRooms(testRecipe(), testKit(), testProgram(), { regionId: "basaltRegion" });
-  const rooms = chunkRoomGraphContent([graph], 64);
-  const manifest = createBasaltWorldEmission(foundation, population, 64, [], rooms);
-  const stairId = "roomgraph_recipe_test_rooms_00_stair_00_01";
-  const delta = manifest.chunks.find((chunk) => chunk.stairIds.includes(stairId))!;
-  assert.deepEqual(delta.stairIds, [stairId]);
-  assert.deepEqual(delta.portalIds, [
-    "roomgraph_recipe_test_rooms_00_portal_00_00",
-    "roomgraph_recipe_test_rooms_00_portal_00_en",
-    "roomgraph_recipe_test_rooms_00_portal_01_00",
-  ]);
-  assert.ok(delta.bounds.minimum.x <= 1 && delta.bounds.maximum.x >= 3);
-  assert.ok(delta.bounds.minimum.z <= -4 && delta.bounds.maximum.z >= 4);
-  assert.ok(delta.bounds.maximum.y >= 6);
-});
-
-test("Basalt spacing separates contact discs across families", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const trunkPlan: WorldFamilyPopulationPlan = {
-    ...familyPlan(),
-    familyId: "basaltTrunks",
-    minimumCount: 6,
-    maximumCount: 6,
-    variationSeed: 11,
+    refinementPriority: 0,
   };
-  const plan = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [familyPlan(), trunkPlan],
-  });
-  const foliage = groundingEvidenceFixture("basaltFoliage", 1);
-  const trunks = groundingEvidenceFixture("basaltTrunks", 1);
-  const population = populateBasaltWorld(foundation, plan, {
-    groundingEvidence: { ...foliage, evidence: [...foliage.evidence, ...trunks.evidence] },
-  });
-  const instances = population.chunks.flatMap((chunk) => chunk.instances);
-  assert.ok(instances.some((instance) => instance.familyId === "basaltFoliage"));
-  assert.ok(instances.some((instance) => instance.familyId === "basaltTrunks"));
-  // Fixture evidence is rebased, so origins coincide with contact patches.
-  for (let left = 0; left < instances.length; left += 1) {
-    for (let right = left + 1; right < instances.length; right += 1) {
-      const a = instances[left]!;
-      const b = instances[right]!;
-      const clearance = Math.max(0.5 * a.scale, 0.25) + Math.max(0.5 * b.scale, 0.25);
-      const distance = Math.hypot(a.position.x - b.position.x, a.position.z - b.position.z);
-      assert.ok(distance + 1e-9 >= clearance);
-    }
-  }
-});
-
-test("Basalt population keeps support footprints over the surface", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const slabs: WorldFamilyPopulationPlan = {
-    ...familyPlan(),
-    familyId: "basaltSlabs",
-    minimumCount: 4,
-    maximumCount: 6,
-    variationSeed: 21,
-  };
-  const poles: WorldFamilyPopulationPlan = {
-    ...familyPlan(),
-    familyId: "basaltPoles",
-    minimumCount: 6,
-    maximumCount: 6,
-    variationSeed: 22,
-  };
-  const plan = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [slabs, poles],
-  });
-  const evidence = {
-    kind: "BasaltFamilyGroundingEvidence",
-    abi: "basalt-family-grounding-evidence@1",
-    inventoryHash: "0".repeat(64),
-    evidence: [
+  const firstPlan = sealSpatialWorldPlan({
+    ...base,
+    semanticEntities: [
+      ...base.semanticEntities,
       {
-        familyId: "basaltSlabs",
-        archetypes: [
-          {
-            assetId: "basaltSlabs_asset_0",
-            boundsMinimumStuds: { x: -9, y: 0, z: -9 },
-            boundsMaximumStuds: { x: 9, y: 0.5, z: 9 },
-            contactRadiusStuds: 0.1,
-          },
-        ],
-      },
-      {
-        familyId: "basaltPoles",
-        archetypes: [
-          {
-            assetId: "basaltPoles_asset_0",
-            boundsMinimumStuds: { x: -13, y: 0, z: -10 },
-            boundsMaximumStuds: { x: 13, y: 44, z: 10 },
-            contactRadiusStuds: 0.2,
-          },
-        ],
+        entityId: "RegionEntityB",
+        upperSort: "space",
+        semanticDependencyClosureHash: base.semanticEntities.find(
+          (entry) => entry.entityId === "RegionEntity",
+        )!.semanticDependencyClosureHash,
+        admittedAssertionBundleHash: secondAssertions.hash,
       },
     ],
-  } as unknown as GroundingEvidenceFile;
-  const first = populateBasaltWorld(foundation, plan, { groundingEvidence: evidence });
-  const second = populateBasaltWorld(foundation, plan, { groundingEvidence: evidence });
-  assert.deepEqual(first, second);
-  const instances = first.chunks.flatMap((chunk) => chunk.instances);
-  const byFamily = (familyId: string) => instances.filter((i) => i.familyId === familyId);
-  assert.equal(byFamily("basaltSlabs").length, 4);
-  assert.equal(byFamily("basaltPoles").length, 6);
-  // Full-quaternion render math, independent of the yaw-only gate: evidence
-  // bounds are rebased (pivot at the bounds-frame origin), so corners render
-  // at position + R(corner * scale) with no pivot compensation, and must stay
-  // over the ±30 fixture surface.
-  const rotate = (q: readonly number[], p: { x: number; y: number; z: number }) => {
-    const [qx, qy, qz, qw] = q;
-    return {
-      x:
-        (1 - 2 * (qy! * qy! + qz! * qz!)) * p.x +
-        2 * (qx! * qy! - qz! * qw!) * p.y +
-        2 * (qx! * qz! + qy! * qw!) * p.z,
-      z:
-        2 * (qx! * qz! - qy! * qw!) * p.x +
-        2 * (qy! * qz! + qx! * qw!) * p.y +
-        (1 - 2 * (qx! * qx! + qy! * qy!)) * p.z,
-    };
-  };
-  for (const instance of byFamily("basaltSlabs")) {
-    for (const cx of [-9, 9])
-      for (const cz of [-9, 9]) {
-        const corner = rotate(instance.rotation, {
-          x: cx * instance.scale,
-          y: 0,
-          z: cz * instance.scale,
-        });
-        const x = instance.position.x + corner.x;
-        const z = instance.position.z + corner.z;
-        assert.ok(
-          x >= -30 - 1e-9 && x <= 30 + 1e-9 && z >= -30 - 1e-9 && z <= 30 + 1e-9,
-          `slab corner renders past the surface at ${x}, ${z}`,
-        );
-      }
-  }
-  for (const instance of byFamily("basaltPoles")) {
-    // Rebased bounds put the contact disk at the sealed position verbatim.
-    const radius = 0.2 * instance.scale;
-    assert.ok(
-      instance.position.x - radius >= -30 - 1e-9 &&
-        instance.position.x + radius <= 30 + 1e-9 &&
-        instance.position.z - radius >= -30 - 1e-9 &&
-        instance.position.z + radius <= 30 + 1e-9,
-      `pole contact disk leaves the surface at ${instance.position.x}, ${instance.position.z}`,
-    );
-  }
-});
-
-test("Basalt elevation bands admit and refuse by sample height", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const run = (band?: { minimum?: number; maximum?: number }) => {
-    const plan = createBasaltWorldCompilerPlan({
-      foundation,
-      styleContractHash: contentHash("basalt-style"),
-      familyPlans: [{ ...familyPlan(), ...(band ? { elevationBandStuds: band } : {}) }],
-    });
-    return populateBasaltWorld(foundation, plan, {
-      groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1),
-    });
-  };
-  const open = run();
-  const placed = (pop: ReturnType<typeof run>) => pop.chunks.flatMap((chunk) => chunk.instances);
-  // The flat fixture rests at 0: a covering band places the same count
-  // (ids differ: instance ids key on the plan hash, which covers the band).
-  const covered = run({ minimum: -1, maximum: 1 });
-  assert.equal(covered.instanceCount, open.instanceCount);
-  for (const instance of placed(covered))
-    assert.ok(
-      instance.footprint.restYStuds >= -1 && instance.footprint.restYStuds <= 1,
-      `banded instance escapes its band at ${instance.footprint.restYStuds}`,
-    );
-  assert.equal(run({ minimum: 1 }).instanceCount, 0);
-  assert.equal(run({ maximum: -1 }).instanceCount, 0);
-  assert.ok(open.instanceCount > 0, "open run must place to prove the bands refuse");
-});
-
-test("Basalt rejects inverted elevation bands at plan time", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  assert.throws(
-    () =>
-      createBasaltWorldCompilerPlan({
-        foundation,
-        styleContractHash: contentHash("basalt-style"),
-        familyPlans: [{ ...familyPlan(), elevationBandStuds: { minimum: 2, maximum: 1 } }],
-      }),
-    /elevation band is inverted/,
-  );
-});
-
-test("Basalt cluster distribution fills counts deterministically", () => {
-  const foundation = compileBasaltWorldFoundation(fixture());
-  const clustered: WorldFamilyPopulationPlan = {
-    ...familyPlan(),
-    distribution: "cluster",
-    minimumCount: 12,
-    maximumCount: 12,
-  };
-  const plan = createBasaltWorldCompilerPlan({
-    foundation,
-    styleContractHash: contentHash("basalt-style"),
-    familyPlans: [clustered],
+    admittedAssertions: [...base.admittedAssertions, secondAssertions],
+    regions: [...base.regions, secondRegion],
   });
-  const options = { groundingEvidence: groundingEvidenceFixture("basaltFoliage", 1) };
-  const first = populateBasaltWorld(foundation, plan, options);
-  const second = populateBasaltWorld(foundation, plan, options);
-  assert.deepEqual(first, second);
-  assert.equal(first.instanceCount, 12);
+  const compile = (spatialPlan: typeof firstPlan) =>
+    compileBasaltWorld({
+      semanticModule: module,
+      catalogSnapshot: fixture.snapshot,
+      catalogAssets: [fixture.asset],
+      spatialPlan,
+    });
+  const first = compile(firstPlan);
+  const changedPlan = sealSpatialWorldPlan({
+    ...base,
+    semanticEntities: firstPlan.semanticEntities,
+    admittedAssertions: firstPlan.admittedAssertions,
+    regions: firstPlan.regions.map((region) =>
+      region.regionId === "MainRegion" ? { ...region, refinementPriority: 1 } : region,
+    ),
+  });
+  const changed = compile(changedPlan);
+  const taskFor = (build: typeof first, region: (typeof firstPlan.regions)[number]) =>
+    build.tasks.find(
+      (task) =>
+        task.scope === "region" &&
+        task.stage === "foundation" &&
+        task.inputHashes.includes(contentHash(stableJson(region))),
+    )!;
+  assert.equal(
+    taskFor(first, secondRegion).taskHash,
+    taskFor(changed, secondRegion).taskHash,
+    "unrelated region task must remain byte-identical",
+  );
+  assert.notEqual(
+    taskFor(
+      first,
+      firstPlan.regions.find((region) => region.regionId === "MainRegion")!,
+    ).taskHash,
+    taskFor(
+      changed,
+      changedPlan.regions.find((region) => region.regionId === "MainRegion")!,
+    ).taskHash,
+  );
+  assert.notEqual(first.worldBuildHash, changed.worldBuildHash);
+});
+
+test("lake and road plans preserve space, substance, and boundary decomposition", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
+  const concept = (conceptId: string) =>
+    module.concepts.find((entry) => entry.conceptId === conceptId)!;
+  const lake = concept("bsc_000311");
+  const water = concept("bsc_000202");
+  const waterSurface = concept("bsc_000411");
+  const roadCorridor = concept("bsc_000306");
+  const assertions = sealSemanticAssertionBundle({
+    authority: "admitted",
+    assertions: [
+      ...[
+        { entityId: "LakeSpace", commitment: lake },
+        { entityId: "LakeWater", commitment: water },
+        { entityId: "LakeBoundary", commitment: waterSurface },
+        { entityId: "RoadSpace", commitment: roadCorridor },
+      ].map(({ entityId, commitment }) => ({
+        assertionKind: "denotation" as const,
+        subject: { kind: "planned_entity" as const, id: entityId },
+        concept: {
+          conceptId: commitment.conceptId,
+          commitmentHash: commitment.commitmentHash,
+        },
+        evidence: {
+          level: "declared" as const,
+          evidenceHashes: [contentHash(`${entityId}:declared`)],
+        },
+      })),
+      {
+        assertionKind: "relation" as const,
+        subject: { kind: "planned_entity" as const, id: "LakeWater" },
+        relationId: "bre_000004",
+        object: { kind: "planned_entity" as const, id: "LakeSpace" },
+        evidence: {
+          level: "declared" as const,
+          evidenceHashes: [contentHash("lake:contains-water")],
+        },
+      },
+      {
+        assertionKind: "relation" as const,
+        subject: { kind: "planned_entity" as const, id: "LakeSpace" },
+        relationId: "bre_000005",
+        object: { kind: "planned_entity" as const, id: "LakeBoundary" },
+        evidence: {
+          level: "declared" as const,
+          evidenceHashes: [contentHash("lake:bounded-by-water-surface")],
+        },
+      },
+      {
+        assertionKind: "relation" as const,
+        subject: { kind: "planned_entity" as const, id: "RoadSpace" },
+        relationId: "bre_000003",
+        object: { kind: "planned_entity" as const, id: "RegionEntity" },
+        evidence: {
+          level: "declared" as const,
+          evidenceHashes: [contentHash("road:located-in-region")],
+        },
+      },
+    ],
+  });
+  const closure = (commitment: typeof lake, relationIds: readonly string[]) =>
+    createSemanticDependencyClosure({
+      module,
+      conceptIds: [commitment.conceptId],
+      definitionIds: relationIds,
+    });
+  const {
+    kind: _kind,
+    coordinateSystem: _coordinateSystem,
+    planHash: _planHash,
+    ...base
+  } = fixture.plan;
+  const plan = sealSpatialWorldPlan({
+    ...base,
+    semanticEntities: [
+      ...base.semanticEntities,
+      {
+        entityId: "LakeSpace",
+        upperSort: "space",
+        regionId: "MainRegion",
+        semanticDependencyClosureHash: closure(lake, ["bre_000005"]).hash,
+        admittedAssertionBundleHash: assertions.hash,
+        relationAssertionBundleHash: assertions.hash,
+      },
+      {
+        entityId: "LakeWater",
+        upperSort: "substance",
+        regionId: "MainRegion",
+        semanticDependencyClosureHash: closure(water, ["bre_000004"]).hash,
+        admittedAssertionBundleHash: assertions.hash,
+        relationAssertionBundleHash: assertions.hash,
+      },
+      {
+        entityId: "LakeBoundary",
+        upperSort: "boundary",
+        regionId: "MainRegion",
+        semanticDependencyClosureHash: closure(waterSurface, []).hash,
+        admittedAssertionBundleHash: assertions.hash,
+      },
+      {
+        entityId: "RoadSpace",
+        upperSort: "space",
+        regionId: "MainRegion",
+        semanticDependencyClosureHash: closure(roadCorridor, ["bre_000003"]).hash,
+        admittedAssertionBundleHash: assertions.hash,
+        relationAssertionBundleHash: assertions.hash,
+      },
+    ],
+    admittedAssertions: [...base.admittedAssertions, assertions],
+    placementSurfaces: [
+      ...base.placementSurfaces,
+      {
+        surfaceId: "LakeSurface",
+        regionId: "MainRegion",
+        kind: "water",
+        bounds: { min: { x: 6, y: 0.5, z: 6 }, max: { x: 14, y: 0.5, z: 14 } },
+        normal: { x: 0, y: 1, z: 0 },
+        sourceHash: contentHash("lake-water-boundary"),
+      },
+    ],
+    routes: base.routes.map((route) => ({ ...route, semanticEntityId: "RoadSpace" })),
+  });
+  const build = compileBasaltWorld({
+    semanticModule: module,
+    catalogSnapshot: fixture.snapshot,
+    catalogAssets: [fixture.asset],
+    spatialPlan: plan,
+  });
+  assert.equal(build.foundation.plan.planHash, plan.planHash);
+  assert.equal(build.foundation.plan.placementSurfaces.at(-1)?.kind, "water");
+  assert.equal(build.foundation.roadAssemblies[0]?.routeId, "MainRoute");
+  assert.ok(build.semanticClosureHashes.includes(closure(lake, ["bre_000005"]).hash));
 });

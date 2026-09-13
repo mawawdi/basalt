@@ -14,47 +14,55 @@ const fixedInputs = [
   "bin/basalt.js",
   "package-lock.json",
   "package.json",
+  "tsconfig.base.json",
   "scripts/runtime-build-manifest.mjs",
+  "scripts/render-catalog-review.mjs",
+  "workers/catalog-review/render.py",
+  "workers/catalog-review/contact_sheets.py",
   "tsconfig.json",
+  "tsconfig.test.json",
 ];
 const PRODUCT_PACKAGE_ROOTS = [
-  "basalt-types",
   "contracts",
   "artifact-store",
   "spatial-core",
+  "semantic-kernel",
+  "catalog-model",
   "world-planning",
   "world-compiler",
   "asset-production",
   "asset-inspection",
   "asset-factory",
-  "prepared-asset",
-  "visual-catalog",
-  "catalog-intelligence",
+  "catalog-authoring",
   "neural-asset",
   "reference-image",
+  "authoring-graph",
   "region-composition",
-  "studio-protocol",
-  "studio-bridge",
+  "roblox",
   "cli",
 ];
 
 async function sourceFiles() {
   const files = [...fixedInputs];
-  async function visit(directory) {
+  async function visit(directory, extensions) {
     const entries = await readdir(directory, { withFileTypes: true });
     for (const entry of entries.sort((left, right) => compareStrings(left.name, right.name))) {
       const absolute = join(directory, entry.name);
       if (entry.isSymbolicLink())
         throw new Error(`Runtime build input must not be a symlink: ${absolute}`);
-      if (entry.isDirectory()) await visit(absolute);
-      else if (entry.isFile() && entry.name.endsWith(".ts"))
+      if (entry.isDirectory()) await visit(absolute, extensions);
+      else if (entry.isFile() && extensions.some((extension) => entry.name.endsWith(extension)))
         files.push(relative(root, absolute).split("\\").join("/"));
       else if (!entry.isFile())
         throw new Error(`Runtime build input must be a regular file: ${absolute}`);
     }
   }
-  for (const packageName of PRODUCT_PACKAGE_ROOTS)
-    await visit(resolve(root, "packages", packageName));
+  for (const packageName of PRODUCT_PACKAGE_ROOTS) {
+    files.push(`packages/${packageName}/package.json`, `packages/${packageName}/tsconfig.json`);
+    await visit(resolve(root, "packages", packageName, "src"), [".ts"]);
+  }
+  files.push("packages/roblox/plugin/default.project.json");
+  await visit(resolve(root, "packages", "roblox", "plugin", "src"), [".luau"]);
   return [...new Set(files)].sort();
 }
 
@@ -66,7 +74,7 @@ function field(value) {
 export async function currentRuntimeBuildManifest() {
   const files = await sourceFiles();
   const hash = createHash("sha256");
-  hash.update(field("basalt-world-compiler-build-v1"));
+  hash.update(field("basalt-world-compiler-build"));
   for (const path of files) {
     const absolute = resolve(root, path);
     const status = await lstat(absolute);
@@ -134,6 +142,7 @@ async function writeRuntimeBuildManifest() {
 if (process.argv[1] && resolve(process.argv[1]) === resolve(scriptPath)) {
   const option = process.argv[2];
   if (option === "--write" && process.argv.length === 3) await writeRuntimeBuildManifest();
-  else if (option === "--check" && process.argv.length === 3) await assertRuntimeBuildCurrent();
+  else if (process.argv[2] === "--check" && process.argv.length === 3)
+    await assertRuntimeBuildCurrent();
   else throw new Error("Usage: node scripts/runtime-build-manifest.mjs --write|--check");
 }

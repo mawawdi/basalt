@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000405",
+  "upperSort": "boundary",
+  "normativeDefinition": "A predominantly vertical constructed boundary exposed by a wall assembly.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A predominantly vertical constructed boundary exposed by a wall assembly.",
+      "Its boundary identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than boundary is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    }
+  ],
+  "commitmentHash": "b3648c6e76e7cd192c25864565314074d0a7989d001284093e1cd76760e80185"
+}

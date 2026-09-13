@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../contracts" },
+    { "path": "../artifact-store" },
+    { "path": "../asset-inspection" },
+    { "path": "../semantic-kernel" },
+    { "path": "../catalog-model" },
+    { "path": "../neural-asset" },
+    { "path": "../world-planning" },
+    { "path": "../world-compiler" },
+    { "path": "../roblox" }
+  ]
+}

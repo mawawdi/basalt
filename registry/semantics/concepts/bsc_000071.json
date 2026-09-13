@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000071",
+  "upperSort": "object",
+  "normativeDefinition": "An artifact intended to be operated directly to perform a task.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: An artifact intended to be operated directly to perform a task.",
+      "Its object identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than object is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    }
+  ],
+  "commitmentHash": "50f3036ff3b2dc71c282b524141b2770178739ee9d9c782edc5b84ad8ffabb1a"
+}

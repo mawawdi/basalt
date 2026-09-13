@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { assertRuntimeBuildCurrent } from "../scripts/runtime-build-manifest.mjs";
 
-const entrypoint = resolve(import.meta.dirname, "../dist/packages/cli/src/index.js");
+const entrypoint = resolve(import.meta.dirname, "../packages/cli/dist/index.js");
 if (!existsSync(entrypoint)) {
   process.stderr.write("Basalt is not built. Run npm run build first.\n");
   process.exit(2);

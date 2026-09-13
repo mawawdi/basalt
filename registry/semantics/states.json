@@ -1,0 +1,175 @@
+[
+  {
+    "kind": "StateDimensionDefinition",
+    "stateDimensionId": "bsd_000001",
+    "cardinality": "exactly_one_when_asserted",
+    "normativeDefinition": "A state dimension recording the entity's integrity condition.",
+    "values": [
+      {
+        "stateValueId": "bsv_000001",
+        "normativeDefinition": "The integrity dimension has the mutually exclusive value intact.",
+        "hash": "695d8effa605666405c562a4831edd5257c8c5c9d99a95aef80ea31215563a4e"
+      },
+      {
+        "stateValueId": "bsv_000002",
+        "normativeDefinition": "The integrity dimension has the mutually exclusive value damaged.",
+        "hash": "2833661305bff96b4ea763dab44d152c60c593a553a3f67a37051436989b4ce9"
+      },
+      {
+        "stateValueId": "bsv_000003",
+        "normativeDefinition": "The integrity dimension has the mutually exclusive value broken.",
+        "hash": "7ad79ebcd1cad12e3d2816abfab8bb39f5447e079038676c32070e1db12388a5"
+      },
+      {
+        "stateValueId": "bsv_000004",
+        "normativeDefinition": "The integrity dimension has the mutually exclusive value ruined.",
+        "hash": "7b64ac9b20281733119a874343d221a1653492850866aa84ab37336bf7113720"
+      }
+    ],
+    "hash": "4c048ec945243e50fedf7e98c903e0f6815c4380817dc463083b1996c5a8abbd"
+  },
+  {
+    "kind": "StateDimensionDefinition",
+    "stateDimensionId": "bsd_000002",
+    "cardinality": "exactly_one_when_asserted",
+    "normativeDefinition": "A state dimension recording the entity's openness condition.",
+    "values": [
+      {
+        "stateValueId": "bsv_000005",
+        "normativeDefinition": "The openness dimension has the mutually exclusive value open.",
+        "hash": "5462d8eb4493b0c5a6a3ea5cfa349a19abcc5a9ccb1ae2d2fe465f97670d524d"
+      },
+      {
+        "stateValueId": "bsv_000006",
+        "normativeDefinition": "The openness dimension has the mutually exclusive value ajar.",
+        "hash": "6d516b115d87832e8a2c0219efa4161de92a828253db8b67dc11ed41cb2e5496"
+      },
+      {
+        "stateValueId": "bsv_000007",
+        "normativeDefinition": "The openness dimension has the mutually exclusive value closed.",
+        "hash": "c574e32daef223bac0d9ae5577a0b60116aab4e430189cbf03d76b63d9a3fedf"
+      }
+    ],
+    "hash": "aa5caa810fb4b091442abb4b79d7dae91f3a63a925ada153af39623943a7929e"
+  },
+  {
+    "kind": "StateDimensionDefinition",
+    "stateDimensionId": "bsd_000003",
+    "cardinality": "exactly_one_when_asserted",
+    "normativeDefinition": "A state dimension recording the entity's activation condition.",
+    "values": [
+      {
+        "stateValueId": "bsv_000008",
+        "normativeDefinition": "The activation dimension has the mutually exclusive value on.",
+        "hash": "54d1d78496ab85b57288252e4bf907711e48ccc766287d40c242be254bad3d1f"
+      },
+      {
+        "stateValueId": "bsv_000009",
+        "normativeDefinition": "The activation dimension has the mutually exclusive value off.",
+        "hash": "23da6d6e2b9e0bb3223925011e806e3a8dac8b3cc9cfc3ed837875ea0daed34d"
+      }
+    ],
+    "hash": "afe3d050825b5ff7442653f6571960dc1dd313c90d20d8ffef3d04f43a4e67fb"
+  },
+  {
+    "kind": "StateDimensionDefinition",
+    "stateDimensionId": "bsd_000004",
+    "cardinality": "exactly_one_when_asserted",
+    "normativeDefinition": "A state dimension recording the entity's fill level condition.",
+    "values": [
+      {
+        "stateValueId": "bsv_000010",
+        "normativeDefinition": "The fill level dimension has the mutually exclusive value empty.",
+        "hash": "ca0d5bc442cc6be947bfea86da3c148ea94ceae8d45238ebc7dd2fbc93a22948"
+      },
+      {
+        "stateValueId": "bsv_000011",
+        "normativeDefinition": "The fill level dimension has the mutually exclusive value partial.",
+        "hash": "a6640bd46e7711df9c2c0c746766f865db605294a95cc8341457a1befe3f0a0d"
+      },
+      {
+        "stateValueId": "bsv_000012",
+        "normativeDefinition": "The fill level dimension has the mutually exclusive value full.",
+        "hash": "260044efe6f9eb8260fb0ac1a6c82ddbba9b3032f772d4e5476635a17b7e2b72"
+      }
+    ],
+    "hash": "626c46aa1800f32e34ce8f985751d2c2a52c44dea7cf89553804e7caa52dc9b0"
+  },
+  {
+    "kind": "StateDimensionDefinition",
+    "stateDimensionId": "bsd_000005",
+    "cardinality": "exactly_one_when_asserted",
+    "normativeDefinition": "A state dimension recording the entity's assembly completeness condition.",
+    "values": [
+      {
+        "stateValueId": "bsv_000013",
+        "normativeDefinition": "The assembly completeness dimension has the mutually exclusive value assembled.",
+        "hash": "268255276303fd68c25c507f0773c87b9256d2d63b93509d2f1066de810bb5f7"
+      },
+      {
+        "stateValueId": "bsv_000014",
+        "normativeDefinition": "The assembly completeness dimension has the mutually exclusive value fragmentary.",
+        "hash": "a7329918f6fe8712d72b57a9a56ce8d9b741d18dac6fdcbf8743b857e794af02"
+      },
+      {
+        "stateValueId": "bsv_000015",
+        "normativeDefinition": "The assembly completeness dimension has the mutually exclusive value disassembled.",
+        "hash": "3b3bf87c7e92c10820c2914b17df30060da942516d00dcd6d1e402f1f6902d25"
+      }
+    ],
+    "hash": "3edd9e36b31a265b7b12bbfae353819af1265b88e77b7a81a743a2d36bc4be63"
+  },
+  {
+    "kind": "StateDimensionDefinition",
+    "stateDimensionId": "bsd_000006",
+    "cardinality": "exactly_one_when_asserted",
+    "normativeDefinition": "A state dimension recording the entity's life condition condition.",
+    "values": [
+      {
+        "stateValueId": "bsv_000016",
+        "normativeDefinition": "The life condition dimension has the mutually exclusive value alive.",
+        "hash": "f9f72d42f5c13951e5b7887bef6776e6c53a8acc3b6a72c3cde1b6258af85d74"
+      },
+      {
+        "stateValueId": "bsv_000017",
+        "normativeDefinition": "The life condition dimension has the mutually exclusive value dormant.",
+        "hash": "add8f9fb056936eff915e6517e25183c60c3921c42e11d58bc577b8b5c3e7fea"
+      },
+      {
+        "stateValueId": "bsv_000018",
+        "normativeDefinition": "The life condition dimension has the mutually exclusive value dead.",
+        "hash": "f3c41de75eac310c2a3aeac457bac155d41e6262530d1eac36806f5462f632bf"
+      }
+    ],
+    "hash": "4afcb08ad806e1caa66759ca7f3d2f533efe7e773bcb5cf1bb74c1e9601a43a0"
+  },
+  {
+    "kind": "StateDimensionDefinition",
+    "stateDimensionId": "bsd_000007",
+    "cardinality": "exactly_one_when_asserted",
+    "normativeDefinition": "A state dimension recording the entity's wetness condition.",
+    "values": [
+      {
+        "stateValueId": "bsv_000019",
+        "normativeDefinition": "The wetness dimension has the mutually exclusive value dry.",
+        "hash": "cb686c7d61937579870090dcee34227a53424c6a0d9e97a6a079f18308b01664"
+      },
+      {
+        "stateValueId": "bsv_000020",
+        "normativeDefinition": "The wetness dimension has the mutually exclusive value damp.",
+        "hash": "8284f5db7d25fb223660a767533893bc50e2c4035d887f00e8abb1b05210c1c4"
+      },
+      {
+        "stateValueId": "bsv_000021",
+        "normativeDefinition": "The wetness dimension has the mutually exclusive value wet.",
+        "hash": "2880ae0942de41da55be79ba19e926aceb79debd045a45745586707ba4e0ffd3"
+      },
+      {
+        "stateValueId": "bsv_000022",
+        "normativeDefinition": "The wetness dimension has the mutually exclusive value submerged.",
+        "hash": "c8efdf21ac5730a34e4a88a22c543daabea7df0eab8955f55ee503c9950e07b6"
+      }
+    ],
+    "hash": "a4dd85fc91e041a4f04d126aed471d79f31fe26d6b7dd95654435139fd798ab5"
+  }
+]

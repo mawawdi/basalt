@@ -1,0 +1,11 @@
+--!strict
+return {
+	MAX_TRANSACTIONS = 64,
+	MAX_INSTANCES = 100000,
+	MAX_TERRAIN_VOXELS = 4000000,
+	STUD_METERS = 0.28,
+	BOUND_TOLERANCE_STUDS = 0.05,
+	CONNECTION_TOKEN_SETTING = "BasaltLocalBridgeToken",
+	WORLD_FOLDER = "BasaltWorld",
+	STAGING_FOLDER = "BasaltWorldStaging",
+}

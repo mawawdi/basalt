@@ -4,5 +4,8 @@ registry/
 .VSCodeCounter/
 dist/
 node_modules/
-plugin/BasaltStudioPlugin.rbxmx
 package-lock.json
+
+# This implementation is hashed into every corpus-render receipt. Format it
+# explicitly before starting a corpus run; never mutate it underneath evidence.
+scripts/render-catalog-review.mjs

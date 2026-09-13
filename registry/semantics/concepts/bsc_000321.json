@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000321",
+  "upperSort": "space",
+  "normativeDefinition": "A logical space defined by a gameplay rule, objective, or encounter.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A logical space defined by a gameplay rule, objective, or encounter.",
+      "Its space identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than space is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000315",
+      "commitmentHash": "b8fa661e442973c6d99d57e731ef72d46280a9ff111e6fd4c518aa196bdef9be"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000315",
+      "commitmentHash": "b8fa661e442973c6d99d57e731ef72d46280a9ff111e6fd4c518aa196bdef9be"
+    }
+  ],
+  "commitmentHash": "54cf29d866d939574f6b9bab6fe3caa226d33c32ea8ba91c78eda9eeda014241"
+}

@@ -23,22 +23,47 @@ const execOptions = {
 async function main() {
   const markdownFiles = await collectMarkdownFiles();
   const linkFailures = [];
+  const legacyFailures = [];
   const diagrams = [];
 
   for (const file of markdownFiles) {
     const source = await readRegularUtf8(file);
     linkFailures.push(...(await validateLocalLinks(file, source)));
+    legacyFailures.push(...validateCurrentVocabulary(file, source));
     diagrams.push(...extractMermaid(file, source));
   }
 
   if (linkFailures.length > 0) {
     throw new Error(`Local Markdown link check failed:\n${linkFailures.join("\n")}`);
   }
+  if (legacyFailures.length > 0) {
+    throw new Error(`Legacy terminology check failed:\n${legacyFailures.join("\n")}`);
+  }
 
   await renderMermaid(diagrams);
   process.stdout.write(
     `Docs check passed: ${markdownFiles.length} Markdown files, ${diagrams.length} Mermaid diagrams\n`,
   );
+}
+
+function validateCurrentVocabulary(file, source) {
+  const name = relative(root, file);
+  if (name.startsWith(`docs${sep}sources${sep}`)) return [];
+  const forbidden = [
+    [/\bVariantFamily\b|\bvariant_family\b/gu, "VariantFamily"],
+    [/\bSemanticOntology\b|\bontologyHash\b/gu, "SemanticOntology"],
+    [/\b(?:family requests?|family palettes?|family caches?)\b/giu, "family request/palette/cache"],
+    [
+      /\b(?:studio-protocol|studio-bridge|catalog-intelligence|prepared-asset|visual-catalog|basalt-types)\b/giu,
+      "deleted package",
+    ],
+    [/\b(?:schemaVersion|parentRevision)\b|@2/gu, "removed compatibility identifier"],
+  ];
+  const failures = [];
+  for (const [pattern, label] of forbidden) {
+    if (pattern.test(source)) failures.push(`${name}: contains ${label}`);
+  }
+  return failures;
 }
 
 async function collectMarkdownFiles() {

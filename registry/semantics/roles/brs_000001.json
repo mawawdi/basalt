@@ -1,0 +1,79 @@
+{
+  "kind": "RoleSchemeDefinition",
+  "roleSchemeId": "brs_000001",
+  "scope": "assembly_grammar",
+  "normativeDefinition": "Contextual roles admitted only within the assembly_grammar scope.",
+  "roles": [
+    {
+      "roleId": "bro_000001",
+      "normativeDefinition": "The entity performs the foundation segment role within the assembly_grammar context.",
+      "hash": "03e832575fe91803fe740d104a7694b9085f3938f85d3241f998f0eaa603719c"
+    },
+    {
+      "roleId": "bro_000002",
+      "normativeDefinition": "The entity performs the floor segment role within the assembly_grammar context.",
+      "hash": "1ad704c415ae2c6c5fb45f9a8fbb8a48e98c4b4dda6052ce6a073df782413de5"
+    },
+    {
+      "roleId": "bro_000003",
+      "normativeDefinition": "The entity performs the wall segment role within the assembly_grammar context.",
+      "hash": "b5c135e3ce94704efdd6cbc36b6db85a2f88ac07a4c1b063e269fac75be80681"
+    },
+    {
+      "roleId": "bro_000004",
+      "normativeDefinition": "The entity performs the inner corner role within the assembly_grammar context.",
+      "hash": "c393a8bbfcb4d5e2dfa716c15a91eaa4e79769ac06c0ece1be6c20d8d25dd4e3"
+    },
+    {
+      "roleId": "bro_000005",
+      "normativeDefinition": "The entity performs the outer corner role within the assembly_grammar context.",
+      "hash": "a109be398e33e5dbeb1a7e9dc133c568971a29bb3906214fe795224c84995c01"
+    },
+    {
+      "roleId": "bro_000006",
+      "normativeDefinition": "The entity performs the opening frame role within the assembly_grammar context.",
+      "hash": "be856ad41b7bf7b9d8ee5486539272412526b2f576767b3cb65ac8ddea4659f8"
+    },
+    {
+      "roleId": "bro_000007",
+      "normativeDefinition": "The entity performs the door leaf role within the assembly_grammar context.",
+      "hash": "dc7341497c01939d113897c6d8d67ba922e379ba92a0cd7d379668915f9253ff"
+    },
+    {
+      "roleId": "bro_000008",
+      "normativeDefinition": "The entity performs the window infill role within the assembly_grammar context.",
+      "hash": "2a5af2a1182d6daf401a62be4a0869e6cc93f3bbc7bd1049f049a675945fb6a1"
+    },
+    {
+      "roleId": "bro_000009",
+      "normativeDefinition": "The entity performs the column role within the assembly_grammar context.",
+      "hash": "58855ec2d56b3787ffac6bf7e937d7dc7cb2ff2fd23eebdc1edaef48e9efcdf3"
+    },
+    {
+      "roleId": "bro_000010",
+      "normativeDefinition": "The entity performs the beam role within the assembly_grammar context.",
+      "hash": "99e9fa902189ad221c87715cbff9fa5aeb3abf99f8c73b51f78577c3156d79ae"
+    },
+    {
+      "roleId": "bro_000011",
+      "normativeDefinition": "The entity performs the stair flight role within the assembly_grammar context.",
+      "hash": "584b40fbd6773e4c4f29785c6b29baf2a935b160570080b3ed5a413f40cab977"
+    },
+    {
+      "roleId": "bro_000012",
+      "normativeDefinition": "The entity performs the roof segment role within the assembly_grammar context.",
+      "hash": "fe7b45478eda421e60d08c1afef5d3fec4f40b690c0dfbe679b34c8dcdc04ee1"
+    },
+    {
+      "roleId": "bro_000013",
+      "normativeDefinition": "The entity performs the trim role within the assembly_grammar context.",
+      "hash": "27efd7128ecad0a8f36dd0fbb04361ed66ccfed06dd7f332d20adf011c3de874"
+    },
+    {
+      "roleId": "bro_000014",
+      "normativeDefinition": "The entity performs the railing role within the assembly_grammar context.",
+      "hash": "6ac8f3634e35a49d54c74701f2f91e14f0e6f39be2f5a26f835f3ce38d0fb1fa"
+    }
+  ],
+  "hash": "8893f80374e99e644013ee8203a015bcbab60c7abf742b78422a55247a30fc98"
+}

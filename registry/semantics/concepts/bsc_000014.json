@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000014",
+  "upperSort": "object",
+  "normativeDefinition": "A bounded formation produced by mineral deposition or erosion.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A bounded formation produced by mineral deposition or erosion.",
+      "Its object identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than object is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000011",
+      "commitmentHash": "00b26f36c6a2f49bdebd3adcd69a010e1aa4d12a44020ffb9d26632ab0f280de"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000011",
+      "commitmentHash": "00b26f36c6a2f49bdebd3adcd69a010e1aa4d12a44020ffb9d26632ab0f280de"
+    }
+  ],
+  "commitmentHash": "8a78bac7acaca9467c7ed0d14b80545d453d18de43fcaefd31b1c2ccda4dc83a"
+}

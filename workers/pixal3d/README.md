@@ -24,4 +24,4 @@ egress, runtime downloads, and `trust_remote_code` remain denied.
 The repository license, weights terms, DINOv3 terms, and all transitive terms
 require separate retained commercial reviews. A successful technical probe
 cannot substitute for those reviews or for Roblox Studio evidence. No Pixal3D
-descriptor is included in an asset-factory registry in this revision.
+descriptor is included in the active asset-factory registry.

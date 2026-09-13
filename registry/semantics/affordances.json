@@ -1,0 +1,146 @@
+[
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000001",
+    "normativeDefinition": "Supports stable pedestrian traversal on a verified surface.",
+    "hash": "1b4ee21312fe90ee7244eb8c4efba34d6b92547a4debcb2a321dffb70a60eb75"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000002",
+    "normativeDefinition": "Provides a verified passage through or across its realized extent.",
+    "hash": "112ee8b65b84dc15699f1cc2e579517a0b8f2760172b6dc205cdd99b1e11e2da"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000003",
+    "normativeDefinition": "Supports verified controlled elevation gain by an actor.",
+    "hash": "4c244b7959c88332a4ffded8837a1e7d504cbd5761df5d5b06fdffaa890212ae"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000004",
+    "normativeDefinition": "Provides a verified volume or surface suitable for swimming movement.",
+    "hash": "049364892e233d2a9f3fdd231e70edda147d0ab2c491e28976685a6778b210a3"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000005",
+    "normativeDefinition": "Supports verified traversal by an accepted vehicle class.",
+    "hash": "b3eb4f569f2c18b5f2b2a6ebeed128221b71ab5a956adf62d19262718405da06"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000006",
+    "normativeDefinition": "Provides a verified support pose suitable for a seated actor.",
+    "hash": "eb0bcf06a5c0eac6392aea38e11ad6cf247f396909faace4c5bf5fa912f2fa80"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000007",
+    "normativeDefinition": "Supports a verified transition between closed and open states.",
+    "hash": "601ca308ce60016c9d0346c1c122af123bf7db55dd681ad12b51f638d6e83aa5"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000008",
+    "normativeDefinition": "Provides a verified contained space or support region for accepted entities.",
+    "hash": "778016c6293cc292c27b97788237e732db200c458287321f41ddea768eaaad64"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000009",
+    "normativeDefinition": "Can be transferred into an actor-held state under the applicable size and mass policy.",
+    "hash": "cc80bf6b5da39ec631dc89895b8383ba54962090f20d512d7004ab2c98fc3983"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000010",
+    "normativeDefinition": "Supports a verified transition between activation states.",
+    "hash": "ebfac20bc8ed89df90de0bc4f529b84667cb35a357b72f643ef2bcf2442272f6"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000011",
+    "normativeDefinition": "Can change world pose during normal interaction without losing identity.",
+    "hash": "599a8137a68685f0c4394029a77214bbd27a5de4613f36875747705533cd5ad8"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000012",
+    "normativeDefinition": "Supports a verified transition to a damaged, broken, or ruined state.",
+    "hash": "b7489b83ceb6e99fb41956f52a59840abeb9e0e056c2786482441350d40b9c1e"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000013",
+    "normativeDefinition": "Can yield a resource through an intended world interaction.",
+    "hash": "b963aedd5f2bc6bc122a11a35c84e0766c1088545d709774443301c4efac6d9a"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000014",
+    "normativeDefinition": "Can be consumed by an actor through an intended world interaction.",
+    "hash": "35a5967eba0eebe780bf8a99e383000c72db110a46e5ac0417f011a6d0969381"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000015",
+    "normativeDefinition": "Provides verified contact capable of supporting an allowed load class.",
+    "hash": "3a54172d98fe9712d472fe2ea2cdb6bfb9d3a4793ee0693d884a435fba6760c0"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000016",
+    "normativeDefinition": "Its admitted collision representation obstructs an accepted actor or vehicle class.",
+    "hash": "f58e4307cab1aff1e08eae5a54c34a096b3718c3265d89f882a39ad224c2d7c4"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000017",
+    "normativeDefinition": "Its admitted geometry and collision provide verified occlusion or protection under a gameplay policy.",
+    "hash": "0722719938e14ff3c15778a1948fc0fc212110a3145c2a6eed8b30f83c3b0265"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000018",
+    "normativeDefinition": "Produces a verified illumination effect when realized in an applicable state.",
+    "hash": "1758f3050be42cde266d2e9f6a889682b241bcbc1f7aa686b82cf1a4f03583bc"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000019",
+    "normativeDefinition": "Produces a verified audible effect when realized in an applicable state.",
+    "hash": "62938d3ae3a241a6495eb5d38b892d5ff6b93c5175aadeb1b1c3078a1f12e4f5"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000020",
+    "normativeDefinition": "Provides a verified bounded volume suitable for an allowed liquid.",
+    "hash": "8e220f65674646ecdd3433986f41e1245dd6f2c4c6dc4fb39a214935bcd76b96"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000021",
+    "normativeDefinition": "Can be joined to a compatible host endpoint while satisfying contact and clearance policy.",
+    "hash": "f336d9365dc8db7362e2a6efb96c44608fd0e5fbc74d6c633b63b1bcc2663b28"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000022",
+    "normativeDefinition": "Can be installed persistently on an accepted support surface or endpoint.",
+    "hash": "dacf43d910bb5606e642ac7ec231ffd9c21c0dc0d2f161c31be2f7bcbb47a8e8"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000023",
+    "normativeDefinition": "Exposes one or more authored interfaces that can mate with compatible interfaces.",
+    "hash": "4922855f114968ca148706ee481f4aaa9b8cf3499fb92a327d08cd8ea8d5e2ad"
+  },
+  {
+    "kind": "AffordanceDefinition",
+    "affordanceId": "baf_000024",
+    "normativeDefinition": "Can participate in a stable repeated support relation with compatible realizations.",
+    "hash": "b8922e7f02d5738e33c55282eb4bfd95b6265093c7f8f1fc748905e25e0cb860"
+  }
+]

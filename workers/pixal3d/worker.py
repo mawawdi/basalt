@@ -13,7 +13,7 @@ import json
 from typing import Any
 
 
-WORKER_ABI = "basalt-pixal3d-worker-contract@1"
+WORKER_CONTRACT = "basalt-pixal3d-worker-contract"
 SOURCE_COMMIT = "f7cf38429b0bd264f1995f0f8743a88b1c728b94"
 WEIGHTS_REVISION = "b0cb2e1b794cab9aa0ac38a95d794a4d9337437f"
 
@@ -35,7 +35,7 @@ def content_hash(value: Any) -> str:
 def contract() -> dict[str, Any]:
     material = {
         "kind": "Pixal3dWorkerContract",
-        "abi": WORKER_ABI,
+        "contract": WORKER_CONTRACT,
         "status": "incomplete",
         "code": "inference_implementation_absent",
         "sourceCommit": SOURCE_COMMIT,
@@ -53,7 +53,7 @@ def contract() -> dict[str, Any]:
         "runtimeDownloads": "denied",
         "runtimeEgress": "denied",
         "trustRemoteCode": False,
-        "output": "basalt-mesh-attribute-tensor-bundle@2",
+        "output": "basalt-mesh-attribute-tensor-bundle",
         "modelWillRun": False,
     }
     return {**material, "hash": content_hash(material)}

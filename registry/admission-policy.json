@@ -1,0 +1,22 @@
+{
+  "kind": "CatalogAdmissionPolicy",
+  "policyId": "sampled_panel_admission",
+  "minimumIndependentHypotheses": 2,
+  "consensus": {
+    "numerator": 2,
+    "denominator": 3
+  },
+  "minimumVisualSimilarity": {
+    "numerator": 9,
+    "denominator": 10
+  },
+  "reviewSampling": {
+    "minimumPerCohort": 3,
+    "deterministicAuditPermille": 20,
+    "maximumAuditPerCohort": 8
+  },
+  "automaticallyAdmissibleEntryKinds": [
+    "substitution_set"
+  ],
+  "hash": "2214f9b838775539250bcc172831749499aa5a7aabe5bd6a804a7b4454c8d284"
+}

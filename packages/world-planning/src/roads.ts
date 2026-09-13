@@ -1,461 +1,215 @@
 import { z } from "zod";
-import { contentHash, stableJson } from "../../contracts/src/index.js";
 import {
-  WORLD_PLAN_SCHEMA,
+  HASH_SCHEMA,
+  compareCanonicalStrings,
+  contentHash,
+  deepFreezeJson,
+  stableJson,
+} from "@basalt/contracts";
+import {
+  WORLD_AABB_SCHEMA,
+  WORLD_ENTITY_ID_SCHEMA,
   WORLD_VECTOR3_SCHEMA,
+  type SpatialWorldPlan,
   type WorldRoute,
   type WorldVector3,
 } from "./contracts.js";
-import { worldEntityId, worldHash } from "./primitives.js";
-import { PlacementSurfaceIndex } from "./surfaces.js";
-import {
-  MAXIMUM_ROUTE_PROFILE_SAMPLES,
-  compileRouteSurfaceProfile,
-  compileTerrainPlan,
-} from "./terrain.js";
 
-export const ROAD_ASSEMBLY_ABI = "basalt-road-assembly@1" as const;
-export const DEFAULT_ROAD_CHUNK_SIZE = 128 as const;
-export const MAXIMUM_ROAD_ASSEMBLY_SEGMENTS = MAXIMUM_ROUTE_PROFILE_SAMPLES;
-/** Graded bed depth below surrounding grade, in studs. */
-export const ROADBED_DEPTH_STUDS = 0.3 as const;
-/** Shoulder width as a fraction of route width on each side of the bed. */
-export const ROADBED_FALLOFF_FRACTION = 0.5 as const;
-
-/**
- * Derive one roadbed carve op per route. The bed is flat across the route
- * width at full depth with smooth shoulders, so the assembled ribbon rests in
- * a graded swale instead of balancing on unmodified terrain.
- */
-export function roadbedOperationsForRoutes(routes: readonly WorldRoute[]): Array<{
-  surfaceId: string;
-  operation: {
-    id: string;
-    kind: "roadbed";
-    points: Array<{ x: number; z: number }>;
-    width: number;
-    depth: number;
-    falloff: number;
-  };
-}> {
-  // Joints are exact-shared endpoints between segments. Each segment's
-  // carve polyline extends one link across every simple joint (exactly one
-  // neighboring link), so both sides of a partition seam measure distance
-  // to the same local road shape and carve bit-identically. Junctions
-  // (3+ links) keep per-segment carves: a polyline cannot branch.
-  const jointIndex = new Map<string, Array<{ route: number; point: number }>>();
-  routes.forEach((route, routeIdx) => {
-    route.points.forEach((point, pointIdx) => {
-      const key = `${point.x},${point.z}`;
-      const entry = jointIndex.get(key);
-      if (entry) entry.push({ route: routeIdx, point: pointIdx });
-      else jointIndex.set(key, [{ route: routeIdx, point: pointIdx }]);
-    });
-  });
-  return routes.map((route, routeIdx) => {
-    const own = route.points.map((point) => ({ x: point.x, z: point.z }));
-    const extend = (endpoint: { x: number; z: number }, endpointIdx: number) => {
-      const sharers = (jointIndex.get(`${endpoint.x},${endpoint.z}`) ?? []).filter(
-        (share) => share.route !== routeIdx || share.point !== endpointIdx,
-      );
-      // Exactly one neighboring link: a mid-polyline sharer already owns
-      // two links, and junctions own more; neither extends.
-      const links = sharers.flatMap((share) => {
-        const other = routes[share.route]!.points;
-        const adjacent: Array<{ x: number; z: number }> = [];
-        if (share.point > 0) adjacent.push(other[share.point - 1]!);
-        if (share.point < other.length - 1) adjacent.push(other[share.point + 1]!);
-        return adjacent;
-      });
-      if (links.length !== 1) return null;
-      return { x: links[0]!.x, z: links[0]!.z };
-    };
-    const points = [...own];
-    const head = extend(own[0]!, 0);
-    if (head) points.unshift(head);
-    const tail = extend(own[own.length - 1]!, own.length - 1);
-    if (tail) points.push(tail);
-    return {
-      surfaceId: route.surfaceId,
-      operation: {
-        id: `roadbed_${route.id.slice(0, 32)}_${contentHash(stableJson(route.id)).slice(0, 8)}`,
-        kind: "roadbed",
-        points,
-        width: route.width,
-        depth: ROADBED_DEPTH_STUDS,
-        falloff: route.width * ROADBED_FALLOFF_FRACTION,
-      },
-    };
-  });
-}
-
-const roadRibbonVertex = z
-  .object({ position: WORLD_VECTOR3_SCHEMA, normal: WORLD_VECTOR3_SCHEMA })
+const vertex = z
+  .object({ positionMeters: WORLD_VECTOR3_SCHEMA, normal: WORLD_VECTOR3_SCHEMA })
   .strict();
-
-const roadSegmentBounds = z
-  .object({ minimum: WORLD_VECTOR3_SCHEMA, maximum: WORLD_VECTOR3_SCHEMA })
-  .strict();
-
-const roadSegment = z
+const segment = z
   .object({
-    id: worldEntityId,
-    routeId: worldEntityId,
-    dominantRegionId: worldEntityId,
-    materialId: worldEntityId,
-    chunkId: worldEntityId,
-    startStationStuds: z.number().finite().nonnegative(),
-    endStationStuds: z.number().finite().nonnegative(),
-    vertices: z.array(roadRibbonVertex).min(4),
-    bounds: roadSegmentBounds,
+    segmentId: WORLD_ENTITY_ID_SCHEMA,
+    startStationMeters: z.number().finite().nonnegative(),
+    endStationMeters: z.number().finite().nonnegative(),
+    vertices: z.array(vertex).length(4),
+    boundsMeters: WORLD_AABB_SCHEMA,
   })
   .strict();
-
-const roadAssemblyMaterial = z
+export const ROAD_ASSEMBLY_SCHEMA = z
   .object({
     kind: z.literal("RoadAssembly"),
-    abi: z.literal(ROAD_ASSEMBLY_ABI),
-    routeId: worldEntityId,
-    surfaceId: worldEntityId,
-    closed: z.boolean(),
-    widthStuds: z.number().finite().positive(),
-    chunkSizeStuds: z.number().int().positive(),
-    traversable: z.literal(true),
-    maximumGradeDegrees: z.number().finite().nonnegative(),
-    maximumStepHeight: z.number().finite().nonnegative(),
-    profileHash: worldHash,
-    crossSection: z
-      .object({
-        kind: z.literal("flat"),
-        edgeDropStuds: z.number().finite().nonnegative(),
-        innerFraction: z.number().finite().min(0).max(1),
-      })
-      .strict(),
-    segments: z.array(roadSegment).min(1).max(MAXIMUM_ROAD_ASSEMBLY_SEGMENTS),
+    routeId: WORLD_ENTITY_ID_SCHEMA,
+    routeHash: HASH_SCHEMA,
+    widthMeters: z.number().finite().positive(),
+    chunkSizeMeters: z.number().finite().positive(),
+    segments: z.array(segment).min(1).max(65_536),
+    hash: HASH_SCHEMA,
   })
-  .strict();
-
-export const ROAD_ASSEMBLY_SCHEMA = roadAssemblyMaterial
-  .extend({ hash: worldHash })
   .strict()
-  .refine(
-    (value) => value.hash === contentHash(stableJson({ ...value, hash: undefined })),
-    "Road assembly hash does not match its sealed material",
-  );
-
-export type RoadAssembly = z.infer<typeof ROAD_ASSEMBLY_SCHEMA>;
+  .superRefine((value, context) => verify(value, context));
+export type RoadAssembly = z.output<typeof ROAD_ASSEMBLY_SCHEMA>;
 export type RoadSegment = RoadAssembly["segments"][number];
 
-/**
- * Squared planimetric distance from a point to a route polyline. This is the
- * single corridor definition shared by road assembly, population exclusion,
- * and clearance relations: corridors are measured in XZ, never in 3D, so
- * slope never narrows the protected band.
- */
-export function routeCorridorDistance2(
+export function compileRoadAssembly(route: WorldRoute, chunkSizeMeters = 4.48): RoadAssembly {
+  const pieces: RoadSegment[] = [];
+  let station = 0;
+  for (let index = 1; index < route.pointsMeters.length; index += 1) {
+    const from = route.pointsMeters[index - 1]!;
+    const to = route.pointsMeters[index]!;
+    const length = Math.hypot(to.x - from.x, to.y - from.y, to.z - from.z);
+    const subdivisions = Math.max(1, Math.ceil(length / chunkSizeMeters));
+    for (let slice = 0; slice < subdivisions; slice += 1) {
+      const a = lerp(from, to, slice / subdivisions);
+      const b = lerp(from, to, (slice + 1) / subdivisions);
+      const direction = normalize({ x: b.x - a.x, y: b.y - a.y, z: b.z - a.z });
+      const lateral = normalize({ x: -direction.z, y: 0, z: direction.x });
+      const half = route.widthMeters / 2;
+      const points = [
+        offset(a, lateral, -half),
+        offset(a, lateral, half),
+        offset(b, lateral, -half),
+        offset(b, lateral, half),
+      ];
+      const end = station + length / subdivisions;
+      pieces.push({
+        segmentId: `Road_${index}_${slice}`,
+        startStationMeters: station,
+        endStationMeters: end,
+        vertices: points.map((positionMeters) => ({
+          positionMeters,
+          normal: { x: 0, y: 1, z: 0 },
+        })),
+        boundsMeters: bounds(points, route.heightClearanceMeters),
+      });
+      station = end;
+    }
+  }
+  const material = {
+    kind: "RoadAssembly" as const,
+    routeId: route.routeId,
+    routeHash: contentHash(stableJson(route)),
+    widthMeters: route.widthMeters,
+    chunkSizeMeters,
+    segments: pieces,
+  };
+  return deepFreezeJson(
+    ROAD_ASSEMBLY_SCHEMA.parse({ ...material, hash: contentHash(stableJson(material)) }),
+  );
+}
+
+export function assemblePlanRoads(
+  plan: SpatialWorldPlan,
+  chunkSizeMeters?: number,
+): readonly RoadAssembly[] {
+  return [...plan.routes]
+    .sort((a, b) => compareCanonicalStrings(a.routeId, b.routeId))
+    .map((route) => compileRoadAssembly(route, chunkSizeMeters));
+}
+
+export function routeCorridorDistanceSquared(
   points: readonly WorldVector3[],
   point: WorldVector3,
 ): number {
-  let nearest = Number.POSITIVE_INFINITY;
+  let minimum = Number.POSITIVE_INFINITY;
   for (let index = 1; index < points.length; index += 1) {
-    const first = points[index - 1]!;
-    const second = points[index]!;
-    const dx = second.x - first.x;
-    const dz = second.z - first.z;
+    const a = points[index - 1]!;
+    const b = points[index]!;
+    const dx = b.x - a.x;
+    const dz = b.z - a.z;
     const denominator = dx * dx + dz * dz;
     const t =
-      denominator > 0
-        ? Math.max(
-            0,
-            Math.min(1, ((point.x - first.x) * dx + (point.z - first.z) * dz) / denominator),
-          )
-        : 0;
-    const cx = first.x + t * dx;
-    const cz = first.z + t * dz;
-    nearest = Math.min(nearest, (point.x - cx) * (point.x - cx) + (point.z - cz) * (point.z - cz));
+      denominator === 0
+        ? 0
+        : Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.z - a.z) * dz) / denominator));
+    minimum = Math.min(minimum, (point.x - (a.x + t * dx)) ** 2 + (point.z - (a.z + t * dz)) ** 2);
   }
-  return nearest;
+  return minimum;
 }
 
 export function isPointInRouteCorridor(
   points: readonly WorldVector3[],
-  widthStuds: number,
   point: WorldVector3,
-  clearanceStuds = 0,
+  widthMeters: number,
+  clearanceMeters = 0,
 ): boolean {
-  return routeCorridorDistance2(points, point) <= (widthStuds / 2 + clearanceStuds) ** 2;
-}
-
-/** Assemble every declared route of a world plan into sealed road geometry. */
-export function assemblePlanRoads(
-  planInput: unknown,
-  surfaces?: PlacementSurfaceIndex,
-  options?: { readonly chunkSizeStuds?: number },
-): readonly RoadAssembly[] {
-  const plan = WORLD_PLAN_SCHEMA.parse(planInput);
-  const index =
-    surfaces ??
-    new PlacementSurfaceIndex(plan.terrainPlans.map(compileTerrainPlan), plan.constructedSurfaces);
-  return plan.routes.map((route) => compileRoadAssembly(route, index, options));
+  return routeCorridorDistanceSquared(points, point) <= (widthMeters / 2 + clearanceMeters) ** 2;
 }
 
 /**
- * Lower one declared route into a sealed ribbon assembly. The route surface
- * profile is the centerline authority: non-traversable routes fail closed
- * before any geometry is produced, and every sample binds its dominant
- * declared region plus dominant material.
+ * Conservative broad-phase test for a complete footprint against a route
+ * corridor. Expanding the footprint by the route radius prevents a lot from
+ * being admitted merely because its center happens to miss the road.
  */
-export function compileRoadAssembly(
-  route: WorldRoute,
-  surfaces: PlacementSurfaceIndex,
-  options?: { readonly chunkSizeStuds?: number },
-): RoadAssembly {
-  const chunkSize = options?.chunkSizeStuds ?? DEFAULT_ROAD_CHUNK_SIZE;
-  if (!Number.isInteger(chunkSize) || chunkSize <= 0)
-    throw new Error(`Road chunk size must be a positive integer for route ${route.id}`);
-  const profile = compileRouteSurfaceProfile(route, surfaces);
-  if (!profile.traversable)
-    throw new Error(
-      `Route ${route.id} is non-traversable (grade ${profile.maximumGradeDegrees}deg, step ${profile.maximumStepHeight})`,
-    );
-  const samples = profile.samples;
-  if (samples.length < 2) throw new Error(`Route ${route.id} produced no ribbon samples`);
-
-  const halfWidth = route.width / 2;
-  const stations: number[] = [0];
-  for (let index = 1; index < samples.length; index += 1) {
-    const previous = samples[index - 1]!.position;
-    const current = samples[index]!.position;
-    stations.push(
-      stations[index - 1]! + Math.hypot(current.x - previous.x, current.z - previous.z),
-    );
-  }
-
-  const frames = samples.map((sample, index) => {
-    // Closed profiles repeat the first point as the last sample; tangents
-    // wrap past the duplicate so the seam frame matches exactly.
-    const beforeIndex = route.closed
-      ? index === 0
-        ? samples.length - 2
-        : index - 1
-      : Math.max(0, index - 1);
-    const afterIndex = route.closed
-      ? index === samples.length - 1
-        ? 1
-        : index + 1
-      : Math.min(samples.length - 1, index + 1);
-    const before = samples[beforeIndex]!;
-    const after = samples[afterIndex]!;
-    const tangent = normalize({
-      x: after.position.x - before.position.x,
-      y: after.position.y - before.position.y,
-      z: after.position.z - before.position.z,
-    });
-    if (!tangent)
-      throw new Error(`Route ${route.id} has a degenerate ribbon frame at sample ${index}`);
-    const cross = normalize(crossProduct(sample.normal, tangent));
-    if (!cross)
-      throw new Error(`Route ${route.id} has a degenerate ribbon frame at sample ${index}`);
-    const dominantRegionId = dominantAllowedRegion(sample.regionWeights, route.regionIds);
-    if (!dominantRegionId)
-      throw new Error(`Route ${route.id} leaves its declared regions at sample ${index}`);
-    const materialId = route.materialId ?? dominantKey(sample.materialWeights);
-    if (!materialId) throw new Error(`Route ${route.id} has no bound material at sample ${index}`);
-    return {
-      left: f32Vector({
-        x: sample.position.x + cross.x * halfWidth,
-        y: sample.position.y + cross.y * halfWidth,
-        z: sample.position.z + cross.z * halfWidth,
-      }),
-      right: f32Vector({
-        x: sample.position.x - cross.x * halfWidth,
-        y: sample.position.y - cross.y * halfWidth,
-        z: sample.position.z - cross.z * halfWidth,
-      }),
-      normal: { ...sample.normal },
-      dominantRegionId,
-      materialId,
-      chunkId: `chunk_${Math.floor(sample.position.x / chunkSize)}_${Math.floor(sample.position.z / chunkSize)}`,
-    };
-  });
-
-  const runs = splitRuns(frames);
-  const segments = runs.flatMap((run, runIndex) => {
-    const start = run.start;
-    const end = run.end < frames.length - 1 ? run.end + 1 : run.end;
-    // A lone trailing frame is already the previous segment's joint frame, so
-    // it carries no quad of its own and is absorbed instead of emitted alone.
-    if (end - start < 1) return [];
-    const vertices = frames.slice(start, end + 1).flatMap((frame) => [
-      { position: frame.left, normal: frame.normal },
-      { position: frame.right, normal: frame.normal },
-    ]);
-    return [
-      {
-        id: worldEntityId.parse(
-          `road_${contentHash(stableJson({ routeId: route.id, runIndex })).slice(0, 24)}`,
-        ),
-        routeId: route.id,
-        dominantRegionId: run.dominantRegionId,
-        materialId: run.materialId,
-        chunkId: run.chunkId,
-        startStationStuds: f32(stations[start]!),
-        endStationStuds: f32(stations[end]!),
-        vertices,
-        bounds: ribbonBounds(vertices.map((vertex) => vertex.position)),
-      },
-    ];
-  });
-  if (segments.length === 0) throw new Error(`Route ${route.id} yields no road quads`);
-  if (segments.length > MAXIMUM_ROAD_ASSEMBLY_SEGMENTS)
-    throw new Error(`Route ${route.id} exceeds ${MAXIMUM_ROAD_ASSEMBLY_SEGMENTS} road segments`);
-
-  return sealRoadAssembly({
-    kind: "RoadAssembly" as const,
-    abi: ROAD_ASSEMBLY_ABI,
-    routeId: route.id,
-    surfaceId: route.surfaceId,
-    closed: route.closed,
-    widthStuds: route.width,
-    chunkSizeStuds: chunkSize,
-    traversable: true as const,
-    maximumGradeDegrees: profile.maximumGradeDegrees,
-    maximumStepHeight: profile.maximumStepHeight,
-    profileHash: profile.profileHash,
-    crossSection: { kind: "flat" as const, edgeDropStuds: 0, innerFraction: 1 },
-    segments,
-  });
-}
-
-export function sealRoadAssembly(input: z.input<typeof roadAssemblyMaterial>): RoadAssembly {
-  const material = roadAssemblyMaterial.parse(input);
-  return ROAD_ASSEMBLY_SCHEMA.parse({
-    ...material,
-    hash: contentHash(stableJson(material)),
-  });
-}
-
-export function assertRoadAssembly(value: unknown): asserts value is RoadAssembly {
-  ROAD_ASSEMBLY_SCHEMA.parse(value);
-}
-
-function splitRuns(
-  frames: readonly { dominantRegionId: string; materialId: string; chunkId: string }[],
-): { start: number; end: number; dominantRegionId: string; materialId: string; chunkId: string }[] {
-  const runs: {
-    start: number;
-    end: number;
-    dominantRegionId: string;
-    materialId: string;
-    chunkId: string;
-  }[] = [];
-  let start = 0;
-  for (let index = 1; index <= frames.length; index += 1) {
-    const current = frames[index];
-    const previous = frames[index - 1]!;
-    if (
-      index === frames.length ||
-      !current ||
-      current.dominantRegionId !== previous.dominantRegionId ||
-      current.materialId !== previous.materialId ||
-      current.chunkId !== previous.chunkId
-    ) {
-      runs.push({
-        start,
-        end: index - 1,
-        dominantRegionId: previous.dominantRegionId,
-        materialId: previous.materialId,
-        chunkId: previous.chunkId,
-      });
-      start = index;
-    }
-  }
-  return runs;
-}
-
-/** Exact-maximum dominant key with lexicographic tiebreaks: order-independent. */
-function dominantKey(weights: Readonly<Record<string, number>>): string | undefined {
-  let best: string | undefined;
-  let bestWeight = Number.NEGATIVE_INFINITY;
-  for (const key of Object.keys(weights).sort()) {
-    const weight = weights[key]!;
-    if (weight > bestWeight) {
-      best = key;
-      bestWeight = weight;
-    }
-  }
-  return best;
-}
-
-/**
- * Dominant region restricted to the route's declared regions. Region fields
- * are smooth blends that never reach exact zero, so declared-region support
- * below 1e-6 counts as outside: the route has left its declared regions.
- */
-function dominantAllowedRegion(
-  weights: Readonly<Record<string, number>>,
-  allowed: readonly string[],
-): string | undefined {
-  let best: string | undefined;
-  let bestWeight = 0;
-  let allowedTotal = 0;
-  for (const key of Object.keys(weights).sort()) {
-    if (!allowed.includes(key)) continue;
-    const weight = weights[key]!;
-    allowedTotal += weight;
-    if (weight > bestWeight) {
-      best = key;
-      bestWeight = weight;
-    }
-  }
-  if (!(allowedTotal > 1e-6)) return undefined;
-  return best;
-}
-
-function ribbonBounds(positions: readonly WorldVector3[]): {
-  readonly minimum: WorldVector3;
-  readonly maximum: WorldVector3;
-} {
-  const minimum = {
-    x: Number.POSITIVE_INFINITY,
-    y: Number.POSITIVE_INFINITY,
-    z: Number.POSITIVE_INFINITY,
+export function routeCorridorIntersectsAabbXZ(
+  points: readonly WorldVector3[],
+  bounds: { readonly min: WorldVector3; readonly max: WorldVector3 },
+  widthMeters: number,
+  clearanceMeters = 0,
+): boolean {
+  const expansion = widthMeters / 2 + clearanceMeters;
+  const expanded = {
+    minX: bounds.min.x - expansion,
+    maxX: bounds.max.x + expansion,
+    minZ: bounds.min.z - expansion,
+    maxZ: bounds.max.z + expansion,
   };
-  const maximum = {
-    x: Number.NEGATIVE_INFINITY,
-    y: Number.NEGATIVE_INFINITY,
-    z: Number.NEGATIVE_INFINITY,
-  };
-  for (const position of positions) {
-    minimum.x = Math.min(minimum.x, position.x);
-    minimum.y = Math.min(minimum.y, position.y);
-    minimum.z = Math.min(minimum.z, position.z);
-    maximum.x = Math.max(maximum.x, position.x);
-    maximum.y = Math.max(maximum.y, position.y);
-    maximum.z = Math.max(maximum.z, position.z);
-  }
-  return { minimum, maximum };
+  for (let index = 1; index < points.length; index += 1)
+    if (segmentIntersectsRectangle(points[index - 1]!, points[index]!, expanded)) return true;
+  return false;
 }
 
-function crossProduct(a: WorldVector3, b: WorldVector3): WorldVector3 {
+function lerp(a: WorldVector3, b: WorldVector3, t: number): WorldVector3 {
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t };
+}
+function offset(a: WorldVector3, direction: WorldVector3, amount: number): WorldVector3 {
   return {
-    x: a.y * b.z - a.z * b.y,
-    y: a.z * b.x - a.x * b.z,
-    z: a.x * b.y - a.y * b.x,
+    x: a.x + direction.x * amount,
+    y: a.y + direction.y * amount,
+    z: a.z + direction.z * amount,
   };
 }
-
-function normalize(value: WorldVector3): WorldVector3 | undefined {
+function normalize(value: WorldVector3): WorldVector3 {
   const length = Math.hypot(value.x, value.y, value.z);
-  if (!(length > 1e-9)) return undefined;
+  if (length <= 1e-9) throw new Error("Road direction cannot be zero");
   return { x: value.x / length, y: value.y / length, z: value.z / length };
 }
 
-function f32(value: number): number {
-  const result = Math.fround(Math.abs(value) < 1e-12 ? 0 : value);
-  return Object.is(result, -0) ? 0 : result;
+function segmentIntersectsRectangle(
+  start: WorldVector3,
+  end: WorldVector3,
+  rectangle: { minX: number; maxX: number; minZ: number; maxZ: number },
+): boolean {
+  let minimum = 0;
+  let maximum = 1;
+  const dx = end.x - start.x;
+  const dz = end.z - start.z;
+  for (const [origin, delta, low, high] of [
+    [start.x, dx, rectangle.minX, rectangle.maxX],
+    [start.z, dz, rectangle.minZ, rectangle.maxZ],
+  ] as const) {
+    if (Math.abs(delta) <= 1e-12) {
+      if (origin < low || origin > high) return false;
+      continue;
+    }
+    const first = (low - origin) / delta;
+    const second = (high - origin) / delta;
+    const entry = Math.min(first, second);
+    const exit = Math.max(first, second);
+    minimum = Math.max(minimum, entry);
+    maximum = Math.min(maximum, exit);
+    if (minimum > maximum) return false;
+  }
+  return true;
 }
-
-function f32Vector(value: WorldVector3): WorldVector3 {
-  return { x: f32(value.x), y: f32(value.y), z: f32(value.z) };
+function bounds(points: readonly WorldVector3[], height: number) {
+  return {
+    min: {
+      x: Math.min(...points.map((p) => p.x)),
+      y: Math.min(...points.map((p) => p.y)),
+      z: Math.min(...points.map((p) => p.z)),
+    },
+    max: {
+      x: Math.max(...points.map((p) => p.x)),
+      y: Math.max(...points.map((p) => p.y)) + height,
+      z: Math.max(...points.map((p) => p.z)),
+    },
+  };
+}
+function verify(value: RoadAssembly, context: z.RefinementCtx): void {
+  const material = { ...value };
+  delete (material as Partial<RoadAssembly>).hash;
+  if (contentHash(stableJson(material)) !== value.hash)
+    context.addIssue({ code: "custom", path: ["hash"], message: "Road assembly hash mismatch" });
 }

@@ -9,7 +9,8 @@ const GENERIC_ROOTS = [
   "packages/world-planning/src",
   "packages/asset-production/src",
   "packages/asset-factory/src",
-  "packages/prepared-asset/src",
+  "packages/catalog-model/src",
+  "packages/catalog-authoring/src",
 ];
 const SPATIAL_CORE_ROOTS = ["packages/world-compiler/src", "packages/world-planning/src"];
 const WORLD_DCC_FORBIDDEN_ROOTS = ["packages/world-compiler/src", "packages/world-planning/src"];
@@ -29,7 +30,7 @@ const FORBIDDEN_PRODUCT_PATTERNS = [
   },
   {
     pattern: /\$className\s*:\s*["']Part["']/,
-    reason: "visible primitive generation bypasses prepared assets",
+    reason: "visible primitive generation bypasses measured catalog artifacts",
   },
   {
     pattern: /\b(?:sanctuary|harbor|lighthouse|volcanic|conservatory|orbital|merchant)\b/i,

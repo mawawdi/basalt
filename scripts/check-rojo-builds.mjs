@@ -7,7 +7,9 @@ import { fileURLToPath } from "node:url";
 
 const execFile = promisify(execFileCallback);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const projects = [["plugin", "plugin/default.project.json", "BasaltStudioPlugin.rbxmx"]];
+const projects = [
+  ["plugin", "packages/roblox/plugin/default.project.json", "BasaltStudioPlugin.rbxmx"],
+];
 const execOptions = { cwd: root, maxBuffer: 4 * 1024 * 1024, windowsHide: true };
 
 async function assertRegular(path, label) {
@@ -34,6 +36,14 @@ async function main() {
     )
   )
     throw new Error(`Expected Rojo ${requiredVersion}, received: ${renderedVersion}`);
+
+  // Materialize the ignored, repository-local connection module before Rojo
+  // resolves the plugin tree. The built plugin and bridge then share the same
+  // authenticated loopback credential without manual Studio configuration.
+  await execFile(process.execPath, ["bin/basalt.js", "roblox", "install-plugin"], {
+    ...execOptions,
+    maxBuffer: 1024 * 1024,
+  });
 
   const temporary = await mkdtemp(join(tmpdir(), "basalt-rojo-check-"));
   try {

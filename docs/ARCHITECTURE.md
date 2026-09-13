@@ -1,209 +1,174 @@
-# Basalt architecture
+# Architecture
 
-This document describes the dedicated hierarchical world compiler. Product
-principles live in [BASALT.md](BASALT.md), visual direction in
-[VISUALS.md](VISUALS.md), evidence policy in [EVALS.md](EVALS.md), and planned
-work in [ROADMAP.md](ROADMAP.md).
+This document is the authority for Basalt’s implemented architecture.
 
-## System boundary
+## Authority flow
 
-Basalt accepts a map brief, references, style direction, and optional external
-gameplay anchors. It returns an immutable, partitioned world build and a
-canonical Studio connector transaction plan.
-
-```mermaid
-flowchart LR
-  brief[Creator map brief] --> plan[WorldPlan and style contract]
-  plan --> terrain[TerrainFieldArtifact]
-  plan --> regions[Regional family plans]
-  terrain --> surfaces[PlacementSurfaceIndex]
-  regions --> catalog[Family retrieval and offline asset factory]
-  catalog --> adapt[Common asset adaptation]
-  adapt --> population[Deterministic family population]
-  surfaces --> solve[Spatial relation and socket solvers]
-  population --> solve
-  solve --> partitions[Partitioned world build]
-  partitions --> delta[Studio delta reconciliation]
+```text
+creator intent + SemanticLexiconSnapshot
+  -> hypothesis-only interpretation trace
+  -> admitted SemanticAssertionBundle values
+  -> SemanticDependencyClosure values
+  -> immutable SpatialWorldPlan
+  -> CompiledWorldFoundation
+  -> CatalogResolutionPlan
+  -> MesoLayout
+  -> MicroRealization
+  -> WorldBuild
+  -> packages/roblox
 ```
 
-Gameplay generation, gameplay ASTs, runtime modules, and mechanic-specific
-scripts are outside this boundary. An external game project may consume the
-world build's anchors, routes, sockets, and named bindings.
+The compiler never edits a parsed plan. Terrain fields, road assemblies, lots,
+constructed surfaces, rooms, portals, and realized instances are derived artifacts
+bound to exact predecessor hashes.
 
-## Authorities
+## Package graph
 
-| Concern                                    | Authority                                               |
-| ------------------------------------------ | ------------------------------------------------------- |
-| Creator intent and references              | Creator brief and immutable revision records            |
-| Model suggestions                          | Agent hypotheses and composition proposals              |
-| World topology                             | `WorldPlan`                                             |
-| Terrain geometry and biome fields          | `TerrainPlan` → `TerrainFieldArtifact`                  |
-| Ray hits and support surfaces              | `PlacementSurfaceIndex`                                 |
-| Transforms, sockets, clearance, and routes | Deterministic spatial relation solvers                  |
-| Asset bytes and adaptation                 | Content-addressed asset registry and fixed asset worker |
-| Population counts and transforms           | Family population compiler                              |
-| Roblox writes                              | Fixed connector and ChangeHistory transaction           |
-| Final Roblox appearance                    | Creator-run Studio evidence                             |
+The repository is an npm workspace with one manifest and one TypeScript composite
+project per package. Imports use package exports; cross-package relative source
+imports and internal deep imports are rejected.
 
-Generated pixels remain advisory. They may propose regional composition and
-asset targets, but they cannot write geometry, bypass constraints, or certify a
-world.
+| Layer                 | Packages                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| Foundations           | `contracts`, `artifact-store`, `spatial-core`                                              |
+| Semantics and catalog | `semantic-kernel`, `catalog-model`, `catalog-authoring`                                    |
+| Asset pipeline        | `asset-inspection`, `asset-production`, `asset-factory`, `neural-asset`, `reference-image` |
+| Planning and compiler | `authoring-graph`, `world-planning`, `region-composition`, `world-compiler`                |
+| Adapter and operator  | `roblox`, `cli`                                                                            |
 
-## Core data flow
+`semantic-kernel` alone owns commitments, facets, assertions, requirements,
+closures, and the lexicon contract. `catalog-model` owns measured assets,
+dispositions, entry declarations, resolution requirements, and typed gaps.
+`catalog-authoring` owns non-authoritative model/embedding receipts, hypothesis
+panels, admission cohorts, sampled review plans, explicit curator decisions,
+audits, and the tracked catalog transaction root.
+Provider names never enter semantic, catalog, planning, or world identities.
 
-### World planning
+All generic geometry is right-handed, positive-Y-up, and measured in meters.
+Q32.32 catalog measurements are meters. The stud conversion and four-stud terrain
+voxel rule exist only in `roblox`.
 
-The engine-neutral `WorldPlan` in `packages/basalt-types` is intentionally
-small: Pass 1 supplies a `WorldStyleContract` and compact palette menu, then
-Pass 2 records exploit bindings to sealed family IDs and explore requirements
-using canonical taxonomy handles. The detailed terrain/route model in
-`packages/world-planning` is an internal `SpatialWorldPlan`; it is not the
-planner-facing registry contract. `compileWorldPlan` produces deterministic
-terrain fields, route profiles, and a `PlacementSurfaceIndex` whose raycasts use
-the same triangles exported to Roblox.
+## Semantics
 
-The same surface index serves terrain, floors, ramps, roofs, platforms, walls,
-and ceilings. Partitioning is content-addressed and checks boundary continuity.
-Style overlays bind the exact terrain-field hash and swap only material palette,
-foliage families, lighting, and atmosphere. Seasonal changes preserve elevation,
-hydrology, routes, and navigability byte-for-byte.
+The kernel freezes seven upper sorts: object, aggregate, substance, space,
+boundary, phenomenon, and information content. Denotation, affordance, state,
+surface treatment, contextual role, relation, and realization form are separate
+facets. Runtime reasoning is intentionally bounded to exact commitments,
+materialized ancestry, set inclusion, state equality, evidence ordering, and
+declared inverse or symmetric relations.
 
-### Hierarchical art direction
+Labels, examples, translations, counterexamples, search terms, filenames, and
+source folders live outside commitment hashes. A task binds the smallest closure
+of commitment and facet hashes it consumes. Adding an unrelated sibling therefore
+does not invalidate existing catalog entries or builds.
 
-Art direction has three data layers:
+## Catalog and realization
 
-- a global style contract with shape, edge, material, palette, texture, lighting,
-  and anti-goal envelopes;
-- regional overlays with bounded variation, density gradients, negative space,
-  atmosphere, and effects;
-- immutable asset-family revisions containing validated archetypes, material
-  realization policy, metric envelopes, pivot/contact policy, and optional socket
-  grammar.
+`CatalogAssetArtifact` is semantic-free measured evidence. A disposition separately
+records whether a source identity is eligible, incomplete, or rejected. Runtime
+entry kinds are substitution sets, assembly kits, attachment sets, route kits, and
+environment realizers. Collections are authoring-only.
 
-`ModularKitRequirement` is the structural special case for socketed construction.
-It is separate from ordinary visual families such as foliage, rocks, clutter, or
-props.
+A substitution set means complete independent substitutability: every member must
+prove the same denotation, realization form, fixed state, affordances, treatments,
+placement/contact signature, interfaces, metric envelope, rights, and style
+contract. Collision companions remain evidence attached to renderable assets.
 
-### Asset families and catalog intelligence
+Resolution performs hard filtering before deterministic lexicographic ranking.
+Missing candidates become typed semantic, evidence, or catalog gaps. Member
+weights are canonical integers and affect hash-seeded selection.
 
-Catalog ingestion is an offline `O(N)` operation. It records rights, source
-hashes, explicit taxonomy handles, and measured structure. Measurement
-validates a declared cohort; it does not discover family membership from
-physical or visual similarity. Family IDs are Merkle-derived from the handle
-core plus geometry, trim, physics, and socket evidence. Production retrieval applies exact family,
-rights, metric, collision, and delivery filters before adaptation.
-`resolveWorldAssetFamilies` resolves sealed registry families, and
-`compileResolvedFamilyPopulationPlans` merges repeated family use across regions
-before any instance transforms are emitted. If a request misses, the offline
-family factory receives the cohort brief; the compiler never fills the gap with
-unrelated assets.
+### Scalable admission
 
-An accepted family stores shared mesh/material handles and variant metadata. A
-family can be reused across regions and projects through exact content hashes.
-If a family is missing, the offline family factory creates a declared cohort;
-the result enters the same adaptation and admission path. The factory may
-target four to six variants, but the registry does not impose an artificial
-cardinality cap.
+Catalog admission deliberately separates inference, review, and authority:
 
-### Population
+```text
+measured asset + 12-view render
+  -> independent semantic hypothesis receipts
+  -> exact-signature panel consensus
+  -> visual-embedding complete-link cohorts
+  -> medoid, outlier, boundary, and deterministic audit samples
+  -> explicit finite-cohort decision
+  -> admitted assertions, entries, and dispositions
+  -> tracked CatalogAuthorityCommit
+```
 
-The model declares family roles, target density, variation, and exclusions. It
-does not emit one transform per instance. The compiler integrates density over
-valid surfaces, subtracts routes and exclusion masks, enforces budgets, and
-invokes Poisson, cluster, along-path, surface-grid, socket, or wall-anchored
-interior solvers. A population artifact stores shared handles plus chunked
-transforms; repeated instances never duplicate mesh or texture bytes.
+The panel requires independent adapter/model implementations and ignores their
+confidence values when voting. A source without semantic consensus or exact visual
+embedding remains an exception; it is never forced into a nearby cohort. Cohort
+materialization currently automates only genuine whole/aggregate substitution
+sets with measured ground, wall, or ceiling support. Assemblies, attachments,
+routes, socket-hosted assets, and environment realizers still require their typed
+authoring contracts.
 
-Sealed assembly recipes feed room graphs: floor plates from floor-forming
-components, guillotine or strip rooms per the sealed room program, door
-portals on shared walls, verified stair runs between stair rooms, and a
-connectivity proof from the entrance. Wall-anchored families place interior
-clutter against room walls with portal and stair-run keepouts; stair records
-lower to connector step parts.
+`registry/catalog.json` is the single replaceable transaction root, not a journal
+or compatibility stream. It embeds all compiler authority and the sealed runtime
+snapshot. Non-authoritative evidence that was expensive to produce is retained
+under content-addressed `registry/evidence/` names, including the exact
+measurement set needed by compilation. Unreferenced evidence is removed from the
+live tree after atomic root publication; Git provides history. A stale root fails
+`catalog validate --require-commit true`; `world compile` accepts the committed
+root and its retained measurements rather than unrelated local state.
 
-`createBasaltWorldEmission` lowers that population into bounded
-`BasaltWorldChunkDelta` records. Each delta has deterministic surface coverage,
-instance, road-segment, stair, and portal IDs, bounds, a transaction ID, and a
-content hash. The Studio connector consumes these records in canonical chunk
-order; world compilation itself never opens a Studio session or performs a
-write.
+### Catalog fulfillment
 
-Requirements carry an acquisition context. Micro scatter and structural kits
-resolve through procedures or catalog families. One-shot neural geometry is
-eligible only for `focal_insert` requirements whose largest expected bound is at
-most eight studs; larger landmarks are typed `AssemblyRecipe` graphs with
-socketed components and shared trim materials.
+`asset-factory` turns one exact resolution outcome into a content-addressed
+`CatalogFulfillmentPlan`. The decision cascade is:
 
-### Asset finishing
+```text
+coherent binding -> reuse
+style-only mismatch -> restyle retained geometry
+incomplete substitution set -> generate missing members
+no matching substitution set -> synthesize a new set
+```
 
-Blender is an isolated local asset worker. It may import source bytes, repair
-normals/tangents, generate or re-atlas UVs, bake PBR channels, derive support and
-collision proxies, weld explicitly declared sockets, and emit bounded previews.
-It does not render or review a complete world and is never required for macro
-planning, routes, or blockout.
+Neural generation is offline catalog acquisition, never a compiler fallback.
+Semantic and evidence gaps require authoring decisions; attachment, assembly,
+route, and environment gaps require their typed host, grammar, topology, or mode
+contracts before generation. A provider receives one exact factory job,
+reference-image identity, semantic closure, style profile, metric target, and
+immutable paid-attempt claim. Provider names and runtime transports exist only in
+`neural-asset` and worker adapters.
 
-### Studio connector
+TRELLIS.2 has a restored executable worker and a typed host-to-worker lowering.
+Its raw safetensors positions are explicitly provider-normalized and carry a
+source-to-canonical orientation transform; they do not claim meters. Pixal3D and
+Hunyuan3D 2.1 retain their original fail-closed qualification scaffolds but have
+no inference implementation yet. All three routes remain `incomplete` until exact
+worker/runtime/dependency/rights evidence is requalified. Provider output passes
+generic finishing, measurement, rendering, hypothesis review, assertion
+admission, and catalog sealing before the resolver can see it.
 
-The connector receives canonical partition plans and bounded deltas. It keeps
-ChangeHistory recording boundaries, detached preflight, chunked writes, direct
-readback, and reconciliation. Basalt never launches Studio. The creator opens
-the generated place, saves/reopens it, plays it, and supplies final evidence.
-The Luau connector returns an unsigned observation because it cannot own the
-host hash implementation; the bridge validates that observation and seals the
-canonical readback before advancing the queue.
+The spatial compiler owns full transformed bounds, occupancy, routes, lots, typed
+intents, and the deterministic AC-3/backtracking solver. Models cannot author
+transforms or executable engine code. Unknown regions, routes, surfaces, normals,
+or structural targets are rejected at the plan boundary.
 
-### Engine-neutral scene export and lowering adapters
+## Artifact graph
 
-The compiler's final artifact is the engine-neutral scene export: a sealed
-manifest (instances with placements, assets, mesh parts, terrain voxel fields,
-road ribbons, stair runs, portal markers, material bindings) plus a
-content-addressed payload store keyed by sha256. Placements are meters, Y-up,
-right-handed, with the instance composition sealed in the manifest. Sealed
-records carry content hashes and placements only — never engine handles.
-Mesh-part bounds keep their recorded source-unit span with the asset's
-`unitsToMeters` as the recorded converter; no adapter pre-converts them.
-Each part also records its node origin, so adapters verify imported pivots
-instead of assuming them.
+`CompilationTaskResult` describes world, region, route, lot, structure, floor, and
+room scopes. It binds exact inputs, policy, outputs, status, resources, and
+diagnostics. The executor is currently local and bounded. The content-addressed
+shape supports later durable scheduling without provider or queue concepts leaking
+into the compiler.
 
-Each engine owns a lowering adapter and two adapter-owned docs served by the
-bridge: the upload sidecar (content-hash to engine asset id) and the material
-map (open-vocabulary material id to engine material). Both must bind the exact
-enqueued export hash. The Roblox adapter lowers in fixed order — MeshParts from
-sidecar ids plus sealed TRS, collision proxies, `WriteVoxelChannels` terrain
-(solid plus liquid channels) over cell-aligned 4-stud grids, one-time terrain
-appearance (water, grass, tints), road ribbons as constructed parts, stair
-treads as colliding parts, portal evidence markers — and observes
-constructed geometry, never echoed ids. It verifies the measured server
-import map per model (uniform scale, pivots on the flipped recorded center,
-identity rotations), compensates the flip at placement, and fails closed
-past tolerance. Unity, Unreal, and a future
-native renderer consume the same manifest and GLB payloads through their own
-adapters; a byte-locked conformance fixture pins the shared contract.
+## Roblox boundary
 
-## Package boundary
+`WorldBuild` is the one engine adapter boundary. Basalt does not define a generic
+adapter abstraction before a second adapter exists.
 
-The world compiler's active packages are:
+The Roblox import service binds to `127.0.0.1`, holds an exclusive workspace lock,
+selects the first free port from 8787–8797, bounds request bodies, and validates a
+private bearer token in constant time. Only `/health` is unauthenticated, and it
+contains no credential or world data. Workspace reads reject links and escaping
+paths; writes are bounded, hash-guarded, and atomic.
 
-- `world-planning` — terrain fields, surfaces, routes, and region geometry.
-- `world-compiler` — macro/meso/micro compilation, family resolution, population,
-  and connector-sized partition emission.
-- `asset-factory`, `catalog-intelligence`, `asset-inspection`, and
-  `prepared-asset` — family requirements, measurement, adaptation contracts,
-  and admission.
-- `reference-image`, `neural-asset`, and `region-composition` — optional
-  composition/reference and offline neural-factory contracts.
-- `authoring-graph` and `artifact-store` — immutable content-addressed records.
-- `studio-bridge`, `studio-protocol`, and `plugin` — bounded connector
-  transactions and reconciliation.
-
-Gameplay compilers, runtime modules, creator conversation services, dashboards,
-and whole-scene DCC packages are absent from the product tree. External game
-projects consume the emitted anchors, routes, sockets, and partition deltas.
-
-## Clean-break rules
-
-There is one current world format. Superseded gameplay/runtime schemas,
-full-scene review requirements, legacy visible-proxy fallbacks, and old stored
-visual state are deleted rather than migrated. Every artifact binds its inputs,
-worker identities, hashes, budgets, and provenance. Unknown or malformed
-records fail closed.
+The plugin auto-discovers the service and executes preflight, foundation, meso,
+micro, readback, and commit without per-stage clicks. Foundation lowering converts
+height fields to Roblox’s 1.12-meter voxel grid, retains the original voxel channels,
+and restores them on cancellation or failure. Readback checks terrain channels,
+route hashes, exact bound assets and material/PBR fields, assembly components,
+constructed surfaces, room bindings, portal opening poses, procedural stair
+geometry, and the complete world-build identity before returning the host-sealed
+observed-state hash. Only a successful creator-run readback can support
+`engine_verified` evidence.

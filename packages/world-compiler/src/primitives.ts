@@ -2,8 +2,8 @@ import { z } from "zod";
 
 /**
  * Spatial identifiers are deliberately independent from gameplay schemas. The
- * cap fits content-addressed sealed family IDs, which embed full taxonomy
- * handles plus a Merkle suffix.
+ * cap fits content-addressed sealed world IDs without encoding hierarchy in
+ * their spelling.
  */
 export const worldEntityId = z
   .string()

@@ -4,10 +4,10 @@ import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises"
 import { resolve } from "node:path";
 import {
   ImmutableJsonArtifactStore,
-  assertArtifactReference,
-  type ArtifactReference,
-} from "../../artifact-store/src/index.js";
-import { contentHash, stableJson } from "../../contracts/src/index.js";
+  assertStoredArtifactReference,
+  type StoredArtifactReference,
+} from "@basalt/artifact-store";
+import { contentHash, stableJson } from "@basalt/contracts";
 import {
   DEFAULT_SPATIAL_ADMISSION_POLICY,
   assertBoundedSpatialJson,
@@ -15,16 +15,15 @@ import {
   entityId,
   hashSchema,
   type SpatialJsonValue,
-} from "../../spatial-core/src/primitives.js";
+} from "@basalt/spatial-core";
 
-export const AUTHORING_GRAPH_ABI = "basalt-authoring-graph@1" as const;
 export const AUTHORING_GRAPH_STORE = ".basalt/creator-graph" as const;
 
 export type ModelStage = "design" | "compose" | "asset" | "source" | "critique" | "repair";
 
 export interface AuthoringRecordInput {
   readonly id: string;
-  readonly family: string;
+  readonly recordKind: string;
   readonly ownerId?: string;
   readonly dependencies: readonly string[];
   readonly content: SpatialJsonValue;
@@ -36,10 +35,7 @@ export interface AuthoringRecord extends AuthoringRecordInput {
 
 export interface AuthoringWorkspace {
   readonly kind: "AuthoringWorkspace";
-  readonly abi: typeof AUTHORING_GRAPH_ABI;
   readonly projectId: string;
-  readonly revision: number;
-  readonly parentHead?: string;
   readonly intentHandles: readonly string[];
   readonly records: readonly AuthoringRecord[];
   readonly head: string;
@@ -88,11 +84,11 @@ export interface AuthoringWorkspaceBinding {
   readonly workspaceId: string;
   readonly projectId: string;
   readonly head: string;
-  readonly artifact: ArtifactReference;
+  readonly artifact: StoredArtifactReference;
 }
 
-export interface AuthoringRecordFamily {
-  /** Validates and canonicalizes content for this closed family. */
+export interface AuthoringRecordKind {
+  /** Validates and canonicalizes content for this closed record kind. */
   readonly validate: (content: unknown) => SpatialJsonValue;
   /** Derives a new stable root identity without asking the model to restate the record. */
   readonly forkContent?: (content: SpatialJsonValue, newId: string) => SpatialJsonValue;
@@ -104,15 +100,55 @@ export interface AuthoringRecordFamily {
   ) => SpatialJsonValue;
 }
 
-export type AuthoringFamilyRegistry = Readonly<Record<string, AuthoringRecordFamily>>;
+export type AuthoringRecordKindRegistry = Readonly<Record<string, AuthoringRecordKind>>;
+
+const spatialJsonSchema = z.custom<SpatialJsonValue>((value) => {
+  try {
+    assertBoundedSpatialJson(value, DEFAULT_SPATIAL_ADMISSION_POLICY);
+    return true;
+  } catch {
+    return false;
+  }
+}, "Value is not bounded canonical spatial JSON");
 
 const recordInputSchema = z
   .object({
     id: entityId,
-    family: entityId,
+    recordKind: entityId,
     ownerId: entityId.optional(),
     dependencies: z.array(entityId).max(4096),
-    content: z.unknown(),
+    content: spatialJsonSchema,
+  })
+  .strict();
+const authoringRecordSchema = recordInputSchema.extend({ hash: hashSchema }).strict();
+const authoringWorkspaceSchema = z
+  .object({
+    kind: z.literal("AuthoringWorkspace"),
+    projectId: z.string().min(1).max(256),
+    intentHandles: z.array(entityId).max(4096),
+    records: z.array(authoringRecordSchema).max(100_000),
+    head: hashSchema,
+  })
+  .strict();
+const authoringWorkspaceBindingSchema = z
+  .object({
+    workspaceId: entityId,
+    projectId: z.string().min(1).max(256),
+    head: hashSchema,
+    artifact: z
+      .object({
+        locator: z.string().min(1).max(4096),
+        artifactHash: hashSchema,
+        bytes: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+      })
+      .strict()
+      .superRefine((value, context) => {
+        try {
+          assertStoredArtifactReference(value);
+        } catch {
+          context.addIssue({ code: "custom", message: "Artifact reference is invalid" });
+        }
+      }),
   })
   .strict();
 
@@ -120,14 +156,12 @@ export function createAuthoringWorkspace(input: {
   projectId: string;
   intentHandles: readonly string[];
   records?: readonly AuthoringRecordInput[];
-  registry: AuthoringFamilyRegistry;
+  registry: AuthoringRecordKindRegistry;
 }): AuthoringWorkspace {
   const records = canonicalRecords(input.records ?? [], input.registry);
   return sealWorkspace({
     kind: "AuthoringWorkspace",
-    abi: AUTHORING_GRAPH_ABI,
     projectId: input.projectId,
-    revision: 1,
     intentHandles: canonicalStrings(input.intentHandles, "intent handles"),
     records,
   });
@@ -137,7 +171,7 @@ export function applyAuthoringTransaction(
   workspaceInput: AuthoringWorkspace,
   scope: AuthoringScope,
   transaction: AuthoringTransaction,
-  registry: AuthoringFamilyRegistry,
+  registry: AuthoringRecordKindRegistry,
 ): { workspace: AuthoringWorkspace; receipt: AuthoringReceipt } {
   const workspace = assertAuthoringWorkspace(workspaceInput, registry);
   if (transaction.base !== workspace.head || scope.head !== workspace.head)
@@ -184,10 +218,10 @@ export function applyAuthoringTransaction(
         throw new Error(`Authoring fork ID already exists: ${edit.newId}`);
       if (!owner.dependencies.includes(source.id))
         throw new Error("Authoring fork owner does not depend on its source");
-      const sourceFamily = registry[source.family];
-      const ownerFamily = registry[owner.family];
-      if (!sourceFamily?.forkContent || !ownerFamily?.rebindDependency)
-        throw new Error("Authoring family does not support semantic dependency forking");
+      const sourceKind = registry[source.recordKind];
+      const ownerKind = registry[owner.recordKind];
+      if (!sourceKind?.forkContent || !ownerKind?.rebindDependency)
+        throw new Error("Authoring record kind does not support semantic dependency forking");
       records.set(
         edit.newId,
         canonicalRecord(
@@ -195,7 +229,7 @@ export function applyAuthoringTransaction(
             ...source,
             id: edit.newId,
             ownerId: edit.ownerId,
-            content: sourceFamily.forkContent(source.content, edit.newId),
+            content: sourceKind.forkContent(source.content, edit.newId),
           },
           registry,
         ),
@@ -206,7 +240,7 @@ export function applyAuthoringTransaction(
           {
             ...owner,
             dependencies: owner.dependencies.map((id) => (id === source.id ? edit.newId : id)),
-            content: ownerFamily.rebindDependency(owner.content, source.id, edit.newId),
+            content: ownerKind.rebindDependency(owner.content, source.id, edit.newId),
           },
           registry,
         ),
@@ -262,10 +296,7 @@ export function applyAuthoringTransaction(
       }
   const next = sealWorkspace({
     kind: "AuthoringWorkspace",
-    abi: AUTHORING_GRAPH_ABI,
     projectId: workspace.projectId,
-    revision: workspace.revision + 1,
-    parentHead: workspace.head,
     intentHandles: workspace.intentHandles,
     records: canonical,
   });
@@ -281,34 +312,33 @@ export function applyAuthoringTransaction(
 }
 
 export function assertAuthoringWorkspace(
-  value: AuthoringWorkspace,
-  registry: AuthoringFamilyRegistry,
+  value: unknown,
+  registry: AuthoringRecordKindRegistry,
 ): AuthoringWorkspace {
-  assertBoundedSpatialJson(value, DEFAULT_SPATIAL_ADMISSION_POLICY);
-  if (
-    value.kind !== "AuthoringWorkspace" ||
-    value.abi !== AUTHORING_GRAPH_ABI ||
-    !Number.isSafeInteger(value.revision) ||
-    value.revision < 1 ||
-    !hashSchema.safeParse(value.head).success
-  )
-    throw new Error("Authoring workspace envelope is invalid");
-  const records = canonicalRecords(value.records, registry);
+  const parsed = authoringWorkspaceSchema.parse(value);
+  const records = canonicalRecords(
+    parsed.records.map((record) => ({
+      id: record.id,
+      recordKind: record.recordKind,
+      ...(record.ownerId === undefined ? {} : { ownerId: record.ownerId }),
+      dependencies: record.dependencies,
+      content: record.content,
+      hash: record.hash,
+    })),
+    registry,
+  );
   const sealed = sealWorkspace({
-    kind: value.kind,
-    abi: value.abi,
-    projectId: value.projectId,
-    revision: value.revision,
-    ...(value.parentHead ? { parentHead: value.parentHead } : {}),
-    intentHandles: canonicalStrings(value.intentHandles, "intent handles"),
+    kind: parsed.kind,
+    projectId: parsed.projectId,
+    intentHandles: canonicalStrings(parsed.intentHandles, "intent handles"),
     records,
   });
-  if (stableJson(sealed) !== stableJson(value))
+  if (stableJson(sealed) !== stableJson(parsed))
     throw new Error("Authoring workspace identity mismatch");
   return sealed;
 }
 
-/** Durable, single-head storage for graph workspaces. Every revision remains immutable. */
+/** Durable, optimistic-concurrency storage for one content-addressed workspace head. */
 export class AuthoringWorkspaceStore {
   readonly artifacts: ImmutableJsonArtifactStore;
   private readonly headsRoot: string;
@@ -316,12 +346,12 @@ export class AuthoringWorkspaceStore {
   constructor(root: string) {
     const resolved = resolve(root);
     this.artifacts = new ImmutableJsonArtifactStore(resolved);
-    this.headsRoot = resolve(resolved, "authoring-workspaces-v1");
+    this.headsRoot = resolve(resolved, "authoring-workspaces");
   }
 
   async current(
     workspaceId: string,
-    registry: AuthoringFamilyRegistry,
+    registry: AuthoringRecordKindRegistry,
   ): Promise<{ workspace: AuthoringWorkspace; binding: AuthoringWorkspaceBinding } | undefined> {
     entityId.parse(workspaceId);
     await this.ensureHeadsRoot();
@@ -336,9 +366,9 @@ export class AuthoringWorkspaceStore {
       if (isMissing(error)) return undefined;
       throw error;
     }
-    const binding = assertWorkspaceBinding(JSON.parse(serialized) as unknown, workspaceId);
+    const binding = assertWorkspaceBinding(JSON.parse(serialized), workspaceId);
     const value = await this.artifacts.read(binding.artifact);
-    const workspace = assertAuthoringWorkspace(value as AuthoringWorkspace, registry);
+    const workspace = assertAuthoringWorkspace(value, registry);
     if (workspace.head !== binding.head || workspace.projectId !== binding.projectId)
       throw new Error("Authoring workspace head does not bind its immutable artifact");
     return { workspace, binding };
@@ -347,7 +377,7 @@ export class AuthoringWorkspaceStore {
   async create(
     workspaceId: string,
     workspace: AuthoringWorkspace,
-    registry: AuthoringFamilyRegistry,
+    registry: AuthoringRecordKindRegistry,
   ): Promise<AuthoringWorkspaceBinding> {
     return this.publish(workspaceId, undefined, workspace, registry);
   }
@@ -356,7 +386,7 @@ export class AuthoringWorkspaceStore {
     workspaceId: string,
     expectedHead: string,
     workspace: AuthoringWorkspace,
-    registry: AuthoringFamilyRegistry,
+    registry: AuthoringRecordKindRegistry,
   ): Promise<AuthoringWorkspaceBinding> {
     hashSchema.parse(expectedHead);
     return this.publish(workspaceId, expectedHead, workspace, registry);
@@ -366,7 +396,7 @@ export class AuthoringWorkspaceStore {
     workspaceId: string,
     expectedHead: string | undefined,
     workspaceInput: AuthoringWorkspace,
-    registry: AuthoringFamilyRegistry,
+    registry: AuthoringRecordKindRegistry,
   ): Promise<AuthoringWorkspaceBinding> {
     entityId.parse(workspaceId);
     const workspace = assertAuthoringWorkspace(workspaceInput, registry);
@@ -417,7 +447,7 @@ export class AuthoringWorkspaceStore {
 
 function canonicalRecords(
   inputs: readonly (AuthoringRecordInput | AuthoringRecord)[],
-  registry: AuthoringFamilyRegistry,
+  registry: AuthoringRecordKindRegistry,
 ): AuthoringRecord[] {
   const records = inputs.map((record) => canonicalRecord(record, registry));
   records.sort((left, right) => compareSpatialStrings(left.id, right.id));
@@ -437,30 +467,30 @@ function canonicalRecords(
 
 function canonicalRecord(
   input: AuthoringRecordInput | AuthoringRecord,
-  registry: AuthoringFamilyRegistry,
+  registry: AuthoringRecordKindRegistry,
 ): AuthoringRecord {
   const parsed = recordInputSchema.parse({
     id: input.id,
-    family: input.family,
+    recordKind: input.recordKind,
     ...(input.ownerId ? { ownerId: input.ownerId } : {}),
     dependencies: input.dependencies,
     content: input.content,
   });
-  const family = registry[parsed.family];
-  if (!family) throw new Error(`Authoring record family is not active: ${parsed.family}`);
+  const recordKind = registry[parsed.recordKind];
+  if (!recordKind) throw new Error(`Authoring record kind is not active: ${parsed.recordKind}`);
   return sealRecord({
     id: parsed.id,
-    family: parsed.family,
+    recordKind: parsed.recordKind,
     ...(parsed.ownerId ? { ownerId: parsed.ownerId } : {}),
     dependencies: canonicalStrings(parsed.dependencies, `${parsed.id} dependencies`),
-    content: family.validate(parsed.content),
+    content: recordKind.validate(parsed.content),
   });
 }
 
 function sealRecord(input: Omit<AuthoringRecord, "hash"> & { hash?: undefined }): AuthoringRecord {
   const material = {
     id: input.id,
-    family: input.family,
+    recordKind: input.recordKind,
     ...(input.ownerId ? { ownerId: input.ownerId } : {}),
     dependencies: canonicalStrings(input.dependencies, `${input.id} dependencies`),
     content: input.content,
@@ -507,29 +537,10 @@ function assertWorkspaceBinding(
   value: unknown,
   expectedWorkspaceId: string,
 ): AuthoringWorkspaceBinding {
-  if (
-    typeof value !== "object" ||
-    value === null ||
-    Array.isArray(value) ||
-    (value as { workspaceId?: unknown }).workspaceId !== expectedWorkspaceId
-  )
-    throw new Error("Authoring workspace binding is invalid");
-  const binding = value as unknown as AuthoringWorkspaceBinding;
-  entityId.parse(binding.workspaceId);
-  if (typeof binding.projectId !== "string" || binding.projectId.length < 1)
-    throw new Error("Authoring workspace project binding is invalid");
-  hashSchema.parse(binding.head);
-  assertArtifactReference(binding.artifact);
-  if (
-    stableJson(value) !==
-    stableJson({
-      workspaceId: binding.workspaceId,
-      projectId: binding.projectId,
-      head: binding.head,
-      artifact: binding.artifact,
-    })
-  )
-    throw new Error("Authoring workspace binding has unknown fields");
+  const binding = authoringWorkspaceBindingSchema.parse(value);
+  if (binding.workspaceId !== expectedWorkspaceId)
+    throw new Error("Authoring workspace binding names another workspace");
+  assertStoredArtifactReference(binding.artifact);
   return binding;
 }
 

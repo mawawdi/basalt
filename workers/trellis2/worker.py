@@ -30,7 +30,6 @@ from typing import Any
 
 
 WORKER_ID = "basalt-trellis2-protocol-worker"
-WORKER_REVISION = "2026-09-10.5"
 SOURCE_COMMIT = "75fbf0183001ed9876c8dbb35de6b68552ee08bd"
 MODEL_ID = "microsoft/TRELLIS.2-4B"
 MODEL_REVISION = "af44b45f2e35a493886929c6d786e563ec68364d"
@@ -43,13 +42,12 @@ SPARSE_DECODER_SNAPSHOT_SEAL_HASH = (
     "bc3b9c605d46bcbc11a03d6f8d52fd45d6d31b969e728f4d2c8c14bd2af9120b"
 )
 DINOV3_SNAPSHOT_SEAL_HASH = "99a92ab12775e39231f2c8d48c680c83673b1f48486de69d2375b253af2e4368"
-FACTORY_REVISION_HASH = "7d4284a3f26041b2b02c5d147ea9378d8816ae38c3cbc44ebcdecfcf28ece281"
 PROFILE_ID = "trellis2-1024-cascade-12-step"
 MAX_INPUT_BYTES = 8 * 1024 * 1024
 MAX_REFERENCE_BYTES = 64 * 1024 * 1024
 MINIMUM_VRAM_GIB = 40.0
-TENSOR_BUNDLE_ABI = "basalt-mesh-attribute-tensor-bundle@2"
-WORKER_RESULT_ABI = "basalt-trellis2-worker-result@4"
+TENSOR_BUNDLE_CONTRACT = "basalt-mesh-attribute-tensor-bundle"
+WORKER_RESULT_CONTRACT = "basalt-trellis2-worker-result"
 EXECUTION_STAGE_NAMES = (
     "model_load_started",
     "model_load_complete",
@@ -135,23 +133,16 @@ def validate_request(value: Any) -> dict[str, Any]:
         set(value)
         == {
             "kind",
-            "abi",
-            "route",
-            "executionClass",
-            "factoryId",
-            "factoryRevisionHash",
+            "contract",
+            "neuralRequestHash",
+            "providerDeclarationHash",
+            "neuralQualificationHash",
+            "runtimeQualificationHash",
             "sourceCommit",
             "modelId",
             "modelRevision",
-            "qualificationHash",
-            "qualificationBinding",
-            "attemptId",
-            "invocationHash",
-            "requirementHash",
-            "styleContractHash",
-            "capability",
+            "runtimeBinding",
             "reference",
-            "seedOrdinal",
             "seed",
             "profile",
             "delivery",
@@ -159,35 +150,28 @@ def validate_request(value: Any) -> dict[str, Any]:
         },
         "request shape differs from the fixed worker contract",
     )
-    require(value.get("kind") == "Trellis2GenerationRequest", "wrong request kind")
-    require(value.get("abi") == "basalt-trellis2-generation-request@3", "wrong request ABI")
-    require(value.get("route") == "neural_asset", "wrong route")
-    require(value.get("executionClass") == "remote_neural_asset", "wrong execution class")
-    require(value.get("factoryId") == "Trellis2StaticObject", "wrong factory")
-    require(value.get("factoryRevisionHash") == FACTORY_REVISION_HASH, "wrong factory revision")
+    require(value.get("kind") == "Trellis2WorkerRequest", "wrong request kind")
+    require(value.get("contract") == "basalt-trellis2-worker-request", "wrong request contract")
     require(value.get("sourceCommit") == SOURCE_COMMIT, "unpinned TRELLIS.2 source")
     require(value.get("modelId") == MODEL_ID, "wrong model")
     require(value.get("modelRevision") == MODEL_REVISION, "unpinned model revision")
     validate_hash(value.get("hash"), "request hash")
     request_material = {key: entry for key, entry in value.items() if key != "hash"}
     require(content_hash(request_material) == value["hash"], "request identity mismatch")
-    validate_hash(value.get("qualificationHash"), "qualification hash")
-    validate_hash(value.get("invocationHash"), "invocation hash")
-    validate_hash(value.get("requirementHash"), "requirement hash")
-    validate_hash(value.get("styleContractHash"), "style contract hash")
-    binding = value.get("qualificationBinding")
+    validate_hash(value.get("neuralRequestHash"), "neural request hash")
+    validate_hash(value.get("providerDeclarationHash"), "provider declaration hash")
+    validate_hash(value.get("neuralQualificationHash"), "neural qualification hash")
+    validate_hash(value.get("runtimeQualificationHash"), "runtime qualification hash")
+    binding = value.get("runtimeBinding")
     require(
         isinstance(binding, dict)
         and set(binding)
         == {
             "modalImageId",
             "runtimeImageHash",
-            "workerSha256",
+            "workerImplementationHash",
             "dependencyInventoryHash",
             "dinoV3TermsSnapshotHash",
-            "adapterRevisionHash",
-            "adapterSha256",
-            "postprocessorIdentityHash",
             "modelIdentityHash",
             "termsSnapshotHash",
             "egressPolicyHash",
@@ -219,11 +203,6 @@ def validate_request(value: Any) -> dict[str, Any]:
         "input policy binding differs from the fixed policy",
     )
 
-    capability = value.get("capability")
-    require(
-        capability == {"form": "object", "partRole": "render_static"},
-        "TRELLIS.2 qualification is static-object only",
-    )
     profile = value.get("profile")
     require(profile == PROFILE, "request differs from the fixed TRELLIS.2 profile")
 
@@ -231,11 +210,21 @@ def validate_request(value: Any) -> dict[str, Any]:
     require(isinstance(reference, dict), "missing reference")
     require(
         set(reference)
-        == {"kind", "abi", "artifact", "decoding", "alphaStatistics", "rights", "hash"},
+        == {
+            "kind",
+            "contract",
+            "neuralInputReferenceHash",
+            "artifact",
+            "decoding",
+            "alphaStatistics",
+            "rights",
+            "hash",
+        },
         "reference shape differs from the fixed worker contract",
     )
-    require(reference.get("kind") == "Trellis2ReferenceImage", "wrong reference kind")
-    require(reference.get("abi") == "basalt-trellis2-reference-image@1", "wrong reference ABI")
+    require(reference.get("kind") == "Trellis2WorkerReference", "wrong reference kind")
+    require(reference.get("contract") == "basalt-trellis2-reference-image", "wrong reference contract")
+    validate_hash(reference.get("neuralInputReferenceHash"), "neural input reference hash")
     validate_hash(reference.get("hash"), "reference hash")
     require(
         content_hash({key: entry for key, entry in reference.items() if key != "hash"})
@@ -245,7 +234,7 @@ def validate_request(value: Any) -> dict[str, Any]:
     require(reference.get("artifact", {}).get("mediaType") == "image/png", "reference is not PNG")
     require(
         isinstance(reference.get("artifact"), dict)
-        and set(reference["artifact"]) == {"locator", "artifactHash", "bytes", "mediaType"},
+        and set(reference["artifact"]) == {"artifactHash", "bytes", "mediaType"},
         "reference artifact shape is invalid",
     )
     validate_hash(reference["artifact"].get("artifactHash"), "reference artifact hash")
@@ -261,13 +250,15 @@ def validate_request(value: Any) -> dict[str, Any]:
             "channelCount",
             "alphaMode",
             "decoderIdentityHash",
-            "decoderEvidenceArtifact",
+            "decoderEvidenceHash",
         }
         and decoding.get("bitDepth") == 8
         and decoding.get("colorType") == "rgba"
         and decoding.get("channelCount") == 4,
         "reference must be exact RGBA8",
     )
+    validate_hash(decoding.get("decoderIdentityHash"), "reference decoder identity")
+    validate_hash(decoding.get("decoderEvidenceHash"), "reference decoder evidence")
     alpha = reference.get("alphaStatistics")
     require(
         isinstance(alpha, dict)
@@ -284,17 +275,18 @@ def validate_request(value: Any) -> dict[str, Any]:
     rights = reference.get("rights")
     require(
         isinstance(rights, dict)
-        and set(rights) == {"usage", "sourceLabel", "licenseId", "attribution", "evidenceArtifact"}
+        and set(rights) == {"usage", "sourceLabel", "licenseId", "attribution", "evidenceHash"}
         and rights.get("usage")
         in ("creator_owned", "commercial_use_permitted", "evaluation_only"),
         "reference lacks retained rights evidence",
     )
+    validate_hash(rights.get("evidenceHash"), "reference rights evidence")
     delivery = value.get("delivery")
     require(isinstance(delivery, dict), "missing delivery policy")
     require(
         set(delivery)
         == {
-            "expectedBounds",
+            "expectedBoundsMeters",
             "maximumTriangles",
             "maximumTextureEdge",
             "maximumMeshes",
@@ -313,14 +305,12 @@ def validate_request(value: Any) -> dict[str, Any]:
 def dry_run(request: dict[str, Any]) -> dict[str, Any]:
     profile_hash = content_hash(request["profile"])
     material = {
-        "abi": "basalt-trellis2-dry-run-plan@1",
+        "contract": "basalt-trellis2-dry-run-plan",
         "code": "dry_run_only",
-        "executionClass": "remote_neural_asset",
         "expectedOutput": {
-            "contract": TENSOR_BUNDLE_ABI,
+            "contract": TENSOR_BUNDLE_CONTRACT,
             "mediaType": "application/x-safetensors",
         },
-        "factoryId": "Trellis2StaticObject",
         "isolation": {
             "inputMount": "read_only",
             "outputMount": "write_only",
@@ -333,11 +323,12 @@ def dry_run(request: dict[str, Any]) -> dict[str, Any]:
         "modelRevision": MODEL_REVISION,
         "modelWillRun": False,
         "profileHash": profile_hash,
-        "qualificationHash": request["qualificationHash"],
+        "neuralRequestHash": request["neuralRequestHash"],
+        "neuralQualificationHash": request["neuralQualificationHash"],
+        "runtimeQualificationHash": request["runtimeQualificationHash"],
         "referenceArtifactHash": request["reference"]["artifact"]["artifactHash"],
         "requestHash": request["hash"],
         "requiredHardware": {"acceleratorVendor": "nvidia", "minimumVramGiB": 40},
-        "route": "neural_asset",
         "seed": request["seed"],
         "sourceCommit": SOURCE_COMMIT,
         "status": "incomplete",
@@ -346,7 +337,6 @@ def dry_run(request: dict[str, Any]) -> dict[str, Any]:
 
 
 def local_probe() -> dict[str, Any]:
-    worker_path = Path(__file__).resolve()
     material = {
         "code": "qualification_runtime_not_executed",
         "kind": "Trellis2LocalCapabilityProbe",
@@ -358,8 +348,7 @@ def local_probe() -> dict[str, Any]:
         "sourceCommit": SOURCE_COMMIT,
         "status": "incomplete",
         "workerId": WORKER_ID,
-        "workerRevision": WORKER_REVISION,
-        "workerSha256": hashlib.sha256(worker_path.read_bytes()).hexdigest(),
+        "workerImplementationHash": sha256_file(Path(__file__)),
     }
     return {**material, "hash": content_hash(material)}
 
@@ -772,7 +761,7 @@ def execute(
         os.environ.get("BASALT_TRELLIS2_SOURCE_COMMIT") == SOURCE_COMMIT,
         "runtime source commit attestation differs from the qualification",
     )
-    binding = request["qualificationBinding"]
+    binding = request["runtimeBinding"]
     require(
         os.environ.get("BASALT_TRELLIS2_NETWORK_NAMESPACE") == "denied",
         "network namespace denial is absent",
@@ -842,7 +831,7 @@ def execute(
             canonical_bytes(
                 {
                     "kind": "Trellis2WorkerStage",
-                    "abi": "basalt-trellis2-worker-stage@1",
+                    "contract": "basalt-trellis2-worker-stage",
                     "requestHash": request["hash"],
                     **event,
                 }
@@ -941,12 +930,14 @@ def execute(
         tensors,
         str(output_path),
         metadata={
-            "abi": TENSOR_BUNDLE_ABI,
+            "contract": TENSOR_BUNDLE_CONTRACT,
             "dependency_inventory_hash": binding["dependencyInventoryHash"],
             "model_id": MODEL_ID,
             "modal_image_id": binding["modalImageId"],
             "request_hash": request["hash"],
-            "qualification_hash": request["qualificationHash"],
+            "neural_request_hash": request["neuralRequestHash"],
+            "neural_qualification_hash": request["neuralQualificationHash"],
+            "runtime_qualification_hash": request["runtimeQualificationHash"],
             "profile_hash": content_hash(PROFILE),
             "reference_artifact_hash": request["reference"]["artifact"]["artifactHash"],
             "runtime_image_hash": binding["runtimeImageHash"],
@@ -954,7 +945,7 @@ def execute(
             "source_commit": SOURCE_COMMIT,
             "model_revision": MODEL_REVISION,
             "transform_ownership": "source_frame_unbaked",
-            "worker_sha256": binding["workerSha256"],
+            "worker_implementation_hash": binding["workerImplementationHash"],
         },
     )
     tensor_sha256 = sha256_file(output_path)
@@ -972,10 +963,12 @@ def execute(
     elapsed_ms = ended_epoch_ms - started_epoch_ms
     material = {
         "kind": "Trellis2WorkerResult",
-        "abi": WORKER_RESULT_ABI,
+        "contract": WORKER_RESULT_CONTRACT,
         "status": "candidate",
-        "requestHash": request["hash"],
-        "qualificationHash": request["qualificationHash"],
+        "requestHash": request["neuralRequestHash"],
+        "workerRequestHash": request["hash"],
+        "neuralQualificationHash": request["neuralQualificationHash"],
+        "runtimeQualificationHash": request["runtimeQualificationHash"],
         "sourceCommit": SOURCE_COMMIT,
         "modelId": MODEL_ID,
         "modelRevision": MODEL_REVISION,
@@ -984,7 +977,7 @@ def execute(
         "executionBinding": {
             "modalImageId": binding["modalImageId"],
             "runtimeImageHash": binding["runtimeImageHash"],
-            "workerSha256": binding["workerSha256"],
+            "workerImplementationHash": binding["workerImplementationHash"],
             "dependencyInventoryHash": binding["dependencyInventoryHash"],
             "dinoV3TermsSnapshotHash": binding["dinoV3TermsSnapshotHash"],
             "referenceArtifactHash": request["reference"]["artifact"]["artifactHash"],
@@ -1099,7 +1092,7 @@ def main() -> int:
     worker_hash = sha256_file(Path(__file__).resolve())
     require(worker_hash == validate_hash(expected_worker_sha256, "worker hash"), "worker hash mismatch")
     require(
-        worker_hash == request["qualificationBinding"]["workerSha256"],
+        worker_hash == request["runtimeBinding"]["workerImplementationHash"],
         "worker does not match the request qualification",
     )
     result = execute(

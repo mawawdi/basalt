@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../contracts" },
+    { "path": "../semantic-kernel" },
+    { "path": "../catalog-model" },
+    { "path": "../spatial-core" },
+    { "path": "../world-planning" }
+  ]
+}

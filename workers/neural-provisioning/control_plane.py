@@ -24,12 +24,12 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
 
-CONTROL_PLANE_ABI = "basalt-neural-provisioning-control-plane@1"
-FILE_INVENTORY_ABI = "basalt-neural-file-inventory@1"
-DEPENDENCY_INVENTORY_ABI = "basalt-neural-dependency-inventory@1"
-SBOM_ABI = "basalt-neural-cyclonedx-sbom@1"
-IMPORT_TRACE_ABI = "basalt-neural-import-trace@1"
-SNAPSHOT_SEAL_ABI = "basalt-neural-provisioned-snapshot@1"
+CONTROL_PLANE_CONTRACT = "basalt-neural-provisioning-control-plane"
+FILE_INVENTORY_CONTRACT = "basalt-neural-file-inventory"
+DEPENDENCY_INVENTORY_CONTRACT = "basalt-neural-dependency-inventory"
+SBOM_CONTRACT = "basalt-neural-cyclonedx-sbom"
+IMPORT_TRACE_CONTRACT = "basalt-neural-import-trace"
+SNAPSHOT_SEAL_CONTRACT = "basalt-neural-provisioned-snapshot"
 
 TRELLIS2_SOURCE_COMMIT = "75fbf0183001ed9876c8dbb35de6b68552ee08bd"
 TRELLIS2_MODEL_REVISION = "af44b45f2e35a493886929c6d786e563ec68364d"
@@ -39,17 +39,6 @@ PIXAL3D_MODEL_REVISION = "b0cb2e1b794cab9aa0ac38a95d794a4d9337437f"
 HUNYUAN3D21_SOURCE_COMMIT = "82920d643c0dc2f7bfd7255f45f62d386edfe60c"
 HUNYUAN3D21_MODEL_REVISION = "0b94677654c57bb9a6b6845cd7b704ccf551d327"
 DINOV3_MODEL_REVISION = "ea8dc2863c51be0a264bab82070e3e8836b02d51"
-QWEN_IMAGE_SOURCE_COMMIT = "6b5e1f5cec987d404be5ac6657db3b9aacb56a89"
-QWEN_IMAGE_2512_REVISION = "25468b98e3276ca6700de15c6628e51b7de54a26"
-QWEN_IMAGE_EDIT_2511_REVISION = "6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9"
-FLUX2_SOURCE_COMMIT = "50fe5162777813d869182b139e83b10743caef15"
-FLUX2_KLEIN_4B_REVISION = "e7b7dc27f91deacad38e78976d1f2b499d76a294"
-LONGCAT_IMAGE_SOURCE_COMMIT = "f0e4c43c5ef74b011ff71570fbfc2bdffbc9ab06"
-LONGCAT_IMAGE_EDIT_REVISION = "7b54ef423aa7854be7861600024be5c56ab7875a"
-FIRERED_IMAGE_EDIT_SOURCE_COMMIT = "456d010bd3f9bd727f1ab7fe60838caf6ee479e6"
-FIRERED_IMAGE_EDIT_1_1_REVISION = "3bc3f2a12722fd9883eb6357500de191d56baaf5"
-SAM3_SOURCE_COMMIT = "660a5e9e1b8b4c02c0ad97229b88a09a6e4ff5b7"
-SAM3_MODEL_REVISION = "3c879f39826c281e95690f02c7821c4de09afae7"
 
 OUTPUT_VOLUME_NAME = "basalt-neural-output"
 OUTPUT_VOLUME_MOUNT = "/mnt/basalt-neural-output"
@@ -149,7 +138,7 @@ def _source(
         transport="git",
         upstream_id=upstream_id,
         revision=revision,
-        volume_name=f"basalt-{slug}-{revision[:16]}",
+        volume_name=f"basalt-{slug}",
         mount_path=f"/mnt/basalt-neural-input/{slug}",
         consumers=consumers,
         access="public_https",
@@ -173,7 +162,7 @@ def _model(
         transport="huggingface_snapshot",
         upstream_id=upstream_id,
         revision=revision,
-        volume_name=f"basalt-{slug}-{revision[:16]}",
+        volume_name=f"basalt-{slug}",
         mount_path=f"/mnt/basalt-neural-input/{slug}",
         consumers=consumers,
         access=access,
@@ -235,78 +224,6 @@ ARTIFACT_SPECS: tuple[ArtifactSpec, ...] = (
         ("pixal3d", "trellis2"),
         16,
     ),
-    _source(
-        "qwen_image.source",
-        "QwenLM/Qwen-Image",
-        QWEN_IMAGE_SOURCE_COMMIT,
-        ("qwen_image_2512", "qwen_image_edit_2511"),
-    ),
-    _model(
-        "qwen_image_2512.model",
-        "Qwen/Qwen-Image-2512",
-        QWEN_IMAGE_2512_REVISION,
-        ("qwen_image_2512",),
-        150,
-    ),
-    _model(
-        "qwen_image_edit_2511.model",
-        "Qwen/Qwen-Image-Edit-2511",
-        QWEN_IMAGE_EDIT_2511_REVISION,
-        ("qwen_image_edit_2511",),
-        150,
-    ),
-    _source(
-        "flux2.source",
-        "black-forest-labs/flux2",
-        FLUX2_SOURCE_COMMIT,
-        ("flux2_klein_4b",),
-    ),
-    _model(
-        "flux2_klein_4b.model",
-        "black-forest-labs/FLUX.2-klein-4B",
-        FLUX2_KLEIN_4B_REVISION,
-        ("flux2_klein_4b",),
-        80,
-    ),
-    _source(
-        "longcat_image.source",
-        "meituan-longcat/LongCat-Image",
-        LONGCAT_IMAGE_SOURCE_COMMIT,
-        ("longcat_image_edit",),
-    ),
-    _model(
-        "longcat_image_edit.model",
-        "meituan-longcat/LongCat-Image-Edit",
-        LONGCAT_IMAGE_EDIT_REVISION,
-        ("longcat_image_edit",),
-        80,
-    ),
-    _source(
-        "firered_image_edit.source",
-        "FireRedTeam/FireRed-Image-Edit",
-        FIRERED_IMAGE_EDIT_SOURCE_COMMIT,
-        ("research_firered_image_edit_1_1",),
-    ),
-    _model(
-        "firered_image_edit_1_1.model",
-        "FireRedTeam/FireRed-Image-Edit-1.1",
-        FIRERED_IMAGE_EDIT_1_1_REVISION,
-        ("research_firered_image_edit_1_1",),
-        150,
-    ),
-    _source(
-        "sam3.source",
-        "facebookresearch/sam3",
-        SAM3_SOURCE_COMMIT,
-        ("sam3",),
-    ),
-    _model(
-        "sam3.model",
-        "facebook/sam3",
-        SAM3_MODEL_REVISION,
-        ("sam3",),
-        24,
-    ),
 )
 
 ARTIFACTS_BY_ID = {spec.artifact_id: spec for spec in ARTIFACT_SPECS}
@@ -362,7 +279,7 @@ OUTPUT_VOLUME_CONTRACT: dict[str, Any] = {
     "mount": OUTPUT_VOLUME_MOUNT,
     "createIfMissingDuringProvisioning": True,
     "writers": ["qualified_neural_workers"],
-    "layout": "attempts/<request-sha256-prefix>/<request-sha256>/<attempt-sha256>",
+    "layout": "provider_owned_content_addressed_attempt_directories",
     "publish": "atomic_directory_rename_then_volume_commit",
     "overwrite": "denied",
     "requiredReceipt": "content_addressed_canonical_json",
@@ -402,7 +319,7 @@ def local_contract() -> dict[str, Any]:
     validate_control_plane()
     material = {
         "kind": "BasaltNeuralProvisioningControlPlane",
-        "abi": CONTROL_PLANE_ABI,
+        "contract": CONTROL_PLANE_CONTRACT,
         "status": "incomplete",
         "code": "artifacts_declared_but_not_provisioned_or_qualified",
         "remoteInvocationOccurred": False,
@@ -415,11 +332,11 @@ def local_contract() -> dict[str, Any]:
         "provisioningPolicy": PROVISIONING_POLICY,
         "inferencePolicy": INFERENCE_POLICY,
         "evidence": {
-            "fileInventory": FILE_INVENTORY_ABI,
-            "dependencyInventory": DEPENDENCY_INVENTORY_ABI,
-            "sbom": SBOM_ABI,
-            "importTrace": IMPORT_TRACE_ABI,
-            "snapshotSeal": SNAPSHOT_SEAL_ABI,
+            "fileInventory": FILE_INVENTORY_CONTRACT,
+            "dependencyInventory": DEPENDENCY_INVENTORY_CONTRACT,
+            "sbom": SBOM_CONTRACT,
+            "importTrace": IMPORT_TRACE_CONTRACT,
+            "snapshotSeal": SNAPSHOT_SEAL_CONTRACT,
             "qualificationBoundary": "provisioning_evidence_does_not_make_a_provider_eligible",
         },
     }
@@ -490,7 +407,7 @@ def inventory_tree(root: Path, spec: ArtifactSpec) -> dict[str, Any]:
     return seal_manifest(
         {
             "kind": "BasaltNeuralFileInventory",
-            "abi": FILE_INVENTORY_ABI,
+            "contract": FILE_INVENTORY_CONTRACT,
             "artifact": spec.contract(),
             "fileCount": len(entries),
             "totalBytes": total_bytes,
@@ -552,7 +469,7 @@ def build_dependency_inventory(packages: Iterable[Mapping[str, Any]]) -> dict[st
     return seal_manifest(
         {
             "kind": "BasaltNeuralDependencyInventory",
-            "abi": DEPENDENCY_INVENTORY_ABI,
+            "contract": DEPENDENCY_INVENTORY_CONTRACT,
             "packages": normalized,
         }
     )
@@ -611,7 +528,7 @@ def build_cyclonedx_sbom(
     subject_version: str,
 ) -> dict[str, Any]:
     assert_manifest_identity(dependency_inventory)
-    require(dependency_inventory.get("abi") == DEPENDENCY_INVENTORY_ABI, "dependency ABI differs")
+    require(dependency_inventory.get("contract") == DEPENDENCY_INVENTORY_CONTRACT, "dependency contract differs")
     components = []
     for package in dependency_inventory.get("packages", []):
         purl_type = "pypi" if package["ecosystem"] == "pypi" else "deb/debian"
@@ -628,7 +545,7 @@ def build_cyclonedx_sbom(
     return seal_manifest(
         {
             "kind": "BasaltNeuralCycloneDxSbom",
-            "abi": SBOM_ABI,
+            "contract": SBOM_CONTRACT,
             "bomFormat": "CycloneDX",
             "specVersion": "1.5",
             "version": 1,
@@ -681,7 +598,7 @@ def build_import_trace(
     return seal_manifest(
         {
             "kind": "BasaltNeuralImportTrace",
-            "abi": IMPORT_TRACE_ABI,
+            "contract": IMPORT_TRACE_CONTRACT,
             "probes": list(probes),
             "networkPolicy": "audit_hook_denied_connect_and_resolution",
             "subprocessPolicy": "audit_hook_denied",
@@ -826,7 +743,7 @@ def seal_snapshot(
     pin = seal_manifest(
         {
             "kind": "BasaltNeuralArtifactPin",
-            "abi": "basalt-neural-artifact-pin@1",
+            "contract": "basalt-neural-artifact-pin",
             "artifactId": spec.artifact_id,
             "artifactClass": spec.artifact_class,
             "transport": spec.transport,
@@ -840,7 +757,7 @@ def seal_snapshot(
     sbom = build_cyclonedx_sbom(
         dependencies,
         subject_name="basalt-neural-provisioner",
-        subject_version=CONTROL_PLANE_ABI,
+        subject_version=dependencies["hash"],
     )
     import_trace = capture_import_trace(import_probes)
     evidence_root = root / EVIDENCE_DIRECTORY
@@ -851,7 +768,7 @@ def seal_snapshot(
     seal = seal_manifest(
         {
             "kind": "BasaltNeuralProvisionedSnapshot",
-            "abi": SNAPSHOT_SEAL_ABI,
+            "contract": SNAPSHOT_SEAL_CONTRACT,
             "artifact": spec.contract(),
             "pinHash": pin["hash"],
             "fileInventoryHash": inventory["hash"],
@@ -1025,14 +942,6 @@ def provision_artifact(artifact_id: str, mount_root: Path) -> dict[str, Any]:
     if spec.transport == "huggingface_snapshot":
         return provision_huggingface_snapshot(spec, resolved_mount)
     raise AssertionError("validated artifact transport has no provisioner")
-
-
-def output_attempt_path(request_hash: str, attempt_hash: str) -> Path:
-    require(SHA256_PATTERN.fullmatch(request_hash) is not None, "request hash is invalid")
-    require(SHA256_PATTERN.fullmatch(attempt_hash) is not None, "attempt hash is invalid")
-    relative = Path("attempts") / request_hash[:2] / request_hash / attempt_hash
-    require(".." not in relative.parts and not relative.is_absolute(), "output path escaped its volume")
-    return Path(OUTPUT_VOLUME_MOUNT) / relative
 
 
 validate_control_plane()

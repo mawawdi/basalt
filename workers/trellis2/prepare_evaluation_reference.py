@@ -131,7 +131,7 @@ def main() -> int:
     write_absent(output_root / "rights.txt", rights_bytes)
     material = {
         "kind": "Trellis2EvaluationReferencePreparation",
-        "abi": "basalt-trellis2-evaluation-reference-preparation@1",
+        "contract": "basalt-trellis2-evaluation-reference-preparation",
         "source": {
             "path": str(source_path),
             "sha256": sha256_bytes(source_bytes),

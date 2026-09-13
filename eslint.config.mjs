@@ -10,13 +10,7 @@ const [typescriptBase, typescriptEslintRecommended, typescriptRecommended] =
 
 export default [
   {
-    ignores: [
-      ".agents/**",
-      ".basalt/**",
-      "dist/**",
-      "node_modules/**",
-      "plugin/BasaltStudioPlugin.rbxmx",
-    ],
+    ignores: [".agents/**", ".basalt/**", "**/dist/**", "dist/**", "node_modules/**"],
   },
   {
     files: authoredJavaScript,

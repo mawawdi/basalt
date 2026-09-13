@@ -1,0 +1,16 @@
+{
+  "name": "@basalt/neural-asset",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@basalt/asset-factory": "*",
+    "@basalt/contracts": "*",
+    "zod": "4.5.4"
+  }
+}

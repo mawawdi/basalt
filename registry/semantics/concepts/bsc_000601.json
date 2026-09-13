@@ -1,0 +1,20 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000601",
+  "upperSort": "information_content",
+  "normativeDefinition": "Information expressed through written characters.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: Information expressed through written characters.",
+      "Its information_content identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than information_content is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [],
+  "ancestors": [],
+  "commitmentHash": "746e9c3b9068fe9102ac0ccaf78f369bebcec8ecc468ae785b9a615f42a86b25"
+}

@@ -1,0 +1,20 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000606",
+  "upperSort": "information_content",
+  "normativeDefinition": "Information prescribing or explaining an action or procedure.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: Information prescribing or explaining an action or procedure.",
+      "Its information_content identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than information_content is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [],
+  "ancestors": [],
+  "commitmentHash": "a68b0b0534eab196b0a84e354f78d1ab26597fc266d0c140402370a0792cae20"
+}

@@ -1,0 +1,57 @@
+{
+  "kind": "SemanticKernel",
+  "upperSorts": [
+    {
+      "upperSort": "aggregate",
+      "normativeDefinition": "A plurality treated as one realization without asserting that it is one object."
+    },
+    {
+      "upperSort": "boundary",
+      "normativeDefinition": "A physical or virtual surface delimiting an entity or space."
+    },
+    {
+      "upperSort": "information_content",
+      "normativeDefinition": "Information that can be borne by a physical or virtual realization."
+    },
+    {
+      "upperSort": "object",
+      "normativeDefinition": "A bounded persistent entity that can be individually placed or assembled."
+    },
+    {
+      "upperSort": "phenomenon",
+      "normativeDefinition": "A process-like, event-like, or field-like occurrence."
+    },
+    {
+      "upperSort": "space",
+      "normativeDefinition": "A physical or logical extent that may contain entities or participate in spatial planning."
+    },
+    {
+      "upperSort": "substance",
+      "normativeDefinition": "Material measured or realized by amount rather than individual identity."
+    }
+  ],
+  "evidenceOrder": [
+    "declared",
+    "measured",
+    "simulated",
+    "engine_verified"
+  ],
+  "assertionKinds": [
+    "denotation",
+    "affordance",
+    "state",
+    "surface_treatment",
+    "role",
+    "relation",
+    "realization_form"
+  ],
+  "reasoningRules": [
+    "materialized_ancestry",
+    "exact_or_descendant_matching",
+    "set_inclusion",
+    "state_equality",
+    "evidence_ordering",
+    "declared_relation_expansion"
+  ],
+  "hash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8"
+}

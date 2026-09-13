@@ -1,0 +1,34 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000308",
+  "upperSort": "space",
+  "normativeDefinition": "A route space allocated to rail movement and its clearances.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A route space allocated to rail movement and its clearances.",
+      "Its space identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than space is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000305",
+      "commitmentHash": "4460fb7b479e96d0162d49fc7b916829e08a162409c8c0947d153210067339ea"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000301",
+      "commitmentHash": "dfeab58f4b04f6013ca66e929d134776563befd1179aa34dc3a43af85483952e"
+    },
+    {
+      "conceptId": "bsc_000305",
+      "commitmentHash": "4460fb7b479e96d0162d49fc7b916829e08a162409c8c0947d153210067339ea"
+    }
+  ],
+  "commitmentHash": "904f7fd4339b1d08288ecb0dcf86602fae24fbb7a226d6ff73a7092fbe5cb22e"
+}

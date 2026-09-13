@@ -1,45 +1,45 @@
-# Basalt product principles
+# Basalt Product Thesis
 
-Basalt compiles a creator's map brief into a large, coherent Roblox world.
-It is a hierarchical world compiler, not a general game-development agent.
+Basalt is a hierarchical world compiler, not prompt-to-mesh generation and not a
+thin model wrapper. Its product is a closed verification loop: creator intent is
+interpreted, semantic claims are admitted or refused, deterministic systems realize
+them, and evidence explains each result.
 
-The compiler works at three spatial scales:
+## Invariants
 
-1. **Macro:** continuous terrain fields, water, biome masks, routes, partitions,
-   and regional topology.
-2. **Meso:** modular structures, cliffs, surfaces, socketed assemblies, and
-   coherent asset families.
-3. **Micro:** deterministic surface-aware population, variation, materials,
-   foliage, decals, and effects.
+- Creator intent, model hypotheses, semantic authority, platform policy, and
+  evaluation evidence are distinct.
+- Seven upper sorts are stable. Domain growth is additive through explicitly
+  reviewed leaf commitments.
+- A new asset pack cannot rewrite existing semantic commitments.
+- Labels and source names can help a reviewer search; they cannot satisfy compiler
+  requirements.
+- Substitution means genuine independent interchangeability, not similar naming or
+  visual proximity.
+- Corpus scale comes from evidence-coherent cohort decisions and active audit
+  samples, never from converting model confidence into authority or requiring one
+  manual decision per asset.
+- Terrain and routes compile even when catalog-dependent stages are incomplete.
+- Typed solvers own geometry, transforms, constraints, occupancy, and budgets.
+- Every missing requirement remains visible as `incomplete`; invalid evidence is
+  `rejected`.
+- `WorldBuild` is engine-neutral and retains exact semantic, catalog, asset,
+  transform, bounds, connection, and evidence provenance.
+- Only creator-run engine readback earns `engine_verified` evidence.
 
-Art direction is independently hierarchical: global world style, biome or
-seasonal overlay, asset family, then archetype/instance. Overlays retain the
-same terrain-field hash and change only surface realization and atmosphere.
+## Scaling model
 
-The creator supplies intent and references. The model proposes open-vocabulary
-style, regional composition, family plans, and revisions. Basalt's typed workers
-own physical geometry, surface sampling, relation solving, asset adaptation,
-partitioning, provenance, and transaction boundaries.
+World, region, route, lot, structure, floor, and room are independently nameable
+compilation scopes. Minimal semantic closures and content-addressed children limit
+invalidation. The same catalog entry may satisfy several independent intents
+without merging their targets, quantities, or constraints.
 
-Basalt does not generate one unrelated mesh for every visible object. It resolves
-families through one indexed registry lookup per regional request, adapts a small
-number of archetypes, and reuses them through immutable population artifacts.
-Neural generation is an offline family-factory route: it
-can create distinctive family members and hero exceptions, but it never blocks
-terrain, routes, blockout, or deterministic population.
-One-shot neural geometry is limited to sub-8-stud `focal_insert` requirements;
-large landmarks are assembled from typed procedural shells and socketed parts.
+Neural generation is an offline response to a typed catalog gap. It can produce a
+candidate under provider-neutral measurable constraints, but it cannot create
+concepts, decide substitution membership, author structural grammar, bypass
+measurement, or admit itself.
 
-Basalt keeps creator claims separate from model hypotheses and evidence. A render
-or generated image can guide composition; it cannot become geometry authority.
-No candidate is accepted without structural adaptation, kind-admission and
-treatment-coverage checks, style compatibility, and exact provenance.
-
-The Roblox connector remains a transaction boundary. It receives partitioned,
-canonical world plans and applies bounded deltas with ChangeHistory, detached
-preflight, readback, and reconciliation. Basalt never launches Studio; the
-creator performs import, save/reopen, and final visual checks.
-
-Gameplay scripts are external inputs. Basalt may expose named spatial anchors,
-routes, sockets, and bindings for another system, but it does not own a gameplay
-runtime, gameplay AST, network remotes, state machines, or task libraries.
+Catalog authority has one tracked, atomically replaced root. Git preserves its
+history; Basalt does not maintain schema streams or an internal decision journal.
+Heavy source/render payloads remain content-addressed outside Git, while current
+authority and expensive compact inference evidence are commit-ready.

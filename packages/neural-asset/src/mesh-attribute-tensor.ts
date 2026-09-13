@@ -1,15 +1,7 @@
 import { z } from "zod";
-import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { hashSchema } from "../../spatial-core/src/primitives.js";
+import { HASH_SCHEMA, contentHash, deepFreezeJson, stableJson } from "@basalt/contracts";
 
-/**
- * Provider-neutral interchange between qualified neural inference and Basalt's
- * fixed asset-adaptation worker. Providers may choose their own internal mesh
- * representation, but retained output must lower to this exact tensor set.
- */
-export const MESH_ATTRIBUTE_TENSOR_BUNDLE_ABI = "basalt-mesh-attribute-tensor-bundle@2" as const;
-
-export const MESH_ATTRIBUTE_TENSOR_LAYOUT = Object.freeze([
+export const NEURAL_MESH_TENSOR_LAYOUT = Object.freeze([
   Object.freeze({ name: "positions", dtype: "F32", columns: 3 }),
   Object.freeze({ name: "triangle_indices", dtype: "I32", columns: 3 }),
   Object.freeze({ name: "base_color", dtype: "F32", columns: 3 }),
@@ -19,57 +11,23 @@ export const MESH_ATTRIBUTE_TENSOR_LAYOUT = Object.freeze([
   Object.freeze({ name: "normals", dtype: "F32", columns: 3 }),
 ] as const);
 
-export const MESH_ATTRIBUTE_TENSOR_SCHEMA_HASH = contentHash(
-  stableJson({
-    abi: MESH_ATTRIBUTE_TENSOR_BUNDLE_ABI,
-    tensors: [
-      ["positions", "F32", ["vertex_count", 3]],
-      ["triangle_indices", "I32", ["triangle_count", 3]],
-      ["base_color", "F32", ["vertex_count", 3]],
-      ["roughness", "F32", ["vertex_count", 1]],
-      ["metallic", "F32", ["vertex_count", 1]],
-      ["opacity", "F32", ["vertex_count", 1]],
-      ["normals", "F32", ["vertex_count", 3]],
-    ],
-  }),
-);
+export const NEURAL_MESH_TENSOR_LAYOUT_HASH = contentHash(stableJson(NEURAL_MESH_TENSOR_LAYOUT));
 
 const finite = z.number().finite();
-
-export const NEURAL_TENSOR_ARTIFACT_SCHEMA = z
-  .object({
-    locator: z.string().regex(/^binary-artifacts\/[a-f0-9]{64}\.bin$/u),
-    artifactHash: hashSchema,
-    bytes: z
-      .number()
-      .int()
-      .positive()
-      .max(2 * 1024 * 1024 * 1024),
-    mediaType: z.literal("application/x-safetensors"),
-  })
-  .strict()
-  .refine(
-    (value) => value.locator === `binary-artifacts/${value.artifactHash}.bin`,
-    "Tensor artifact locator must identify its exact bytes",
-  );
-
-export const NEURAL_MESH_TRANSFORM_OWNERSHIP_SCHEMA = z.discriminatedUnion("kind", [
-  z
-    .object({
-      kind: z.literal("canonical_baked"),
-      canonicalFrame: z.literal("right-handed-y-up-negative-z-forward"),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal("source_frame_unbaked"),
-      sourceFrame: z.string().trim().min(1).max(160),
-      sourceToCanonicalMatrixColumnMajor: z.array(finite).length(16),
-    })
-    .strict(),
-]);
-
-const descriptorSchema = z
+const affineMatrix = z
+  .array(finite)
+  .length(16)
+  .superRefine((value, context) => {
+    if (value[3] !== 0 || value[7] !== 0 || value[11] !== 0 || value[15] !== 1)
+      context.addIssue({ code: "custom", message: "Source transform must be affine" });
+    const determinant =
+      value[0]! * (value[5]! * value[10]! - value[9]! * value[6]!) -
+      value[4]! * (value[1]! * value[10]! - value[9]! * value[2]!) +
+      value[8]! * (value[1]! * value[6]! - value[5]! * value[2]!);
+    if (Math.abs(determinant) < 1e-12)
+      context.addIssue({ code: "custom", message: "Source transform must be invertible" });
+  });
+const tensorDescriptor = z
   .object({
     name: z.enum([
       "positions",
@@ -85,18 +43,46 @@ const descriptorSchema = z
     valueRange: z.tuple([finite, finite]),
   })
   .strict()
-  .refine(({ valueRange }) => valueRange[0] <= valueRange[1], "Tensor range is reversed");
+  .refine((value) => value.valueRange[0] <= value.valueRange[1], "Tensor range is reversed");
 
-const payloadMaterial = z
+export const NEURAL_MESH_TENSOR_PAYLOAD_SCHEMA = z
   .object({
-    kind: z.literal("RouteNeutralMeshAttributeTensorPayload"),
-    abi: z.literal(MESH_ATTRIBUTE_TENSOR_BUNDLE_ABI),
-    tensorSchemaHash: z.literal(MESH_ATTRIBUTE_TENSOR_SCHEMA_HASH),
-    artifact: NEURAL_TENSOR_ARTIFACT_SCHEMA,
+    kind: z.literal("NeuralMeshTensorPayload"),
+    tensorLayoutHash: z.literal(NEURAL_MESH_TENSOR_LAYOUT_HASH),
+    artifact: z
+      .object({
+        artifactHash: HASH_SCHEMA,
+        bytes: z
+          .number()
+          .int()
+          .positive()
+          .max(2 * 1024 * 1024 * 1024),
+        mediaType: z.literal("application/x-safetensors"),
+      })
+      .strict(),
+    sourceCoordinateFrame: z
+      .object({
+        name: z.string().regex(/^[A-Za-z][A-Za-z0-9_.+-]{0,127}$/u),
+        handedness: z.literal("right_handed"),
+        up: z.enum(["+X", "-X", "+Y", "-Y", "+Z", "-Z"]),
+        forward: z.enum(["+X", "-X", "+Y", "-Y", "+Z", "-Z"]),
+        positionUnits: z.enum(["provider_normalized", "meters"]),
+        metricScaleEvidenceHash: HASH_SCHEMA.optional(),
+        sourceToCanonicalMatrixColumnMajor: affineMatrix,
+        transformsBaked: z.boolean(),
+      })
+      .strict()
+      .superRefine((value, context) => {
+        if ((value.positionUnits === "meters") !== (value.metricScaleEvidenceHash !== undefined))
+          context.addIssue({
+            code: "custom",
+            path: ["metricScaleEvidenceHash"],
+            message: "Only metrically evidenced positions may claim meters",
+          });
+      }),
     vertexCount: z.number().int().min(3).max(20_000_000),
     triangleCount: z.number().int().positive().max(40_000_000),
-    tensors: z.array(descriptorSchema).length(MESH_ATTRIBUTE_TENSOR_LAYOUT.length),
-    transformOwnership: NEURAL_MESH_TRANSFORM_OWNERSHIP_SCHEMA,
+    tensors: z.array(tensorDescriptor).length(NEURAL_MESH_TENSOR_LAYOUT.length),
     topology: z
       .object({
         connectedComponents: z.number().int().positive().max(1_000_000),
@@ -104,6 +90,7 @@ const payloadMaterial = z
         nonManifoldEdges: z.number().int().nonnegative(),
       })
       .strict(),
+    hash: HASH_SCHEMA,
   })
   .strict()
   .superRefine((value, context) => {
@@ -137,33 +124,27 @@ const payloadMaterial = z
         context.addIssue({
           code: "custom",
           path: ["tensors", index],
-          message: `Tensor ${name} has the wrong route-neutral descriptor`,
+          message: `Tensor ${name} has the wrong provider-neutral descriptor`,
         });
     });
+    const { hash: _hash, ...material } = value;
+    if (contentHash(stableJson(material)) !== value.hash)
+      context.addIssue({ code: "custom", path: ["hash"], message: "Tensor payload hash mismatch" });
   });
+export type NeuralMeshTensorPayload = z.output<typeof NEURAL_MESH_TENSOR_PAYLOAD_SCHEMA>;
 
-export const ROUTE_NEUTRAL_MESH_ATTRIBUTE_TENSOR_PAYLOAD_SCHEMA = payloadMaterial.safeExtend({
-  hash: hashSchema,
-});
-export type RouteNeutralMeshAttributeTensorPayload = z.infer<
-  typeof ROUTE_NEUTRAL_MESH_ATTRIBUTE_TENSOR_PAYLOAD_SCHEMA
->;
-
-export function sealRouteNeutralMeshAttributeTensorPayload(
-  input: z.input<typeof payloadMaterial>,
-): RouteNeutralMeshAttributeTensorPayload {
-  const material = payloadMaterial.parse(input);
-  return ROUTE_NEUTRAL_MESH_ATTRIBUTE_TENSOR_PAYLOAD_SCHEMA.parse({
-    ...material,
-    hash: contentHash(stableJson(material)),
-  });
-}
-
-export function assertRouteNeutralMeshAttributeTensorPayloadIdentity(
-  value: unknown,
-): asserts value is RouteNeutralMeshAttributeTensorPayload {
-  const payload = ROUTE_NEUTRAL_MESH_ATTRIBUTE_TENSOR_PAYLOAD_SCHEMA.parse(value);
-  const { hash, ...material } = payload;
-  if (hash !== contentHash(stableJson(material)))
-    throw new Error("Route-neutral mesh-attribute tensor payload identity is invalid");
+export function sealNeuralMeshTensorPayload(
+  input: Omit<NeuralMeshTensorPayload, "kind" | "tensorLayoutHash" | "hash">,
+): NeuralMeshTensorPayload {
+  const material = {
+    kind: "NeuralMeshTensorPayload" as const,
+    tensorLayoutHash: NEURAL_MESH_TENSOR_LAYOUT_HASH,
+    ...input,
+  };
+  return deepFreezeJson(
+    NEURAL_MESH_TENSOR_PAYLOAD_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    }),
+  ) as NeuralMeshTensorPayload;
 }

@@ -1,0 +1,24 @@
+{
+  "name": "@basalt/cli",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@basalt/artifact-store": "*",
+    "@basalt/asset-inspection": "*",
+    "@basalt/catalog-authoring": "*",
+    "@basalt/catalog-model": "*",
+    "@basalt/contracts": "*",
+    "@basalt/neural-asset": "*",
+    "@basalt/roblox": "*",
+    "@basalt/semantic-kernel": "*",
+    "@basalt/world-compiler": "*",
+    "@basalt/world-planning": "*",
+    "zod": "4.5.4"
+  }
+}

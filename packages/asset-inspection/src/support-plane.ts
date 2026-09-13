@@ -1,4 +1,4 @@
-import { createMurmurHash3Random } from "../../spatial-core/src/primitives.js";
+import { createMurmurHash3Random } from "@basalt/spatial-core";
 
 export interface SupportPlanePoint {
   readonly x: number;
@@ -13,7 +13,7 @@ export interface SupportPlanePatch {
 export interface SupportPlaneFit {
   readonly normal: SupportPlanePoint;
   readonly origin: SupportPlanePoint;
-  readonly boundaryRadiusStuds: number;
+  readonly boundaryRadiusMeters: number;
   readonly inlierCount: number;
   readonly pointCount: number;
 }
@@ -26,7 +26,7 @@ export type SupportPlaneResult =
   | { readonly status: "refused"; readonly reason: SupportPlaneRefusal };
 
 export const SUPPORT_PLANE_ITERATIONS = 192;
-export const SUPPORT_PLANE_THRESHOLD_STUDS = 0.001;
+export const SUPPORT_PLANE_THRESHOLD_METERS = 0.001;
 export const SUPPORT_PLANE_MIN_UP_COMPONENT = 0.5;
 export const SUPPORT_PLANE_MAX_SAMPLE_POINTS = 4096;
 
@@ -139,10 +139,129 @@ interface PlaneModel {
   readonly residual: number;
 }
 
+interface SupportPatchFact {
+  readonly index: number;
+  readonly area: number;
+}
+
+function patchArea(patch: SupportPlanePatch): number {
+  if (patch.polygon.length < 3) return 0;
+  const anchor = patch.polygon[0]!;
+  let area = 0;
+  for (let index = 1; index + 1 < patch.polygon.length; index += 1) {
+    const raw = cross(
+      subtract(patch.polygon[index]!, anchor),
+      subtract(patch.polygon[index + 1]!, anchor),
+    );
+    area += magnitude(raw) / 2;
+  }
+  return area;
+}
+
+/**
+ * Retains every disconnected contact component when the budget permits, then
+ * samples each component at equal cumulative-area strata. Triangle density
+ * and source ordering therefore cannot erase a small foot or overweight a
+ * needlessly tessellated patch.
+ */
+function topologyAreaStratifiedPatches(
+  patches: ReadonlyArray<SupportPlanePatch>,
+  maximumPoints: number,
+): SupportPlanePatch[] {
+  const pointCount = patches.reduce((sum, patch) => sum + patch.polygon.length, 0);
+  if (pointCount <= maximumPoints) return [...patches];
+  const maximumPatches = Math.max(1, Math.floor(maximumPoints / 3));
+  const facts = patches
+    .map((patch, index): SupportPatchFact => ({ index, area: patchArea(patch) }))
+    .filter((fact) => fact.area > 1e-12);
+  if (facts.length <= maximumPatches) return facts.map((fact) => patches[fact.index]!);
+
+  const parent = facts.map((_, index) => index);
+  const find = (index: number): number => {
+    let cursor = index;
+    while (parent[cursor] !== cursor) {
+      parent[cursor] = parent[parent[cursor]!]!;
+      cursor = parent[cursor]!;
+    }
+    return cursor;
+  };
+  const join = (left: number, right: number): void => {
+    const leftRoot = find(left);
+    const rightRoot = find(right);
+    if (leftRoot === rightRoot) return;
+    if (leftRoot < rightRoot) parent[rightRoot] = leftRoot;
+    else parent[leftRoot] = rightRoot;
+  };
+  const pointOwner = new Map<string, number>();
+  for (const [position, fact] of facts.entries()) {
+    for (const point of patches[fact.index]!.polygon) {
+      const key = `${point.x},${point.y},${point.z}`;
+      const owner = pointOwner.get(key);
+      if (owner === undefined) pointOwner.set(key, position);
+      else join(position, owner);
+    }
+  }
+  const groups = new Map<number, SupportPatchFact[]>();
+  for (const [position, fact] of facts.entries()) {
+    const root = find(position);
+    const members = groups.get(root) ?? [];
+    members.push(fact);
+    groups.set(root, members);
+  }
+  const components = [...groups.values()]
+    .map((members) => ({
+      members: [...members].sort((left, right) => left.index - right.index),
+      area: members.reduce((sum, member) => sum + member.area, 0),
+      firstIndex: Math.min(...members.map((member) => member.index)),
+      count: 0,
+    }))
+    .sort((left, right) => right.area - left.area || left.firstIndex - right.firstIndex)
+    .slice(0, maximumPatches);
+  for (const component of components) component.count = 1;
+  const totalArea = components.reduce((sum, component) => sum + component.area, 0);
+  let remaining = maximumPatches - components.length;
+  while (remaining > 0) {
+    const candidate = components
+      .filter((component) => component.count < component.members.length)
+      .sort((left, right) => {
+        const leftDeficit = (left.area / totalArea) * maximumPatches - left.count;
+        const rightDeficit = (right.area / totalArea) * maximumPatches - right.count;
+        return rightDeficit - leftDeficit || left.firstIndex - right.firstIndex;
+      })[0];
+    if (!candidate) break;
+    candidate.count += 1;
+    remaining -= 1;
+  }
+  const selected: SupportPatchFact[] = [];
+  for (const component of components) {
+    const targetStep = component.area / component.count;
+    let cumulative = 0;
+    let target = 0;
+    const chosen = new Map<number, SupportPatchFact>();
+    for (const member of component.members) {
+      cumulative += member.area;
+      while (target < component.count && cumulative >= (target + 0.5) * targetStep) {
+        chosen.set(member.index, member);
+        target += 1;
+      }
+    }
+    for (const member of [...component.members].sort(
+      (left, right) => right.area - left.area || left.index - right.index,
+    )) {
+      if (chosen.size >= component.count) break;
+      chosen.set(member.index, member);
+    }
+    selected.push(...chosen.values());
+  }
+  return selected
+    .sort((left, right) => left.index - right.index)
+    .map((fact) => patches[fact.index]!);
+}
+
 /**
  * Fits the support plane behind bottom-contact patches with seeded RANSAC and
  * clips one mount-socket footprint per connected contact component. Points
- * arrive in studs. Multi-foot assets earn one socket per foot; each footprint
+ * arrive in meters. Multi-foot assets earn one socket per foot; each footprint
  * clips to its own component boundary, and components without interior admit
  * no socket. Refusals carry machine-readable reasons. Deterministic: fixed
  * iteration budget, seeded draws, first-best wins, centroid-ordered sockets.
@@ -160,10 +279,8 @@ export function fitSupportPlane(
       flatProvenance.push({ patch: patchIndex, vertex: vertexIndex });
     }),
   );
-  // Deterministic stride subsample keeps the fit bounded on dense contact sets.
-  const stride = Math.max(1, Math.ceil(flat.length / SUPPORT_PLANE_MAX_SAMPLE_POINTS));
-  const points: SupportPlanePoint[] = [];
-  for (let index = 0; index < flat.length; index += stride) points.push(flat[index]!);
+  const sampledPatches = topologyAreaStratifiedPatches(patches, SUPPORT_PLANE_MAX_SAMPLE_POINTS);
+  const points = sampledPatches.flatMap((patch) => [...patch.polygon]);
   if (points.length < 3) return { status: "refused", reason: "sparse_points" };
   const rng = createMurmurHash3Random(seed >>> 0);
   let best: PlaneModel | null = null;
@@ -189,7 +306,7 @@ export function fitSupportPlane(
     let residual = 0;
     for (let index = 0; index < points.length; index += 1) {
       const distance = Math.abs(dot(subtract(points[index]!, a), normal));
-      if (distance <= SUPPORT_PLANE_THRESHOLD_STUDS) {
+      if (distance <= SUPPORT_PLANE_THRESHOLD_METERS) {
         inliers.push(index);
         residual += distance;
       }
@@ -203,13 +320,13 @@ export function fitSupportPlane(
     }
   }
   if (best === null || best.inliers.length < 3) return { status: "refused", reason: "no_plane" };
-  // RANSAC runs on the stride sample; clipping re-tests every contact vertex
+  // RANSAC runs on the bounded topology/area sample; clipping re-tests every contact vertex
   // against the winning plane so dense patches keep exact boundaries.
   const fullInliers: number[] = [];
   for (let index = 0; index < flat.length; index += 1) {
     if (
       Math.abs(dot(subtract(flat[index]!, best.anchor), best.normal)) <=
-      SUPPORT_PLANE_THRESHOLD_STUDS
+      SUPPORT_PLANE_THRESHOLD_METERS
     )
       fullInliers.push(index);
   }
@@ -352,7 +469,7 @@ export function fitSupportPlane(
     fits.push({
       normal: sanitizePoint(best.normal),
       origin: sanitizePoint(center),
-      boundaryRadiusStuds: radius,
+      boundaryRadiusMeters: radius,
       inlierCount: groupPoints.length,
       pointCount: flat.length,
     });

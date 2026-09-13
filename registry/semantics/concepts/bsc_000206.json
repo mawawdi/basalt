@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000206",
+  "upperSort": "substance",
+  "normativeDefinition": "Accumulated frozen precipitation represented as a world substance.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: Accumulated frozen precipitation represented as a world substance.",
+      "Its substance identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than substance is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000203",
+      "commitmentHash": "271a3e02c5fd7911a0c5a6b0c3e37c87f472c2b17e188d8cb77d2778b3eb1b1a"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000203",
+      "commitmentHash": "271a3e02c5fd7911a0c5a6b0c3e37c87f472c2b17e188d8cb77d2778b3eb1b1a"
+    }
+  ],
+  "commitmentHash": "808da12a2f9ec9200e317feb0d2d11ca270055f66c0828be16025885a51be88e"
+}

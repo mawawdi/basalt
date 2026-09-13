@@ -1,0 +1,12 @@
+{
+  "name": "BasaltStudioPlugin",
+  "tree": {
+    "$path": "src/Main.server.luau",
+    "Basalt": {
+      "$path": "src/Basalt",
+      "EmbeddedConnection": {
+        "$path": "../../../.basalt/roblox/EmbeddedConnection.luau"
+      }
+    }
+  }
+}

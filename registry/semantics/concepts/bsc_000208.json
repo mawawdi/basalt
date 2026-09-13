@@ -1,0 +1,20 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000208",
+  "upperSort": "substance",
+  "normativeDefinition": "Solid frozen water represented as world material.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: Solid frozen water represented as world material.",
+      "Its substance identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than substance is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [],
+  "ancestors": [],
+  "commitmentHash": "01428a8c16cfea7d6a7087931015e58f88234e5c77340f20a6a8132d4ffe7cf3"
+}

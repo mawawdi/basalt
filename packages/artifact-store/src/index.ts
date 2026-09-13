@@ -1,6 +1,17 @@
 import { createHash, randomUUID } from "node:crypto";
 import { constants } from "node:fs";
-import { access, chmod, link, lstat, mkdir, open, stat, unlink, writeFile } from "node:fs/promises";
+import {
+  access,
+  chmod,
+  link,
+  lstat,
+  mkdir,
+  open,
+  rename,
+  stat,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import {
   basename,
   dirname,
@@ -12,7 +23,7 @@ import {
   sep,
   win32,
 } from "node:path";
-import { stableJson } from "../../contracts/src/index.js";
+import { stableJson } from "@basalt/contracts";
 
 /**
  * A content-addressed reference to an immutable JSON artifact.
@@ -20,14 +31,14 @@ import { stableJson } from "../../contracts/src/index.js";
  * `locator` is always relative to the store root. `artifactHash` hashes the
  * exact persisted UTF-8 bytes, including the trailing newline.
  */
-export interface ArtifactReference {
+export interface StoredArtifactReference {
   locator: string;
   artifactHash: string;
   bytes: number;
 }
 
 /** A content-addressed immutable binary artifact. */
-export interface BinaryArtifactReference {
+export interface StoredBinaryArtifactReference {
   locator: string;
   artifactHash: string;
   bytes: number;
@@ -39,7 +50,24 @@ export interface ImmutableJsonArtifactStoreOptions {
   maxBytes?: number;
 }
 
-export type JsonArtifactAssertion<T> = (value: unknown) => asserts value is T;
+export interface WorkspaceJsonWriteOptions {
+  /** Maximum canonical UTF-8 output size. */
+  maxBytes?: number;
+  /** Required to replace different existing bytes; must hash the exact old bytes. */
+  expectedExistingHash?: string;
+}
+
+export interface WorkspaceJsonWriteResult {
+  readonly path: string;
+  readonly artifactHash: string;
+  readonly bytes: number;
+  readonly replaced: boolean;
+}
+
+export interface WorkspaceExclusiveLock {
+  readonly path: string;
+  release(): Promise<void>;
+}
 
 const DEFAULT_MAX_BYTES = 16 * 1024 * 1024;
 const ARTIFACT_DIRECTORY = "artifacts";
@@ -66,14 +94,14 @@ export class ImmutableJsonArtifactStore {
   }
 
   /** Canonically serialize and atomically persist a JSON value. */
-  async write(value: unknown): Promise<ArtifactReference> {
+  async write(value: unknown): Promise<StoredArtifactReference> {
     const serialized = serializeCanonicalJson(value);
     const bytes = Buffer.byteLength(serialized, "utf8");
     if (bytes > this.maxBytes)
       throw new Error(`Artifact exceeds byte limit (${bytes} > ${this.maxBytes})`);
     const artifactHash = hashBytes(serialized);
     const locator = `${ARTIFACT_DIRECTORY}/${artifactHash}.json`;
-    const reference: ArtifactReference = { locator, artifactHash, bytes };
+    const reference: StoredArtifactReference = { locator, artifactHash, bytes };
 
     await this.ensureRoot();
     const destination = await this.resolveForWrite(locator);
@@ -88,12 +116,9 @@ export class ImmutableJsonArtifactStore {
     return reference;
   }
 
-  /** Read, integrity-check, parse, and optionally assert an artifact. */
-  async read<T = unknown>(
-    reference: ArtifactReference,
-    assertion?: JsonArtifactAssertion<T>,
-  ): Promise<T> {
-    assertArtifactReference(reference);
+  /** Read and integrity-check canonical JSON. Owning packages must schema-parse the result. */
+  async read(reference: StoredArtifactReference): Promise<unknown> {
+    assertStoredArtifactReference(reference);
     if (reference.bytes > this.maxBytes)
       throw new Error(
         `Artifact reference exceeds byte limit (${reference.bytes} > ${this.maxBytes})`,
@@ -111,21 +136,17 @@ export class ImmutableJsonArtifactStore {
 
     let value: unknown;
     try {
-      value = JSON.parse(serialized) as unknown;
+      value = JSON.parse(serialized);
     } catch {
       throw new Error("Artifact is not valid JSON");
     }
     if (serializeCanonicalJson(value) !== serialized)
       throw new Error("Artifact JSON is not canonical");
-    if (assertion !== undefined) {
-      const assertionCallback: JsonArtifactAssertion<T> = assertion;
-      assertionCallback(value);
-    }
-    return value as T;
+    return value;
   }
 
   /** Validate a reference and all of its persisted integrity properties. */
-  async verify(reference: ArtifactReference): Promise<void> {
+  async verify(reference: StoredArtifactReference): Promise<void> {
     await this.read(reference);
   }
 
@@ -184,7 +205,7 @@ export class ImmutableBinaryArtifactStore {
     this.maxBytes = maxBytes;
   }
 
-  async write(bytes: Uint8Array, mediaType: string): Promise<BinaryArtifactReference> {
+  async write(bytes: Uint8Array, mediaType: string): Promise<StoredBinaryArtifactReference> {
     if (!(bytes instanceof Uint8Array)) throw new Error("Binary artifact must be bytes");
     assertMediaType(mediaType);
     if (bytes.byteLength <= 0 || bytes.byteLength > this.maxBytes)
@@ -204,8 +225,8 @@ export class ImmutableBinaryArtifactStore {
     return reference;
   }
 
-  async read(reference: BinaryArtifactReference): Promise<Uint8Array> {
-    assertBinaryArtifactReference(reference);
+  async read(reference: StoredBinaryArtifactReference): Promise<Uint8Array> {
+    assertStoredBinaryArtifactReference(reference);
     if (reference.bytes > this.maxBytes)
       throw new Error(
         `Artifact reference exceeds byte limit (${reference.bytes} > ${this.maxBytes})`,
@@ -223,13 +244,176 @@ export class ImmutableBinaryArtifactStore {
     return bytes;
   }
 
-  async verify(reference: BinaryArtifactReference): Promise<void> {
+  async verify(reference: StoredBinaryArtifactReference): Promise<void> {
     await this.read(reference);
   }
 }
 
-export function assertArtifactReference(value: unknown): asserts value is ArtifactReference {
-  if (!isRecord(value)) throw new Error("Invalid ArtifactReference");
+/**
+ * Read a bounded regular workspace file without following a project-owned
+ * symbolic link. Callers pass a declared root and may use either an absolute
+ * path inside it or a root-relative path.
+ */
+export async function readBoundedWorkspaceBytes(
+  rootInput: string,
+  pathInput: string,
+  maxBytes = DEFAULT_MAX_BYTES,
+): Promise<Uint8Array> {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0)
+    throw new Error("Workspace read limit must be a positive safe integer");
+  const root = resolve(rootInput);
+  await assertSafeAbsoluteDirectory(root);
+  const destination = isAbsolute(pathInput) ? resolve(pathInput) : resolve(root, pathInput);
+  await assertSafeExistingPathWithinRoot(root, destination, true);
+  const descriptor = await open(destination, constants.O_RDONLY | constants.O_NOFOLLOW);
+  try {
+    const info = await descriptor.stat();
+    if (!info.isFile()) throw new Error("Workspace target is not a regular file");
+    if (info.size > maxBytes)
+      throw new Error(`Workspace file exceeds byte limit (${info.size} > ${maxBytes})`);
+    return await descriptor.readFile();
+  } finally {
+    await descriptor.close();
+  }
+}
+
+export async function readBoundedWorkspaceJson(
+  root: string,
+  path: string,
+  maxBytes = DEFAULT_MAX_BYTES,
+): Promise<unknown> {
+  const bytes = await readBoundedWorkspaceBytes(root, path, maxBytes);
+  try {
+    return JSON.parse(Buffer.from(bytes).toString("utf8"));
+  } catch {
+    throw new Error("Workspace file is not valid JSON");
+  }
+}
+
+/** Acquire one root-bounded lock without following path components or replacing
+ * an existing target. Release refuses to unlink a path whose inode changed. */
+export async function acquireWorkspaceExclusiveLock(
+  rootInput: string,
+  pathInput: string,
+): Promise<WorkspaceExclusiveLock> {
+  const root = resolve(rootInput);
+  const destination = workspaceDestination(root, pathInput);
+  await assertSafeAbsoluteDirectory(root);
+  if (dirname(destination) !== root)
+    await ensureSafeDirectoryWithinRoot(root, dirname(destination));
+  const descriptor = await open(
+    destination,
+    constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW,
+    0o600,
+  );
+  const created = await descriptor.stat();
+  let released = false;
+  return {
+    path: destination,
+    async release() {
+      if (released) return;
+      released = true;
+      await descriptor.close();
+      const current = await lstat(destination).catch((error: unknown) => {
+        if (isMissing(error)) return undefined;
+        throw error;
+      });
+      if (!current) return;
+      if (
+        !current.isFile() ||
+        current.isSymbolicLink() ||
+        current.dev !== created.dev ||
+        current.ino !== created.ino
+      )
+        throw new Error("Workspace lock path changed before release");
+      await unlink(destination);
+    },
+  };
+}
+
+/**
+ * Atomically write canonical JSON beneath a declared workspace root without
+ * following creator-owned links. Creation is explicit. Different existing
+ * bytes are replaced only when the caller proves their exact current hash.
+ */
+export async function writeCanonicalWorkspaceJson(
+  rootInput: string,
+  pathInput: string,
+  value: unknown,
+  options: WorkspaceJsonWriteOptions = {},
+): Promise<WorkspaceJsonWriteResult> {
+  return writePrivateWorkspaceText(rootInput, pathInput, serializeCanonicalJson(value), options);
+}
+
+/**
+ * Atomically write bounded private UTF-8 text beneath a declared workspace
+ * root. Different existing bytes require proof of the exact current hash.
+ */
+export async function writePrivateWorkspaceText(
+  rootInput: string,
+  pathInput: string,
+  serialized: string,
+  options: WorkspaceJsonWriteOptions = {},
+): Promise<WorkspaceJsonWriteResult> {
+  if (typeof serialized !== "string" || serialized.includes("\0"))
+    throw new Error("Workspace text must be NUL-free UTF-8 text");
+  const root = resolve(rootInput);
+  const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
+  if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0)
+    throw new Error("Workspace write limit must be a positive safe integer");
+  if (
+    options.expectedExistingHash !== undefined &&
+    !HASH_PATTERN.test(options.expectedExistingHash)
+  )
+    throw new Error("Expected workspace hash must be a SHA-256 digest");
+  const bytes = Buffer.byteLength(serialized, "utf8");
+  if (bytes > maxBytes)
+    throw new Error(`Workspace output exceeds byte limit (${bytes} > ${maxBytes})`);
+  const artifactHash = hashBytes(serialized);
+  const destination = workspaceDestination(root, pathInput);
+  await assertSafeAbsoluteDirectory(root);
+  if (dirname(destination) !== root)
+    await ensureSafeDirectoryWithinRoot(root, dirname(destination));
+
+  const existing = await lstat(destination).catch((error: unknown) => {
+    if (isMissing(error)) return undefined;
+    throw error;
+  });
+  if (existing) {
+    if (existing.isSymbolicLink() || !existing.isFile())
+      throw new Error("Workspace output target must be a regular non-symlink file");
+    const oldBytes = await readRegularBytesWithoutFollowingTarget(
+      destination,
+      existing.size,
+      maxBytes,
+    );
+    const oldHash = createHash("sha256").update(oldBytes).digest("hex");
+    if (oldHash === artifactHash)
+      return { path: destination, artifactHash, bytes, replaced: false };
+    if (options.expectedExistingHash === undefined)
+      throw new Error(
+        "Workspace output already exists with different bytes; replacement hash required",
+      );
+    if (oldHash !== options.expectedExistingHash)
+      throw new Error("Workspace output replacement hash mismatch");
+    await replaceWorkspaceFile(destination, serialized);
+    return { path: destination, artifactHash, bytes, replaced: true };
+  }
+  if (options.expectedExistingHash !== undefined)
+    throw new Error("Workspace output expected an existing file but the target is absent");
+  try {
+    await createNewWorkspaceFile(destination, serialized);
+  } catch (error: unknown) {
+    if (!isAlreadyExists(error)) throw error;
+    return writePrivateWorkspaceText(root, destination, serialized, options);
+  }
+  return { path: destination, artifactHash, bytes, replaced: false };
+}
+
+export function assertStoredArtifactReference(
+  value: unknown,
+): asserts value is StoredArtifactReference {
+  if (!isRecord(value)) throw new Error("Invalid StoredArtifactReference");
   const { locator, artifactHash, bytes } = value;
   if (
     typeof locator !== "string" ||
@@ -241,14 +425,14 @@ export function assertArtifactReference(value: unknown): asserts value is Artifa
     !Number.isSafeInteger(bytes) ||
     bytes <= 0
   ) {
-    throw new Error("Invalid ArtifactReference");
+    throw new Error("Invalid StoredArtifactReference");
   }
 }
 
-export function assertBinaryArtifactReference(
+export function assertStoredBinaryArtifactReference(
   value: unknown,
-): asserts value is BinaryArtifactReference {
-  if (!isRecord(value)) throw new Error("Invalid BinaryArtifactReference");
+): asserts value is StoredBinaryArtifactReference {
+  if (!isRecord(value)) throw new Error("Invalid StoredBinaryArtifactReference");
   const { locator, artifactHash, bytes, mediaType } = value;
   if (
     typeof locator !== "string" ||
@@ -260,7 +444,7 @@ export function assertBinaryArtifactReference(
     bytes <= 0 ||
     typeof mediaType !== "string"
   )
-    throw new Error("Invalid BinaryArtifactReference");
+    throw new Error("Invalid StoredBinaryArtifactReference");
   assertMediaType(mediaType);
 }
 
@@ -292,6 +476,21 @@ function resolveLocator(root: string, locator: string): string {
     isAbsolute(fromRoot)
   )
     throw new Error("Artifact locator escapes store root");
+  return destination;
+}
+
+function workspaceDestination(root: string, pathInput: string): string {
+  if (typeof pathInput !== "string" || pathInput.length === 0 || pathInput.includes("\0"))
+    throw new Error("Workspace output path must be non-empty");
+  const destination = isAbsolute(pathInput) ? resolve(pathInput) : resolve(root, pathInput);
+  const fromRoot = relative(root, destination);
+  if (
+    fromRoot === "" ||
+    fromRoot === ".." ||
+    fromRoot.startsWith(`..${sep}`) ||
+    isAbsolute(fromRoot)
+  )
+    throw new Error("Workspace output escapes its declared root");
   return destination;
 }
 
@@ -493,6 +692,32 @@ async function createNewBinaryArtifact(destination: string, bytes: Uint8Array): 
     await writeFile(temporary, bytes, { mode: 0o600, flag: "wx" });
     await chmod(temporary, 0o600);
     await link(temporary, destination);
+  } finally {
+    await unlink(temporary).catch((error: unknown) => {
+      if (!isMissing(error)) throw error;
+    });
+  }
+}
+
+async function createNewWorkspaceFile(destination: string, serialized: string): Promise<void> {
+  const temporary = `${dirname(destination)}/.${basename(destination)}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporary, serialized, { encoding: "utf8", mode: 0o600, flag: "wx" });
+    await chmod(temporary, 0o600);
+    await link(temporary, destination);
+  } finally {
+    await unlink(temporary).catch((error: unknown) => {
+      if (!isMissing(error)) throw error;
+    });
+  }
+}
+
+async function replaceWorkspaceFile(destination: string, serialized: string): Promise<void> {
+  const temporary = `${dirname(destination)}/.${basename(destination)}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporary, serialized, { encoding: "utf8", mode: 0o600, flag: "wx" });
+    await chmod(temporary, 0o600);
+    await rename(temporary, destination);
   } finally {
     await unlink(temporary).catch((error: unknown) => {
       if (!isMissing(error)) throw error;

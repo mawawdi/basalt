@@ -1,0 +1,38 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000051",
+  "upperSort": "object",
+  "normativeDefinition": "Compact seating furniture conventionally lacking a full back.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: Compact seating furniture conventionally lacking a full back.",
+      "Its object identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than object is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000048",
+      "commitmentHash": "1b238aab26e81ef4223a682ea1d50f3d82080310c5c55c4e3b2aca6da9487965"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    },
+    {
+      "conceptId": "bsc_000047",
+      "commitmentHash": "ba3d04063da956b9ff10ab3280fa1ef51bac8e3a7a574ffdc78015b6ddb0a71d"
+    },
+    {
+      "conceptId": "bsc_000048",
+      "commitmentHash": "1b238aab26e81ef4223a682ea1d50f3d82080310c5c55c4e3b2aca6da9487965"
+    }
+  ],
+  "commitmentHash": "8acc906b3606a52d7af162712e14470fce016fc65ff6d2db1005de09c4431db1"
+}

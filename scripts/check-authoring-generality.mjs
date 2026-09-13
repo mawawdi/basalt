@@ -1,17 +1,18 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 
-const roots = ["packages", "workers", "plugin/src", "scripts", "bin"];
+const roots = ["packages", "workers", "scripts", "bin"];
 const productionConfigFiles = ["package.json", "tsconfig.json"];
 const genericRoots = [
   "packages/authoring-graph",
   "packages/asset-factory",
   "packages/asset-production",
-  "packages/prepared-asset",
+  "packages/catalog-model",
+  "packages/catalog-authoring",
   "packages/world-planning",
   "packages/world-compiler",
   "packages/spatial-core",
-  "workers/asset-adaptation",
+  "packages/roblox/workers/asset-adaptation",
 ];
 const allowedExtensions = new Set([".ts", ".tsx", ".js", ".mjs", ".py", ".json", ".luau"]);
 const forbiddenCreativeAnchors = [
@@ -19,11 +20,11 @@ const forbiddenCreativeAnchors = [
   "landmark.reactor",
   "socket.reactor",
   "connecting the airlock",
-  "orchid-canary-v7",
-  "glasswhale-canary-v3",
+  "orchid-canary",
+  "glasswhale-canary",
 ];
 const forbiddenDependencyParts = ["/test/", "/benchmarks/", "/fixtures/", "/evaluator/"];
-const forbiddenLegacyContracts = [
+const removedContracts = [
   {
     pattern: /["'`](?:generated_program|neural|remote_neural)["'`]/u,
     label: "a removed visual route or execution-class literal",
@@ -37,8 +38,9 @@ const forbiddenLegacyContracts = [
     label: "a removed visual production package",
   },
   {
-    pattern: /\b(?:PreparedAsset@1|basalt-prepared-asset@1)\b/u,
-    label: "a removed prepared-asset ABI",
+    pattern:
+      /\b(?:PreparedAsset|basalt-prepared-asset|VisualFamilyRegistry|family-manifest|kit-manifest)\b/u,
+    label: "a removed family/prepared-asset contract",
   },
 ];
 const fixtureVocabulary = [
@@ -107,8 +109,8 @@ function importSpecifiers(text) {
 }
 
 function checkRemovedContracts(file, text) {
-  for (const legacy of forbiddenLegacyContracts)
-    if (legacy.pattern.test(text)) violations.push(`${relative(file)} contains ${legacy.label}`);
+  for (const removed of removedContracts)
+    if (removed.pattern.test(text)) violations.push(`${relative(file)} contains ${removed.label}`);
 }
 
 async function walk(root) {

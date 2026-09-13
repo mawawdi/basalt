@@ -1,50 +1,55 @@
-# Basalt evaluation and claim policy
+# Evaluation and Claim Semantics
 
-Basalt reports only what its retained evidence establishes. A valid schema,
-deterministic compile, or local asset admission does not prove final Roblox
-appearance.
+Every local gate returns exactly one status:
 
-## Claim tiers
+- `eligible`: every required claim has sufficient evidence.
+- `incomplete`: the request is valid but a decision, asset, resource, or solver
+  solution is missing.
+- `rejected`: the input or evidence violates a schema, semantic contract, or
+  policy.
 
-| Tier               | Establishes                                                         | Does not establish                        |
-| ------------------ | ------------------------------------------------------------------- | ----------------------------------------- |
-| `schema_valid`     | The current typed artifact parses and its hash matches              | Geometry quality or engine behavior       |
-| `locally_eligible` | Deterministic world and asset checks pass                           | Roblox Studio appearance or play behavior |
-| `asset_accepted`   | One adapted family member meets structural, style, and budget gates | Family-wide or regional coherence         |
-| `region_accepted`  | A region's plans, population, diagnostics, and repairs pass         | Whole-map continuity or Studio parity     |
-| `studio_observed`  | The creator observed the exact exported build in Studio             | Builds that were not captured             |
-| `complete`         | All declared regions and required evidence pass                     | Unrequested gameplay behavior             |
+Optional gaps remain diagnostics. Required gaps make the enclosing stage
+incomplete. No fallback upgrades either failure state.
 
-Use `eligible`, `rejected`, and `incomplete` for local gates. Missing workers,
-unresolved assets, repeated defects, or absent Studio evidence keep the relevant
-artifact `incomplete`.
+## Evidence order
 
-## Required evidence
+`declared < measured < simulated < engine_verified`
 
-Accepted family members bind source bytes, rights, style, adaptation worker,
-material policy, bounds, support/contact, collision, sockets when declared, and
-delivery budget. Populations bind family revision, density fields, surface
-index, routes, exclusions, seed, chunking, and exact transforms.
+Schema evidence proves canonical shape and hashes. Measurement evidence proves
+physical and material facts. Solver evidence proves propagation, decisions,
+contradictions, backtracks, occupancy, coverage, and resource bounds. Adapter
+evidence proves deterministic lowering. Only creator-run readback proves observed
+engine state.
 
-World builds retain maps, family cards, local diagnostic passes, camera matrices,
-object/material IDs, repair fingerprints, and artifact hashes. Cameras remain
-fixed while comparing a repair. The visual critic cites exact views and object
-IDs; it cannot override deterministic geometry or mark a result Studio-verified.
+Hypothesis bundles can contain confidence and abstention but cannot satisfy an
+authoritative requirement. Admitted bundles contain exact evidence and provenance
+hashes and forbid model confidence and source-path hints.
 
-Neural jobs are offline family-factory work. They may enrich the registry, but
-they never block macro terrain, routes, or deterministic population. Warm runs
-must reuse byte-identical family and population artifacts without model calls.
+## Automated suites
 
-## Acceptance gates
+- Semantic registry: 146 commitments, all facets, identity criteria, ancestry,
+  cross-sort rules, cycles, relations, roles, states, lexicon isolation, and local
+  closure invalidation.
+- Catalog: source accounting, substitution invariants, exact evidence,
+  composition, deterministic filtering/ranking/weights, rights, resources, and
+  typed gaps.
+- Admission: independent implementation identity, exact-signature consensus,
+  confidence isolation, complete-link visual coherence, input-order independence,
+  medoid/outlier/boundary/audit sampling, finite-cohort decisions, failed-audit
+  blocking, and deterministic tracked commits.
+- Spatial: immutable plans, route-first foundations, meter contracts, complete
+  footprint clearance, occupancy, qualified sockets, and explicit underfill.
+- Constraints: directed/symmetric edges, AC-3 propagation, weighted entropy,
+  deterministic backtracking, unsatisfiable evidence, and bounded termination.
+- Artifacts: predecessor hashes, deterministic recompilation, and local semantic
+  dependency closures.
+- Roblox: 0.28-meter transform conversion, 1.12-meter terrain voxels,
+  authentication, bounded local service behavior, exact observed-state hashes,
+  sequential import, cancellation, rollback, and plugin parsing.
 
-- no visible proxy unless the creator requested a primitive aesthetic;
-- no unresolved floating, penetration, wrong rotation, implausible scale, route
-  obstruction, terrain seam, missing PBR, texture bleed, or material-scale defect;
-- family repetition, density, palette, edge language, and detail hierarchy stay
-  coherent in context;
-- declaration order does not change hashes, plans, placements, or cache results;
-- Studio import, save/reopen, camera, scale, materials, and route observations
-  are supplied by the creator before a final claim.
+## Visual gates
 
-Tests use fake providers and retained fixtures. They make no model requests and
-never launch Studio.
+The production gates are a lake/forest region, a multi-floor modular city block
+with attachments, and a mixed multi-region world with route transitions and
+environment realization. Each must compile twice to identical hashes. Final play,
+visual judgment, and readback are performed by the user in Roblox Studio.

@@ -1,0 +1,3270 @@
+{
+  "kind": "SemanticLexiconSnapshot",
+  "entries": [
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000001",
+      "preferredLabels": {
+        "en": "walkable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000002",
+      "preferredLabels": {
+        "en": "traversable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000003",
+      "preferredLabels": {
+        "en": "climbable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000004",
+      "preferredLabels": {
+        "en": "swimmable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000005",
+      "preferredLabels": {
+        "en": "driveable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000006",
+      "preferredLabels": {
+        "en": "sittable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000007",
+      "preferredLabels": {
+        "en": "openable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000008",
+      "preferredLabels": {
+        "en": "receptacle"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000009",
+      "preferredLabels": {
+        "en": "pickupable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000010",
+      "preferredLabels": {
+        "en": "toggleable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000011",
+      "preferredLabels": {
+        "en": "movable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000012",
+      "preferredLabels": {
+        "en": "breakable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000013",
+      "preferredLabels": {
+        "en": "harvestable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000014",
+      "preferredLabels": {
+        "en": "consumable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000015",
+      "preferredLabels": {
+        "en": "supports_load"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000016",
+      "preferredLabels": {
+        "en": "blocks_motion"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000017",
+      "preferredLabels": {
+        "en": "provides_cover"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000018",
+      "preferredLabels": {
+        "en": "emits_light"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000019",
+      "preferredLabels": {
+        "en": "emits_sound"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000020",
+      "preferredLabels": {
+        "en": "contains_liquid"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000021",
+      "preferredLabels": {
+        "en": "attachable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000022",
+      "preferredLabels": {
+        "en": "mountable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000023",
+      "preferredLabels": {
+        "en": "connectable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "affordance",
+      "subjectId": "baf_000024",
+      "preferredLabels": {
+        "en": "stackable"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "annotation_predicate",
+      "subjectId": "bap_000001",
+      "preferredLabels": {
+        "en": "depicts secondary concept"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000001",
+      "preferredLabels": {
+        "en": "organism"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000002",
+      "preferredLabels": {
+        "en": "plant"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000003",
+      "preferredLabels": {
+        "en": "tree"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000004",
+      "preferredLabels": {
+        "en": "shrub"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000005",
+      "preferredLabels": {
+        "en": "herbaceous plant"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000006",
+      "preferredLabels": {
+        "en": "crop plant"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000007",
+      "preferredLabels": {
+        "en": "aquatic plant"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000008",
+      "preferredLabels": {
+        "en": "fungus"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000009",
+      "preferredLabels": {
+        "en": "animal"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000010",
+      "preferredLabels": {
+        "en": "person"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000011",
+      "preferredLabels": {
+        "en": "natural formation"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000012",
+      "preferredLabels": {
+        "en": "rock"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000013",
+      "preferredLabels": {
+        "en": "boulder"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000014",
+      "preferredLabels": {
+        "en": "mineral formation"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000015",
+      "preferredLabels": {
+        "en": "stalactite"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000016",
+      "preferredLabels": {
+        "en": "stalagmite"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000017",
+      "preferredLabels": {
+        "en": "biological remnant"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000018",
+      "preferredLabels": {
+        "en": "log"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000019",
+      "preferredLabels": {
+        "en": "stump"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000020",
+      "preferredLabels": {
+        "en": "artifact"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000021",
+      "preferredLabels": {
+        "en": "built structure"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000022",
+      "preferredLabels": {
+        "en": "building"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000023",
+      "preferredLabels": {
+        "en": "bridge structure"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000024",
+      "preferredLabels": {
+        "en": "dock structure"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000025",
+      "preferredLabels": {
+        "en": "fence structure"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000026",
+      "preferredLabels": {
+        "en": "tower structure"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000027",
+      "preferredLabels": {
+        "en": "well structure"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000028",
+      "preferredLabels": {
+        "en": "building element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000029",
+      "preferredLabels": {
+        "en": "foundation element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000030",
+      "preferredLabels": {
+        "en": "wall element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000031",
+      "preferredLabels": {
+        "en": "floor element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000032",
+      "preferredLabels": {
+        "en": "ceiling element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000033",
+      "preferredLabels": {
+        "en": "roof element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000034",
+      "preferredLabels": {
+        "en": "column"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000035",
+      "preferredLabels": {
+        "en": "beam"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000036",
+      "preferredLabels": {
+        "en": "stair"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000037",
+      "preferredLabels": {
+        "en": "railing"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000038",
+      "preferredLabels": {
+        "en": "door"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000039",
+      "preferredLabels": {
+        "en": "window"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000040",
+      "preferredLabels": {
+        "en": "opening frame"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000041",
+      "preferredLabels": {
+        "en": "trim element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000042",
+      "preferredLabels": {
+        "en": "route structure"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000043",
+      "preferredLabels": {
+        "en": "road element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000044",
+      "preferredLabels": {
+        "en": "path element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000045",
+      "preferredLabels": {
+        "en": "rail element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000046",
+      "preferredLabels": {
+        "en": "canal element"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000047",
+      "preferredLabels": {
+        "en": "furnishing"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000048",
+      "preferredLabels": {
+        "en": "seating furniture"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000049",
+      "preferredLabels": {
+        "en": "chair"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000050",
+      "preferredLabels": {
+        "en": "bench"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000051",
+      "preferredLabels": {
+        "en": "stool"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000052",
+      "preferredLabels": {
+        "en": "table"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000053",
+      "preferredLabels": {
+        "en": "desk"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000054",
+      "preferredLabels": {
+        "en": "storage furniture"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000055",
+      "preferredLabels": {
+        "en": "shelf"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000056",
+      "preferredLabels": {
+        "en": "bed"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000057",
+      "preferredLabels": {
+        "en": "container"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000058",
+      "preferredLabels": {
+        "en": "crate"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000059",
+      "preferredLabels": {
+        "en": "barrel"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000060",
+      "preferredLabels": {
+        "en": "box"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000061",
+      "preferredLabels": {
+        "en": "bottle"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000062",
+      "preferredLabels": {
+        "en": "cup"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000063",
+      "preferredLabels": {
+        "en": "bowl"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000064",
+      "preferredLabels": {
+        "en": "bag"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000065",
+      "preferredLabels": {
+        "en": "equipment"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000066",
+      "preferredLabels": {
+        "en": "appliance"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000067",
+      "preferredLabels": {
+        "en": "computer device"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000068",
+      "preferredLabels": {
+        "en": "lighting device"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000069",
+      "preferredLabels": {
+        "en": "HVAC device"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000070",
+      "preferredLabels": {
+        "en": "safety device"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000071",
+      "preferredLabels": {
+        "en": "tool"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000072",
+      "preferredLabels": {
+        "en": "hand tool"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000073",
+      "preferredLabels": {
+        "en": "powered tool"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000074",
+      "preferredLabels": {
+        "en": "weapon"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000075",
+      "preferredLabels": {
+        "en": "vehicle"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000076",
+      "preferredLabels": {
+        "en": "sign carrier"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000077",
+      "preferredLabels": {
+        "en": "decorative artifact"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000078",
+      "preferredLabels": {
+        "en": "personal accessory"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000079",
+      "preferredLabels": {
+        "en": "clothing"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000080",
+      "preferredLabels": {
+        "en": "food item"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000101",
+      "preferredLabels": {
+        "en": "vegetation cluster"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000102",
+      "preferredLabels": {
+        "en": "rock cluster"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000103",
+      "preferredLabels": {
+        "en": "debris pile"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000104",
+      "preferredLabels": {
+        "en": "object pile"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000105",
+      "preferredLabels": {
+        "en": "object group"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000106",
+      "preferredLabels": {
+        "en": "prefab arrangement"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000201",
+      "preferredLabels": {
+        "en": "liquid substance"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000202",
+      "preferredLabels": {
+        "en": "water"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000203",
+      "preferredLabels": {
+        "en": "granular substance"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000204",
+      "preferredLabels": {
+        "en": "soil"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000205",
+      "preferredLabels": {
+        "en": "sand"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000206",
+      "preferredLabels": {
+        "en": "snow"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000207",
+      "preferredLabels": {
+        "en": "mud"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000208",
+      "preferredLabels": {
+        "en": "ice"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000301",
+      "preferredLabels": {
+        "en": "physical space"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000302",
+      "preferredLabels": {
+        "en": "room"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000303",
+      "preferredLabels": {
+        "en": "corridor space"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000304",
+      "preferredLabels": {
+        "en": "cave space"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000305",
+      "preferredLabels": {
+        "en": "route space"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000306",
+      "preferredLabels": {
+        "en": "road corridor"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000307",
+      "preferredLabels": {
+        "en": "path corridor"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000308",
+      "preferredLabels": {
+        "en": "rail corridor"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000309",
+      "preferredLabels": {
+        "en": "canal corridor"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000310",
+      "preferredLabels": {
+        "en": "water body"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000311",
+      "preferredLabels": {
+        "en": "lake"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000312",
+      "preferredLabels": {
+        "en": "pond"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000313",
+      "preferredLabels": {
+        "en": "river"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000314",
+      "preferredLabels": {
+        "en": "ocean"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000315",
+      "preferredLabels": {
+        "en": "logical space"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000316",
+      "preferredLabels": {
+        "en": "world region"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000317",
+      "preferredLabels": {
+        "en": "biome region"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000318",
+      "preferredLabels": {
+        "en": "forest region"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000319",
+      "preferredLabels": {
+        "en": "district"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000320",
+      "preferredLabels": {
+        "en": "lot"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000321",
+      "preferredLabels": {
+        "en": "gameplay zone"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000401",
+      "preferredLabels": {
+        "en": "physical boundary"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000402",
+      "preferredLabels": {
+        "en": "terrain surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000403",
+      "preferredLabels": {
+        "en": "ground surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000404",
+      "preferredLabels": {
+        "en": "floor surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000405",
+      "preferredLabels": {
+        "en": "wall surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000406",
+      "preferredLabels": {
+        "en": "ceiling surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000407",
+      "preferredLabels": {
+        "en": "roof surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000408",
+      "preferredLabels": {
+        "en": "route surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000409",
+      "preferredLabels": {
+        "en": "road surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000410",
+      "preferredLabels": {
+        "en": "path surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000411",
+      "preferredLabels": {
+        "en": "water surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000412",
+      "preferredLabels": {
+        "en": "opening boundary"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000413",
+      "preferredLabels": {
+        "en": "virtual boundary"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000414",
+      "preferredLabels": {
+        "en": "region boundary"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000415",
+      "preferredLabels": {
+        "en": "lot boundary"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000501",
+      "preferredLabels": {
+        "en": "atmospheric phenomenon"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000502",
+      "preferredLabels": {
+        "en": "cloud"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000503",
+      "preferredLabels": {
+        "en": "fog"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000504",
+      "preferredLabels": {
+        "en": "precipitation"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000505",
+      "preferredLabels": {
+        "en": "wind"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000506",
+      "preferredLabels": {
+        "en": "illumination phenomenon"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000507",
+      "preferredLabels": {
+        "en": "combustion phenomenon"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000508",
+      "preferredLabels": {
+        "en": "fire"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000509",
+      "preferredLabels": {
+        "en": "smoke"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000510",
+      "preferredLabels": {
+        "en": "fluid flow"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000601",
+      "preferredLabels": {
+        "en": "text content"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000602",
+      "preferredLabels": {
+        "en": "symbol content"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000603",
+      "preferredLabels": {
+        "en": "map content"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000604",
+      "preferredLabels": {
+        "en": "sign message"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000605",
+      "preferredLabels": {
+        "en": "display content"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "concept",
+      "subjectId": "bsc_000606",
+      "preferredLabels": {
+        "en": "instruction content"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "realization_form",
+      "subjectId": "aggregate",
+      "preferredLabels": {
+        "en": "aggregate"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "realization_form",
+      "subjectId": "assembly",
+      "preferredLabels": {
+        "en": "assembly"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "realization_form",
+      "subjectId": "component",
+      "preferredLabels": {
+        "en": "component"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "realization_form",
+      "subjectId": "field_or_effect",
+      "preferredLabels": {
+        "en": "field or effect"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "realization_form",
+      "subjectId": "surface",
+      "preferredLabels": {
+        "en": "surface"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "realization_form",
+      "subjectId": "whole",
+      "preferredLabels": {
+        "en": "whole"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000001",
+      "preferredLabels": {
+        "en": "part of"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000002",
+      "preferredLabels": {
+        "en": "member of"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000003",
+      "preferredLabels": {
+        "en": "located in"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000004",
+      "preferredLabels": {
+        "en": "contained in"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000005",
+      "preferredLabels": {
+        "en": "bounded by"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000006",
+      "preferredLabels": {
+        "en": "connected to"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000007",
+      "preferredLabels": {
+        "en": "attached to"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000008",
+      "preferredLabels": {
+        "en": "supported by"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000009",
+      "preferredLabels": {
+        "en": "adjacent to"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000010",
+      "preferredLabels": {
+        "en": "crosses"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "relation",
+      "subjectId": "bre_000011",
+      "preferredLabels": {
+        "en": "bears information"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000001",
+      "preferredLabels": {
+        "en": "foundation segment"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000002",
+      "preferredLabels": {
+        "en": "floor segment"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000003",
+      "preferredLabels": {
+        "en": "wall segment"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000004",
+      "preferredLabels": {
+        "en": "inner corner"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000005",
+      "preferredLabels": {
+        "en": "outer corner"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000006",
+      "preferredLabels": {
+        "en": "opening frame"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000007",
+      "preferredLabels": {
+        "en": "door leaf"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000008",
+      "preferredLabels": {
+        "en": "window infill"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000009",
+      "preferredLabels": {
+        "en": "column"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000010",
+      "preferredLabels": {
+        "en": "beam"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000011",
+      "preferredLabels": {
+        "en": "stair flight"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000012",
+      "preferredLabels": {
+        "en": "roof segment"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000013",
+      "preferredLabels": {
+        "en": "trim"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000014",
+      "preferredLabels": {
+        "en": "railing"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000101",
+      "preferredLabels": {
+        "en": "straight"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000102",
+      "preferredLabels": {
+        "en": "curve"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000103",
+      "preferredLabels": {
+        "en": "tee"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000104",
+      "preferredLabels": {
+        "en": "cross"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000105",
+      "preferredLabels": {
+        "en": "terminal"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000106",
+      "preferredLabels": {
+        "en": "transition"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000107",
+      "preferredLabels": {
+        "en": "crossing"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000108",
+      "preferredLabels": {
+        "en": "bridge span"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000109",
+      "preferredLabels": {
+        "en": "tunnel portal"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000110",
+      "preferredLabels": {
+        "en": "median"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000111",
+      "preferredLabels": {
+        "en": "sidewalk segment"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000112",
+      "preferredLabels": {
+        "en": "water-edge segment"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000201",
+      "preferredLabels": {
+        "en": "sleeping"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000202",
+      "preferredLabels": {
+        "en": "cooking"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000203",
+      "preferredLabels": {
+        "en": "work"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000204",
+      "preferredLabels": {
+        "en": "circulation"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000205",
+      "preferredLabels": {
+        "en": "retail"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000206",
+      "preferredLabels": {
+        "en": "storage"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000207",
+      "preferredLabels": {
+        "en": "sanitary"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000208",
+      "preferredLabels": {
+        "en": "dining"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000209",
+      "preferredLabels": {
+        "en": "recreation"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000210",
+      "preferredLabels": {
+        "en": "utility"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000301",
+      "preferredLabels": {
+        "en": "landmark"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000302",
+      "preferredLabels": {
+        "en": "background"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000303",
+      "preferredLabels": {
+        "en": "obstacle"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000304",
+      "preferredLabels": {
+        "en": "cover"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000305",
+      "preferredLabels": {
+        "en": "spawn area"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000306",
+      "preferredLabels": {
+        "en": "goal area"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000307",
+      "preferredLabels": {
+        "en": "resource node"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role",
+      "subjectId": "bro_000308",
+      "preferredLabels": {
+        "en": "decoration"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role_scheme",
+      "subjectId": "brs_000001",
+      "preferredLabels": {
+        "en": "building assembly roles"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role_scheme",
+      "subjectId": "brs_000002",
+      "preferredLabels": {
+        "en": "route topology roles"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role_scheme",
+      "subjectId": "brs_000003",
+      "preferredLabels": {
+        "en": "space use roles"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "role_scheme",
+      "subjectId": "brs_000004",
+      "preferredLabels": {
+        "en": "scene roles"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_dimension",
+      "subjectId": "bsd_000001",
+      "preferredLabels": {
+        "en": "integrity"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_dimension",
+      "subjectId": "bsd_000002",
+      "preferredLabels": {
+        "en": "openness"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_dimension",
+      "subjectId": "bsd_000003",
+      "preferredLabels": {
+        "en": "activation"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_dimension",
+      "subjectId": "bsd_000004",
+      "preferredLabels": {
+        "en": "fill level"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_dimension",
+      "subjectId": "bsd_000005",
+      "preferredLabels": {
+        "en": "assembly completeness"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_dimension",
+      "subjectId": "bsd_000006",
+      "preferredLabels": {
+        "en": "life condition"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_dimension",
+      "subjectId": "bsd_000007",
+      "preferredLabels": {
+        "en": "wetness"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000001",
+      "preferredLabels": {
+        "en": "intact"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000002",
+      "preferredLabels": {
+        "en": "damaged"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000003",
+      "preferredLabels": {
+        "en": "broken"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000004",
+      "preferredLabels": {
+        "en": "ruined"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000005",
+      "preferredLabels": {
+        "en": "open"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000006",
+      "preferredLabels": {
+        "en": "ajar"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000007",
+      "preferredLabels": {
+        "en": "closed"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000008",
+      "preferredLabels": {
+        "en": "on"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000009",
+      "preferredLabels": {
+        "en": "off"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000010",
+      "preferredLabels": {
+        "en": "empty"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000011",
+      "preferredLabels": {
+        "en": "partial"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000012",
+      "preferredLabels": {
+        "en": "full"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000013",
+      "preferredLabels": {
+        "en": "assembled"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000014",
+      "preferredLabels": {
+        "en": "fragmentary"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000015",
+      "preferredLabels": {
+        "en": "disassembled"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000016",
+      "preferredLabels": {
+        "en": "alive"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000017",
+      "preferredLabels": {
+        "en": "dormant"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000018",
+      "preferredLabels": {
+        "en": "dead"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000019",
+      "preferredLabels": {
+        "en": "dry"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000020",
+      "preferredLabels": {
+        "en": "damp"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000021",
+      "preferredLabels": {
+        "en": "wet"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "state_value",
+      "subjectId": "bsv_000022",
+      "preferredLabels": {
+        "en": "submerged"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "surface_treatment",
+      "subjectId": "bst_000001",
+      "preferredLabels": {
+        "en": "snow covered"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "surface_treatment",
+      "subjectId": "bst_000002",
+      "preferredLabels": {
+        "en": "moss covered"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "surface_treatment",
+      "subjectId": "bst_000003",
+      "preferredLabels": {
+        "en": "dirty"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "surface_treatment",
+      "subjectId": "bst_000004",
+      "preferredLabels": {
+        "en": "scorched"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "surface_treatment",
+      "subjectId": "bst_000005",
+      "preferredLabels": {
+        "en": "rusted"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "surface_treatment",
+      "subjectId": "bst_000006",
+      "preferredLabels": {
+        "en": "painted"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    },
+    {
+      "subjectKind": "surface_treatment",
+      "subjectId": "bst_000007",
+      "preferredLabels": {
+        "en": "weathered"
+      },
+      "alternateLabels": [],
+      "hiddenLabels": [],
+      "examples": [],
+      "counterexamples": [],
+      "externalMappings": []
+    }
+  ],
+  "hash": "a9cb32a2996017d21658588ea792d60bd89e6bc5f376066e3652781df55fe9e2"
+}

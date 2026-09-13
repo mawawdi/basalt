@@ -1,369 +1,282 @@
 import { z } from "zod";
-import { contentHash, stableJson } from "../../contracts/src/index.js";
-import { compareSpatialStrings, hashSchema } from "../../spatial-core/src/primitives.js";
+import {
+  HASH_SCHEMA,
+  compareCanonicalStrings,
+  contentAddressedEntityId,
+  contentHash,
+  deepFreezeJson,
+  stableJson,
+} from "@basalt/contracts";
+import { ASSET_FACTORY_REQUEST_SCHEMA } from "@basalt/asset-factory";
+import { NEURAL_MESH_TENSOR_PAYLOAD_SCHEMA } from "./mesh-attribute-tensor.js";
 
-export const NEURAL_WORKER_QUALIFICATION_ABI = "basalt-neural-worker-qualification@1" as const;
-export const NEURAL_ROUTE_ADMISSION_ABI = "basalt-neural-route-admission@1" as const;
-export const NEURAL_INPUT_REFERENCE_ABI = "basalt-neural-input-reference@1" as const;
-export const NEURAL_EXECUTION_BUDGET_ABI = "basalt-neural-execution-budget@2" as const;
-export const NEURAL_EXECUTION_BUDGET_CLAIM_ABI = "basalt-neural-execution-budget-claim@1" as const;
-export const NEURAL_OUTPUT_HANDOFF_ABI = "basalt-neural-output-handoff@1" as const;
+export const NEURAL_PROVIDER_IDS = ["trellis2", "hunyuan3d_2_1", "pixal3d"] as const;
+export const NEURAL_PROVIDER_ID_SCHEMA = z.enum(NEURAL_PROVIDER_IDS);
+export type NeuralProviderId = z.output<typeof NEURAL_PROVIDER_ID_SCHEMA>;
 
-export const NEURAL_PROVIDER_IDS = ["trellis2", "pixal3d", "hunyuan3d_2_1"] as const;
-export type NeuralProviderId = (typeof NEURAL_PROVIDER_IDS)[number];
+export const NEURAL_PROVIDER_CAPABILITY_SCHEMA = z.enum(["image_to_3d", "material_restyle"]);
+export type NeuralProviderCapability = z.output<typeof NEURAL_PROVIDER_CAPABILITY_SCHEMA>;
 
-const status = z.enum(["eligible", "rejected", "incomplete"]);
-const timestamp = z.string().datetime({ offset: true });
-const modalImageId = z.string().regex(/^im-[A-Za-z0-9]+$/u);
-const artifact = z
+const externalRevision = z.string().regex(/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/u);
+
+const canonicalHashes = z
+  .array(HASH_SCHEMA)
+  .max(4096)
+  .superRefine((values, context) => {
+    if (
+      new Set(values).size !== values.length ||
+      stableJson([...values].sort(compareCanonicalStrings)) !== stableJson(values)
+    )
+      context.addIssue({ code: "custom", message: "Hashes must be unique and canonical" });
+  });
+
+export const NEURAL_PROVIDER_DECLARATION_SCHEMA = z
   .object({
-    locator: z.string().regex(/^binary-artifacts\/[a-f0-9]{64}\.bin$/u),
-    artifactHash: hashSchema,
+    kind: z.literal("NeuralProviderDeclaration"),
+    providerId: NEURAL_PROVIDER_ID_SCHEMA,
+    modelId: z.string().trim().min(1).max(512),
+    sourceCommitHash: externalRevision,
+    modelRevisionHash: externalRevision,
+    capabilities: z.array(NEURAL_PROVIDER_CAPABILITY_SCHEMA).min(1).max(2),
+    minimumGpuMemoryMiB: z
+      .number()
+      .int()
+      .positive()
+      .max(1024 * 1024)
+      .optional(),
+    usageScope: z.enum(["research", "production"]),
+    status: z.enum(["eligible", "incomplete", "rejected"]),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(256),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if ((value.status === "eligible") === value.diagnostics.length > 0)
+      context.addIssue({
+        code: "custom",
+        path: ["diagnostics"],
+        message: "Eligible providers have no diagnostics; unavailable providers require them",
+      });
+    const canonicalCapabilities = [...value.capabilities].sort(compareCanonicalStrings);
+    if (
+      new Set(canonicalCapabilities).size !== canonicalCapabilities.length ||
+      stableJson(canonicalCapabilities) !== stableJson(value.capabilities)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["capabilities"],
+        message: "Provider capabilities must be unique and canonical",
+      });
+    verifyHash(value, context);
+  });
+export type NeuralProviderDeclaration = z.output<typeof NEURAL_PROVIDER_DECLARATION_SCHEMA>;
+
+export const NEURAL_WORKER_QUALIFICATION_SCHEMA = z
+  .object({
+    kind: z.literal("NeuralWorkerQualification"),
+    providerId: NEURAL_PROVIDER_ID_SCHEMA,
+    providerDeclarationHash: HASH_SCHEMA,
+    workerImplementationHash: HASH_SCHEMA,
+    runtimeEnvironmentHash: HASH_SCHEMA,
+    sourceCommitHash: externalRevision,
+    modelRevisionHash: externalRevision,
+    hardwareEvidenceHash: HASH_SCHEMA,
+    dependencyInventoryHash: HASH_SCHEMA,
+    rightsEvidenceHash: HASH_SCHEMA,
+    status: z.enum(["eligible", "incomplete", "rejected"]),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(256),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if ((value.status === "eligible") === value.diagnostics.length > 0)
+      context.addIssue({
+        code: "custom",
+        path: ["diagnostics"],
+        message: "Eligible qualifications have no diagnostics; unavailable ones require them",
+      });
+    verifyHash(value, context);
+  });
+export type NeuralWorkerQualification = z.output<typeof NEURAL_WORKER_QUALIFICATION_SCHEMA>;
+
+const binaryArtifact = z
+  .object({
+    artifactHash: HASH_SCHEMA,
     bytes: z
       .number()
       .int()
       .positive()
       .max(2 * 1024 * 1024 * 1024),
-    mediaType: z.string().trim().min(3).max(160),
+    mediaType: z.string().regex(/^[a-z0-9.+-]+\/[a-z0-9.+-]+$/u),
+  })
+  .strict();
+
+export const NEURAL_INPUT_REFERENCE_SCHEMA = z
+  .object({
+    kind: z.literal("NeuralInputReference"),
+    origin: z.enum(["creator_supplied", "composition_crop", "generated_isolated"]),
+    artifact: binaryArtifact.extend({ mediaType: z.literal("image/png") }).strict(),
+    rightsEvidenceHash: HASH_SCHEMA,
+    preparationEvidenceHashes: canonicalHashes,
+    hash: HASH_SCHEMA,
   })
   .strict()
-  .refine(
-    (value) => value.locator === `binary-artifacts/${value.artifactHash}.bin`,
-    "Neural input locator must identify its exact bytes",
-  );
+  .superRefine((value, context) => verifyHash(value, context));
+export type NeuralInputReference = z.output<typeof NEURAL_INPUT_REFERENCE_SCHEMA>;
 
-const workerQualificationMaterial = z
+export const NEURAL_ASSET_GENERATION_REQUEST_SCHEMA = z
   .object({
-    kind: z.literal("NeuralWorkerQualification"),
-    abi: z.literal(NEURAL_WORKER_QUALIFICATION_ABI),
-    provider: z.enum(NEURAL_PROVIDER_IDS),
-    runtimeImageId: modalImageId,
-    runtimeImageHash: hashSchema,
-    sourceCommit: z.string().regex(/^[a-f0-9]{40}$/u),
-    modelId: z.string().trim().min(1).max(512),
-    modelRevision: z.string().regex(/^[a-f0-9]{40}$/u),
-    volumeSnapshotHashes: z.array(hashSchema).min(1).max(16),
-    dependencyInventoryHash: hashSchema,
-    workerSourceHash: hashSchema,
-    probeStatus: status,
-    reasons: z.array(z.string().trim().min(1).max(256)).max(32),
-    qualifiedAt: timestamp,
+    kind: z.literal("NeuralAssetGenerationRequest"),
+    requestId: z.string().regex(/^NeuralAssetGenerationRequest_[a-f0-9]{35}$/u),
+    factoryRequest: ASSET_FACTORY_REQUEST_SCHEMA,
+    providerId: NEURAL_PROVIDER_ID_SCHEMA,
+    providerDeclarationHash: HASH_SCHEMA,
+    qualificationHash: HASH_SCHEMA,
+    operation: z.enum(["generate_geometry_and_materials", "restyle_materials"]),
+    reference: NEURAL_INPUT_REFERENCE_SCHEMA,
+    sourceGeometryArtifact: binaryArtifact
+      .extend({ mediaType: z.literal("model/gltf-binary") })
+      .strict()
+      .optional(),
+    seed: z.number().int().nonnegative().max(0xffff_ffff),
+    requestHash: HASH_SCHEMA,
   })
   .strict()
   .superRefine((value, context) => {
-    if (new Set(value.volumeSnapshotHashes).size !== value.volumeSnapshotHashes.length)
+    if (value.factoryRequest.job.operation !== value.operation)
       context.addIssue({
         code: "custom",
-        path: ["volumeSnapshotHashes"],
-        message: "Neural worker volume snapshots must be unique",
-      });
-    const ordered = [...value.volumeSnapshotHashes].sort();
-    if (stableJson(ordered) !== stableJson(value.volumeSnapshotHashes))
-      context.addIssue({
-        code: "custom",
-        path: ["volumeSnapshotHashes"],
-        message: "Neural worker volume snapshots must use canonical order",
-      });
-    if (value.probeStatus === "eligible" && value.reasons.length > 0)
-      context.addIssue({
-        code: "custom",
-        path: ["reasons"],
-        message: "Eligible neural workers cannot retain failure reasons",
-      });
-    if (value.probeStatus !== "eligible" && value.reasons.length === 0)
-      context.addIssue({
-        code: "custom",
-        path: ["reasons"],
-        message: "Non-eligible neural workers require a reason",
-      });
-  });
-
-export const NEURAL_WORKER_QUALIFICATION_SCHEMA = workerQualificationMaterial.safeExtend({
-  hash: hashSchema,
-});
-export type NeuralWorkerQualification = z.infer<typeof NEURAL_WORKER_QUALIFICATION_SCHEMA>;
-
-export function sealNeuralWorkerQualification(
-  input: z.input<typeof workerQualificationMaterial>,
-): NeuralWorkerQualification {
-  const material = workerQualificationMaterial.parse(input);
-  return NEURAL_WORKER_QUALIFICATION_SCHEMA.parse({
-    ...material,
-    hash: contentHash(stableJson(material)),
-  });
-}
-
-export function assertNeuralWorkerQualificationIdentity(
-  value: unknown,
-): asserts value is NeuralWorkerQualification {
-  const qualification = NEURAL_WORKER_QUALIFICATION_SCHEMA.parse(value);
-  const { hash, ...material } = qualification;
-  if (hash !== contentHash(stableJson(material)))
-    throw new Error("Neural worker qualification identity is invalid");
-}
-
-const routeAdmissionMaterial = z
-  .object({
-    kind: z.literal("NeuralRouteAdmission"),
-    abi: z.literal(NEURAL_ROUTE_ADMISSION_ABI),
-    workerQualificationHash: hashSchema,
-    provider: z.enum(NEURAL_PROVIDER_IDS),
-    capabilityClass: z.string().trim().min(1).max(256),
-    usageScope: z.enum(["evaluation", "product"]),
-    rightsEvidenceHash: hashSchema,
-    pilotEvidenceHash: hashSchema.optional(),
-    studioEvidenceHash: hashSchema.optional(),
-    status,
-    reasons: z.array(z.string().trim().min(1).max(256)).max(32),
-    admittedAt: timestamp,
-  })
-  .strict()
-  .superRefine((value, context) => {
-    if (value.status === "eligible" && value.reasons.length > 0)
-      context.addIssue({
-        code: "custom",
-        path: ["reasons"],
-        message: "Eligible admission has reasons",
-      });
-    if (value.status !== "eligible" && value.reasons.length === 0)
-      context.addIssue({
-        code: "custom",
-        path: ["reasons"],
-        message: "Non-eligible admission requires a reason",
+        path: ["operation"],
+        message: "Generation operation must match the factory job",
       });
     if (
-      value.status === "eligible" &&
-      value.usageScope === "product" &&
-      (!value.pilotEvidenceHash || !value.studioEvidenceHash)
+      value.factoryRequest.job.referenceImageArtifactHash !== value.reference.artifact.artifactHash
     )
       context.addIssue({
         code: "custom",
-        path: ["usageScope"],
-        message: "Product neural admission requires pilot and Studio evidence",
+        path: ["reference"],
+        message: "Generation reference must match the factory job",
       });
+    if ((value.operation === "restyle_materials") !== (value.sourceGeometryArtifact !== undefined))
+      context.addIssue({
+        code: "custom",
+        path: ["sourceGeometryArtifact"],
+        message: "Only material restyling receives exact source geometry",
+      });
+    const { requestId: _requestId, requestHash: _requestHash, ...material } = value;
+    if (contentAddressedEntityId("NeuralAssetGenerationRequest", material) !== value.requestId)
+      context.addIssue({ code: "custom", path: ["requestId"], message: "Request ID mismatch" });
+    if (contentHash(stableJson(material)) !== value.requestHash)
+      context.addIssue({ code: "custom", path: ["requestHash"], message: "Request hash mismatch" });
   });
+export type NeuralAssetGenerationRequest = z.output<typeof NEURAL_ASSET_GENERATION_REQUEST_SCHEMA>;
 
-export const NEURAL_ROUTE_ADMISSION_SCHEMA = routeAdmissionMaterial.safeExtend({
-  hash: hashSchema,
-});
-export type NeuralRouteAdmission = z.infer<typeof NEURAL_ROUTE_ADMISSION_SCHEMA>;
-
-export function sealNeuralRouteAdmission(
-  input: z.input<typeof routeAdmissionMaterial>,
-): NeuralRouteAdmission {
-  const material = routeAdmissionMaterial.parse(input);
-  return NEURAL_ROUTE_ADMISSION_SCHEMA.parse({
-    ...material,
-    hash: contentHash(stableJson(material)),
-  });
-}
-
-export function assertNeuralRouteAdmissionIdentity(
-  value: unknown,
-): asserts value is NeuralRouteAdmission {
-  const admission = NEURAL_ROUTE_ADMISSION_SCHEMA.parse(value);
-  const { hash, ...material } = admission;
-  if (hash !== contentHash(stableJson(material)))
-    throw new Error("Neural route admission identity is invalid");
-}
-
-const rights = z
+export const NEURAL_ASSET_GENERATION_RECEIPT_SCHEMA = z
   .object({
-    usage: z.enum(["creator_owned", "commercial_use_permitted", "evaluation_only"]),
-    evidenceHash: hashSchema,
-  })
-  .strict();
-
-const referenceCommon = {
-  abi: z.literal(NEURAL_INPUT_REFERENCE_ABI),
-  rgba: artifact.safeExtend({ mediaType: z.literal("image/png") }),
-  rights,
-};
-
-const creatorInputReferenceMaterial = z
-  .object({
-    kind: z.literal("NeuralInputReference"),
-    origin: z.literal("creator_supplied"),
-    ...referenceCommon,
-    ingestReceiptHash: hashSchema,
-    alphaQualityHash: hashSchema,
-  })
-  .strict();
-const compositionInputReferenceMaterial = z
-  .object({
-    kind: z.literal("NeuralInputReference"),
-    origin: z.literal("composition_crop"),
-    ...referenceCommon,
-    proposalHash: hashSchema,
-    maskId: z.string().trim().min(1).max(512),
-    cropSimilarityHash: hashSchema,
-  })
-  .strict();
-const generatedInputReferenceMaterial = z
-  .object({
-    kind: z.literal("NeuralInputReference"),
-    origin: z.literal("generated_isolated"),
-    ...referenceCommon,
-    referenceArtifactHash: hashSchema,
-  })
-  .strict();
-
-const inputReferenceMaterial = z.discriminatedUnion("origin", [
-  creatorInputReferenceMaterial,
-  compositionInputReferenceMaterial,
-  generatedInputReferenceMaterial,
-]);
-
-export const NEURAL_INPUT_REFERENCE_SCHEMA = z.discriminatedUnion("origin", [
-  creatorInputReferenceMaterial.safeExtend({ hash: hashSchema }),
-  compositionInputReferenceMaterial.safeExtend({ hash: hashSchema }),
-  generatedInputReferenceMaterial.safeExtend({ hash: hashSchema }),
-]);
-export type NeuralInputReference = z.infer<typeof NEURAL_INPUT_REFERENCE_SCHEMA>;
-
-export function sealNeuralInputReference(
-  input: z.input<typeof inputReferenceMaterial>,
-): NeuralInputReference {
-  const material = inputReferenceMaterial.parse(input);
-  return NEURAL_INPUT_REFERENCE_SCHEMA.parse({
-    ...material,
-    hash: contentHash(stableJson(material)),
-  });
-}
-
-export function assertNeuralInputReferenceIdentity(
-  value: unknown,
-): asserts value is NeuralInputReference {
-  const reference = NEURAL_INPUT_REFERENCE_SCHEMA.parse(value);
-  const { hash, ...material } = reference;
-  if (hash !== contentHash(stableJson(material)))
-    throw new Error("Neural input reference identity is invalid");
-}
-
-const executionBudgetClaimMaterial = z
-  .object({
-    kind: z.literal("NeuralExecutionBudgetClaim"),
-    abi: z.literal(NEURAL_EXECUTION_BUDGET_CLAIM_ABI),
-    requestHash: hashSchema,
-    provider: z.enum(NEURAL_PROVIDER_IDS),
-    phase: z.enum(["smoke", "pilot", "production"]),
-    estimatedCostMicrousd: z.number().int().positive().max(10_000_000_000),
-    reservedGpuSeconds: z
-      .number()
-      .int()
-      .positive()
-      .max(7 * 24 * 60 * 60),
-    budgetHashBefore: hashSchema,
-    claimedAt: timestamp,
-  })
-  .strict();
-
-export const NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA = executionBudgetClaimMaterial.safeExtend({
-  hash: hashSchema,
-});
-export type NeuralExecutionBudgetClaim = z.infer<typeof NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA>;
-
-export function sealNeuralExecutionBudgetClaim(
-  input: z.input<typeof executionBudgetClaimMaterial>,
-): NeuralExecutionBudgetClaim {
-  const material = executionBudgetClaimMaterial.parse(input);
-  return NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA.parse({
-    ...material,
-    hash: contentHash(stableJson(material)),
-  });
-}
-
-export function assertNeuralExecutionBudgetClaimIdentity(
-  value: unknown,
-): asserts value is NeuralExecutionBudgetClaim {
-  const claim = NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA.parse(value);
-  const { hash, ...material } = claim;
-  if (hash !== contentHash(stableJson(material)))
-    throw new Error("Neural execution budget-claim identity is invalid");
-}
-
-const executionBudgetMaterial = z
-  .object({
-    kind: z.literal("NeuralExecutionBudget"),
-    abi: z.literal(NEURAL_EXECUTION_BUDGET_ABI),
-    maximumCostMicrousd: z.number().int().positive().max(10_000_000_000),
-    maximumGpuSeconds: z
-      .number()
-      .int()
-      .positive()
-      .max(7 * 24 * 60 * 60),
-    maximumPaidAttempts: z.number().int().positive().max(1_000),
-    claims: z.array(NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA).max(1_000),
+    kind: z.literal("NeuralAssetGenerationReceipt"),
+    requestHash: HASH_SCHEMA,
+    providerId: NEURAL_PROVIDER_ID_SCHEMA,
+    providerDeclarationHash: HASH_SCHEMA,
+    qualificationHash: HASH_SCHEMA,
+    workerImplementationHash: HASH_SCHEMA,
+    modelRevisionHash: externalRevision,
+    status: z.enum(["eligible", "incomplete", "rejected"]),
+    meshPayload: NEURAL_MESH_TENSOR_PAYLOAD_SCHEMA.optional(),
+    materialArtifact: binaryArtifact.optional(),
+    lineageEvidenceHashes: canonicalHashes,
+    resourceUse: z
+      .object({
+        computeMilliseconds: z.number().int().nonnegative(),
+        gpuMilliseconds: z.number().int().nonnegative(),
+        peakGpuMemoryMiB: z.number().int().nonnegative(),
+        costMicrousd: z.number().int().nonnegative(),
+      })
+      .strict(),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(4096),
+    admissionAuthority: z.literal("finishing_measurement_and_catalog_admission_required"),
+    hash: HASH_SCHEMA,
   })
   .strict()
   .superRefine((value, context) => {
-    const requestHashes = value.claims.map(({ requestHash }) => requestHash);
-    const canonical = [...new Set(requestHashes)].sort();
+    const hasOutput = value.meshPayload !== undefined || value.materialArtifact !== undefined;
+    if ((value.status === "eligible") !== hasOutput)
+      context.addIssue({
+        code: "custom",
+        path: ["status"],
+        message: "Only eligible generation receipts contain output",
+      });
+    if ((value.status === "eligible") === value.diagnostics.length > 0)
+      context.addIssue({
+        code: "custom",
+        path: ["diagnostics"],
+        message: "Eligible receipts have no diagnostics; unavailable receipts require them",
+      });
+    verifyHash(value, context);
+  });
+export type NeuralAssetGenerationReceipt = z.output<typeof NEURAL_ASSET_GENERATION_RECEIPT_SCHEMA>;
+
+export const NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA = z
+  .object({
+    kind: z.literal("NeuralExecutionBudgetClaim"),
+    requestHash: HASH_SCHEMA,
+    providerId: NEURAL_PROVIDER_ID_SCHEMA,
+    estimatedCostMicrousd: z.number().int().positive().max(10_000_000_000),
+    reservedGpuMilliseconds: z
+      .number()
+      .int()
+      .positive()
+      .max(30 * 24 * 60 * 60 * 1000),
+    budgetHashBefore: HASH_SCHEMA,
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, context));
+export type NeuralExecutionBudgetClaim = z.output<typeof NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA>;
+
+export const NEURAL_EXECUTION_BUDGET_SCHEMA = z
+  .object({
+    kind: z.literal("NeuralExecutionBudget"),
+    maximumCostMicrousd: z.number().int().positive().max(10_000_000_000),
+    maximumGpuMilliseconds: z
+      .number()
+      .int()
+      .positive()
+      .max(30 * 24 * 60 * 60 * 1000),
+    maximumPaidAttempts: z.number().int().positive().max(100_000),
+    claims: z.array(NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA).max(100_000),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const keys = value.claims.map((claim) => claim.requestHash);
     if (
-      stableJson(canonical) !== stableJson(requestHashes) ||
-      value.claims.some((claim, index) => claim.requestHash !== canonical[index])
+      new Set(keys).size !== keys.length ||
+      stableJson([...keys].sort(compareCanonicalStrings)) !== stableJson(keys)
     )
       context.addIssue({
         code: "custom",
         path: ["claims"],
-        message: "Neural execution claims must be unique and canonical by request hash",
+        message: "Budget claims must be unique and canonical by request hash",
       });
     if (value.claims.length > value.maximumPaidAttempts)
       context.addIssue({
         code: "custom",
         path: ["claims"],
-        message: "Neural execution claims exceed the paid-attempt ceiling",
+        message: "Paid-attempt limit exceeded",
       });
-    const cost = value.claims.reduce((total, claim) => total + claim.estimatedCostMicrousd, 0);
-    if (cost > value.maximumCostMicrousd)
-      context.addIssue({
-        code: "custom",
-        path: ["claims"],
-        message: "Neural execution claims exceed the cost ceiling",
-      });
-    const gpuSeconds = value.claims.reduce((total, claim) => total + claim.reservedGpuSeconds, 0);
-    if (gpuSeconds > value.maximumGpuSeconds)
-      context.addIssue({
-        code: "custom",
-        path: ["claims"],
-        message: "Neural execution claims exceed the GPU-time ceiling",
-      });
-    for (const [index, claim] of value.claims.entries()) {
-      try {
-        assertNeuralExecutionBudgetClaimIdentity(claim);
-      } catch {
-        context.addIssue({
-          code: "custom",
-          path: ["claims", index],
-          message: "Neural execution claim identity is invalid",
-        });
-      }
-    }
+    if (
+      value.claims.reduce((sum, claim) => sum + claim.estimatedCostMicrousd, 0) >
+      value.maximumCostMicrousd
+    )
+      context.addIssue({ code: "custom", path: ["claims"], message: "Cost budget exceeded" });
+    if (
+      value.claims.reduce((sum, claim) => sum + claim.reservedGpuMilliseconds, 0) >
+      value.maximumGpuMilliseconds
+    )
+      context.addIssue({ code: "custom", path: ["claims"], message: "GPU-time budget exceeded" });
+    verifyHash(value, context);
   });
-
-export const NEURAL_EXECUTION_BUDGET_SCHEMA = executionBudgetMaterial.safeExtend({
-  hash: hashSchema,
-});
-export type NeuralExecutionBudget = z.infer<typeof NEURAL_EXECUTION_BUDGET_SCHEMA>;
-
-export function sealNeuralExecutionBudget(
-  input: z.input<typeof executionBudgetMaterial>,
-): NeuralExecutionBudget {
-  const material = executionBudgetMaterial.parse(input);
-  return NEURAL_EXECUTION_BUDGET_SCHEMA.parse({
-    ...material,
-    hash: contentHash(stableJson(material)),
-  });
-}
-
-export function assertNeuralExecutionBudgetIdentity(
-  value: unknown,
-): asserts value is NeuralExecutionBudget {
-  const budget = NEURAL_EXECUTION_BUDGET_SCHEMA.parse(value);
-  const { hash, ...material } = budget;
-  if (hash !== contentHash(stableJson(material)))
-    throw new Error("Neural execution budget identity is invalid");
-}
+export type NeuralExecutionBudget = z.output<typeof NEURAL_EXECUTION_BUDGET_SCHEMA>;
 
 export type NeuralExecutionBudgetClaimResult =
   | {
@@ -374,163 +287,198 @@ export type NeuralExecutionBudgetClaimResult =
   | {
       readonly status: "incomplete";
       readonly budget: NeuralExecutionBudget;
-      readonly code: "paid_attempt_limit" | "cost_limit" | "gpu_time_limit";
+      readonly reason: "paid_attempt_limit" | "cost_limit" | "gpu_time_limit";
     };
 
-/**
- * Reserve one paid attempt before contacting a provider. The returned budget
- * is a new immutable identity. Callers must durably retain both it and the
- * claim before invoking Modal; an already-claimed request is never retried.
- */
+export interface NeuralGenerationAdapter {
+  readonly provider: NeuralProviderDeclaration;
+  readonly qualification: NeuralWorkerQualification;
+  generate(
+    request: NeuralAssetGenerationRequest,
+    signal?: AbortSignal,
+  ): Promise<NeuralAssetGenerationReceipt>;
+}
+
+export function sealNeuralProviderDeclaration(
+  input: Omit<NeuralProviderDeclaration, "kind" | "hash">,
+): NeuralProviderDeclaration {
+  return seal(NEURAL_PROVIDER_DECLARATION_SCHEMA, {
+    kind: "NeuralProviderDeclaration" as const,
+    ...input,
+    capabilities: [...input.capabilities].sort(compareCanonicalStrings),
+    diagnostics: [...input.diagnostics].sort(compareCanonicalStrings),
+  });
+}
+
+export function sealNeuralWorkerQualification(
+  input: Omit<NeuralWorkerQualification, "kind" | "hash">,
+): NeuralWorkerQualification {
+  return seal(NEURAL_WORKER_QUALIFICATION_SCHEMA, {
+    kind: "NeuralWorkerQualification" as const,
+    ...input,
+    diagnostics: [...input.diagnostics].sort(compareCanonicalStrings),
+  });
+}
+
+export function sealNeuralInputReference(
+  input: Omit<NeuralInputReference, "kind" | "hash">,
+): NeuralInputReference {
+  return seal(NEURAL_INPUT_REFERENCE_SCHEMA, {
+    kind: "NeuralInputReference" as const,
+    ...input,
+    preparationEvidenceHashes: [...input.preparationEvidenceHashes].sort(compareCanonicalStrings),
+  });
+}
+
+export function sealNeuralAssetGenerationRequest(
+  input: Omit<NeuralAssetGenerationRequest, "kind" | "requestId" | "requestHash">,
+): NeuralAssetGenerationRequest {
+  const material = { kind: "NeuralAssetGenerationRequest" as const, ...input };
+  return deepFreezeJson(
+    NEURAL_ASSET_GENERATION_REQUEST_SCHEMA.parse({
+      ...material,
+      requestId: contentAddressedEntityId("NeuralAssetGenerationRequest", material),
+      requestHash: contentHash(stableJson(material)),
+    }),
+  ) as NeuralAssetGenerationRequest;
+}
+
+export function sealNeuralAssetGenerationReceipt(
+  input: Omit<NeuralAssetGenerationReceipt, "kind" | "admissionAuthority" | "hash">,
+): NeuralAssetGenerationReceipt {
+  return seal(NEURAL_ASSET_GENERATION_RECEIPT_SCHEMA, {
+    kind: "NeuralAssetGenerationReceipt" as const,
+    ...input,
+    lineageEvidenceHashes: [...input.lineageEvidenceHashes].sort(compareCanonicalStrings),
+    diagnostics: [...input.diagnostics].sort(compareCanonicalStrings),
+    admissionAuthority: "finishing_measurement_and_catalog_admission_required" as const,
+  });
+}
+
+export function sealNeuralExecutionBudget(
+  input: Omit<NeuralExecutionBudget, "kind" | "hash">,
+): NeuralExecutionBudget {
+  return seal(NEURAL_EXECUTION_BUDGET_SCHEMA, {
+    kind: "NeuralExecutionBudget" as const,
+    ...input,
+    claims: [...input.claims].sort((left, right) =>
+      compareCanonicalStrings(left.requestHash, right.requestHash),
+    ),
+  });
+}
+
 export function claimNeuralExecutionBudget(
   budget: NeuralExecutionBudget,
   input: {
     readonly requestHash: string;
-    readonly provider: NeuralProviderId;
-    readonly phase: "smoke" | "pilot" | "production";
+    readonly providerId: NeuralProviderId;
     readonly estimatedCostMicrousd: number;
-    readonly reservedGpuSeconds: number;
-    readonly claimedAt: string;
+    readonly reservedGpuMilliseconds: number;
   },
 ): NeuralExecutionBudgetClaimResult {
-  assertNeuralExecutionBudgetIdentity(budget);
-  const requestHash = hashSchema.parse(input.requestHash);
-  const existing = budget.claims.find((claim) => claim.requestHash === requestHash);
+  const parsed = NEURAL_EXECUTION_BUDGET_SCHEMA.parse(budget);
+  const requestHash = HASH_SCHEMA.parse(input.requestHash);
+  const existing = parsed.claims.find((claim) => claim.requestHash === requestHash);
   if (existing) {
     if (
-      existing.provider !== input.provider ||
-      existing.phase !== input.phase ||
+      existing.providerId !== input.providerId ||
       existing.estimatedCostMicrousd !== input.estimatedCostMicrousd ||
-      existing.reservedGpuSeconds !== input.reservedGpuSeconds
+      existing.reservedGpuMilliseconds !== input.reservedGpuMilliseconds
     )
       throw new Error("A neural request cannot be rebound to a different budget claim");
-    return { status: "already_claimed", budget, claim: existing };
+    return { status: "already_claimed", budget: parsed, claim: existing };
   }
-
-  if (budget.claims.length >= budget.maximumPaidAttempts)
-    return { status: "incomplete", budget, code: "paid_attempt_limit" };
-  const consumedCost = budget.claims.reduce(
-    (total, claim) => total + claim.estimatedCostMicrousd,
-    0,
-  );
-  if (consumedCost + input.estimatedCostMicrousd > budget.maximumCostMicrousd)
-    return { status: "incomplete", budget, code: "cost_limit" };
-  const consumedGpuSeconds = budget.claims.reduce(
-    (total, claim) => total + claim.reservedGpuSeconds,
-    0,
-  );
-  if (consumedGpuSeconds + input.reservedGpuSeconds > budget.maximumGpuSeconds)
-    return { status: "incomplete", budget, code: "gpu_time_limit" };
-
-  const claim = sealNeuralExecutionBudgetClaim({
-    kind: "NeuralExecutionBudgetClaim",
-    abi: NEURAL_EXECUTION_BUDGET_CLAIM_ABI,
+  if (parsed.claims.length >= parsed.maximumPaidAttempts)
+    return { status: "incomplete", budget: parsed, reason: "paid_attempt_limit" };
+  if (
+    parsed.claims.reduce((sum, claim) => sum + claim.estimatedCostMicrousd, 0) +
+      input.estimatedCostMicrousd >
+    parsed.maximumCostMicrousd
+  )
+    return { status: "incomplete", budget: parsed, reason: "cost_limit" };
+  if (
+    parsed.claims.reduce((sum, claim) => sum + claim.reservedGpuMilliseconds, 0) +
+      input.reservedGpuMilliseconds >
+    parsed.maximumGpuMilliseconds
+  )
+    return { status: "incomplete", budget: parsed, reason: "gpu_time_limit" };
+  const claim = seal(NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA, {
+    kind: "NeuralExecutionBudgetClaim" as const,
     requestHash,
-    provider: input.provider,
-    phase: input.phase,
+    providerId: input.providerId,
     estimatedCostMicrousd: input.estimatedCostMicrousd,
-    reservedGpuSeconds: input.reservedGpuSeconds,
-    budgetHashBefore: budget.hash,
-    claimedAt: input.claimedAt,
+    reservedGpuMilliseconds: input.reservedGpuMilliseconds,
+    budgetHashBefore: parsed.hash,
   });
-  const next = sealNeuralExecutionBudget({
-    kind: "NeuralExecutionBudget",
-    abi: NEURAL_EXECUTION_BUDGET_ABI,
-    maximumCostMicrousd: budget.maximumCostMicrousd,
-    maximumGpuSeconds: budget.maximumGpuSeconds,
-    maximumPaidAttempts: budget.maximumPaidAttempts,
-    claims: [...budget.claims, claim].sort((left, right) =>
-      compareSpatialStrings(left.requestHash, right.requestHash),
-    ),
-  });
-  return { status: "claimed", budget: next, claim };
+  const {
+    kind: _kind,
+    hash: _hash,
+    claims: _claims,
+    maximumCostMicrousd,
+    maximumGpuMilliseconds,
+    maximumPaidAttempts,
+  } = parsed;
+  return {
+    status: "claimed",
+    claim,
+    budget: sealNeuralExecutionBudget({
+      maximumCostMicrousd,
+      maximumGpuMilliseconds,
+      maximumPaidAttempts,
+      claims: [...parsed.claims, claim],
+    }),
+  };
 }
 
-export function assertNeuralExecutionClaimsAuthorized(
-  retainedBudget: NeuralExecutionBudget,
-  claims: readonly NeuralExecutionBudgetClaim[],
-): void {
-  assertNeuralExecutionBudgetIdentity(retainedBudget);
-  const retainedByRequest = new Map(
-    retainedBudget.claims.map((claim) => [claim.requestHash, claim] as const),
+export async function executeNeuralGeneration(input: {
+  readonly adapter: NeuralGenerationAdapter;
+  readonly request: NeuralAssetGenerationRequest;
+  readonly signal?: AbortSignal;
+}): Promise<NeuralAssetGenerationReceipt> {
+  const request = NEURAL_ASSET_GENERATION_REQUEST_SCHEMA.parse(input.request);
+  const provider = NEURAL_PROVIDER_DECLARATION_SCHEMA.parse(input.adapter.provider);
+  const qualification = NEURAL_WORKER_QUALIFICATION_SCHEMA.parse(input.adapter.qualification);
+  if (
+    provider.status !== "eligible" ||
+    qualification.status !== "eligible" ||
+    qualification.providerDeclarationHash !== provider.hash ||
+    qualification.providerId !== provider.providerId
+  )
+    throw new Error("Neural provider is not exactly qualified for execution");
+  if (
+    request.providerId !== provider.providerId ||
+    request.providerDeclarationHash !== provider.hash ||
+    request.qualificationHash !== qualification.hash
+  )
+    throw new Error("Neural request does not bind the executing provider qualification");
+  const requiredCapability =
+    request.operation === "restyle_materials" ? "material_restyle" : "image_to_3d";
+  if (!provider.capabilities.includes(requiredCapability))
+    throw new Error(`Provider ${provider.providerId} lacks ${requiredCapability}`);
+  const receipt = NEURAL_ASSET_GENERATION_RECEIPT_SCHEMA.parse(
+    await input.adapter.generate(request, input.signal),
   );
-  const seen = new Set<string>();
-  for (const claim of claims) {
-    assertNeuralExecutionBudgetClaimIdentity(claim);
-    if (seen.has(claim.requestHash))
-      throw new Error("A neural execution batch cannot repeat a paid request");
-    seen.add(claim.requestHash);
-    const retained = retainedByRequest.get(claim.requestHash);
-    if (!retained || retained.hash !== claim.hash)
-      throw new Error("Neural execution requires an exact durably retained budget claim");
-  }
+  if (
+    receipt.requestHash !== request.requestHash ||
+    receipt.providerId !== provider.providerId ||
+    receipt.providerDeclarationHash !== provider.hash ||
+    receipt.qualificationHash !== qualification.hash ||
+    receipt.workerImplementationHash !== qualification.workerImplementationHash ||
+    receipt.modelRevisionHash !== qualification.modelRevisionHash
+  )
+    throw new Error("Neural receipt does not bind the exact execution request");
+  return receipt;
 }
 
-const outputHandoffMaterial = z
-  .object({
-    kind: z.literal("NeuralOutputHandoff"),
-    abi: z.literal(NEURAL_OUTPUT_HANDOFF_ABI),
-    provider: z.enum(NEURAL_PROVIDER_IDS),
-    requestHash: hashSchema,
-    outputVolumeName: z.string().regex(/^basalt-neural-output$/u),
-    remotePath: z.string().regex(/^[a-f0-9]{64}\/(candidate\.safetensors|worker-result\.json)$/u),
-    sha256: hashSchema,
-    bytes: z
-      .number()
-      .int()
-      .positive()
-      .max(2 * 1024 * 1024 * 1024),
-    workerReportHash: hashSchema,
-    runtimeImageId: modalImageId,
-  })
-  .strict()
-  .superRefine((value, context) => {
-    if (!value.remotePath.startsWith(`${value.requestHash}/`))
-      context.addIssue({
-        code: "custom",
-        path: ["remotePath"],
-        message: "Neural output path must be scoped by the exact request hash",
-      });
-  });
-
-export const NEURAL_OUTPUT_HANDOFF_SCHEMA = outputHandoffMaterial.safeExtend({ hash: hashSchema });
-export type NeuralOutputHandoff = z.infer<typeof NEURAL_OUTPUT_HANDOFF_SCHEMA>;
-
-export function sealNeuralOutputHandoff(
-  input: z.input<typeof outputHandoffMaterial>,
-): NeuralOutputHandoff {
-  const material = outputHandoffMaterial.parse(input);
-  return NEURAL_OUTPUT_HANDOFF_SCHEMA.parse({
-    ...material,
-    hash: contentHash(stableJson(material)),
-  });
+function seal<T extends z.ZodTypeAny>(schema: T, material: object): z.output<T> {
+  return deepFreezeJson(
+    schema.parse({ ...material, hash: contentHash(stableJson(material)) }),
+  ) as z.output<T>;
 }
 
-export function assertNeuralOutputHandoffIdentity(
-  value: unknown,
-): asserts value is NeuralOutputHandoff {
-  const handoff = NEURAL_OUTPUT_HANDOFF_SCHEMA.parse(value);
-  const { hash, ...material } = handoff;
-  if (hash !== contentHash(stableJson(material)))
-    throw new Error("Neural output handoff identity is invalid");
-}
-
-export type NeuralExecutionOutcome<Receipt> =
-  | {
-      readonly status: "eligible";
-      readonly handoff: NeuralOutputHandoff;
-      readonly receipt: Receipt;
-    }
-  | { readonly status: "rejected" | "incomplete"; readonly code: string };
-
-export interface NeuralExecutionTransport<Request, Receipt> {
-  findCompleted(requestHash: string): Promise<NeuralExecutionOutcome<Receipt> | undefined>;
-  executeClaimedBatch(
-    requests: readonly {
-      readonly request: Request;
-      readonly requestHash: string;
-      readonly claim: NeuralExecutionBudgetClaim;
-    }[],
-    retainedBudget: NeuralExecutionBudget,
-  ): Promise<readonly NeuralExecutionOutcome<Receipt>[]>;
+function verifyHash(value: Record<string, unknown>, context: z.RefinementCtx): void {
+  const material = { ...value };
+  delete material.hash;
+  if (contentHash(stableJson(material)) !== value.hash)
+    context.addIssue({ code: "custom", path: ["hash"], message: "Artifact hash mismatch" });
 }

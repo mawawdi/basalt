@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000310",
+  "upperSort": "space",
+  "normativeDefinition": "A physical space intended to contain a persistent body of water.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A physical space intended to contain a persistent body of water.",
+      "Its space identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than space is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000301",
+      "commitmentHash": "dfeab58f4b04f6013ca66e929d134776563befd1179aa34dc3a43af85483952e"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000301",
+      "commitmentHash": "dfeab58f4b04f6013ca66e929d134776563befd1179aa34dc3a43af85483952e"
+    }
+  ],
+  "commitmentHash": "4a24d5aee4c617c7df463a54d4c12bbc1719a47555582d121441aa054cafcb54"
+}

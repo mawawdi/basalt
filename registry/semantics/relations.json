@@ -1,0 +1,184 @@
+[
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000001",
+    "normativeDefinition": "The subject stands in the part of relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "object"
+    ],
+    "rangeSorts": [
+      "object"
+    ],
+    "symmetric": false,
+    "transitive": false,
+    "closurePolicy": "A scoped grammar may materialize strict structural transitive closure; the base relation has no implicit runtime closure.",
+    "hash": "21ea2a2d1cd77b12cfb35ca27bbc1dc1c41d5f4df7e5b568e0d246fbce3af97b"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000002",
+    "normativeDefinition": "The subject stands in the member of relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "aggregate",
+      "object"
+    ],
+    "rangeSorts": [
+      "aggregate"
+    ],
+    "symmetric": false,
+    "transitive": false,
+    "hash": "2a10308cf7f116056d6cb1c4a50b61725b9cdf3272fff25f6226fd9fb0525168"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000003",
+    "normativeDefinition": "The subject stands in the located in relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "aggregate",
+      "boundary",
+      "object",
+      "phenomenon",
+      "space",
+      "substance"
+    ],
+    "rangeSorts": [
+      "space"
+    ],
+    "symmetric": false,
+    "transitive": false,
+    "hash": "58ee5e1a4ee6e9e0a9ef5a46a032aea04a30ac8d80a4fb2cc37d5fdf1a71e477"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000004",
+    "normativeDefinition": "The subject stands in the contained in relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "aggregate",
+      "object",
+      "substance"
+    ],
+    "rangeSorts": [
+      "object",
+      "space"
+    ],
+    "symmetric": false,
+    "transitive": false,
+    "hash": "a44fa5aefc182e046d08e73d6911711e4d8035972c67596b684816feb42c8068"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000005",
+    "normativeDefinition": "The subject stands in the bounded by relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "space"
+    ],
+    "rangeSorts": [
+      "boundary"
+    ],
+    "symmetric": false,
+    "transitive": false,
+    "hash": "15f414ad8c7aa04eda9c0704f2fd9357b0fdf7cb4882d9fae29b9aff9651ee03"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000006",
+    "normativeDefinition": "The subject stands in the connected to relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "boundary",
+      "object",
+      "space"
+    ],
+    "rangeSorts": [
+      "boundary",
+      "object",
+      "space"
+    ],
+    "symmetric": true,
+    "transitive": false,
+    "hash": "a08473f4e0be5650ab6d9cea06eb57de4ee651ad96a8e533715a580d71ff0e64"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000007",
+    "normativeDefinition": "The subject stands in the attached to relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "object"
+    ],
+    "rangeSorts": [
+      "boundary",
+      "object"
+    ],
+    "symmetric": false,
+    "transitive": false,
+    "hash": "48277391e47610cc2ca95c68d158f42479c2504e39d4038cea06902eebc09af6"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000008",
+    "normativeDefinition": "The subject stands in the supported by relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "aggregate",
+      "object"
+    ],
+    "rangeSorts": [
+      "boundary",
+      "object"
+    ],
+    "symmetric": false,
+    "transitive": false,
+    "hash": "1217f5b4091083005a51b69457c8368a24750b08f3485a35f0f845916985a932"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000009",
+    "normativeDefinition": "The subject stands in the adjacent to relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "aggregate",
+      "boundary",
+      "object",
+      "space"
+    ],
+    "rangeSorts": [
+      "aggregate",
+      "boundary",
+      "object",
+      "space"
+    ],
+    "symmetric": true,
+    "transitive": false,
+    "hash": "21042bdc633af054b744770d16cf384a386e3fb9bb08fa3f8d8c6167864f9756"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000010",
+    "normativeDefinition": "The subject stands in the crosses relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "boundary",
+      "object",
+      "space"
+    ],
+    "rangeSorts": [
+      "boundary",
+      "object",
+      "space"
+    ],
+    "symmetric": true,
+    "transitive": false,
+    "hash": "a141ea586808e98716532ffd09366e65c6f41db7d90b3f1af1e86dd936cedff4"
+  },
+  {
+    "kind": "RelationDefinition",
+    "relationId": "bre_000011",
+    "normativeDefinition": "The subject stands in the bears information relation to the object under the declared domain and range.",
+    "domainSorts": [
+      "boundary",
+      "object"
+    ],
+    "rangeSorts": [
+      "information_content"
+    ],
+    "symmetric": false,
+    "transitive": false,
+    "hash": "581d950a86452e7a411932e00fd2eb67d719c8ae4883b0fa59dc21f7d216a3b2"
+  }
+]

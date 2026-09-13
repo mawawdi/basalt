@@ -1,0 +1,59 @@
+{
+  "kind": "RoleSchemeDefinition",
+  "roleSchemeId": "brs_000003",
+  "scope": "space_program",
+  "normativeDefinition": "Contextual roles admitted only within the space_program scope.",
+  "roles": [
+    {
+      "roleId": "bro_000201",
+      "normativeDefinition": "The entity performs the sleeping role within the space_program context.",
+      "hash": "d6d5d88b24184ca9a3b0b817c2daa8135961934161c9c5dae449793532483d49"
+    },
+    {
+      "roleId": "bro_000202",
+      "normativeDefinition": "The entity performs the cooking role within the space_program context.",
+      "hash": "1e9a4068b115d873f3ed83d05cd9c410e21a1467e239ae8acc5d6715a8284676"
+    },
+    {
+      "roleId": "bro_000203",
+      "normativeDefinition": "The entity performs the work role within the space_program context.",
+      "hash": "fafd7056ca2eeb46bf8b55b299ccc60b790dbf3ce76f31b5dfb1ad4256e5f7d2"
+    },
+    {
+      "roleId": "bro_000204",
+      "normativeDefinition": "The entity performs the circulation role within the space_program context.",
+      "hash": "a7850de4b41132379f3b952fd9b0be39e0afb694f3f4c4a5da4e4c068e9094e6"
+    },
+    {
+      "roleId": "bro_000205",
+      "normativeDefinition": "The entity performs the retail role within the space_program context.",
+      "hash": "3920c8d96a97e95dd5010c10b251dd709233b5b84479dcba85011a349168e669"
+    },
+    {
+      "roleId": "bro_000206",
+      "normativeDefinition": "The entity performs the storage role within the space_program context.",
+      "hash": "446e3287533ad46e529a6c0dde5941d5c82935ab20aeec1abcba8e6c9c115184"
+    },
+    {
+      "roleId": "bro_000207",
+      "normativeDefinition": "The entity performs the sanitary role within the space_program context.",
+      "hash": "1d6c115ce7f32031fe3cccdebdad23cc34008df8944fa516b206a712d7729a75"
+    },
+    {
+      "roleId": "bro_000208",
+      "normativeDefinition": "The entity performs the dining role within the space_program context.",
+      "hash": "46a1aaec86362928495d3ea312555e5e2225f8f752f48b6571c0e7ce767166f2"
+    },
+    {
+      "roleId": "bro_000209",
+      "normativeDefinition": "The entity performs the recreation role within the space_program context.",
+      "hash": "f2c54cf373d6c7b494f3eb0377f0b5765595f27397da804febd9a5aa7df37b8b"
+    },
+    {
+      "roleId": "bro_000210",
+      "normativeDefinition": "The entity performs the utility role within the space_program context.",
+      "hash": "a20c1e76e0c51a81f628ecbd7c82dca92f345ef46318c5737b3de020faaecc1f"
+    }
+  ],
+  "hash": "513b24e09ea0b4089142a26fbe34411fe13777772e949ad169b71597c69b99b8"
+}

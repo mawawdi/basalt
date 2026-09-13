@@ -1,0 +1,18 @@
+{
+  "name": "@basalt/world-planning",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@basalt/catalog-model": "*",
+    "@basalt/contracts": "*",
+    "@basalt/semantic-kernel": "*",
+    "@basalt/spatial-core": "*",
+    "zod": "4.5.4"
+  }
+}

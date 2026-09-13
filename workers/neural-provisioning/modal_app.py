@@ -110,7 +110,7 @@ def provision_pinned_artifact(artifact_id: str, execution_literal: str) -> dict[
     INPUT_VOLUMES[spec.volume_name].commit()
     return {
         "kind": "BasaltNeuralProvisioningReceipt",
-        "abi": "basalt-neural-provisioning-receipt@1",
+        "contract": "basalt-neural-provisioning-receipt",
         "artifactId": spec.artifact_id,
         "revision": spec.revision,
         "volumeName": spec.volume_name,

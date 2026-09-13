@@ -40,10 +40,9 @@ all pass.
 
 The qualification container binds TRELLIS.2 commit `75fbf0183001ed9876c8dbb35de6b68552ee08bd`, model revision `af44b45f2e35a493886929c6d786e563ec68364d`, the fixed 1024 cascade with 12 steps per stage, and at least 40 GiB of NVIDIA VRAM. It receives one read-only rights-bound RGBA8 PNG and writes one route-neutral safetensors mesh-attribute bundle.
 
-GPU is an explicit qualification profile. The existing A100-80GB receipts keep
-their original identity; a cheaper L40S run gets a new profile, hardware probe,
-runtime probe, and qualification hash. Select it before building or invoking
-Modal:
+GPU is an explicit qualification profile. Each hardware choice requires its own
+hardware probe, runtime probe, and qualification hash. Select it before building
+or invoking Modal:
 
 ```sh
 export BASALT_TRELLIS2_GPU_PROFILE=l40s-48gb
@@ -79,7 +78,7 @@ python3 workers/trellis2/modal_app.py --local-probe
 ```
 
 `modal_app.py` is a fail-closed future inference boundary. It accepts only a
-previously built Modal Image by exact `im-...` ID, mounts revision-named model
+previously built Modal Image by exact `im-...` ID, mounts stable seal-verified model
 Volumes read-only, scales to zero, permits one container, uses no retries,
 allows one input per container, caps the function at 180 seconds, and denies
 both network egress and Modal resource access inside the function. The
@@ -87,8 +86,9 @@ serialized function contains its entire implementation and therefore needs no
 repository source mount. It reads Modal's reserved `MODAL_IMAGE_ID` inside the
 container and requires that exact ID plus the runtime-manifest hash in the
 generation request, worker report, qualification, and retained handoff.
-The safetensors return is capped at 80 MiB so the complete serialized response
-stays below Modal's documented 100 MB gRPC payload limit.
+Safetensors are capped at 2 GiB and retained in the output Volume. The Modal
+function returns only a small hashed handoff, keeping the serialized response
+independent of mesh size.
 
 The paid execution gate is distinct from the Modal account token. Store it in
 a Modal Secret named `basalt-trellis2-execution-gate` and in a local file or
@@ -114,32 +114,16 @@ modal run --profile <profile> workers/trellis2/modal_hardware_probe.py \
   --execution-flag RUN_ONE_BASALT_TRELLIS2_A100_80GB_HARDWARE_PROBE
 ```
 
-The 2026-09-09 smoke run `ap-3AOko6zMSnaKXx4vrvDybg` returned one
-`A100 80GB PCIe`, 80 GiB, with NVIDIA's reported CUDA compatibility version
-13.0. This establishes hardware availability only. The future qualified image
-still pins the CUDA 12.4.1 toolkit and every TRELLIS dependency separately.
-
-The current runtime image is `im-yIfiB7GLMDcCBouA9LC6F6`. An import-only probe
-on one `NVIDIA A100-SXM4-80GB` passed on 2026-09-10 with runtime-manifest hash
-`23df6dd0c4969fa4c16e07249ae0f863942ccf4d146393de2049c991a13bda25`,
-dependency-inventory hash
-`499cddeb6d1946adc191695569e56c649727b82a257069229c351f794e2881bd`, and
-worker hash `dad2f9279b69f3ec6bc50a341262df35fbda9e863b623e8102a88ef2f99791ad`.
-It imported the actual CUDA, sparse-convolution, attention, DINOv3, and
-TRELLIS.2 pipeline modules with no RMBG, nvdiffrast, or nvdiffrec import. The
-canonical local probe artifact is retained outside version control at
-`.basalt/modal/trellis2-runtime-import-probe.json`.
-
 The exact TRELLIS.2, sparse-decoder, and approved DINOv3 snapshots are sealed
-in revision-named Volumes and mounted read-only. The `basalt-neural-output`
-Volume and the separate paid-run gate Secret also exist. This establishes
-technical runtime construction only: the probe did not load model weights or
-run inference. Evaluation execution remains blocked on a complete execution
-qualification, one rights-bound RGBA input, and the common adaptation spine's
-Gate A result. Product admission additionally remains blocked on the measured
-pilot, commercial review, and creator-run Studio evidence. Modal Volumes are
-mutable storage; their retained content seals, rather than their names, are the
-evidence identities.
+in stable Volumes and mounted read-only. Their retained snapshot hashes, not
+their operational paths, identify the bytes. The `basalt-neural-output`
+Volume and the separate paid-run gate Secret are the intended output boundary.
+There is no currently qualified runtime image for the rewritten worker bytes.
+Evaluation execution remains blocked on a complete runtime qualification, one
+rights-bound RGBA input, and the common finishing spine. Product admission also
+requires the measured pilot, commercial review, and creator-run Studio evidence.
+Modal Volumes are mutable storage; retained content seals, rather than names,
+are the evidence identities.
 
 Once those gates close, the reviewed shape of a single run is:
 
@@ -147,7 +131,7 @@ Once those gates close, the reviewed shape of a single run is:
 BASALT_TRELLIS2_MODAL_IMAGE_ID=<exact-im-id> \
 modal run --profile <profile> workers/trellis2/modal_app.py \
   --request <canonical-request.json> \
-  --execution-qualification <canonical-execution-qualification.json> \
+  --runtime-qualification <canonical-runtime-qualification.json> \
   --reference <rights-bound-rgba.png> \
   --output-root <existing-output-directory> \
   --execution-flag RUN_ONE_QUALIFIED_BASALT_TRELLIS2_ASSET
@@ -163,7 +147,7 @@ command fails before allocating another GPU. After a completed call the
 directory also contains `candidate.safetensors`, `worker-result.json`, and
 `modal-handoff.json`. Basalt then admits those bytes through
 `retainTrellis2WorkerCandidate`; neither the small Modal response nor unverified
-Volume contents become a prepared asset directly.
+Volume contents become a catalog asset directly.
 
 Retry the exact request only after inspecting the claimed attempt and choosing
 a fresh 16-to-64-character lowercase hexadecimal identifier:
@@ -172,7 +156,7 @@ a fresh 16-to-64-character lowercase hexadecimal identifier:
 BASALT_TRELLIS2_MODAL_IMAGE_ID=<exact-im-id> \
 modal run --profile <profile> workers/trellis2/modal_app.py \
   --request <canonical-request.json> \
-  --execution-qualification <canonical-execution-qualification.json> \
+  --runtime-qualification <canonical-runtime-qualification.json> \
   --reference <rights-bound-rgba.png> \
   --output-root <existing-output-directory> \
   --execution-flag RUN_ONE_QUALIFIED_BASALT_TRELLIS2_ASSET \

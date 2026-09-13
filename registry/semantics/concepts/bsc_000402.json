@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000402",
+  "upperSort": "boundary",
+  "normativeDefinition": "A physical boundary exposed by a terrain realization.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A physical boundary exposed by a terrain realization.",
+      "Its boundary identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than boundary is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    }
+  ],
+  "commitmentHash": "6f7005de1732314f757502faa2930e9223d931448c88b7d7459535e4eb30de17"
+}

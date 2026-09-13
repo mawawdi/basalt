@@ -12,10 +12,10 @@ export interface JointPlaneMesh {
 export interface JointPlaneFit {
   readonly normal: JointPlaneVertex;
   readonly origin: JointPlaneVertex;
-  readonly boundaryRadiusStuds: number;
+  readonly boundaryRadiusMeters: number;
   /** Angle between the fitted normal and the nearest world axis, in degrees. */
   readonly axisAlignmentDegrees: number;
-  readonly faceAreaStuds2: number;
+  readonly faceAreaSquareMeters: number;
   readonly inlierCount: number;
   readonly pointCount: number;
 }
@@ -27,9 +27,9 @@ export type JointPlaneResult =
   | { readonly status: "refused"; readonly reason: JointPlaneRefusal };
 
 export const JOINT_PLANE_NORMAL_DEGREES = 3;
-export const JOINT_PLANE_DISTANCE_STUDS = 0.01;
-export const JOINT_PLANE_MIN_FACE_AREA_STUDS2 = 1;
-export const JOINT_PLANE_MIN_BOUNDARY_RADIUS_STUDS = 0.2;
+export const JOINT_PLANE_DISTANCE_METERS = 0.01;
+export const JOINT_PLANE_MIN_FACE_AREA_SQUARE_METERS = 1;
+export const JOINT_PLANE_MIN_BOUNDARY_RADIUS_METERS = 0.2;
 export const JOINT_PLANE_MAX_SAMPLE_TRIANGLES = 8192;
 
 function sanitizeZero(value: number): number {
@@ -112,7 +112,7 @@ interface TriangleFact {
 }
 
 /**
- * Decomposes a studs-space mesh into planar joint faces for modular assembly.
+ * Decomposes a meter-space mesh into planar joint faces for modular assembly.
  * Triangles cluster greedily in area order by normal agreement (winding
  * ignored) and coplanarity; each surviving cluster refits an area-weighted
  * plane, clips an inscribed contact disc against its boundary edges, and
@@ -121,8 +121,8 @@ interface TriangleFact {
  * face straddling a seam). Each face casts both ways along its normal: the
  * normal follows the escaping ray, faces blocked both ways are interior
  * rather than joints, and doubly open plates orient away from the mesh
- * centroid. Winding is never trusted. Deterministic: index order seeds,
- * stride subsample, area then origin ordering, no RNG. Refusals carry
+ * centroid. Winding is never trusted. Deterministic: topology components,
+ * surface-area strata, area then origin ordering, no RNG. Refusals carry
  * machine-readable reasons.
  */
 export function fitJointPlanes(mesh: JointPlaneMesh): JointPlaneResult {
@@ -155,10 +155,10 @@ export function fitJointPlanes(mesh: JointPlaneMesh): JointPlaneResult {
       area,
     });
   });
-  // Deterministic stride subsample keeps the fit bounded on dense meshes.
-  // Joint faces are large by definition, so striding never hides one.
-  const stride = Math.max(1, Math.ceil(facts.length / JOINT_PLANE_MAX_SAMPLE_TRIANGLES));
-  const sampled = facts.filter((_, sampledIndex) => sampledIndex % stride === 0);
+  // Preserve disconnected topology and surface-area representation instead
+  // of sampling by triangle index, which over-represents densely tessellated
+  // patches and can entirely skip small disconnected components.
+  const sampled = topologyAreaStratifiedSample(mesh, facts, JOINT_PLANE_MAX_SAMPLE_TRIANGLES);
   const seeds = [...sampled].sort(
     (left, right) => right.area - left.area || left.index - right.index,
   );
@@ -166,7 +166,7 @@ export function fitJointPlanes(mesh: JointPlaneMesh): JointPlaneResult {
   const passesGate = (fact: TriangleFact, seed: TriangleFact): boolean =>
     Math.abs(dot(fact.normal, seed.normal)) >= normalCosine &&
     Math.abs(dot(subtract(fact.centroid, seed.centroid), seed.normal)) <=
-      JOINT_PLANE_DISTANCE_STUDS;
+      JOINT_PLANE_DISTANCE_METERS;
   const claimed = new Set<number>();
   const clusterSeeds: TriangleFact[] = [];
   for (const seed of seeds) {
@@ -180,12 +180,12 @@ export function fitJointPlanes(mesh: JointPlaneMesh): JointPlaneResult {
     }
     // Undersized clusters release their triangles: a later seed with a
     // better plane may still claim them into a real face.
-    if (clusterArea < JOINT_PLANE_MIN_FACE_AREA_STUDS2) continue;
+    if (clusterArea < JOINT_PLANE_MIN_FACE_AREA_SQUARE_METERS) continue;
     for (const index of cluster) claimed.add(index);
     clusterSeeds.push(seed);
   }
   if (clusterSeeds.length === 0) return { status: "refused", reason: "no_planar_faces" };
-  // Clustering runs on the stride sample; membership re-tests every mesh
+  // Clustering runs on the bounded stratified sample; membership re-tests every mesh
   // triangle against the winning seed planes so dense meshes keep exact
   // areas and boundaries. First seed wins ties.
   const clusterMembers: TriangleFact[][] = clusterSeeds.map(() => []);
@@ -237,12 +237,103 @@ export function fitJointPlanes(mesh: JointPlaneMesh): JointPlaneResult {
   if (fits.length === 0) return { status: "refused", reason: "degenerate_faces" };
   fits.sort(
     (left, right) =>
-      right.faceAreaStuds2 - left.faceAreaStuds2 ||
+      right.faceAreaSquareMeters - left.faceAreaSquareMeters ||
       left.origin.x - right.origin.x ||
       left.origin.y - right.origin.y ||
       left.origin.z - right.origin.z,
   );
   return { status: "fit", fits };
+}
+
+function topologyAreaStratifiedSample(
+  mesh: JointPlaneMesh,
+  facts: readonly TriangleFact[],
+  maximum: number,
+): TriangleFact[] {
+  if (facts.length <= maximum) return [...facts];
+  const parent = facts.map((_, index) => index);
+  const find = (index: number): number => {
+    let cursor = index;
+    while (parent[cursor] !== cursor) {
+      parent[cursor] = parent[parent[cursor]!]!;
+      cursor = parent[cursor]!;
+    }
+    return cursor;
+  };
+  const join = (left: number, right: number): void => {
+    const leftRoot = find(left);
+    const rightRoot = find(right);
+    if (leftRoot === rightRoot) return;
+    if (leftRoot < rightRoot) parent[rightRoot] = leftRoot;
+    else parent[leftRoot] = rightRoot;
+  };
+  const cornerOwner = new Map<number, number>();
+  for (const [position, fact] of facts.entries()) {
+    for (const corner of mesh.triangles[fact.index]!) {
+      const owner = cornerOwner.get(corner);
+      if (owner === undefined) cornerOwner.set(corner, position);
+      else join(position, owner);
+    }
+  }
+  const byRoot = new Map<number, TriangleFact[]>();
+  for (const [position, fact] of facts.entries()) {
+    const root = find(position);
+    const group = byRoot.get(root) ?? [];
+    group.push(fact);
+    byRoot.set(root, group);
+  }
+  const components = [...byRoot.values()]
+    .map((members) => ({
+      members: [...members].sort((left, right) => left.index - right.index),
+      area: members.reduce((sum, member) => sum + member.area, 0),
+      firstIndex: members.reduce(
+        (minimum, member) => Math.min(minimum, member.index),
+        Number.POSITIVE_INFINITY,
+      ),
+      count: 0,
+    }))
+    .sort((left, right) => right.area - left.area || left.firstIndex - right.firstIndex)
+    .slice(0, maximum);
+  for (const component of components) component.count = 1;
+  const totalArea = components.reduce((sum, component) => sum + component.area, 0);
+  let remaining = maximum - components.length;
+  while (remaining > 0) {
+    const candidate = components
+      .filter((component) => component.count < component.members.length)
+      .sort((left, right) => {
+        const leftDeficit = (left.area / totalArea) * maximum - left.count;
+        const rightDeficit = (right.area / totalArea) * maximum - right.count;
+        return rightDeficit - leftDeficit || left.firstIndex - right.firstIndex;
+      })[0];
+    if (!candidate) break;
+    candidate.count += 1;
+    remaining -= 1;
+  }
+  const sampled: TriangleFact[] = [];
+  for (const component of components) {
+    const selected = new Map<number, TriangleFact>();
+    const targetStep = component.area / component.count;
+    let cumulative = 0;
+    let targetIndex = 0;
+    for (const member of component.members) {
+      cumulative += member.area;
+      while (targetIndex < component.count && cumulative >= (targetIndex + 0.5) * targetStep) {
+        selected.set(member.index, member);
+        targetIndex += 1;
+      }
+    }
+    if (selected.size < component.count) {
+      const remainingMembers = component.members
+        .filter((member) => !selected.has(member.index))
+        .sort((left, right) => right.area - left.area || left.index - right.index);
+      for (const member of remainingMembers) {
+        if (selected.size >= component.count) break;
+        selected.set(member.index, member);
+      }
+    }
+    sampled.push(...selected.values());
+  }
+  return sampled.sort((left, right) => left.index - right.index);
 }
 
 function fitComponent(
@@ -260,7 +351,7 @@ function fitComponent(
     averaged.z += sign * member.normal.z * member.area;
     totalArea += member.area;
   }
-  if (totalArea < JOINT_PLANE_MIN_FACE_AREA_STUDS2) return undefined;
+  if (totalArea < JOINT_PLANE_MIN_FACE_AREA_SQUARE_METERS) return undefined;
   const averagedLength = Math.sqrt(dot(averaged, averaged));
   if (!(averagedLength > 1e-12)) return undefined;
   const normal = {
@@ -303,16 +394,16 @@ function fitComponent(
     const [bux, buy] = project(pb);
     radius = Math.min(radius, pointSegmentDistance2D(cu, cv, aux, auy, bux, buy));
   }
-  if (!Number.isFinite(radius) || radius < JOINT_PLANE_MIN_BOUNDARY_RADIUS_STUDS) return undefined;
+  if (!Number.isFinite(radius) || radius < JOINT_PLANE_MIN_BOUNDARY_RADIUS_METERS) return undefined;
   const dominantAxis = Math.max(Math.abs(normal.x), Math.abs(normal.y), Math.abs(normal.z));
   return {
     normal: sanitizePoint(normal),
     // The refit plane passes through the area-weighted centroid by
     // construction, so the centroid is already on the plane.
     origin: sanitizePoint(centroidWeighted),
-    boundaryRadiusStuds: radius,
+    boundaryRadiusMeters: radius,
     axisAlignmentDegrees: (Math.acos(Math.max(-1, Math.min(1, dominantAxis))) * 180) / Math.PI,
-    faceAreaStuds2: totalArea,
+    faceAreaSquareMeters: totalArea,
     inlierCount: members.length,
     pointCount: mesh.triangles.length,
   };

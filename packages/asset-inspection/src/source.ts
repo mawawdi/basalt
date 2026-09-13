@@ -7,7 +7,6 @@ import {
   transformNormal,
   transformPoint,
 } from "./geometry.js";
-import { STUD_METERS } from "../../basalt-types/src/index.js";
 
 export interface RawSceneNode {
   readonly name?: string;
@@ -35,7 +34,6 @@ export interface RawAssetSource {
 }
 
 export interface NormalizationPolicy {
-  readonly targetStudMeters?: number;
   readonly pivotPolicy?: "bottom_center_obb" | "volumetric_center";
 }
 
@@ -43,7 +41,6 @@ export interface NormalizedAsset {
   readonly meshes: readonly NormalizedMesh[];
   readonly nodeWorldMatrices: readonly Matrix4x4[];
   readonly metersPerSourceUnit: number;
-  readonly studsPerSourceUnit: number;
   readonly pivotPolicy: "bottom_center_obb" | "volumetric_center";
 }
 
@@ -70,23 +67,19 @@ export function accumulateNodeWorldMatrices(nodes: readonly RawSceneNode[]): rea
   return result;
 }
 
-export function calculateStudConversion(
-  metersPerSourceUnit: number,
-  targetStudMeters: number = STUD_METERS,
-): number {
-  return metersPerSourceUnit / targetStudMeters;
+export function calculateMeterConversion(metersPerSourceUnit: number): number {
+  if (!Number.isFinite(metersPerSourceUnit) || metersPerSourceUnit <= 0)
+    throw new Error("Source unit scale must be finite and positive");
+  return metersPerSourceUnit;
 }
 
 export function normalizeSource(
   source: RawAssetSource,
   policy: NormalizationPolicy = {},
 ): NormalizedAsset {
-  const targetStudMeters = policy.targetStudMeters ?? STUD_METERS;
   const metersPerSourceUnit = source.unitScaleMeters ?? 1;
   if (!Number.isFinite(metersPerSourceUnit) || metersPerSourceUnit <= 0)
     throw new Error("Source unit scale must be finite and positive");
-  if (!Number.isFinite(targetStudMeters) || targetStudMeters <= 0)
-    throw new Error("Target stud size must be finite and positive");
   const nodeWorldMatrices = accumulateNodeWorldMatrices(source.nodes);
   const unscaledMeshes = source.nodes.flatMap((node, index) => {
     if (node.meshIndex === undefined) return [];
@@ -99,7 +92,7 @@ export function normalizeSource(
   // per-source metersPerSourceUnit carries the true unit convention (meters,
   // decimeters, or centimeters per the FBX oracle), so converting through it
   // preserves the metric truth that budgets and placement depend on.
-  const conversion = calculateStudConversion(metersPerSourceUnit, targetStudMeters);
+  const conversion = calculateMeterConversion(metersPerSourceUnit);
   // Frame contract: normalized geometry keeps the source right-handed Y-up
   // frame (node transform, then uniform unit scale). No reflection is ever
   // applied: CFrames and engine placements cannot express mirroring, and a
@@ -129,7 +122,6 @@ export function normalizeSource(
     meshes,
     nodeWorldMatrices,
     metersPerSourceUnit,
-    studsPerSourceUnit: conversion,
     pivotPolicy: policy.pivotPolicy ?? "bottom_center_obb",
   };
 }

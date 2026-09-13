@@ -1,0 +1,17 @@
+{
+  "name": "@basalt/catalog-authoring",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@basalt/contracts": "*",
+    "@basalt/catalog-model": "*",
+    "@basalt/semantic-kernel": "*",
+    "zod": "4.5.4"
+  }
+}

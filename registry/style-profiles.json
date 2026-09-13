@@ -1,0 +1,48 @@
+[
+  {
+    "handle": "neutral",
+    "shapeLanguage": "Preserve measured source geometry without adding an unproven style claim.",
+    "silhouetteHierarchy": [
+      {
+        "level": "primary",
+        "guidance": "Keep the source silhouette legible at the intended viewing distance."
+      }
+    ],
+    "detailScale": [
+      {
+        "level": "source",
+        "guidance": "Retain measured detail scale and do not synthesize decorative detail."
+      }
+    ],
+    "edgeTreatment": "Retain authored edge treatment.",
+    "materialLanguage": "Retain measured PBR evidence and authored materials.",
+    "texelDensity": {
+      "minimumPixelsPerMeter": 4,
+      "targetPixelsPerMeter": 57,
+      "maximumPixelsPerMeter": 914
+    },
+    "surfaceVariation": {
+      "scaleMeters": 2.24,
+      "intensity": 0,
+      "guidance": "No compiler-authored surface variation."
+    },
+    "wearPolicy": {
+      "amount": 0,
+      "placement": "No compiler-authored wear.",
+      "exclusions": []
+    },
+    "lightingIntent": "Use world-level lighting; the asset contributes no independent lighting claim.",
+    "antiGoals": [
+      "Do not infer style from a filename or source folder."
+    ],
+    "palette": [
+      {
+        "id": "neutral_gray",
+        "name": "Neutral gray",
+        "color": "#808080",
+        "metallic": 0,
+        "roughness": 0.5
+      }
+    ]
+  }
+]

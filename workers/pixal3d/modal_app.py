@@ -19,7 +19,7 @@ from typing import Any
 
 
 APP_NAME = "basalt-pixal3d-qualification"
-CONTRACT_ABI = "basalt-pixal3d-modal-runtime-contract@1"
+RUNTIME_CONTRACT = "basalt-pixal3d-modal-runtime-contract"
 SOURCE_COMMIT = "f7cf38429b0bd264f1995f0f8743a88b1c728b94"
 WEIGHTS_REVISION = "b0cb2e1b794cab9aa0ac38a95d794a4d9337437f"
 DINOV3_REVISION = "ea8dc2863c51be0a264bab82070e3e8836b02d51"
@@ -31,8 +31,8 @@ IMAGE_ID_ENV = "BASALT_PIXAL3D_MODAL_IMAGE_ID"
 LOCAL_GATE_ENV = "BASALT_PIXAL3D_PAID_RUN_AUTHORIZATION"
 MODAL_GATE_SECRET_NAME = "basalt-pixal3d-execution-gate"
 EXECUTION_LITERAL = "RUN_ONE_QUALIFIED_BASALT_PIXAL3D_ASSET"
-MODEL_VOLUME_NAME = f"basalt-pixal3d-model-{WEIGHTS_REVISION}"
-DINOV3_VOLUME_NAME = f"basalt-pixal3d-dinov3-{DINOV3_REVISION}"
+MODEL_VOLUME_NAME = "basalt-pixal3d-model"
+DINOV3_VOLUME_NAME = "basalt-dinov3-model"
 MODEL_ROOT = "/mnt/pixal3d-model"
 DINOV3_ROOT = "/mnt/pixal3d-dinov3"
 GPU_KIND = "A100-80GB"
@@ -60,7 +60,7 @@ def content_hash(value: Any) -> str:
 def local_contract() -> dict[str, Any]:
     material = {
         "kind": "Pixal3dModalRuntimeContract",
-        "abi": CONTRACT_ABI,
+        "contract": RUNTIME_CONTRACT,
         "status": "incomplete",
         "code": "production_inference_not_qualified",
         "modelWillRun": False,
@@ -99,7 +99,7 @@ def local_contract() -> dict[str, Any]:
             "backgroundRemoval": "excluded",
             "officialRenderer": "excluded",
             "officialExporter": "excluded",
-            "output": "basalt-mesh-attribute-tensor-bundle@2",
+            "output": "basalt-mesh-attribute-tensor-bundle",
         },
         "authorization": {
             "requiredExecutionLiteral": EXECUTION_LITERAL,

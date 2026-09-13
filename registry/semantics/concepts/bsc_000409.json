@@ -1,0 +1,34 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000409",
+  "upperSort": "boundary",
+  "normativeDefinition": "A route surface intended for road movement.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A route surface intended for road movement.",
+      "Its boundary identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than boundary is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000408",
+      "commitmentHash": "7e55580d5277a661151eb5b09873727b73fe112d8008ad6327871af98e8f14b2"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    },
+    {
+      "conceptId": "bsc_000408",
+      "commitmentHash": "7e55580d5277a661151eb5b09873727b73fe112d8008ad6327871af98e8f14b2"
+    }
+  ],
+  "commitmentHash": "b33a9115c4b4b21342c67775bb460702ee6faece668126da4f89a9ed7a1cfd0e"
+}

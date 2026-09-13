@@ -7,7 +7,7 @@ import {
   quantizeQ32_32,
   serializeQ32_32,
   type Q32_32,
-} from "../../basalt-types/src/fixed.js";
+} from "@basalt/contracts";
 
 /** Opaque, case-sensitive keys used by Basalt's spatial graph. */
 export const entityId = z

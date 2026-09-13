@@ -1,0 +1,73 @@
+{
+  "authority": "regression_fixture_only",
+  "rule": "source names and imported labels are review hints; measured evidence plus an author decision determine disposition",
+  "cases": [
+    {
+      "caseId": "standalone_alternatives",
+      "sourceHints": ["SM_Env_Rock_Large_08.glb", "SM_Env_Rock_Large_09.glb"],
+      "reportedClaim": "Possible independently substitutable member",
+      "expectedAction": "review_substitution_set",
+      "requiredProof": "each whole asset independently satisfies the same exact concept site and the sealed capability intersection"
+    },
+    {
+      "caseId": "structural_components",
+      "sourceHints": [
+        "SM_Bld_OfficeOld_Large_Base_01.glb",
+        "SM_Bld_OfficeOld_Large_Floor_01.glb",
+        "SM_Bld_OfficeOld_Large_Roof_01.glb"
+      ],
+      "reportedClaim": "Eligible Cohort",
+      "expectedAction": "review_assembly_kit",
+      "requiredProof": "authored component roles, socket meanings, lattice, mates, transitions, terminals, and coverage"
+    },
+    {
+      "caseId": "host_dependent_objects",
+      "sourceHints": [
+        "SM_Prop_Aircon_01.glb",
+        "SM_Prop_Window_01.glb",
+        "SM_Prop_Poster_01.glb",
+        "SM_Prop_PlanterWindow_01.glb"
+      ],
+      "reportedClaim": "Eligible Cohort",
+      "expectedAction": "review_attachment_set",
+      "requiredProof": "authored host capability or socket interface and measured attachment geometry"
+    },
+    {
+      "caseId": "network_components",
+      "sourceHints": [
+        "SM_Env_Road_01.glb",
+        "SM_Env_Road_Crossing_01.glb",
+        "SM_Env_Road_Median_01.glb",
+        "SM_Env_Sidewalk_Corner_01.glb",
+        "SM_Env_Bridge_Edge_01.glb"
+      ],
+      "reportedClaim": "Eligible Cohort",
+      "expectedAction": "review_route_kit",
+      "requiredProof": "authored topology roles and allowed transitions backed by measured interfaces"
+    },
+    {
+      "caseId": "non_local_visuals",
+      "sourceHints": ["SM_Env_Cloud_01.glb", "SM_Env_Ocean_Tile_01.glb", "SM_Env_Skyline_01.glb"],
+      "reportedClaim": "Quarantine",
+      "expectedAction": "review_environment_realizer",
+      "requiredProof": "a typed sky, atmosphere, water, overhead, or far-field lowering; otherwise remain incomplete"
+    },
+    {
+      "caseId": "component_dump",
+      "sourceHints": ["SM_Wep_MusketPistol_01_Separate.glb", "SM_Prop_Cannon_01_Separate.glb"],
+      "reportedClaim": "Possible component set or eligible cohort",
+      "expectedAction": "remain_incomplete",
+      "requiredProof": "explicit authored component-set semantics proving whether the payload is independently placeable"
+    },
+    {
+      "caseId": "collision_companion",
+      "sourceHints": [
+        "SM_Bld_Apartment_Stairs_01_Collision.glb",
+        "SM_Veh_Boat_Medium_01_Hull_Collision.glb"
+      ],
+      "reportedClaim": "Quarantine",
+      "expectedAction": "review_collision_companion",
+      "requiredProof": "content-bound ownership by one renderable asset; never create a catalog entry"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000045",
+  "upperSort": "object",
+  "normativeDefinition": "A route-structure element intended for a rail assembly.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A route-structure element intended for a rail assembly.",
+      "Its object identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than object is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000042",
+      "commitmentHash": "d180a4a78e3978cfb62c65bcb581b5b5afad2a78ae664fc43a5f3010fab3cb56"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    },
+    {
+      "conceptId": "bsc_000042",
+      "commitmentHash": "d180a4a78e3978cfb62c65bcb581b5b5afad2a78ae664fc43a5f3010fab3cb56"
+    }
+  ],
+  "commitmentHash": "f90410ab18a70d4b8771735f3c0630d65ab74d7fbb9b0da158e96fc910ff0f95"
+}

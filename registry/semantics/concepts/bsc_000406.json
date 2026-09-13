@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000406",
+  "upperSort": "boundary",
+  "normativeDefinition": "An overhead interior physical boundary.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: An overhead interior physical boundary.",
+      "Its boundary identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than boundary is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000401",
+      "commitmentHash": "3b297ef5a21e21c11a7dd1c93796dac929f83b9bc8a7222e0df444144d398abe"
+    }
+  ],
+  "commitmentHash": "a88c6a91a079bb090da5ad1d81fe1e89d37138e16886218ab0a19a6a548c1d67"
+}

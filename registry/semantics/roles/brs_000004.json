@@ -1,0 +1,49 @@
+{
+  "kind": "RoleSchemeDefinition",
+  "roleSchemeId": "brs_000004",
+  "scope": "scene_intent",
+  "normativeDefinition": "Contextual roles admitted only within the scene_intent scope.",
+  "roles": [
+    {
+      "roleId": "bro_000301",
+      "normativeDefinition": "The entity performs the landmark role within the scene_intent context.",
+      "hash": "a0c4da2cf6637ade3e4d1698888af1980831cb4a08e4f4a9c84bd6a4196d101e"
+    },
+    {
+      "roleId": "bro_000302",
+      "normativeDefinition": "The entity performs the background role within the scene_intent context.",
+      "hash": "f2a15f70b8f88aa052063b090a1b8bb396b5da0fa005f89a5a2324f09f423787"
+    },
+    {
+      "roleId": "bro_000303",
+      "normativeDefinition": "The entity performs the obstacle role within the scene_intent context.",
+      "hash": "5b191ecece33174461d100d1081bf2ab412d50cb2da3ccd507b0d8ab795badb1"
+    },
+    {
+      "roleId": "bro_000304",
+      "normativeDefinition": "The entity performs the cover role within the scene_intent context.",
+      "hash": "28afd46eba82364b0ffc5f7a5932defbf880049adae1cb3bc44eba3e5c8a2809"
+    },
+    {
+      "roleId": "bro_000305",
+      "normativeDefinition": "The entity performs the spawn area role within the scene_intent context.",
+      "hash": "e2e52c980d5af151a5d52fc1b55291723cc74b43b97525f6f8550241f8cd2243"
+    },
+    {
+      "roleId": "bro_000306",
+      "normativeDefinition": "The entity performs the goal area role within the scene_intent context.",
+      "hash": "1cec970f600181dbba0b424beaf45d54e21ddcb6e296307d0575549e82f4dc67"
+    },
+    {
+      "roleId": "bro_000307",
+      "normativeDefinition": "The entity performs the resource node role within the scene_intent context.",
+      "hash": "aef1f4ed48e7075865dc8f878a512e36e8dc089ec9917a4369b4ebad6f83fcd3"
+    },
+    {
+      "roleId": "bro_000308",
+      "normativeDefinition": "The entity performs the decoration role within the scene_intent context.",
+      "hash": "e239226bbc162f2291de07abe8c4bb10c8d1462891ffdbcc48e2adf28880474b"
+    }
+  ],
+  "hash": "a1914dbe93ef800494fa315ba7a35a811433e68f844acb2525575b4868880b4e"
+}

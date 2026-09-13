@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000202",
+  "upperSort": "substance",
+  "normativeDefinition": "Liquid water represented as a world substance.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: Liquid water represented as a world substance.",
+      "Its substance identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than substance is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000201",
+      "commitmentHash": "0e4f2136fa76c4e904f1ebe4fa837efcd0a0c74db6daef6ca54c2c94e85a9aad"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000201",
+      "commitmentHash": "0e4f2136fa76c4e904f1ebe4fa837efcd0a0c74db6daef6ca54c2c94e85a9aad"
+    }
+  ],
+  "commitmentHash": "0064f8d417c0c52d57ddfccf8855068784eb037f951ac894401734577c349e3c"
+}

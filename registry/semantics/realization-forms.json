@@ -1,0 +1,38 @@
+[
+  {
+    "kind": "RealizationFormDefinition",
+    "realizationForm": "aggregate",
+    "normativeDefinition": "Multiple entities intentionally treated as one placement unit.",
+    "hash": "44106ab00cece716040fa3b8d145d2b69ef50e18c818f9cc9da002a3e39f94be"
+  },
+  {
+    "kind": "RealizationFormDefinition",
+    "realizationForm": "assembly",
+    "normativeDefinition": "A precomposed whole with semantically meaningful components.",
+    "hash": "13d312581f8e3d529f765d34a4fcbc3d723d28316a37e0b9b072df048f51219e"
+  },
+  {
+    "kind": "RealizationFormDefinition",
+    "realizationForm": "component",
+    "normativeDefinition": "A realization that is incomplete outside an assembly grammar.",
+    "hash": "a488d90b99ddef34aba2c7d1c37c28b745a4123d2b5684528e9d2a0eb94c7870"
+  },
+  {
+    "kind": "RealizationFormDefinition",
+    "realizationForm": "field_or_effect",
+    "normativeDefinition": "A non-local or process-like realization such as fog, light, water, or particles.",
+    "hash": "afbf2bdfa3f9c86cf9685e8575640170081dcb3b0c9dbecde17a0886ad70c85f"
+  },
+  {
+    "kind": "RealizationFormDefinition",
+    "realizationForm": "surface",
+    "normativeDefinition": "A patch or tile intended to realize a physical boundary.",
+    "hash": "5dd368d4086e488472e6cdf37f1308017b3453dbb4a1b9a1eb8c248189dd7dd9"
+  },
+  {
+    "kind": "RealizationFormDefinition",
+    "realizationForm": "whole",
+    "normativeDefinition": "One independently placeable bounded entity.",
+    "hash": "80f3cea1a82c19f690c7f6daf74476a682478561226b14219f7226524d7da40f"
+  }
+]

@@ -1,0 +1,38 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000318",
+  "upperSort": "space",
+  "normativeDefinition": "A biome region whose planned character is dominated by tree vegetation.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: A biome region whose planned character is dominated by tree vegetation.",
+      "Its space identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than space is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000317",
+      "commitmentHash": "1a7f8f8973dc78afad8f1bed1f35b7e80ecbc769889c2b61e6f9faab6308443a"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000315",
+      "commitmentHash": "b8fa661e442973c6d99d57e731ef72d46280a9ff111e6fd4c518aa196bdef9be"
+    },
+    {
+      "conceptId": "bsc_000316",
+      "commitmentHash": "1e5b490694c10e037c5525d08b1ea648fd208278b2f87d8aebcfb200a7c39b31"
+    },
+    {
+      "conceptId": "bsc_000317",
+      "commitmentHash": "1a7f8f8973dc78afad8f1bed1f35b7e80ecbc769889c2b61e6f9faab6308443a"
+    }
+  ],
+  "commitmentHash": "5ac9bf7f8b8ee901f0d44a016d0bb440b2ebe1c7cd5d7254e899dbad433ee6d1"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@basalt/asset-factory",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@basalt/contracts": "*",
+    "@basalt/catalog-model": "*",
+    "zod": "4.5.4"
+  }
+}

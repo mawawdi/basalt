@@ -1,0 +1,30 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000509",
+  "upperSort": "phenomenon",
+  "normativeDefinition": "The airborne obscuring phenomenon produced by combustion or represented as such.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: The airborne obscuring phenomenon produced by combustion or represented as such.",
+      "Its phenomenon identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than phenomenon is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000507",
+      "commitmentHash": "4e0adef33feacb2120f88823375b79d14c319c1b8c860e6a20a8101b17f9ebd4"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000507",
+      "commitmentHash": "4e0adef33feacb2120f88823375b79d14c319c1b8c860e6a20a8101b17f9ebd4"
+    }
+  ],
+  "commitmentHash": "291b0a24b8e1f9cd927501fd1ad91eb495b5896a7171f44456869b27df04b9fe"
+}

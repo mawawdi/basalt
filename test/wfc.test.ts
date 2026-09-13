@@ -1,241 +1,238 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  solveWfc,
-  type WfcAdjacency,
-  type WfcEdge,
-  type WfcTile,
-} from "../packages/world-compiler/src/index.js";
+import { sealConstraintModel, solveConstraintModel } from "@basalt/spatial-core";
 
-function ringGraph(size: number): { cells: string[]; edges: WfcEdge[] } {
-  const cells = Array.from({ length: size }, (_, index) => `c${index}`);
-  const edges: WfcEdge[] = [];
-  for (let index = 0; index < size; index += 1) {
-    edges.push({ from: `c${index}`, to: `c${(index + 1) % size}`, direction: "next" });
-    edges.push({ from: `c${(index + 1) % size}`, to: `c${index}`, direction: "prev" });
-  }
-  return { cells, edges };
+function alternatingRing(size: number, seed = 1) {
+  const cells = Array.from({ length: size }, (_, index) => ({
+    cellId: `c${index}`,
+    candidates: [
+      { candidateId: "A", weight: 1 },
+      { candidateId: "B", weight: 1 },
+    ],
+  }));
+  const edges = Array.from({ length: size }, (_, index) => ({
+    edgeId: `edge${index}`,
+    fromCellId: `c${index}`,
+    toCellId: `c${(index + 1) % size}`,
+    relationId: "alternates",
+    policy: "symmetric" as const,
+  }));
+  return sealConstraintModel({
+    seed,
+    cells,
+    edges,
+    relations: [
+      {
+        relationId: "alternates",
+        allowed: [
+          ["A", "B"],
+          ["B", "A"],
+        ],
+      },
+    ],
+    policy: { maximumDecisions: 128, maximumBacktracks: 128 },
+  });
 }
 
-const alternatingTiles: WfcTile[] = [
-  { id: "A", weight: 1 },
-  { id: "B", weight: 1 },
-];
-
-const alternatingAdjacency: WfcAdjacency[] = [
-  {
-    direction: "next",
-    allowed: [
-      ["A", "B"],
-      ["B", "A"],
-    ],
-  },
-  {
-    direction: "prev",
-    allowed: [
-      ["A", "B"],
-      ["B", "A"],
-    ],
-  },
-];
-
-test("wfc solves ring alternation deterministically", () => {
-  const first = solveWfc({
-    graph: ringGraph(4),
-    tiles: alternatingTiles,
-    adjacency: alternatingAdjacency,
-    seed: 1,
-  });
-  assert.deepEqual(
-    [...first.assignments].sort(([left], [right]) => (left < right ? -1 : 1)),
-    [
-      ["c0", "B"],
-      ["c1", "A"],
-      ["c2", "B"],
-      ["c3", "A"],
-    ],
+test("constraint solver seals arrays and solves symmetric ring adjacency deterministically", () => {
+  const model = alternatingRing(8, 7);
+  assert.equal(model.edges.length, 16);
+  assert.ok(model.edges.every((edge) => edge.policy === "directed"));
+  const first = solveConstraintModel(model);
+  const second = solveConstraintModel(model);
+  assert.equal(first.status, "eligible");
+  assert.deepEqual(second, first);
+  assert.equal(first.assignments.length, 8);
+  const assignments = new Map(
+    first.assignments.map((assignment) => [assignment.cellId, assignment.candidateId]),
   );
-  assert.equal(first.restarts, 0);
-  const second = solveWfc({
-    graph: ringGraph(4),
-    tiles: alternatingTiles,
-    adjacency: alternatingAdjacency,
-    seed: 1,
-  });
-  assert.deepEqual([...second.assignments], [...first.assignments]);
+  for (let index = 0; index < 8; index += 1)
+    assert.notEqual(assignments.get(`c${index}`), assignments.get(`c${(index + 1) % 8}`));
 });
 
-test("wfc absorbs declaration order", () => {
-  const { cells, edges } = ringGraph(6);
-  const ordered = solveWfc({
-    graph: { cells, edges },
-    tiles: alternatingTiles,
-    adjacency: alternatingAdjacency,
-    seed: 7,
+test("constraint model canonicalization absorbs declaration order", () => {
+  const forward = alternatingRing(6, 11);
+  const reversed = sealConstraintModel({
+    seed: 11,
+    cells: [...forward.cells].reverse().map((cell) => ({
+      ...cell,
+      candidates: [...cell.candidates].reverse(),
+    })),
+    edges: [...forward.edges].reverse(),
+    relations: [...forward.relations].reverse().map((relation) => ({
+      ...relation,
+      allowed: [...relation.allowed].reverse(),
+    })),
+    policy: forward.policy,
   });
-  const shuffled = solveWfc({
-    graph: { cells: [...cells].reverse(), edges: [...edges].reverse() },
-    tiles: [...alternatingTiles].reverse(),
-    adjacency: [...alternatingAdjacency].reverse(),
-    seed: 7,
-  });
-  assert.deepEqual([...shuffled.assignments].sort(), [...ordered.assignments].sort());
-  assert.equal(shuffled.restarts, ordered.restarts);
+  assert.equal(reversed.hash, forward.hash);
+  assert.deepEqual(solveConstraintModel(reversed), solveConstraintModel(forward));
 });
 
-test("wfc solutions satisfy every directed edge across seeds", () => {
-  const { cells, edges } = ringGraph(8);
-  const allowed = new Map(
-    alternatingAdjacency.map((entry) => [
-      entry.direction,
-      new Set(entry.allowed.map(([from, to]) => `${from}>${to}`)),
-    ]),
-  );
-  for (let seed = 1; seed <= 8; seed += 1) {
-    const solution = solveWfc({
-      graph: { cells, edges },
-      tiles: alternatingTiles,
-      adjacency: alternatingAdjacency,
-      seed,
-    });
-    assert.equal(solution.assignments.size, 8);
-    for (const edge of edges) {
-      const pair = `${solution.assignments.get(edge.from)}>${solution.assignments.get(edge.to)}`;
-      assert.ok(
-        allowed.get(edge.direction)!.has(pair),
-        `seed ${seed} edge ${edge.from}>${edge.to}`,
-      );
-    }
-  }
-});
-
-test("wfc respects per-cell initial domains", () => {
-  const solution = solveWfc({
-    graph: ringGraph(4),
-    tiles: alternatingTiles,
-    adjacency: alternatingAdjacency,
-    seed: 1,
-    initialDomains: [{ cell: "c0", tiles: ["A"] }],
-  });
-  assert.equal(solution.assignments.get("c0"), "A");
-  assert.equal(solution.assignments.get("c1"), "B");
+test("constraint model rejects relation candidates outside an edge domain", () => {
   assert.throws(
     () =>
-      solveWfc({
-        graph: ringGraph(2),
-        tiles: alternatingTiles,
-        adjacency: alternatingAdjacency,
+      sealConstraintModel({
         seed: 1,
-        initialDomains: [{ cell: "c0", tiles: [] }],
-      }),
-    /has no candidate tiles/,
-  );
-  assert.throws(
-    () =>
-      solveWfc({
-        graph: ringGraph(2),
-        tiles: alternatingTiles,
-        adjacency: alternatingAdjacency,
-        seed: 1,
-        initialDomains: [{ cell: "ghost", tiles: ["A"] }],
-      }),
-    /unknown cell: ghost/,
-  );
-});
-
-test("wfc contradictions name the cell and blocking neighborhood", () => {
-  assert.throws(
-    () =>
-      solveWfc({
-        graph: {
-          cells: ["x", "y"],
-          edges: [
-            { from: "x", to: "y", direction: "next" },
-            { from: "y", to: "x", direction: "prev" },
-          ],
-        },
-        tiles: alternatingTiles,
-        adjacency: [
-          { direction: "next", allowed: [["A", "B"]] },
-          { direction: "prev", allowed: [["A", "A"]] },
+        cells: [
+          { cellId: "left", candidates: [{ candidateId: "A", weight: 1 }] },
+          { cellId: "right", candidates: [{ candidateId: "B", weight: 1 }] },
         ],
-        seed: 1,
-        maxRestarts: 2,
+        edges: [
+          {
+            edgeId: "impossible",
+            fromCellId: "left",
+            toCellId: "right",
+            relationId: "same",
+            policy: "directed",
+          },
+        ],
+        relations: [{ relationId: "same", allowed: [["A", "A"]] }],
+        policy: { maximumDecisions: 8, maximumBacktracks: 8 },
       }),
-    /WFC contradiction at cell "(x|y)".*candidates eliminated/,
-  );
-  assert.throws(
-    () =>
-      solveWfc({
-        graph: { cells: ["loop"], edges: [{ from: "loop", to: "loop", direction: "loop" }] },
-        tiles: alternatingTiles,
-        adjacency: [{ direction: "loop", allowed: [["A", "B"]] }],
-        seed: 1,
-        maxRestarts: 0,
-      }),
-    /WFC contradiction at cell "loop"/,
+    /outside edge domains/,
   );
 });
 
-test("wfc fails closed on degenerate models", () => {
+test("constraint solver uses bounded chronological backtracking", () => {
+  const model = sealConstraintModel({
+    seed: 22,
+    cells: [
+      {
+        cellId: "a",
+        candidates: [
+          { candidateId: "red", weight: 5 },
+          { candidateId: "blue", weight: 1 },
+        ],
+      },
+      {
+        cellId: "b",
+        candidates: [
+          { candidateId: "red", weight: 5 },
+          { candidateId: "blue", weight: 1 },
+        ],
+      },
+      {
+        cellId: "c",
+        candidates: [
+          { candidateId: "red", weight: 5 },
+          { candidateId: "blue", weight: 1 },
+        ],
+      },
+    ],
+    edges: [
+      {
+        edgeId: "ab",
+        fromCellId: "a",
+        toCellId: "b",
+        relationId: "different",
+        policy: "symmetric",
+      },
+      {
+        edgeId: "bc",
+        fromCellId: "b",
+        toCellId: "c",
+        relationId: "different",
+        policy: "symmetric",
+      },
+      {
+        edgeId: "ca",
+        fromCellId: "c",
+        toCellId: "a",
+        relationId: "different",
+        policy: "symmetric",
+      },
+    ],
+    relations: [
+      {
+        relationId: "different",
+        allowed: [
+          ["red", "blue"],
+          ["blue", "red"],
+        ],
+      },
+    ],
+    policy: { maximumDecisions: 64, maximumBacktracks: 64 },
+  });
+  const solution = solveConstraintModel(model);
+  assert.equal(solution.status, "incomplete");
+  assert.ok(solution.backtracks > 0);
+  assert.ok(solution.contradictions.length > 0);
+});
+
+test("constraint model rejects duplicate declarations and expands asymmetric symmetric edges", () => {
   assert.throws(
     () =>
-      solveWfc({
-        graph: { cells: [], edges: [] },
-        tiles: alternatingTiles,
-        adjacency: [],
+      sealConstraintModel({
         seed: 1,
-      }),
-    /at least one cell/,
-  );
-  assert.throws(
-    () =>
-      solveWfc({
-        graph: { cells: ["c0", "c0"], edges: [] },
-        tiles: alternatingTiles,
-        adjacency: [],
-        seed: 1,
+        cells: [
+          { cellId: "a", candidates: [{ candidateId: "A", weight: 1 }] },
+          { cellId: "a", candidates: [{ candidateId: "A", weight: 1 }] },
+        ],
+        edges: [],
+        relations: [],
+        policy: { maximumDecisions: 1, maximumBacktracks: 0 },
       }),
     /unique/,
   );
-  assert.throws(
-    () =>
-      solveWfc({
-        graph: ringGraph(2),
-        tiles: [{ id: "A", weight: 0 }],
-        adjacency: alternatingAdjacency,
-        seed: 1,
-      }),
-    /positive finite/,
-  );
-  assert.throws(
-    () =>
-      solveWfc({
-        graph: { cells: ["c0"], edges: [{ from: "c0", to: "ghost", direction: "next" }] },
-        tiles: alternatingTiles,
-        adjacency: alternatingAdjacency,
-        seed: 1,
-      }),
-    /unknown cell: ghost/,
-  );
-  assert.throws(
-    () =>
-      solveWfc({
-        graph: ringGraph(2),
-        tiles: alternatingTiles,
-        adjacency: [{ direction: "next", allowed: [["A", "ghost"]] }],
-        seed: 1,
-      }),
-    /unknown tile: ghost/,
-  );
-  assert.throws(
-    () =>
-      solveWfc({
-        graph: ringGraph(2),
-        tiles: alternatingTiles,
-        adjacency: alternatingAdjacency,
-        seed: 1.5,
-      }),
-    /integer/,
-  );
+  const asymmetric = sealConstraintModel({
+    seed: 1,
+    cells: [
+      {
+        cellId: "a",
+        candidates: [
+          { candidateId: "A", weight: 1 },
+          { candidateId: "B", weight: 1 },
+        ],
+      },
+      {
+        cellId: "b",
+        candidates: [
+          { candidateId: "A", weight: 1 },
+          { candidateId: "B", weight: 1 },
+        ],
+      },
+    ],
+    edges: [
+      { edgeId: "ab", fromCellId: "a", toCellId: "b", relationId: "one_way", policy: "symmetric" },
+    ],
+    relations: [{ relationId: "one_way", allowed: [["A", "B"]] }],
+    policy: { maximumDecisions: 8, maximumBacktracks: 8 },
+  });
+  assert.equal(asymmetric.edges.length, 2);
+  assert.equal(solveConstraintModel(asymmetric).status, "incomplete");
+});
+
+test("directed constraints do not require callers to duplicate AC-3 reverse arcs", () => {
+  const directed = sealConstraintModel({
+    seed: 2,
+    cells: [
+      {
+        cellId: "a",
+        candidates: [
+          { candidateId: "A", weight: 1 },
+          { candidateId: "B", weight: 1 },
+        ],
+      },
+      {
+        cellId: "b",
+        candidates: [
+          { candidateId: "A", weight: 1 },
+          { candidateId: "B", weight: 1 },
+        ],
+      },
+    ],
+    edges: [
+      { edgeId: "ab", fromCellId: "a", toCellId: "b", relationId: "one_way", policy: "directed" },
+    ],
+    relations: [{ relationId: "one_way", allowed: [["A", "B"]] }],
+    policy: { maximumDecisions: 8, maximumBacktracks: 8 },
+  });
+  const solution = solveConstraintModel(directed);
+  assert.equal(directed.edges.length, 1);
+  assert.equal(solution.status, "eligible");
+  assert.deepEqual(solution.assignments, [
+    { cellId: "a", candidateId: "A" },
+    { cellId: "b", candidateId: "B" },
+  ]);
 });

@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 
-MANIFEST_ABI = "basalt-trellis2-modal-runtime-image@3"
+MANIFEST_CONTRACT = "basalt-trellis2-modal-runtime-image"
 BASE_IMAGE = (
     "docker.io/nvidia/cuda:12.4.1-devel-ubuntu22.04"
     "@sha256:5645fec64549cc35930eee9d85aafd2b0006c0c3f22632be5a1d85e2604e9749"
@@ -265,13 +265,13 @@ def build_manifest() -> dict[str, Any]:
 
     material = {
         "kind": "Trellis2ModalRuntimeImage",
-        "abi": MANIFEST_ABI,
+        "contract": MANIFEST_CONTRACT,
         "baseImage": BASE_IMAGE,
         "python": platform.python_version(),
         "torch": {"version": torch.__version__, "cudaBuild": str(torch.version.cuda)},
         "sourceCommits": sources,
         "modelArtifacts": MODEL_ARTIFACTS,
-        "workerSha256": worker_hash,
+        "workerImplementationHash": worker_hash,
         "oVoxelRuntimePatchSha256": patch_hash,
         "dependencyInventoryHash": content_hash(inventory),
         "dependencyInventory": inventory,
@@ -303,7 +303,7 @@ def write_manifest(path: Path, manifest: dict[str, Any]) -> None:
 def local_probe() -> dict[str, Any]:
     material = {
         "kind": "Trellis2RuntimeImageBuildPlan",
-        "abi": "basalt-trellis2-runtime-image-build-plan@1",
+        "contract": "basalt-trellis2-runtime-image-build-plan",
         "status": "incomplete",
         "code": "runtime_image_not_built_or_probed",
         "baseImage": BASE_IMAGE,

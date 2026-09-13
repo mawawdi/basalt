@@ -12,40 +12,41 @@ documentation authority is split deliberately:
 
 - Make clean breaks. Delete superseded schemas, commands, packages, and storage paths;
   do not add compatibility readers, migrations, deprecated aliases, or old/new fallbacks.
-- Do not version asset or family handles, directory names, or registry identities. Family
+- Do not version asset or entry handles, directory names, or registry identities. Entry
   identity is content-addressed; replacing measured evidence replaces the sealed artifact
   instead of introducing `v1`, `v2`, revision suffixes, or parent links.
 - Keep paths and artifact names stable and unversioned. Do not add version suffixes to
   directories, filenames, registry roots, cache roots, or operational artifacts; replacing
   the canonical artifact must not require renaming every downstream reference. Protocol,
-  schema, and ABI identifiers may carry a version only when it is part of the typed contract
-  identity, never as a path-versioning convention such as `-v1` or `-v2`.
+  schema, and ABI identifiers are also unversioned: this repository has one current contract
+  and makes clean breaks instead of encoding edit history into names.
 - Keep the semantic-authority boundary: creator intent, agent hypotheses, platform policies,
   and evaluation evidence remain distinct.
 - Keep generic world-compiler packages independent of fixtures, example maps, and evaluator
   solutions. Open-vocabulary art direction must not become fixture-specific code.
 - Keep model orchestration provider-neutral. Providers are one-turn transports and never
   enter Basalt contracts.
-- Preserve the spatial authority boundary: models propose family plans and composition;
+- Preserve the spatial authority boundary: models propose semantic hypotheses and composition;
   typed terrain, surface, relation, socket, and budget solvers decide geometry and transforms.
-- Catalog family grouping is decided by evidence and the author: measured family proposals
+- Catalog substitution grouping is decided by evidence and the author: measured proposals
   derive only from metric bounds (including Q32.32 envelopes), topology, material/PBR evidence,
-  support/contact, and collision facts, and the seal admits only on kind evidence. Review
+  support/contact, and collision facts, and the seal admits only genuine independent
+  substitutability. Review
   tooling may additionally surface source-path hints (vendor directory organization, filename
   stems) to pre-split review buckets, labeled as hints; hints never decide membership, never
   enter the seal, and never appear in Basalt contracts — declarations reference asset IDs and
   content hashes, folders mirror declared nouns. An explicit `_Collision` suffix may identify a
-  non-renderable collision companion only, never family membership. Unmeasured or ambiguous
+  non-renderable collision companion only, never substitution-set membership. Unmeasured or ambiguous
   assets remain pending/quarantined.
 - Keep workspace access bounded to declared roots, regular files, hash-guarded replacement,
   explicit absent creation, and fail-closed path/symlink handling.
-- Use `eligible`, `rejected`, and `incomplete` for local gates. Never describe output as
-  Studio-verified without authoritative creator-run Studio evidence.
-- Keep Studio plans canonical JSON interpreted by fixed connector source. Do not add arbitrary
+- Use `eligible`, `rejected`, and `incomplete` for local gates. Never create an
+  `engine_verified` assertion without authoritative creator-run engine evidence.
+- Keep Roblox import plans canonical JSON interpreted by fixed connector source. Do not add arbitrary
   code, expressions, callbacks, or model-authored DCC scripts.
 - Blender is an isolated asset-finishing worker. It must not be required to render or review
   complete worlds. World previews and diagnostics use lightweight partitioned evidence paths.
-- Neural generation is an offline family-factory route. It must not block macro planning,
+- Neural generation is an offline catalog-factory route. It must not block macro planning,
   terrain, routes, or deterministic population. Accepted results are cached by content hash.
 - The user runs all Roblox Studio checks. Never launch or operate Studio. Provide the exact
   place, connector artifact, commands, and click sequence, then wait for the user's result.

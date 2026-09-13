@@ -1,0 +1,15 @@
+[
+  {
+    "kind": "AnnotationPredicateDefinition",
+    "annotationPredicateId": "bap_000001",
+    "normativeDefinition": "The subject depicts a secondary concept without changing its primary denotation.",
+    "domainKinds": [
+      "catalog_asset",
+      "catalog_member",
+      "realized_instance"
+    ],
+    "rangeKind": "concept_commitment",
+    "compilerAuthority": false,
+    "hash": "3281bca8fd12ec143cc2593625232229b757af671a3b4765eb4b3d9cbce58b40"
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "name": "@basalt/authoring-graph",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@basalt/artifact-store": "*",
+    "@basalt/contracts": "*",
+    "@basalt/spatial-core": "*",
+    "zod": "4.5.4"
+  }
+}

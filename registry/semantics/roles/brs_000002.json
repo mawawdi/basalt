@@ -1,0 +1,69 @@
+{
+  "kind": "RoleSchemeDefinition",
+  "roleSchemeId": "brs_000002",
+  "scope": "route_grammar",
+  "normativeDefinition": "Contextual roles admitted only within the route_grammar scope.",
+  "roles": [
+    {
+      "roleId": "bro_000101",
+      "normativeDefinition": "The entity performs the straight role within the route_grammar context.",
+      "hash": "60920d5a366f8a15b58aff10de577d891bb17d2577f411578ae6eb88013711bb"
+    },
+    {
+      "roleId": "bro_000102",
+      "normativeDefinition": "The entity performs the curve role within the route_grammar context.",
+      "hash": "08b93e2fc67dec3009713f693c78a9829f0d55848537515d14ca9c28627afb56"
+    },
+    {
+      "roleId": "bro_000103",
+      "normativeDefinition": "The entity performs the tee role within the route_grammar context.",
+      "hash": "f66791c881f1bd116435de156bb2c27f55022d20b6d90a6ed1b36095594d6cb9"
+    },
+    {
+      "roleId": "bro_000104",
+      "normativeDefinition": "The entity performs the cross role within the route_grammar context.",
+      "hash": "94de19c3779886e127f99aeb410580718bc75c48bd86d1defcf50db333f3787a"
+    },
+    {
+      "roleId": "bro_000105",
+      "normativeDefinition": "The entity performs the terminal role within the route_grammar context.",
+      "hash": "762818b1ca96a57d87988d90fdd5ca977d9b5c319130f487d38e505d25ae8082"
+    },
+    {
+      "roleId": "bro_000106",
+      "normativeDefinition": "The entity performs the transition role within the route_grammar context.",
+      "hash": "63520dfb068cb56945a88d09d23466f7e89e2f110e7d01797e60b14f90ed2234"
+    },
+    {
+      "roleId": "bro_000107",
+      "normativeDefinition": "The entity performs the crossing role within the route_grammar context.",
+      "hash": "53db3c004dfc9e36e7bae322139f7b1485cc725c5a0fd022ab81f77c030b8b77"
+    },
+    {
+      "roleId": "bro_000108",
+      "normativeDefinition": "The entity performs the bridge span role within the route_grammar context.",
+      "hash": "2022bddd43b9b824b3273c2f9d7de4b9666d5b85109c75e2dbdb14c3f3462dee"
+    },
+    {
+      "roleId": "bro_000109",
+      "normativeDefinition": "The entity performs the tunnel portal role within the route_grammar context.",
+      "hash": "0f9bbfa305ec463771dd28e11a1ed016521b60a119d997152acec4c4a5c60b8b"
+    },
+    {
+      "roleId": "bro_000110",
+      "normativeDefinition": "The entity performs the median role within the route_grammar context.",
+      "hash": "eeadedb84f94caa04b624191b1c9c0b02ba63235178e1dd43713c0006596d732"
+    },
+    {
+      "roleId": "bro_000111",
+      "normativeDefinition": "The entity performs the sidewalk segment role within the route_grammar context.",
+      "hash": "269c91ac8bf7e797ab79f67cc06be209f729fb68d2906df6901bd16befe5869c"
+    },
+    {
+      "roleId": "bro_000112",
+      "normativeDefinition": "The entity performs the water-edge segment role within the route_grammar context.",
+      "hash": "c35dc1e26a9e0558845a0d5e26d441397357a90b2e99b749c419c3fe3e5118c3"
+    }
+  ],
+  "hash": "a2199c8919b23f1ce86f227b2e6167351573d78d3c4c307d0fced235d64493da"
+}

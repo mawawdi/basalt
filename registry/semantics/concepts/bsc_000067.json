@@ -1,0 +1,34 @@
+{
+  "kind": "ConceptCommitment",
+  "kernelHash": "759d6d2a9311e3f7877407ed458a977885d0065fa84df9fb9196c3dbb54724e8",
+  "conceptId": "bsc_000067",
+  "upperSort": "object",
+  "normativeDefinition": "Equipment configured for digital computation, input, output, or networking.",
+  "identityCriteria": {
+    "necessary": [
+      "A candidate must satisfy this concept-specific identity condition: Equipment configured for digital computation, input, output, or networking.",
+      "Its object identity must persist independently of temporary state, contextual role, visual style, and realization form."
+    ],
+    "excludes": [
+      "A candidate whose primary identity belongs to an upper sort other than object is excluded.",
+      "A candidate related only by part, membership, location, attachment, support, temporary state, treatment, or contextual role is excluded."
+    ]
+  },
+  "directParents": [
+    {
+      "conceptId": "bsc_000065",
+      "commitmentHash": "a1ab527bec94480d8e844d44b5a81404f58adf7dbed156a4e704a0df091d5ff2"
+    }
+  ],
+  "ancestors": [
+    {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    },
+    {
+      "conceptId": "bsc_000065",
+      "commitmentHash": "a1ab527bec94480d8e844d44b5a81404f58adf7dbed156a4e704a0df091d5ff2"
+    }
+  ],
+  "commitmentHash": "117b6b149433b6b13f8c73de2d09ba5debe261085918f63904a8f08c675a6f5d"
+}

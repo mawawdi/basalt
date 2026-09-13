@@ -1,0 +1,44 @@
+[
+  {
+    "kind": "SurfaceTreatmentDefinition",
+    "surfaceTreatmentId": "bst_000001",
+    "normativeDefinition": "The realized surface has the independently coexisting treatment snow covered.",
+    "hash": "1a626a9ddf2290841c0a5b3ef041c6ba68fab724ba81aa4f03f106457808d5ae"
+  },
+  {
+    "kind": "SurfaceTreatmentDefinition",
+    "surfaceTreatmentId": "bst_000002",
+    "normativeDefinition": "The realized surface has the independently coexisting treatment moss covered.",
+    "hash": "51555c2283f762d57642dd8e75dfe0c10767ece664be5ebba125c80c9812d178"
+  },
+  {
+    "kind": "SurfaceTreatmentDefinition",
+    "surfaceTreatmentId": "bst_000003",
+    "normativeDefinition": "The realized surface has the independently coexisting treatment dirty.",
+    "hash": "a9153f7748b6c49fd7caf434125b41854b119d07686a64782cc059d2363bd4c0"
+  },
+  {
+    "kind": "SurfaceTreatmentDefinition",
+    "surfaceTreatmentId": "bst_000004",
+    "normativeDefinition": "The realized surface has the independently coexisting treatment scorched.",
+    "hash": "454a6c213960a5ac903352fb347a8f5afc53ad10b628c475f49b03922061c334"
+  },
+  {
+    "kind": "SurfaceTreatmentDefinition",
+    "surfaceTreatmentId": "bst_000005",
+    "normativeDefinition": "The realized surface has the independently coexisting treatment rusted.",
+    "hash": "bbb3763d7ff9002a77f05edcf99776a5be9183ef9644550ef048348468f477cc"
+  },
+  {
+    "kind": "SurfaceTreatmentDefinition",
+    "surfaceTreatmentId": "bst_000006",
+    "normativeDefinition": "The realized surface has the independently coexisting treatment painted.",
+    "hash": "5c7887da1083664c970ef2bc3723fd24f6a4e3ae1dda3932294ae14a282d8e77"
+  },
+  {
+    "kind": "SurfaceTreatmentDefinition",
+    "surfaceTreatmentId": "bst_000007",
+    "normativeDefinition": "The realized surface has the independently coexisting treatment weathered.",
+    "hash": "7408b4645dccd28af7a58e883540b09d532e788e8c35995ea8b2046d531eb73f"
+  }
+]
