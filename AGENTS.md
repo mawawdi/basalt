@@ -7,7 +7,9 @@ documentation authority is split deliberately:
 - `docs/BASALT.md` defines the product thesis and invariants.
 - `docs/VISUALS.md` defines hierarchical art direction, assets, materials, and evidence.
 - `docs/EVALS.md` defines evidence tiers and claim semantics.
-- `docs/ROADMAP.md` defines future work and acceptance criteria.
+- `TASKS.md` is the only active backlog and work-status authority. It contains only
+  actionable `Now`, `Ready`, and `Blocked` cards; completed cards are deleted
+  because Git history is the record.
 - `docs/RESEARCH.md` indexes current rationale and source evidence.
 
 ## Problem framing and experimental discipline

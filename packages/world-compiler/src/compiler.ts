@@ -30,14 +30,19 @@ import {
 } from "@basalt/spatial-core";
 import {
   compileWorldPlan,
+  subdivideRegion,
+  worldFoundationInputHash,
   worldRegionContainsPoint,
   worldRegionVolumeBounds,
+  type ConstructionProgram,
   type SpatialWorldPlan,
   type WorldVector3,
 } from "@basalt/world-planning";
+import { realizeConstructionProgram } from "./construction.js";
 import {
   sealAssemblyArtifact,
   sealCompiledWorldFoundation,
+  sealCompiledWorldFoundationArtifacts,
   sealConstructedSurface,
   sealMesoLayout,
   sealMicroRealization,
@@ -49,12 +54,21 @@ import {
   type AssemblyArtifact,
   type CompiledWorldFoundation,
   type ConstructedSurface,
+  type ConstructedStructureArtifact,
   type PortalArtifact,
   type ProceduralStairArtifact,
   type RealizedInstance,
   type RoomArtifact,
   type WorldBuild,
 } from "./world-build.js";
+import { compilationTaskId } from "./world-build.js";
+import { resolveRouteConstruction, sealRouteJunctionArtifact } from "./route-construction.js";
+import {
+  sampleTerrainFieldElevation,
+  sealBaseTerrainFieldArtifact,
+  sealTerrainFieldArtifact,
+  verifyTerrainConstruction,
+} from "./terrain-foundation.js";
 import { compilationTasks } from "./task-graph.js";
 
 export const REALIZATION_INTENT_KINDS = [
@@ -105,27 +119,140 @@ export interface CompileBasaltWorldInput {
 }
 
 export function compileBasaltWorld(input: CompileBasaltWorldInput): WorldBuild {
+  return compileBasaltWorldInternal(input).worldBuild;
+}
+
+export interface IncrementalWorldCompilation {
+  readonly worldBuild: WorldBuild;
+  readonly executedTaskIds: readonly string[];
+  readonly reusedTasks: readonly { readonly taskId: string; readonly taskHash: string }[];
+}
+
+export function compileBasaltWorldIncremental(
+  input: CompileBasaltWorldInput,
+  options: {
+    readonly previousWorldBuild: WorldBuild;
+    readonly affectedTaskIds: readonly string[];
+    readonly onTaskExecute?: (taskId: string) => void;
+  },
+): IncrementalWorldCompilation {
+  return compileBasaltWorldInternal(input, options);
+}
+
+function compileBasaltWorldInternal(
+  input: CompileBasaltWorldInput,
+  options?: {
+    readonly previousWorldBuild: WorldBuild;
+    readonly affectedTaskIds: readonly string[];
+    readonly onTaskExecute?: (taskId: string) => void;
+  },
+): IncrementalWorldCompilation {
   validateSemanticAuthority(input);
   validateCatalogAssets(input);
-  const compiledPlan = compileWorldPlan(input.spatialPlan);
-  const foundation = sealCompiledWorldFoundation(compiledPlan);
-  const resolution = resolveCatalogRequirements({
-    semanticModule: input.semanticModule,
-    snapshot: input.catalogSnapshot,
-    requirements: input.spatialPlan.catalogRequirements,
-  });
+  const affected = new Set(options?.affectedTaskIds ?? []);
+  const previous = options?.previousWorldBuild;
+  if (previous) {
+    const known = new Set(previous.tasks.map((entry) => entry.taskId));
+    for (const taskId of affected)
+      if (!known.has(taskId))
+        throw new Error(`Incremental compilation received unknown task ${taskId}`);
+  }
+  const executed = new Set<string>();
+  const markExecuted = (taskId: string) => {
+    if (executed.has(taskId)) return;
+    executed.add(taskId);
+    options?.onTaskExecute?.(taskId);
+  };
+  const execute = (
+    scope: Parameters<typeof compilationTaskId>[0],
+    stage: Parameters<typeof compilationTaskId>[1],
+    subjectId: string,
+  ) => {
+    const taskId = compilationTaskId(scope, stage, subjectId);
+    if (!previous || affected.has(taskId)) markExecuted(taskId);
+    return taskId;
+  };
+
+  const worldFoundationTaskId = compilationTaskId("world", "foundation", input.spatialPlan.planId);
+  const foundation =
+    previous && !affected.has(worldFoundationTaskId)
+      ? reuseFoundation(input.spatialPlan, previous.foundation)
+      : previous
+        ? compileFoundationIncrementally(
+            input.spatialPlan,
+            previous.foundation,
+            affected,
+            markExecuted,
+          )
+        : sealCompiledWorldFoundation(compileWorldPlan(input.spatialPlan));
+  if (!previous) execute("world", "foundation", input.spatialPlan.planId);
+  else if (affected.has(worldFoundationTaskId)) markExecuted(worldFoundationTaskId);
+
+  const worldCatalogTaskId = compilationTaskId(
+    "world",
+    "catalog_resolution",
+    input.spatialPlan.planId,
+  );
+  const requirementHash = contentHash(stableJson(input.spatialPlan.catalogRequirements));
+  const resolution =
+    previous && !affected.has(worldCatalogTaskId)
+      ? previous.catalogResolution
+      : resolveCatalogRequirements({
+          semanticModule: input.semanticModule,
+          snapshot: input.catalogSnapshot,
+          requirements: input.spatialPlan.catalogRequirements,
+        });
+  if (
+    resolution.requirementsHash !== requirementHash ||
+    resolution.catalogSnapshotHash !== input.catalogSnapshot.hash ||
+    resolution.semanticKernelHash !== input.semanticModule.kernel.hash
+  )
+    throw new Error("Catalog resolution cannot be reused across changed authority inputs");
+  if (!previous || affected.has(worldCatalogTaskId)) markExecuted(worldCatalogTaskId);
   const state = createState(input, resolution.bindings, foundation);
+  for (const program of [...input.spatialPlan.constructionPrograms].sort((left, right) =>
+    compareCanonicalStrings(left.programId, right.programId),
+  )) {
+    const taskId = compilationTaskId("structure", "meso", program.programId);
+    try {
+      const placement = resolveConstructionPlacement(input.spatialPlan, foundation, program);
+      const structure =
+        previous && !affected.has(taskId)
+          ? reuseConstructedStructure(previous, program.programHash, placement)
+          : realizeConstructionProgram(program, placement);
+      if (!previous || affected.has(taskId)) markExecuted(taskId);
+      assertConstructedStructureInsideRegion(input.spatialPlan, structure);
+      state.occupancy.reserve(
+        sealOccupancyReservation({
+          sourceInstanceId: structure.structureId,
+          surfaceId: structure.regionId,
+          stratum: "constructed_structure",
+          bounds: structure.boundsMeters,
+        }),
+      );
+      state.constructedStructures.push(structure);
+    } catch (error) {
+      if (!previous || affected.has(taskId)) markExecuted(taskId);
+      state.mesoDiagnostics.push(
+        `construction:${program.programId}:${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
   const mesoIntents = orderedIntents(input.spatialPlan.realizationIntents).filter(
     (intent) => intent.kind === "assembly" || intent.kind === "route_network",
   );
   for (const intent of mesoIntents) realizeIntent(state, intent, "meso");
-  const mesoStatus = stageStatus(resolution.status, state.mesoDiagnostics);
+  const mesoStatus = stageStatus(
+    combineCompilationStatuses(foundation.status, resolution.status),
+    state.mesoDiagnostics,
+  );
   const meso = sealMesoLayout({
     status: mesoStatus,
     foundationHash: foundation.foundationHash,
     catalogResolutionHash: resolution.hash,
     instances: state.mesoInstances,
     assemblies: state.assemblies,
+    constructedStructures: state.constructedStructures,
     constructedSurfaces: state.constructedSurfaces,
     portals: state.portals,
     rooms: state.rooms,
@@ -136,7 +263,10 @@ export function compileBasaltWorld(input: CompileBasaltWorldInput): WorldBuild {
     (intent) => intent.kind !== "assembly" && intent.kind !== "route_network",
   );
   for (const intent of microIntents) realizeIntent(state, intent, "micro");
-  const microStatus = stageStatus(resolution.status, state.microDiagnostics);
+  const microStatus = stageStatus(
+    combineCompilationStatuses(foundation.status, resolution.status),
+    state.microDiagnostics,
+  );
   const micro = sealMicroRealization({
     status: microStatus,
     foundationHash: foundation.foundationHash,
@@ -145,7 +275,7 @@ export function compileBasaltWorld(input: CompileBasaltWorldInput): WorldBuild {
     instances: state.microInstances,
     diagnostics: state.microDiagnostics,
   });
-  const statuses = [resolution.status, meso.status, micro.status];
+  const statuses = [foundation.status, resolution.status, meso.status, micro.status];
   const status = statuses.includes("rejected")
     ? "rejected"
     : statuses.includes("incomplete")
@@ -159,8 +289,21 @@ export function compileBasaltWorld(input: CompileBasaltWorldInput): WorldBuild {
     micro,
     state.assemblies,
     state.mesoInstances,
+    state.constructedStructures,
   );
-  return sealWorldBuild({
+  const worldMesoTaskId = compilationTaskId("world", "meso", input.spatialPlan.planId);
+  const worldMicroTaskId = compilationTaskId("world", "micro", input.spatialPlan.planId);
+  const worldBuildTaskId = compilationTaskId("world", "world_build", input.spatialPlan.planId);
+  for (const task of tasks)
+    if (
+      !previous ||
+      (affected.has(task.taskId) &&
+        !executed.has(task.taskId) &&
+        (task.stage === "meso" ||
+          [worldMesoTaskId, worldMicroTaskId, worldBuildTaskId].includes(task.taskId)))
+    )
+      markExecuted(task.taskId);
+  const worldBuild = sealWorldBuild({
     status,
     semanticKernelHash: input.semanticModule.kernel.hash,
     semanticClosureHashes: input.spatialPlan.semanticEntities.map(
@@ -174,6 +317,257 @@ export function compileBasaltWorld(input: CompileBasaltWorldInput): WorldBuild {
     tasks,
     diagnostics: [...resolution.diagnostics, ...meso.diagnostics, ...micro.diagnostics],
   });
+  if (!previous) {
+    for (const task of worldBuild.tasks) markExecuted(task.taskId);
+  } else {
+    const missingExecutions = [...affected].filter((taskId) => !executed.has(taskId));
+    if (missingExecutions.length > 0)
+      throw new Error(
+        `Incremental compiler did not execute affected tasks: ${missingExecutions.join(", ")}`,
+      );
+  }
+  const previousById = new Map(
+    previous?.tasks.map((entry) => [entry.taskId, entry] as const) ?? [],
+  );
+  const reusedTasks = worldBuild.tasks
+    .filter((entry) => previous && !affected.has(entry.taskId))
+    .map((entry) => {
+      const old = previousById.get(entry.taskId);
+      if (!old || old.taskHash !== entry.taskHash)
+        throw new Error(`Unexecuted task ${entry.taskId} changed during incremental compilation`);
+      return { taskId: entry.taskId, taskHash: entry.taskHash };
+    });
+  return {
+    worldBuild,
+    executedTaskIds: [...executed].sort(compareCanonicalStrings),
+    reusedTasks,
+  };
+}
+
+function reuseFoundation(
+  plan: SpatialWorldPlan,
+  previous: CompiledWorldFoundation,
+): CompiledWorldFoundation {
+  if (previous.foundationInputHash !== worldFoundationInputHash(plan))
+    throw new Error("Foundation inputs changed outside the affected task closure");
+  return previous;
+}
+
+function compileFoundationIncrementally(
+  plan: SpatialWorldPlan,
+  previous: CompiledWorldFoundation,
+  affected: ReadonlySet<string>,
+  markExecuted: (taskId: string) => void,
+): CompiledWorldFoundation {
+  const previousBaseTerrain = new Map(
+    previous.baseTerrainFields.map((entry) => [entry.terrainPlanId, entry] as const),
+  );
+  const baseTerrainFields = plan.terrainPlans.map((terrainPlan) => {
+    const taskId = compilationTaskId("terrain", "terrain_base", terrainPlan.terrainPlanId);
+    const prior = previousBaseTerrain.get(terrainPlan.terrainPlanId);
+    const terrainPlanHash = contentHash(stableJson(terrainPlan));
+    if (!affected.has(taskId)) {
+      if (!prior || prior.terrainPlanHash !== terrainPlanHash)
+        throw new Error(`Base terrain ${terrainPlan.terrainPlanId} changed outside its task`);
+      return prior;
+    }
+    markExecuted(taskId);
+    return sealBaseTerrainFieldArtifact(terrainPlan);
+  });
+
+  const previousJunctions = new Map(
+    previous.routeJunctions.map((entry) => [entry.junctionId, entry] as const),
+  );
+  const routeJunctions = plan.routeJunctions.map((junction) => {
+    const taskId = compilationTaskId("junction", "route_construction", junction.junctionId);
+    if (affected.has(taskId)) {
+      markExecuted(taskId);
+      return sealRouteJunctionArtifact(junction, plan, baseTerrainFields);
+    }
+    const prior = previousJunctions.get(junction.junctionId);
+    const expected = sealRouteJunctionArtifact(junction, plan, baseTerrainFields);
+    if (!prior || prior.hash !== expected.hash)
+      throw new Error(`Route junction ${junction.junctionId} changed outside its task closure`);
+    return prior;
+  });
+
+  const previousRoutes = new Map(
+    previous.routeConstructions.map((entry) => [entry.routeId, entry] as const),
+  );
+  const routeConstructions = plan.routes.map((route) => {
+    const taskId = compilationTaskId("route", "route_construction", route.routeId);
+    const base = baseTerrainFields.find((field) => field.surfaceId === route.surfaceId);
+    if (!base) throw new Error(`Route ${route.routeId} has no base terrain`);
+    const relevantJunctions = routeJunctions.filter((junction) =>
+      junction.participants.some((participant) => participant.routeId === route.routeId),
+    );
+    if (affected.has(taskId)) {
+      markExecuted(taskId);
+      return resolveRouteConstruction(route, base, relevantJunctions);
+    }
+    const prior = previousRoutes.get(route.routeId);
+    const expectedJunctions = relevantJunctions
+      .map((junction) => ({ junctionId: junction.junctionId, junctionHash: junction.hash }))
+      .sort((left, right) => compareCanonicalStrings(left.junctionId, right.junctionId));
+    if (
+      !prior ||
+      prior.routeHash !== contentHash(stableJson(route)) ||
+      prior.baseTerrainFieldHash !== base.hash ||
+      stableJson(prior.junctions) !== stableJson(expectedJunctions)
+    )
+      throw new Error(`Route ${route.routeId} changed outside its task closure`);
+    return prior;
+  });
+
+  const previousTerrain = new Map(
+    previous.terrainFields.map((entry) => [entry.terrainPlanId, entry] as const),
+  );
+  const terrainFields = plan.terrainPlans.map((terrainPlan) => {
+    const taskId = compilationTaskId("terrain", "terrain_final", terrainPlan.terrainPlanId);
+    const base = baseTerrainFields.find(
+      (candidate) => candidate.terrainPlanId === terrainPlan.terrainPlanId,
+    )!;
+    const contributors = routeConstructions.filter(
+      (route) => route.surfaceId === terrainPlan.surfaceId,
+    );
+    const junctionContributors = routeJunctions.filter(
+      (junction) => junction.surfaceId === terrainPlan.surfaceId,
+    );
+    if (affected.has(taskId)) {
+      markExecuted(taskId);
+      return sealTerrainFieldArtifact(base, contributors, junctionContributors);
+    }
+    const prior = previousTerrain.get(terrainPlan.terrainPlanId);
+    const expected = sealTerrainFieldArtifact(base, contributors, junctionContributors);
+    if (!prior || prior.hash !== expected.hash)
+      throw new Error(
+        `Final terrain ${terrainPlan.terrainPlanId} changed outside its task closure`,
+      );
+    return prior;
+  });
+
+  for (const region of plan.regions) {
+    const taskId = compilationTaskId("region", "foundation", region.regionId);
+    if (affected.has(taskId)) markExecuted(taskId);
+  }
+
+  const previousLots = new Map(
+    previous.lotSubdivisions.map((entry) => [entry.policy.policyId, entry] as const),
+  );
+  const lotSubdivisions = plan.lotPolicies.map((policy) => {
+    const taskId = compilationTaskId("lot", "foundation", policy.policyId);
+    if (affected.has(taskId)) {
+      markExecuted(taskId);
+      return subdivideRegion(plan, policy);
+    }
+    const prior = previousLots.get(policy.policyId);
+    const region = plan.regions.find((entry) => entry.regionId === policy.regionId);
+    const routes = plan.routes.filter((route) => route.regionIds.includes(policy.regionId));
+    if (!region) throw new Error(`Lot policy ${policy.policyId} has no region`);
+    const inputHash = contentHash(stableJson({ policy, region, routes }));
+    if (!prior || prior.inputHash !== inputHash)
+      throw new Error(`Lot policy ${policy.policyId} changed outside its task closure`);
+    return prior;
+  });
+  const diagnostics = [
+    ...routeConstructions.flatMap((route) => route.diagnostics),
+    ...verifyTerrainConstruction(
+      terrainFields,
+      baseTerrainFields,
+      routeConstructions,
+      routeJunctions,
+    ),
+  ];
+  return sealCompiledWorldFoundationArtifacts({
+    status: routeConstructions.some((route) => route.status === "rejected")
+      ? "rejected"
+      : routeConstructions.some((route) => route.status === "incomplete") || diagnostics.length > 0
+        ? "incomplete"
+        : "eligible",
+    foundationInputHash: worldFoundationInputHash(plan),
+    boundsMeters: plan.boundsMeters,
+    baseTerrainFields,
+    terrainFields,
+    routeConstructions,
+    routeJunctions,
+    lotSubdivisions,
+    placementSurfaces: plan.placementSurfaces,
+    diagnostics,
+  });
+}
+
+function reuseConstructedStructure(
+  previous: WorldBuild,
+  constructionProgramHash: string,
+  placement: ReturnType<typeof resolveConstructionPlacement>,
+): ConstructedStructureArtifact {
+  const structure = previous.meso.constructedStructures.find(
+    (entry) => entry.constructionProgramHash === constructionProgramHash,
+  );
+  if (!structure) throw new Error("Unchanged construction task has no reusable structure artifact");
+  if (
+    structure.placementEvidenceHash !== placement.evidenceHash ||
+    stableJson(structure.resolvedAnchorMeters) !== stableJson(placement.anchorPositionMeters) ||
+    structure.placementSurfaceId !== placement.surfaceId
+  )
+    throw new Error("Construction placement changed outside its affected task closure");
+  return structure;
+}
+
+function resolveConstructionPlacement(
+  plan: SpatialWorldPlan,
+  foundation: CompiledWorldFoundation,
+  program: ConstructionProgram,
+) {
+  const anchor = program.anchor;
+  if (anchor.kind === "region_point")
+    return {
+      anchorPositionMeters: anchor.positionMeters,
+      evidenceHash: contentHash(
+        stableJson({
+          kind: "region_point",
+          region: plan.regions.find((entry) => entry.regionId === program.regionId),
+          positionMeters: anchor.positionMeters,
+        }),
+      ),
+    };
+  const surface = foundation.placementSurfaces.find(
+    (candidate) => candidate.surfaceId === anchor.surfaceId,
+  );
+  if (!surface) throw new Error(`unknown construction surface ${anchor.surfaceId}`);
+  const fields = foundation.terrainFields.filter(
+    (candidate) => candidate.surfaceId === anchor.surfaceId,
+  );
+  if (fields.length > 1)
+    throw new Error(`construction surface ${anchor.surfaceId} has ambiguous terrain`);
+  const horizontal = anchor.horizontalPositionMeters;
+  const field = fields[0];
+  const baseField = field
+    ? foundation.baseTerrainFields.find(
+        (candidate) => candidate.hash === field.baseTerrainFieldHash,
+      )
+    : undefined;
+  if (field && !baseField)
+    throw new Error(`construction surface ${anchor.surfaceId} has no base terrain`);
+  const surfaceElevationMeters = field
+    ? sampleTerrainFieldElevation(
+        field,
+        baseField!,
+        foundation.routeConstructions,
+        foundation.routeJunctions,
+        horizontal.x,
+        horizontal.z,
+      )
+    : surface.bounds.max.y;
+  return {
+    anchorPositionMeters: {
+      x: horizontal.x,
+      y: surfaceElevationMeters + anchor.elevationOffsetMeters,
+      z: horizontal.z,
+    },
+    evidenceHash: field?.hash ?? surface.sourceHash,
+    surfaceId: surface.surfaceId,
+  };
 }
 
 interface CompilerState {
@@ -186,6 +580,7 @@ interface CompilerState {
   readonly mesoInstances: RealizedInstance[];
   readonly microInstances: RealizedInstance[];
   readonly assemblies: AssemblyArtifact[];
+  readonly constructedStructures: ConstructedStructureArtifact[];
   readonly constructedSurfaces: ConstructedSurface[];
   readonly portals: PortalArtifact[];
   readonly rooms: RoomArtifact[];
@@ -212,6 +607,7 @@ function createState(
     mesoInstances: [],
     microInstances: [],
     assemblies: [],
+    constructedStructures: [],
     constructedSurfaces: [],
     portals: [],
     rooms: [],
@@ -319,7 +715,11 @@ function realizeRouteNetwork(
   const drafts = intent.routeIds.flatMap((routeId) => {
     const route = state.input.spatialPlan.routes.find((candidate) => candidate.routeId === routeId);
     if (!route) throw new Error(`unknown route ${routeId}`);
-    const stations = routeStations(route.pointsMeters, segmentLengthMeters, route.closed);
+    const stations = routeStations(
+      routeProfilePoints(state, routeId),
+      segmentLengthMeters,
+      route.closed,
+    );
     return stations.map((station, index) => {
       const topology =
         !route.closed && (index === 0 || index === stations.length - 1)
@@ -1242,7 +1642,11 @@ function targetsForIntent(
   if (intent.kind === "single")
     return [
       {
-        position: { x: intent.at.u, y: surfaceHeight(state, intent.surfaceId), z: intent.at.v },
+        position: {
+          x: intent.at.u,
+          y: surfaceHeight(state, intent.surfaceId, intent.at.u, intent.at.v),
+          z: intent.at.v,
+        },
         regionId: intent.regionId,
         surfaceId: intent.surfaceId,
       },
@@ -1251,7 +1655,11 @@ function targetsForIntent(
   if (intent.kind === "surface_scatter")
     return scatter(intent.boundary, intent.targetCount, contentHash(stableJson(intent))).map(
       (point) => ({
-        position: { x: point.x, y: surfaceHeight(state, intent.surfaceId), z: point.z },
+        position: {
+          x: point.x,
+          y: surfaceHeight(state, intent.surfaceId, point.x, point.z),
+          z: point.z,
+        },
         regionId: intent.regionId,
         surfaceId: intent.surfaceId,
       }),
@@ -1260,32 +1668,34 @@ function targetsForIntent(
     return Array.from({ length: intent.targetCount }, (_, index) => {
       const radius = intent.radiusMeters * Math.sqrt((index + 0.5) / intent.targetCount);
       const angle = index * 2.399963229728653;
+      const x = intent.center.u + Math.cos(angle) * radius;
+      const z = intent.center.v + Math.sin(angle) * radius;
       return {
         position: {
-          x: intent.center.u + Math.cos(angle) * radius,
-          y: surfaceHeight(state, intent.surfaceId),
-          z: intent.center.v + Math.sin(angle) * radius,
+          x,
+          y: surfaceHeight(state, intent.surfaceId, x, z),
+          z,
         },
         regionId: intent.regionId,
         surfaceId: intent.surfaceId,
       };
     });
   if (intent.kind === "surface_grid")
-    return Array.from({ length: intent.rows * intent.columns }, (_, index) => ({
-      position: {
-        x: intent.origin.u + (index % intent.columns) * intent.spacingUMeters,
-        y: surfaceHeight(state, intent.surfaceId),
-        z: intent.origin.v + Math.floor(index / intent.columns) * intent.spacingVMeters,
-      },
-      regionId: intent.regionId,
-      surfaceId: intent.surfaceId,
-    }));
+    return Array.from({ length: intent.rows * intent.columns }, (_, index) => {
+      const x = intent.origin.u + (index % intent.columns) * intent.spacingUMeters;
+      const z = intent.origin.v + Math.floor(index / intent.columns) * intent.spacingVMeters;
+      return {
+        position: { x, y: surfaceHeight(state, intent.surfaceId, x, z), z },
+        regionId: intent.regionId,
+        surfaceId: intent.surfaceId,
+      };
+    });
   if (intent.kind === "along_route") {
     const route = plan.routes.find((candidate) => candidate.routeId === intent.routeId);
     if (!route) throw new Error(`unknown route ${intent.routeId}`);
     return Array.from({ length: intent.count }, (_, index) => ({
       position: offsetRoute(
-        sampleRouteFrame(route.pointsMeters, (index + 0.5) / intent.count),
+        sampleRouteFrame(routeProfilePoints(state, route.routeId), (index + 0.5) / intent.count),
         intent.lateralOffsetMeters,
       ),
       regionId: intent.regionId,
@@ -1297,7 +1707,7 @@ function targetsForIntent(
       const route = plan.routes.find((candidate) => candidate.routeId === routeId);
       if (!route) throw new Error(`unknown route ${routeId}`);
       return {
-        position: sampleRoute(route.pointsMeters, 0.5),
+        position: sampleRoute(routeProfilePoints(state, route.routeId), 0.5),
         regionId: route.regionIds[0],
         surfaceId: route.surfaceId,
       };
@@ -1591,12 +2001,42 @@ function reservationFor(instance: RealizedInstance, asset: CatalogAssetArtifact,
     narrowPhaseObbs: obbs,
   });
 }
-function surfaceHeight(state: CompilerState, surfaceId: string): number {
+function surfaceHeight(
+  state: CompilerState,
+  surfaceId: string,
+  xMeters: number,
+  zMeters: number,
+): number {
   const surface = [...state.input.spatialPlan.placementSurfaces, ...state.constructedSurfaces].find(
     (candidate) => candidate.surfaceId === surfaceId,
   );
   if (!surface) throw new Error(`unknown surface ${surfaceId}`);
+  const terrainFields = state.foundation.terrainFields.filter(
+    (candidate) => candidate.surfaceId === surfaceId,
+  );
+  if (terrainFields.length > 1) throw new Error(`surface ${surfaceId} has ambiguous terrain`);
+  if (terrainFields[0]) {
+    const base = state.foundation.baseTerrainFields.find(
+      (candidate) => candidate.hash === terrainFields[0]!.baseTerrainFieldHash,
+    );
+    if (!base) throw new Error(`surface ${surfaceId} has no base terrain`);
+    return sampleTerrainFieldElevation(
+      terrainFields[0],
+      base,
+      state.foundation.routeConstructions,
+      state.foundation.routeJunctions,
+      xMeters,
+      zMeters,
+    );
+  }
   return surface.bounds.max.y;
+}
+function routeProfilePoints(state: CompilerState, routeId: string): WorldVector3[] {
+  const route = state.foundation.routeConstructions.find((entry) => entry.routeId === routeId);
+  if (!route) throw new Error(`unknown resolved route ${routeId}`);
+  if (route.status !== "eligible")
+    throw new Error(`route ${routeId} is ${route.status}: ${route.diagnostics.join("; ")}`);
+  return route.profile.map((station) => ({ ...station.centerTopMeters }));
 }
 function orderedIntents(intents: readonly RealizationIntent[]): RealizationIntent[] {
   return [...intents].sort(
@@ -1617,6 +2057,13 @@ function stageStatus(
 ): CompilationStatus {
   if (resolution === "rejected") return "rejected";
   return resolution === "incomplete" || diagnostics.length > 0 ? "incomplete" : "eligible";
+}
+function combineCompilationStatuses(
+  left: CompilationStatus,
+  right: CompilationStatus,
+): CompilationStatus {
+  if (left === "rejected" || right === "rejected") return "rejected";
+  return left === "incomplete" || right === "incomplete" ? "incomplete" : "eligible";
 }
 function yawQuaternion(hash: string): [number, number, number, number] {
   const angle = (Number.parseInt(hash.slice(0, 8), 16) / 0xffff_ffff) * Math.PI * 2;
@@ -1776,6 +2223,22 @@ function assertInstanceInsideRegion(plan: SpatialWorldPlan, instance: RealizedIn
   );
   if (corners.some((corner) => !worldRegionContainsPoint(region, corner)))
     throw new Error(`realized footprint leaves region ${region.regionId}`);
+}
+
+function assertConstructedStructureInsideRegion(
+  plan: SpatialWorldPlan,
+  structure: ConstructedStructureArtifact,
+): void {
+  const region = plan.regions.find((candidate) => candidate.regionId === structure.regionId);
+  if (!region)
+    throw new Error(`constructed structure references unknown region ${structure.regionId}`);
+  const corners = [structure.boundsMeters.min.x, structure.boundsMeters.max.x].flatMap((x) =>
+    [structure.boundsMeters.min.y, structure.boundsMeters.max.y].flatMap((y) =>
+      [structure.boundsMeters.min.z, structure.boundsMeters.max.z].map((z) => ({ x, y, z })),
+    ),
+  );
+  if (corners.some((corner) => !worldRegionContainsPoint(region, corner)))
+    throw new Error(`constructed footprint leaves region ${region.regionId}`);
 }
 
 function socketPolaritiesMate(first: string, second: string): boolean {

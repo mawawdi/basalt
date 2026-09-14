@@ -5,3 +5,4 @@ export * from "./presentation.js";
 export * from "./readability.js";
 export * from "./constraint-solver.js";
 export * from "./occupancy.js";
+export * from "./raycast.js";

@@ -11,6 +11,7 @@ import { SPATIAL_AABB_SCHEMA, SPATIAL_VECTOR3_SCHEMA } from "@basalt/spatial-cor
 import {
   ASSEMBLY_ARTIFACT_SCHEMA,
   COMPILED_WORLD_FOUNDATION_SCHEMA,
+  CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA,
   CONSTRUCTED_SURFACE_SCHEMA,
   PORTAL_ARTIFACT_SCHEMA,
   PROCEDURAL_STAIR_ARTIFACT_SCHEMA,
@@ -21,6 +22,7 @@ import {
 import { ROBLOX_STUD_METERS } from "./constants.js";
 
 const entityId = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u);
+const diagnosticEntityId = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u);
 const quaternion = z.tuple([
   z.number().finite(),
   z.number().finite(),
@@ -31,8 +33,13 @@ const observedArtifact = z
   .object({
     artifactKind: z.enum([
       "terrain_field",
-      "route",
+      "route_construction",
+      "route_junction",
       "assembly",
+      "constructed_element",
+      "constructed_opening",
+      "constructed_portal",
+      "constructed_structure",
       "constructed_surface",
       "portal",
       "room",
@@ -52,6 +59,121 @@ const colorRgb = z
     blue: z.number().int().min(0).max(255),
   })
   .strict();
+const MICROMETER_COMPONENT_SCHEMA = z.number().int().safe();
+const MICROMETER_VECTOR_SCHEMA = z
+  .object({
+    x: MICROMETER_COMPONENT_SCHEMA,
+    y: MICROMETER_COMPONENT_SCHEMA,
+    z: MICROMETER_COMPONENT_SCHEMA,
+  })
+  .strict();
+const MICROMETER_SIZE_SCHEMA = MICROMETER_VECTOR_SCHEMA.refine(
+  (value) => value.x > 0 && value.y > 0 && value.z > 0,
+  "Observed constructed geometry must have positive extents",
+);
+const MICROMETER_AABB_SCHEMA = z
+  .object({ min: MICROMETER_VECTOR_SCHEMA, max: MICROMETER_VECTOR_SCHEMA })
+  .strict()
+  .refine(
+    ({ min, max }) => min.x < max.x && min.y < max.y && min.z < max.z,
+    "Observed clearance bounds must have positive extents",
+  );
+
+/**
+ * Actual Roblox geometry observations, canonicalized through Roblox's float32
+ * stud representation and then quantized to micrometers for exact readback.
+ */
+export const ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA = z
+  .object({
+    elementId: entityId,
+    geometryKind: z.enum(["box", "cylinder"]),
+    centerMicrometers: MICROMETER_VECTOR_SCHEMA,
+    sizeMicrometers: MICROMETER_SIZE_SCHEMA,
+    materialId: entityId,
+    anchored: z.literal(true),
+    canCollide: z.literal(true),
+  })
+  .strict();
+export type RobloxConstructedElementObservation = z.output<
+  typeof ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA
+>;
+
+/** Actual clearance query for one constructed opening. */
+export const ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA = z
+  .object({
+    openingId: entityId,
+    clearanceBoundsMicrometers: MICROMETER_AABB_SCHEMA,
+    blockingPartIds: z.array(z.string().trim().min(1).max(1024)).max(256),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const canonical = [...new Set(value.blockingPartIds)].sort(compareCanonicalStrings);
+    if (stableJson(canonical) !== stableJson(value.blockingPartIds))
+      context.addIssue({
+        code: "custom",
+        path: ["blockingPartIds"],
+        message: "Opening blockers must be unique and canonically ordered",
+      });
+  });
+export type RobloxConstructedOpeningObservation = z.output<
+  typeof ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA
+>;
+
+const routeTerrainTraceFields = {
+  phase: z.enum(["foundation", "readback"]),
+  requiredSurfaceRevealMeters: z.number().finite().nonnegative(),
+  maximumGroundingGapMeters: z.number().finite().nonnegative(),
+  minimumSurfaceClearanceMeters: z.number().finite(),
+  maximumSurfaceClearanceMeters: z.number().finite(),
+  maximumBodyGapMeters: z.number().finite().nonnegative(),
+  maximumGroundingBottomClearanceMeters: z.number().finite(),
+  groundingDepthMeters: z.number().finite().nonnegative(),
+  minimumAtMeters: SPATIAL_VECTOR3_SCHEMA,
+  maximumAtMeters: SPATIAL_VECTOR3_SCHEMA,
+  maximumBodyGapAtMeters: SPATIAL_VECTOR3_SCHEMA,
+};
+
+/**
+ * Bounded engine observations retained for diagnosis. These do not participate
+ * in the observed-world-state hash; exact route geometry and artifact identity
+ * remain the authoritative readback contract.
+ */
+export const ROBLOX_TRACE_EVENT_SCHEMA = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("route_terrain"),
+      routeId: diagnosticEntityId,
+      segmentId: diagnosticEntityId,
+      ...routeTerrainTraceFields,
+      startAdjustmentMeters: z.number().finite().nonnegative(),
+      finishAdjustmentMeters: z.number().finite().nonnegative(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("route_junction_terrain"),
+      junctionId: diagnosticEntityId,
+      ...routeTerrainTraceFields,
+      adjustmentMeters: z.number().finite().nonnegative(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("trace_truncated"),
+      droppedEventCount: z.number().int().positive(),
+    })
+    .strict(),
+]);
+export type RobloxTraceEvent = z.output<typeof ROBLOX_TRACE_EVENT_SCHEMA>;
+
+export const ROBLOX_IMPORT_STAGE_SCHEMA = z.enum([
+  "preflight",
+  "foundation",
+  "meso",
+  "micro",
+  "readback",
+  "commit",
+]);
 const surfaceAppearanceExpectation = z
   .object({
     colorMap: z.string().max(1024),
@@ -111,19 +233,22 @@ export const ROBLOX_IMPORT_TRANSACTION_SCHEMA = z
     sessionHash: HASH_SCHEMA,
     worldBuildHash: HASH_SCHEMA,
     sequence: z.number().int().nonnegative(),
-    stage: z.enum(["preflight", "foundation", "meso", "micro", "readback", "commit"]),
+    stage: ROBLOX_IMPORT_STAGE_SCHEMA,
     expectedObservedWorldStateHash: HASH_SCHEMA,
     foundation: z
       .object({
         worldBoundsMeters: SPATIAL_AABB_SCHEMA,
+        baseTerrainFields: COMPILED_WORLD_FOUNDATION_SCHEMA.shape.baseTerrainFields,
         terrainFields: COMPILED_WORLD_FOUNDATION_SCHEMA.shape.terrainFields,
-        roadAssemblies: COMPILED_WORLD_FOUNDATION_SCHEMA.shape.roadAssemblies,
+        routeConstructions: COMPILED_WORLD_FOUNDATION_SCHEMA.shape.routeConstructions,
+        routeJunctions: COMPILED_WORLD_FOUNDATION_SCHEMA.shape.routeJunctions,
       })
       .strict()
       .optional(),
     meso: z
       .object({
         assemblies: z.array(ASSEMBLY_ARTIFACT_SCHEMA).max(65_536),
+        constructedStructures: z.array(CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA).max(65_536),
         constructedSurfaces: z.array(CONSTRUCTED_SURFACE_SCHEMA).max(65_536),
         portals: z.array(PORTAL_ARTIFACT_SCHEMA).max(65_536),
         rooms: z.array(ROOM_ARTIFACT_SCHEMA).max(65_536),
@@ -136,6 +261,10 @@ export const ROBLOX_IMPORT_TRANSACTION_SCHEMA = z
       .array(z.object({ instanceId: entityId, hash: HASH_SCHEMA }).strict())
       .max(100_000),
     expectedArtifactHashes: z.array(observedArtifact).max(262_144),
+    expectedConstructedElements: z
+      .array(ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA)
+      .max(100_000),
+    expectedConstructedOpenings: z.array(ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA).max(65_536),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -166,6 +295,27 @@ export const ROBLOX_IMPORT_TRANSACTION_SCHEMA = z
         code: "custom",
         message: "Expected structural artifact identities must be unique",
       });
+    requireCanonicalIds(
+      value.expectedConstructedElements,
+      (entry) => entry.elementId,
+      "expected constructed elements",
+      context,
+    );
+    requireCanonicalIds(
+      value.expectedConstructedOpenings,
+      (entry) => entry.openingId,
+      "expected constructed openings",
+      context,
+    );
+    const carriesGeometry = value.stage === "readback";
+    if (
+      !carriesGeometry &&
+      (value.expectedConstructedElements.length > 0 || value.expectedConstructedOpenings.length > 0)
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Only the readback transaction carries constructed geometry expectations",
+      });
   });
 export type RobloxImportTransaction = z.output<typeof ROBLOX_IMPORT_TRANSACTION_SCHEMA>;
 
@@ -177,7 +327,18 @@ export const ROBLOX_IMPORT_MANIFEST_SCHEMA = z
     worldStatus: z.enum(["eligible", "incomplete"]),
     loweringGaps: z
       .array(
-        z.object({ assetHash: HASH_SCHEMA, reason: z.string().trim().min(1).max(1024) }).strict(),
+        z
+          .object({
+            kind: z.enum([
+              "asset_binding",
+              "constructed_geometry",
+              "route_construction",
+              "terrain_construction",
+            ]),
+            subjectHash: HASH_SCHEMA,
+            reason: z.string().trim().min(1).max(1024),
+          })
+          .strict(),
       )
       .max(100_000),
     transactions: z.array(ROBLOX_IMPORT_TRANSACTION_SCHEMA).min(4).max(100_000),
@@ -245,6 +406,9 @@ export const ROBLOX_READBACK_SCHEMA = z
       .array(z.object({ instanceId: entityId, realizedHash: HASH_SCHEMA }).strict())
       .max(100_000),
     artifacts: z.array(observedArtifact).max(262_144),
+    constructedElements: z.array(ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA).max(100_000),
+    constructedOpenings: z.array(ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA).max(65_536),
+    traceEvents: z.array(ROBLOX_TRACE_EVENT_SCHEMA).max(4_096),
     diagnostics: z.array(z.string().min(1).max(1024)).max(4096),
   })
   .strict()
@@ -261,8 +425,56 @@ export const ROBLOX_READBACK_SCHEMA = z
         path: ["diagnostics"],
         message: "Incomplete readback requires a diagnostic",
       });
+    requireCanonicalIds(
+      value.constructedElements,
+      (entry) => entry.elementId,
+      "observed constructed elements",
+      context,
+    );
+    requireCanonicalIds(
+      value.constructedOpenings,
+      (entry) => entry.openingId,
+      "observed constructed openings",
+      context,
+    );
   });
 export type RobloxReadback = z.output<typeof ROBLOX_READBACK_SCHEMA>;
+
+export const ROBLOX_IMPORT_REPORT_RECORD_SCHEMA = z
+  .object({
+    transactionId: entityId,
+    stage: ROBLOX_IMPORT_STAGE_SCHEMA,
+    status: z.enum(["complete", "incomplete"]),
+    readbackHash: HASH_SCHEMA,
+    observedWorldStateHash: HASH_SCHEMA.optional(),
+    instanceCount: z.number().int().nonnegative(),
+    artifactCount: z.number().int().nonnegative(),
+    constructedElementCount: z.number().int().nonnegative(),
+    constructedOpeningCount: z.number().int().nonnegative(),
+    diagnosticCount: z.number().int().nonnegative(),
+    traceEventCount: z.number().int().nonnegative(),
+  })
+  .strict();
+
+/** Durable, token-free status and diagnostic evidence for the latest import. */
+export const ROBLOX_IMPORT_REPORT_SCHEMA = z
+  .object({
+    kind: z.literal("RobloxImportReport"),
+    sessionHash: HASH_SCHEMA,
+    worldBuildHash: HASH_SCHEMA,
+    state: z.enum(["idle", "pending", "complete", "incomplete"]),
+    stage: z.union([ROBLOX_IMPORT_STAGE_SCHEMA, z.literal("complete")]),
+    progress: z
+      .object({ complete: z.number().int().nonnegative(), total: z.number().int().positive() })
+      .strict(),
+    records: z.array(ROBLOX_IMPORT_REPORT_RECORD_SCHEMA).max(65_536),
+    diagnostics: z.array(z.string().min(1).max(1_024)).max(4_096),
+    traceEvents: z.array(ROBLOX_TRACE_EVENT_SCHEMA).max(8_192),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, "hash", context));
+export type RobloxImportReport = z.output<typeof ROBLOX_IMPORT_REPORT_SCHEMA>;
 
 export function createRobloxImportManifest(
   worldBuildInput: WorldBuild,
@@ -299,7 +511,7 @@ export function createRobloxImportManifest(
         : instance.evidenceHashes,
     };
   });
-  const loweringGaps = [
+  const loweringGaps: z.output<typeof ROBLOX_IMPORT_MANIFEST_SCHEMA>["loweringGaps"] = [
     ...new Set(
       instances
         .filter((entry) => entry.robloxAssetId === undefined)
@@ -307,11 +519,35 @@ export function createRobloxImportManifest(
     ),
   ]
     .sort(compareCanonicalStrings)
-    .map((assetHash) => ({ assetHash, reason: "No admitted Roblox asset binding exists" }));
+    .map((assetHash) => ({
+      kind: "asset_binding" as const,
+      subjectHash: assetHash,
+      reason: "No admitted Roblox asset binding exists",
+    }));
+  loweringGaps.push(
+    ...worldBuild.foundation.routeConstructions
+      .filter((route) => route.status !== "eligible")
+      .map((route) => ({
+        kind: "route_construction" as const,
+        subjectHash: route.hash,
+        reason: route.diagnostics.join("; "),
+      })),
+  );
+  if (worldBuild.foundation.status !== "eligible")
+    loweringGaps.push({
+      kind: "terrain_construction",
+      subjectHash: worldBuild.foundation.foundationHash,
+      reason:
+        worldBuild.foundation.diagnostics.join("; ").slice(0, 1024) ||
+        "World foundation is incomplete",
+    });
   const foundationArtifacts = foundationObservations(worldBuild);
   const structuralArtifacts = structuralObservations(worldBuild);
+  const constructedElements = constructedElementObservations(worldBuild);
+  const constructedOpenings = constructedOpeningObservations(worldBuild);
   const mesoPayload = {
     assemblies: worldBuild.meso.assemblies,
+    constructedStructures: worldBuild.meso.constructedStructures,
     constructedSurfaces: worldBuild.meso.constructedSurfaces,
     portals: worldBuild.meso.portals,
     rooms: worldBuild.meso.rooms,
@@ -323,9 +559,11 @@ export function createRobloxImportManifest(
       stage: "foundation" as const,
       instances: [],
       foundation: {
-        worldBoundsMeters: worldBuild.foundation.plan.boundsMeters,
+        worldBoundsMeters: worldBuild.foundation.boundsMeters,
+        baseTerrainFields: worldBuild.foundation.baseTerrainFields,
         terrainFields: worldBuild.foundation.terrainFields,
-        roadAssemblies: worldBuild.foundation.roadAssemblies,
+        routeConstructions: worldBuild.foundation.routeConstructions,
+        routeJunctions: worldBuild.foundation.routeJunctions,
       },
       expectedArtifacts: foundationArtifacts,
     },
@@ -341,6 +579,8 @@ export function createRobloxImportManifest(
       instances: [],
       expectedInstances: instances,
       expectedArtifacts: [...foundationArtifacts, ...structuralArtifacts],
+      expectedConstructedElements: constructedElements,
+      expectedConstructedOpenings: constructedOpenings,
     },
     { stage: "commit" as const, instances: [] },
   ];
@@ -354,6 +594,12 @@ export function createRobloxImportManifest(
         `${right.artifactKind}:${right.artifactId}`,
       ),
     );
+    const expectedConstructedElements = [...(stage.expectedConstructedElements ?? [])].sort(
+      (left, right) => compareCanonicalStrings(left.elementId, right.elementId),
+    );
+    const expectedConstructedOpenings = [...(stage.expectedConstructedOpenings ?? [])].sort(
+      (left, right) => compareCanonicalStrings(left.openingId, right.openingId),
+    );
     const expectedObservedWorldStateHash = observedWorldStateHash({
       worldBuildHash: worldBuild.worldBuildHash,
       stage: stage.stage,
@@ -362,6 +608,8 @@ export function createRobloxImportManifest(
         realizedHash: entry.hash,
       })),
       artifacts: expectedArtifactHashes,
+      constructedElements: expectedConstructedElements,
+      constructedOpenings: expectedConstructedOpenings,
     });
     const transactionMaterial = {
       kind: "RobloxImportTransaction" as const,
@@ -380,6 +628,8 @@ export function createRobloxImportManifest(
       instances: stage.instances,
       expectedInstanceHashes,
       expectedArtifactHashes,
+      expectedConstructedElements,
+      expectedConstructedOpenings,
     };
     return deepFreezeJson(
       ROBLOX_IMPORT_TRANSACTION_SCHEMA.parse({
@@ -409,12 +659,7 @@ export function verifyRobloxReadback(
   readbackInput: unknown,
 ): readonly string[] {
   const readback = ROBLOX_READBACK_SCHEMA.parse(readbackInput);
-  const diagnostics: string[] = [];
-  if (readback.sessionHash !== transaction.sessionHash) diagnostics.push("Session hash mismatch");
-  if (readback.worldBuildHash !== transaction.worldBuildHash)
-    diagnostics.push("World build hash mismatch");
-  if (readback.transactionId !== transaction.transactionId)
-    diagnostics.push("Transaction ID mismatch");
+  const diagnostics = [...verifyRobloxReadbackEnvelope(transaction, readback)];
   const observed = new Map(
     readback.instances.map((entry) => [entry.instanceId, entry.realizedHash]),
   );
@@ -451,11 +696,48 @@ export function verifyRobloxReadback(
       )
     )
       diagnostics.push(`Unexpected artifact observation ${observedArtifactId}`);
+  compareConstructedElementObservations(
+    transaction.expectedConstructedElements,
+    readback.constructedElements,
+    diagnostics,
+  );
+  compareConstructedOpeningObservations(
+    transaction.expectedConstructedOpenings,
+    readback.constructedOpenings,
+    diagnostics,
+  );
   if (
     computeRobloxObservedWorldStateHash(transaction, readback) !==
     transaction.expectedObservedWorldStateHash
   )
     diagnostics.push("Observed world-state hash mismatch");
+  return diagnostics.sort(compareCanonicalStrings);
+}
+
+/** Validate a failed stage's identity without demanding outputs it could not produce. */
+export function verifyRobloxReadbackEnvelope(
+  transaction: RobloxImportTransaction,
+  readback: RobloxReadback,
+): readonly string[] {
+  const diagnostics: string[] = [];
+  if (readback.sessionHash !== transaction.sessionHash) diagnostics.push("Session hash mismatch");
+  if (readback.worldBuildHash !== transaction.worldBuildHash)
+    diagnostics.push("World build hash mismatch");
+  if (readback.transactionId !== transaction.transactionId)
+    diagnostics.push("Transaction ID mismatch");
+  const expectedTracePhase =
+    transaction.stage === "foundation" || transaction.stage === "readback"
+      ? transaction.stage
+      : undefined;
+  for (const trace of readback.traceEvents) {
+    if (trace.kind === "trace_truncated") continue;
+    if (expectedTracePhase === undefined)
+      diagnostics.push(`Transaction stage ${transaction.stage} cannot emit terrain trace events`);
+    else if (trace.phase !== expectedTracePhase)
+      diagnostics.push(
+        `Terrain trace phase ${trace.phase} does not match transaction stage ${transaction.stage}`,
+      );
+  }
   return diagnostics.sort(compareCanonicalStrings);
 }
 
@@ -469,6 +751,8 @@ export function computeRobloxObservedWorldStateHash(
     stage: transaction.stage,
     instances: readback.instances,
     artifacts: readback.artifacts,
+    constructedElements: readback.constructedElements,
+    constructedOpenings: readback.constructedOpenings,
   });
 }
 
@@ -483,9 +767,6 @@ export function robloxStudsToMeters(studs: number): number {
   if (!Number.isFinite(studs)) throw new Error("Roblox readback requires a finite stud value");
   return studs * ROBLOX_STUD_METERS;
 }
-
-/** Roblox terrain operates on its fixed four-stud voxel edge. */
-export const ROBLOX_TERRAIN_VOXEL_METERS = 4 * ROBLOX_STUD_METERS;
 
 function instancesFor(
   selected: readonly { instanceId: string }[],
@@ -502,6 +783,28 @@ function structuralObservations(worldBuild: WorldBuild) {
       artifactId: entry.assemblyId,
       realizedHash: entry.hash,
     })),
+    ...worldBuild.meso.constructedStructures.flatMap((structure) => [
+      {
+        artifactKind: "constructed_structure" as const,
+        artifactId: structure.structureId,
+        realizedHash: structure.hash,
+      },
+      ...structure.elements.map((entry) => ({
+        artifactKind: "constructed_element" as const,
+        artifactId: entry.elementId,
+        realizedHash: entry.hash,
+      })),
+      ...structure.openings.map((entry) => ({
+        artifactKind: "constructed_opening" as const,
+        artifactId: entry.openingId,
+        realizedHash: entry.hash,
+      })),
+      ...structure.portals.map((entry) => ({
+        artifactKind: "constructed_portal" as const,
+        artifactId: entry.portalId,
+        realizedHash: entry.hash,
+      })),
+    ]),
     ...worldBuild.meso.constructedSurfaces.map((entry) => ({
       artifactKind: "constructed_surface" as const,
       artifactId: entry.surfaceId,
@@ -530,6 +833,159 @@ function structuralObservations(worldBuild: WorldBuild) {
   );
 }
 
+function constructedElementObservations(
+  worldBuild: WorldBuild,
+): readonly RobloxConstructedElementObservation[] {
+  return worldBuild.meso.constructedStructures
+    .flatMap((structure) =>
+      structure.elements.map((element) => ({
+        elementId: element.elementId,
+        geometryKind: element.geometry.kind,
+        centerMicrometers: metricVectorToRobloxReadbackMicrometers(element.geometry.centerMeters),
+        sizeMicrometers: metricVectorToRobloxReadbackMicrometers(
+          element.geometry.kind === "box"
+            ? element.geometry.sizeMeters
+            : {
+                x: element.geometry.radiusMeters * 2,
+                y: element.geometry.heightMeters,
+                z: element.geometry.radiusMeters * 2,
+              },
+        ),
+        materialId: element.materialId,
+        anchored: true as const,
+        canCollide: true as const,
+      })),
+    )
+    .sort((left, right) => compareCanonicalStrings(left.elementId, right.elementId));
+}
+
+function constructedOpeningObservations(
+  worldBuild: WorldBuild,
+): readonly RobloxConstructedOpeningObservation[] {
+  return worldBuild.meso.constructedStructures
+    .flatMap((structure) =>
+      structure.openings.map((opening) => ({
+        openingId: opening.openingId,
+        clearanceBoundsMicrometers: metricAabbToRobloxReadbackMicrometers(
+          opening.clearanceBoundsMeters,
+        ),
+        blockingPartIds: [],
+      })),
+    )
+    .sort((left, right) => compareCanonicalStrings(left.openingId, right.openingId));
+}
+
+function metricVectorToRobloxReadbackMicrometers(value: {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}) {
+  return {
+    x: metersToRobloxReadbackMicrometers(value.x),
+    y: metersToRobloxReadbackMicrometers(value.y),
+    z: metersToRobloxReadbackMicrometers(value.z),
+  };
+}
+
+/** Canonical observation of a meter value after Roblox stores it as float32 studs. */
+export function metersToRobloxReadbackMicrometers(value: number): number {
+  if (!Number.isFinite(value)) throw new Error("Roblox readback requires a finite meter value");
+  return robloxStoredStudsToMicrometers(Math.fround(value / ROBLOX_STUD_METERS));
+}
+
+function robloxStoredStudsToMicrometers(studs: number): number {
+  const scaled = studs * ROBLOX_STUD_METERS * 1_000_000;
+  const micrometers = scaled >= 0 ? Math.floor(scaled + 0.5) : Math.ceil(scaled - 0.5);
+  if (!Number.isSafeInteger(micrometers))
+    throw new Error("Roblox metric observation exceeds the canonical micrometer range");
+  return micrometers;
+}
+
+function metricAabbToRobloxReadbackMicrometers(bounds: {
+  readonly min: { readonly x: number; readonly y: number; readonly z: number };
+  readonly max: { readonly x: number; readonly y: number; readonly z: number };
+}) {
+  const min = { x: 0, y: 0, z: 0 };
+  const max = { x: 0, y: 0, z: 0 };
+  for (const axis of ["x", "y", "z"] as const) {
+    const centerStuds = Math.fround((bounds.min[axis] + bounds.max[axis]) / 2 / ROBLOX_STUD_METERS);
+    const sizeStuds = Math.fround((bounds.max[axis] - bounds.min[axis]) / ROBLOX_STUD_METERS);
+    const halfSizeStuds = Math.fround(sizeStuds / 2);
+    min[axis] = robloxStoredStudsToMicrometers(Math.fround(centerStuds - halfSizeStuds));
+    max[axis] = robloxStoredStudsToMicrometers(Math.fround(centerStuds + halfSizeStuds));
+  }
+  return { min, max };
+}
+
+function compareConstructedElementObservations(
+  expected: readonly RobloxConstructedElementObservation[],
+  actual: readonly RobloxConstructedElementObservation[],
+  diagnostics: string[],
+): void {
+  const expectedById = new Map(expected.map((entry) => [entry.elementId, entry] as const));
+  const actualById = new Map(actual.map((entry) => [entry.elementId, entry] as const));
+  for (const [elementId, expectation] of expectedById) {
+    const observation = actualById.get(elementId);
+    if (!observation)
+      diagnostics.push(`Constructed element ${elementId} has no actual geometry observation`);
+    else if (stableJson(observation) !== stableJson(expectation))
+      diagnostics.push(
+        `Constructed element ${elementId} geometry or properties drifted: ${describeConstructedElementDrift(expectation, observation)}`,
+      );
+  }
+  for (const elementId of actualById.keys())
+    if (!expectedById.has(elementId))
+      diagnostics.push(`Unexpected constructed element observation ${elementId}`);
+}
+
+function describeConstructedElementDrift(
+  expected: RobloxConstructedElementObservation,
+  actual: RobloxConstructedElementObservation,
+): string {
+  const changes: string[] = [];
+  if (expected.geometryKind !== actual.geometryKind)
+    changes.push(`geometryKind expected ${expected.geometryKind}, observed ${actual.geometryKind}`);
+  for (const field of ["centerMicrometers", "sizeMicrometers"] as const)
+    for (const axis of ["x", "y", "z"] as const)
+      if (expected[field][axis] !== actual[field][axis])
+        changes.push(
+          `${field}.${axis} expected ${expected[field][axis]}, observed ${actual[field][axis]}`,
+        );
+  if (expected.materialId !== actual.materialId)
+    changes.push(`materialId expected ${expected.materialId}, observed ${actual.materialId}`);
+  if (expected.anchored !== actual.anchored)
+    changes.push(`anchored expected ${expected.anchored}, observed ${actual.anchored}`);
+  if (expected.canCollide !== actual.canCollide)
+    changes.push(`canCollide expected ${expected.canCollide}, observed ${actual.canCollide}`);
+  return changes.join("; ") || "canonical observations differ";
+}
+
+function compareConstructedOpeningObservations(
+  expected: readonly RobloxConstructedOpeningObservation[],
+  actual: readonly RobloxConstructedOpeningObservation[],
+  diagnostics: string[],
+): void {
+  const expectedById = new Map(expected.map((entry) => [entry.openingId, entry] as const));
+  const actualById = new Map(actual.map((entry) => [entry.openingId, entry] as const));
+  for (const [openingId, expectation] of expectedById) {
+    const observation = actualById.get(openingId);
+    if (!observation)
+      diagnostics.push(`Constructed opening ${openingId} has no clearance observation`);
+    else {
+      if (
+        stableJson(observation.clearanceBoundsMicrometers) !==
+        stableJson(expectation.clearanceBoundsMicrometers)
+      )
+        diagnostics.push(`Constructed opening ${openingId} clearance bounds drifted`);
+      if (observation.blockingPartIds.length > 0)
+        diagnostics.push(`Constructed opening ${openingId} is blocked by actual geometry`);
+    }
+  }
+  for (const openingId of actualById.keys())
+    if (!expectedById.has(openingId))
+      diagnostics.push(`Unexpected constructed opening observation ${openingId}`);
+}
+
 function foundationObservations(worldBuild: WorldBuild) {
   return [
     ...worldBuild.foundation.terrainFields.map((entry) => ({
@@ -537,9 +993,14 @@ function foundationObservations(worldBuild: WorldBuild) {
       artifactId: entry.terrainPlanId,
       realizedHash: entry.hash,
     })),
-    ...worldBuild.foundation.roadAssemblies.map((entry) => ({
-      artifactKind: "route" as const,
+    ...worldBuild.foundation.routeConstructions.map((entry) => ({
+      artifactKind: "route_construction" as const,
       artifactId: entry.routeId,
+      realizedHash: entry.hash,
+    })),
+    ...worldBuild.foundation.routeJunctions.map((entry) => ({
+      artifactKind: "route_junction" as const,
+      artifactId: entry.junctionId,
       realizedHash: entry.hash,
     })),
   ];
@@ -550,6 +1011,8 @@ function observedWorldStateHash(input: {
   readonly stage: RobloxImportTransaction["stage"];
   readonly instances: readonly { readonly instanceId: string; readonly realizedHash: string }[];
   readonly artifacts: readonly z.output<typeof observedArtifact>[];
+  readonly constructedElements: readonly RobloxConstructedElementObservation[];
+  readonly constructedOpenings: readonly RobloxConstructedOpeningObservation[];
 }): string {
   return contentHash(
     stableJson({
@@ -563,6 +1026,12 @@ function observedWorldStateHash(input: {
           `${left.artifactKind}:${left.artifactId}`,
           `${right.artifactKind}:${right.artifactId}`,
         ),
+      ),
+      constructedElements: [...input.constructedElements].sort((left, right) =>
+        compareCanonicalStrings(left.elementId, right.elementId),
+      ),
+      constructedOpenings: [...input.constructedOpenings].sort((left, right) =>
+        compareCanonicalStrings(left.openingId, right.openingId),
       ),
     }),
   );
@@ -585,5 +1054,22 @@ function validateMaterialExpectationPaths(
       code: "custom",
       path: ["materialExpectations"],
       message: "Roblox material expectation paths must be unique",
+    });
+}
+
+function requireCanonicalIds<T>(
+  values: readonly T[],
+  identify: (value: T) => string,
+  label: string,
+  context: z.RefinementCtx,
+): void {
+  const ids = values.map(identify);
+  if (
+    new Set(ids).size !== ids.length ||
+    stableJson(ids) !== stableJson([...ids].sort(compareCanonicalStrings))
+  )
+    context.addIssue({
+      code: "custom",
+      message: `${label} must have unique IDs in canonical order`,
     });
 }

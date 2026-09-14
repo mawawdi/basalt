@@ -24,10 +24,6 @@ import {
   SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA,
   type SemanticAssertionBundle,
 } from "@basalt/semantic-kernel";
-import {
-  CATALOG_QUALIFICATION_RECEIPT_SCHEMA,
-  type CatalogQualificationReceipt,
-} from "./qualification.js";
 import { CATALOG_ADMISSION_POLICY_SCHEMA, type CatalogAdmissionPolicy } from "./policy.js";
 
 export const RETAINED_CATALOG_EVIDENCE_SCHEMA = z
@@ -65,7 +61,6 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
     assertions: z.array(SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA).max(100_000),
     dispositions: z.array(CATALOG_DISPOSITION_SCHEMA).max(100_000),
     admissionPolicy: CATALOG_ADMISSION_POLICY_SCHEMA,
-    qualificationReceipts: z.array(CATALOG_QUALIFICATION_RECEIPT_SCHEMA).max(100_000),
     retainedEvidence: z.array(RETAINED_CATALOG_EVIDENCE_SCHEMA).max(100_000),
     sourcePayloadPolicy: z.literal("external_content_addressed"),
     hash: HASH_SCHEMA,
@@ -80,12 +75,6 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
       value.dispositions,
       (entry) => entry.sourceContentHash,
       "commit dispositions",
-      context,
-    );
-    canonicalIssue(
-      value.qualificationReceipts,
-      (entry) => entry.hash,
-      "commit qualification receipts",
       context,
     );
     canonicalIssue(
@@ -145,7 +134,6 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
           path: ["styleProfiles"],
           message: `Snapshot style ${style.handle} lacks its exact declaration`,
         });
-    const evidenceKinds = value.retainedEvidence.map((entry) => entry.kind);
     const measurementEvidence = value.retainedEvidence.find(
       (entry) => entry.kind === "CatalogMeasurementSet",
     );
@@ -155,47 +143,9 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
         path: ["retainedEvidence"],
         message: "The exact catalog measurement set must be retained in Git",
       });
-    const retainedKinds = new Set(evidenceKinds);
-    const dependencies = [
-      ["CatalogQualificationPilotPlan", ["CatalogMeasurementSet", "CatalogVisualReviewIndex"]],
-      [
-        "CatalogHypothesisRequestSet",
-        ["CatalogQualificationPilotPlan", "CatalogSourceNameHintSet"],
-      ],
-      ["CatalogHypothesisReceiptSet", ["CatalogHypothesisRequestSet"]],
-      ["CatalogFeatureSet", ["CatalogQualificationPilotPlan", "CatalogVisualReviewIndex"]],
-      ["CatalogReferenceJudgmentSet", ["CatalogQualificationPilotPlan"]],
-      [
-        "CatalogAdapterCalibrationSet",
-        ["CatalogHypothesisReceiptSet", "CatalogReferenceJudgmentSet"],
-      ],
-      [
-        "CatalogCalibratedPredictionSet",
-        ["CatalogHypothesisReceiptSet", "CatalogAdapterCalibrationSet"],
-      ],
-      [
-        "CatalogSubstitutionProposalSet",
-        ["CatalogCalibratedPredictionSet", "CatalogFeatureSet", "CatalogMeasurementSet"],
-      ],
-      [
-        "CatalogDiscoveryReviewPlan",
-        ["CatalogCalibratedPredictionSet", "CatalogSubstitutionProposalSet"],
-      ],
-      ["CatalogAcceptanceAuditPlan", ["CatalogSubstitutionProposalSet"]],
-      [
-        "CatalogQualificationReceipt",
-        ["CatalogAcceptanceAuditPlan", "CatalogReferenceJudgmentSet"],
-      ],
-    ] as const;
-    for (const [kind, requirements] of dependencies)
-      if (retainedKinds.has(kind))
-        for (const requirement of requirements)
-          if (!retainedKinds.has(requirement))
-            context.addIssue({
-              code: "custom",
-              path: ["retainedEvidence"],
-              message: `${kind} requires retained ${requirement} evidence`,
-            });
+    // Search metadata and learned embeddings intentionally live outside this
+    // authority root. Only evidence required to reproduce the sealed catalog
+    // may be retained here.
   });
 export type CatalogAuthorityCommit = z.output<typeof CATALOG_AUTHORITY_COMMIT_SCHEMA>;
 
@@ -210,7 +160,6 @@ export function sealCatalogAuthorityCommit(input: {
   readonly assertions: readonly Extract<SemanticAssertionBundle, { authority: "admitted" }>[];
   readonly dispositions: readonly CatalogDisposition[];
   readonly admissionPolicy: CatalogAdmissionPolicy;
-  readonly qualificationReceipts: readonly CatalogQualificationReceipt[];
   readonly retainedEvidence: readonly RetainedCatalogEvidence[];
 }): CatalogAuthorityCommit {
   const sourceManifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(input.sourceManifest);
@@ -232,11 +181,6 @@ export function sealCatalogAuthorityCommit(input: {
       "commit dispositions",
     ),
     admissionPolicy: CATALOG_ADMISSION_POLICY_SCHEMA.parse(input.admissionPolicy),
-    qualificationReceipts: canonical(
-      input.qualificationReceipts,
-      (entry) => entry.hash,
-      "commit qualification receipts",
-    ),
     retainedEvidence: canonical(
       input.retainedEvidence,
       (entry) => entry.relativePath,

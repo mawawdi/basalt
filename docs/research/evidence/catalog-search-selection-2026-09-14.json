@@ -1,0 +1,98 @@
+{
+  "kind": "HistoricalCatalogSearchSelectionRecord",
+  "status": "inert_research_evidence",
+  "compilerAuthority": false,
+  "sourceAssessment": {
+    "relativePath": "docs/research/catalog-search-assessment.md",
+    "sha256": "9eed7f061de47f8d41ed91d4d916c875a99de3f04fa5a27648cd8fd89e4096ed"
+  },
+  "retiredInputs": {
+    "benchmarkFixtureArtifactHash": "0491aeb05f82bec6f13bbd41b1f47005c8ed784a4cd71f61c1e06c30d1c86c47",
+    "benchmarkImplementationSha256": "f55239b7c981b4677492ad2f4d625abece588b58ba6cc8854dbc41d9c203c295",
+    "note": "The retired fixture and evaluator are not runtime contracts. Their reproduced selection outcomes are retained below."
+  },
+  "artifactIdentities": {
+    "baselineEvidenceArtifactHash": "8bc053301a8026ee9fbe820e82dc4058984739062a1d5a82e955cd71e4689fbe",
+    "challengerEvidenceArtifactHash": "a30a44515b6ff235943ce365a37ef0a45901c8ceaa91aa746d2506977aee2612",
+    "baselineMetadataSetArtifactHash": "0443c80dcb47bcbb55fbb83744b5dd76ca252c89ddfd6288ff769970fe292554",
+    "challengerMetadataSetArtifactHash": "aa38294e2ca82730b41043c9e5343a8dabbb0a92ed3d8a13325fd4b8264ff5bd",
+    "baselineSearchIndexArtifactHash": "51b6e49070176e06e75740feedae08808372259cec302dbb6ac374602cc615ed",
+    "challengerSearchIndexArtifactHash": "70db597d60dfc009b4655bb89ae7ec0583947395ff531612fa6c4634d99f80a3"
+  },
+  "models": [
+    {
+      "modelId": "qwen3_vl_8b",
+      "modelCommitHash": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+      "searchDocumentCount": 8,
+      "rankOneQueries": 12,
+      "queryCount": 12,
+      "embeddingRankOneQueries": 12,
+      "lexicalRankOneQueries": 11,
+      "acceptedNounPhrases": 4,
+      "nounCaseCount": 8,
+      "positiveValidationMatches": 5,
+      "positiveValidationCount": 8,
+      "negativeValidationMatches": 0,
+      "negativeValidationCount": 8,
+      "metadataGpuSecondsForEightAssets": 439.161,
+      "validationGpuSecondsForSixteenPairs": 789.358
+    },
+    {
+      "modelId": "qwen3_vl_32b",
+      "modelCommitHash": "0cfaf48183f594c314753d30a4c4974bc75f3ccb",
+      "searchDocumentCount": 8,
+      "rankOneQueries": 12,
+      "queryCount": 12,
+      "embeddingRankOneQueries": 12,
+      "lexicalRankOneQueries": 12,
+      "acceptedNounPhrases": 4,
+      "nounCaseCount": 8,
+      "positiveValidationMatches": 6,
+      "positiveValidationCount": 8,
+      "negativeValidationMatches": 0,
+      "negativeValidationCount": 8,
+      "metadataGpuSecondsForEightAssets": 1434.663,
+      "validationGpuSecondsForSixteenPairs": 1019.423
+    }
+  ],
+  "retrievalComparisons": [
+    {
+      "route": "source_names_only",
+      "rankOneQueries": 7,
+      "queryCount": 12,
+      "meanReciprocalRank": 0.625
+    },
+    {
+      "route": "siglip_image_text",
+      "rankOneQueries": 12,
+      "queryCount": 12,
+      "meanReciprocalRank": 1
+    },
+    {
+      "route": "names_and_8b_metadata_lexical",
+      "rankOneQueries": 11,
+      "queryCount": 12,
+      "meanReciprocalRank": 0.958
+    },
+    {
+      "route": "hybrid_8b",
+      "rankOneQueries": 12,
+      "queryCount": 12,
+      "meanReciprocalRank": 1
+    },
+    {
+      "route": "hybrid_32b",
+      "rankOneQueries": 12,
+      "queryCount": 12,
+      "meanReciprocalRank": 1
+    }
+  ],
+  "limitations": [
+    "The collection contains only eight search documents.",
+    "Several queries target the same source asset.",
+    "The negative pairs are gross category mismatches rather than retrieval confusers.",
+    "The historical fixture has no uncertain, no-match, or evidence-insufficient expected outcomes.",
+    "Writer and validator changes were coupled in the historical comparison.",
+    "No holdout or corpus result exists in this record."
+  ]
+}

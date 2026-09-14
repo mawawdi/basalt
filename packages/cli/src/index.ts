@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { execFile as execFileCallback, spawn as spawnChild } from "node:child_process";
+import { execFile as execFileCallback } from "node:child_process";
 import { lstat, mkdir, readdir, unlink } from "node:fs/promises";
 import { availableParallelism, homedir } from "node:os";
 import { join, resolve } from "node:path";
@@ -13,53 +13,23 @@ import {
   writeCanonicalWorkspaceJson,
 } from "@basalt/artifact-store";
 import {
-  CATALOG_ACCEPTANCE_AUDIT_PLAN_SCHEMA,
-  CATALOG_ACCEPTANCE_AUDIT_RECEIPT_SCHEMA,
-  CATALOG_ADAPTER_CALIBRATION_SET_SCHEMA,
   CATALOG_ADMISSION_RUBRIC_SCHEMA,
   CATALOG_ADMISSION_POLICY_SCHEMA,
-  CATALOG_CALIBRATED_PREDICTION_SET_SCHEMA,
   CATALOG_CALIBRATION_SPLIT_SCHEMA,
   CATALOG_AUTHORITY_COMMIT_SCHEMA,
-  CATALOG_DISCOVERY_REVIEW_PLAN_SCHEMA,
-  CATALOG_FEATURE_SET_SCHEMA,
-  CATALOG_FACET_VALUE_SCHEMA,
-  CATALOG_HYPOTHESIS_RECEIPT_SET_SCHEMA,
-  CATALOG_HYPOTHESIS_REQUEST_SET_SCHEMA,
   CATALOG_LEAKAGE_ANALYSIS_SCHEMA,
   CATALOG_LEAKAGE_GROUPING_POLICY_SCHEMA,
   CATALOG_NEAR_DUPLICATE_SEARCH_SCHEMA,
-  CATALOG_PILOT_WORKER_OUTPUT_SCHEMA,
-  CATALOG_QUALIFICATION_PILOT_PLAN_SCHEMA,
-  CATALOG_QUALIFICATION_RECEIPT_SCHEMA,
-  CATALOG_REFERENCE_JUDGMENT_SET_SCHEMA,
-  CATALOG_SOURCE_NAME_HINT_SET_SCHEMA,
-  CATALOG_SUBSTITUTION_PROPOSAL_SET_SCHEMA,
   CATALOG_VISUAL_REVIEW_INDEX_SCHEMA,
-  CATALOG_REVIEW_VIEWPOINTS,
   MAX_LOCAL_CATALOG_WORKERS,
   requireLocalCatalogWorkerCount,
   analyzeCatalogLeakage,
   assignCatalogCalibrationGroups,
   buildCatalogLeakageGroups,
-  buildCatalogAcceptanceAuditPlan,
-  buildCatalogCalibratedPredictionSet,
-  buildCatalogDiscoveryReviewPlan,
-  buildCatalogQualificationPilotPlan,
-  buildCatalogQualificationReceipt,
-  buildCatalogSubstitutionProposalSet,
-  buildCatalogSourceNameHintSet,
-  calibrateCatalogAdapter,
-  facetValueKey,
-  materializeCatalogPilotInference,
   sealCatalogAuthorityCommit,
   sealCatalogCalibrationSplit,
-  sealCatalogAdapterCalibrationSet,
   sealCatalogNearDuplicateSearch,
-  sealCatalogReferenceJudgmentSet,
   validateCatalogCalibrationSplit,
-  sealAssetSemanticHypothesisRequest,
-  sealCatalogHypothesisRequestSet,
   type RetainedCatalogEvidence,
 } from "@basalt/catalog-authoring";
 import {
@@ -100,59 +70,22 @@ import { SPATIAL_WORLD_PLAN_SCHEMA } from "@basalt/world-planning";
 import {
   RobloxImportBridge,
   ROBLOX_ASSET_BINDING_SCHEMA,
+  ROBLOX_IMPORT_REPORT_PATH,
   createRobloxImportManifest,
   installRobloxCredential,
   readRobloxCredential,
 } from "@basalt/roblox";
 import type { CatalogMeasureTask } from "./catalog-measure-worker.js";
+import { runCatalogMetadataCommand } from "./catalog-metadata.js";
+import { runCatalogIndexCommand, runCatalogSearchCommand } from "./catalog-search.js";
+import { runCatalogContextCommand } from "./catalog-context.js";
+import { runCatalogQualifyCommand } from "./catalog-qualify.js";
 
 const repositoryRoot = resolve(".");
 const args = process.argv.slice(2);
 const execFile = promisify(execFileCallback);
 const CATALOG_COMMIT_LOCK_PATH = ".basalt/locks/catalog-commit.lock";
 const CATALOG_NEAR_DUPLICATE_WORKER = "workers/catalog-review/near_duplicate.py";
-const CATALOG_PILOT_WORKER = "workers/catalog-admission/pilot.py";
-const CATALOG_PILOT_SELECTOR_HASH =
-  "f4295f8589c8f99391c7c8f6b1b7b6a5a6626dbffb861a6bd4871ec2032503b3";
-const CATALOG_PILOT_NORMALIZER_HASH =
-  "7103ef00d11fbef7f2a62c00c8f1452ba3989ad6e710d86382aeda10465b4938";
-const CATALOG_PILOT_AUDIT_RANDOMIZATION_HASH =
-  "46f2271933df1fa2703943efba30971206890262adb772fe939d992fbb1eee64";
-
-const CATALOG_INFERENCE_MODEL_DECLARATIONS_SCHEMA = z
-  .object({
-    kind: z.literal("CatalogInferenceModelDeclarations"),
-    models: z
-      .array(
-        z
-          .object({
-            modelId: z.string().regex(/^[a-z][a-z0-9_]{2,127}$/u),
-            source: z.enum(["huggingface", "basalt"]),
-            repository: z.string().trim().min(1).max(256),
-            revision: z.string().regex(/^[a-f0-9]{40,64}$/u),
-            purpose: z.enum([
-              "multiview_semantics_and_appearance",
-              "multiview_shape",
-              "source_name_hint",
-            ]),
-          })
-          .strict(),
-      )
-      .length(3),
-  })
-  .strict()
-  .superRefine((value, context) => {
-    const ids = value.models.map((model) => model.modelId);
-    const purposes = value.models.map((model) => model.purpose);
-    if (new Set(ids).size !== ids.length)
-      context.addIssue({ code: "custom", path: ["models"], message: "Model IDs must be unique" });
-    if (new Set(purposes).size !== purposes.length)
-      context.addIssue({
-        code: "custom",
-        path: ["models"],
-        message: "Every pilot inference purpose must have exactly one model",
-      });
-  });
 
 const CATALOG_NEAR_DUPLICATE_WORKER_OUTPUT_SCHEMA = z
   .object({
@@ -195,7 +128,16 @@ async function main(): Promise<void> {
   if (command === "catalog" && subcommand === "providers") return catalogProviders();
   if (command === "catalog" && subcommand === "measure") return catalogMeasure(rest);
   if (command === "catalog" && subcommand === "render") return catalogRender(rest);
-  if (command === "catalog" && subcommand === "pilot") return catalogPilot(rest);
+  if (command === "catalog" && subcommand === "metadata")
+    return runCatalogMetadataCommand(rest, catalogMetadataContext());
+  if (command === "catalog" && subcommand === "index")
+    return runCatalogIndexCommand(rest, catalogMetadataContext());
+  if (command === "catalog" && subcommand === "search")
+    return runCatalogSearchCommand(rest, catalogMetadataContext());
+  if (command === "catalog" && subcommand === "context")
+    return runCatalogContextCommand(rest, catalogMetadataContext());
+  if (command === "catalog" && subcommand === "qualify")
+    return runCatalogQualifyCommand(rest, catalogMetadataContext());
   if (command === "catalog" && subcommand === "commit") return catalogCommit(rest);
   if (command === "catalog" && subcommand === "validate") return catalogValidate(rest);
   if (command === "catalog" && subcommand === "seal") return catalogSeal(rest);
@@ -204,6 +146,16 @@ async function main(): Promise<void> {
   if (command === "roblox" && subcommand === "import") return robloxImport(rest);
   if (command === undefined || command === "help" || command === "--help") return usage();
   failUsage(`Unknown command: ${[command, subcommand].filter(Boolean).join(" ")}`);
+}
+
+function catalogMetadataContext() {
+  return {
+    root: repositoryRoot,
+    readJson,
+    readOptionalJson,
+    writeJson: writeCanonicalJson,
+    print,
+  };
 }
 
 function catalogProviders(): void {
@@ -575,660 +527,6 @@ async function catalogRender(values: string[]): Promise<void> {
   process.stdout.write(stdout);
 }
 
-async function catalogPilot(values: string[]): Promise<void> {
-  const requestedStage = values[0] && !values[0].startsWith("--") ? values[0] : "run";
-  if (!["prepare", "infer", "evaluate", "run"].includes(requestedStage))
-    throw new Error("catalog pilot stage must be prepare, infer, evaluate, or run");
-  const options = parseOptions(
-    requestedStage === "run" && values[0]?.startsWith("--") ? values : values.slice(1),
-  );
-  const outputRoot = options.get("--output-root") ?? ".basalt/catalog/pilot";
-  const paths = {
-    plan: `${outputRoot}/plan.json`,
-    requests: `${outputRoot}/hypothesis-requests.json`,
-    job: `${outputRoot}/worker-job.json`,
-    workerOutput: `${outputRoot}/worker-output.json`,
-    receipts: `${outputRoot}/hypothesis-receipts.json`,
-    features: `${outputRoot}/features.json`,
-    references: options.get("--references") ?? `${outputRoot}/reference-judgments.json`,
-    calibrations: `${outputRoot}/calibrations.json`,
-    predictions: `${outputRoot}/predictions.json`,
-    substitutions: `${outputRoot}/substitution-proposals.json`,
-    discovery: `${outputRoot}/discovery-review.json`,
-    auditPlan: `${outputRoot}/acceptance-audit-plan.json`,
-    qualification: `${outputRoot}/qualification.json`,
-    report: `${outputRoot}/report.json`,
-  };
-  const policy = await loadAdmissionPolicy(options.get("--policy"));
-  const rubric = CATALOG_ADMISSION_RUBRIC_SCHEMA.parse(
-    await readJson(options.get("--rubric") ?? "registry/admission-rubric.json"),
-  );
-  const semanticModule = await loadSemanticModule();
-  const lexicon = SEMANTIC_LEXICON_SNAPSHOT_SCHEMA.parse(
-    await readJson(options.get("--lexicon") ?? "registry/semantics/lexicon.json"),
-  );
-  if (rubric.semanticModuleHash !== semanticModule.snapshot.hash)
-    throw new Error("Admission rubric does not bind the current semantic module");
-  const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
-    await readJson(options.get("--source") ?? "registry/source-manifest.json"),
-  );
-  await requireSourceProvenance(manifest, options.get("--provenance"));
-  const measurements = CATALOG_MEASUREMENT_SET_SCHEMA.parse(
-    await readJson(options.get("--measurements") ?? ".basalt/catalog/measurements.json"),
-  );
-  const visual = CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(
-    await readJson(options.get("--renders") ?? ".basalt/catalog/review/index.json"),
-  );
-  const split = CATALOG_CALIBRATION_SPLIT_SCHEMA.parse(
-    await readJson(options.get("--split") ?? "registry/calibration-split.json"),
-  );
-  const plan = buildCatalogQualificationPilotPlan({
-    policy,
-    rubricHash: rubric.hash,
-    semanticModuleHash: semanticModule.snapshot.hash,
-    semanticLexiconHash: lexicon.hash,
-    measurements,
-    visualReview: visual,
-    calibrationSplit: split,
-  });
-  if (plan.status !== "eligible")
-    throw new Error(`Qualification pilot cannot start: ${plan.diagnostics.join("; ")}`);
-  const provenance = SOURCE_PROVENANCE_LEDGER_SCHEMA.parse(
-    await readJson(options.get("--provenance") ?? "registry/source-provenance.json"),
-  );
-  const sourceNameHints = buildCatalogSourceNameHintSet({ sourceManifest: manifest, provenance });
-  await writeCanonicalJson(`${outputRoot}/source-name-hints.json`, sourceNameHints);
-  const requestSet = buildPilotRequestSet({
-    plan,
-    policy,
-    semanticModule,
-    lexicon,
-    measurements,
-    visual,
-    sourceNameHints,
-  });
-  const job = buildPilotWorkerJob({
-    plan,
-    semanticModule,
-    lexicon,
-    visual,
-    sourceNameHints,
-    modelDeclarations: CATALOG_INFERENCE_MODEL_DECLARATIONS_SCHEMA.parse(
-      await readJson(options.get("--models") ?? "registry/catalog-inference-models.json"),
-    ),
-    promptTemplateHash: requestSet.promptTemplateHash,
-  });
-  await writeCanonicalJson(paths.plan, plan);
-  await writeCanonicalJson(paths.requests, requestSet);
-  await writeCanonicalJson(paths.job, job);
-  if (requestedStage === "prepare") {
-    print({
-      status: "eligible",
-      stage: "prepared",
-      groups: plan.groups.length,
-      sources: plan.selectedSourceContentHashes.length,
-      requests: requestSet.requests.length,
-      output: absolute(outputRoot),
-      planHash: plan.hash,
-    });
-    return;
-  }
-
-  const executor = options.get("--executor") ?? "modal";
-  if (options.get("--smoke") === "true") {
-    if (requestedStage !== "infer")
-      throw new Error("catalog pilot --smoke is only valid with the infer stage");
-    const { hash: _jobHash, ...fullJobMaterial } = job;
-    const smokeMaterial = { ...fullJobMaterial, items: job.items.slice(0, 1) };
-    const smokeJob = { ...smokeMaterial, hash: contentHash(stableJson(smokeMaterial)) };
-    const smokeJobPath = `${outputRoot}/smoke-worker-job.json`;
-    const smokeOutputPath = `${outputRoot}/smoke-worker-output.json`;
-    await writeCanonicalJson(smokeJobPath, smokeJob);
-    await executeCatalogPilotWorker(executor, smokeJobPath, smokeOutputPath);
-    const smokeOutput = CATALOG_PILOT_WORKER_OUTPUT_SCHEMA.parse(await readJson(smokeOutputPath));
-    if (smokeOutput.jobHash !== smokeJob.hash || smokeOutput.items.length !== 1)
-      throw new Error("Catalog pilot smoke result does not bind its exact single-source job");
-    print({
-      status: "eligible",
-      stage: "smoke_complete",
-      executor: smokeOutput.execution.executor,
-      accelerator: smokeOutput.execution.accelerator,
-      elapsedMilliseconds: smokeOutput.execution.elapsedMilliseconds,
-      peakResidentBytes: smokeOutput.execution.peakResidentBytes,
-      resultHash: smokeOutput.resultHash,
-    });
-    return;
-  }
-
-  let workerOutput = await readOptionalJson(paths.workerOutput)
-    .then((value) =>
-      value === undefined ? undefined : CATALOG_PILOT_WORKER_OUTPUT_SCHEMA.parse(value),
-    )
-    .catch(() => undefined);
-  const force = options.get("--force") === "true";
-  if (requestedStage !== "evaluate" && (force || workerOutput?.jobHash !== job.hash)) {
-    await executeCatalogPilotWorker(executor, paths.job, paths.workerOutput);
-    workerOutput = CATALOG_PILOT_WORKER_OUTPUT_SCHEMA.parse(await readJson(paths.workerOutput));
-  }
-  if (!workerOutput || workerOutput.jobHash !== job.hash)
-    throw new Error("No current pilot inference output exists; run `basalt catalog pilot infer`");
-  const inference = materializeCatalogPilotInference({ plan, requests: requestSet, workerOutput });
-  await writeCanonicalJson(paths.receipts, inference.receipts);
-  await writeCanonicalJson(paths.features, inference.features);
-  if (requestedStage === "infer") {
-    print({
-      status: inference.receipts.status,
-      stage: "inferred",
-      sources: workerOutput.items.length,
-      receipts: inference.receipts.receipts.length,
-      features: inference.features.receipts.length,
-      elapsedMilliseconds: workerOutput.execution.elapsedMilliseconds,
-      peakResidentBytes: workerOutput.execution.peakResidentBytes,
-      output: absolute(outputRoot),
-      resultHash: workerOutput.resultHash,
-    });
-    return;
-  }
-
-  const references = await loadOrCreatePilotReferences(paths.references, plan, rubric.hash);
-  const calibrationIdentities = new Map(
-    inference.receipts.receipts.map(
-      (receipt) =>
-        [
-          `${receipt.adapterImplementationHash}:${receipt.modelImplementationHash}:${receipt.ablation}`,
-          receipt,
-        ] as const,
-    ),
-  );
-  const calibrationReceipts = [...calibrationIdentities.values()].map((receipt) =>
-    calibrateCatalogAdapter({
-      policy,
-      pilotPlanHash: plan.hash,
-      requests: requestSet,
-      receipts: inference.receipts,
-      judgments: references,
-      adapterImplementationHash: receipt.adapterImplementationHash,
-      modelImplementationHash: receipt.modelImplementationHash,
-      ablation: receipt.ablation,
-    }),
-  );
-  const calibrations = sealCatalogAdapterCalibrationSet({
-    policyHash: policy.hash,
-    pilotPlanHash: plan.hash,
-    requestSetHash: requestSet.hash,
-    receiptSetHash: inference.receipts.hash,
-    referenceJudgmentSetHash: references.hash,
-    receipts: calibrationReceipts,
-  });
-  const predictions = buildCatalogCalibratedPredictionSet({
-    policy,
-    pilotPlanHash: plan.hash,
-    requests: requestSet,
-    receipts: inference.receipts,
-    calibrations: calibrations.receipts,
-    semanticModule,
-  });
-  const substitutions = buildCatalogSubstitutionProposalSet({
-    policy,
-    pilotPlanHash: plan.hash,
-    predictions,
-    features: inference.features,
-    measurements,
-  });
-  const discovery = buildCatalogDiscoveryReviewPlan({
-    pilotPlanHash: plan.hash,
-    policy,
-    rubric,
-    predictions,
-    features: inference.features,
-    substitutions,
-  });
-  const assetPopulation = substitutions.proposals.flatMap((proposal) =>
-    proposal.sourceContentHashes.map((subjectId) => ({ subjectKind: "asset" as const, subjectId })),
-  );
-  const pairPopulation = substitutions.compatibilityReceipts
-    .filter((receipt) => receipt.outcome === "compatible")
-    .map((receipt) => ({
-      subjectKind: "pair" as const,
-      subjectId: `${receipt.leftSourceContentHash}:${receipt.rightSourceContentHash}`,
-    }));
-  const populations = Object.fromEntries(
-    policy.riskTargets.map((target) => [
-      target.riskId,
-      target.subjectKind === "asset" ? assetPopulation : pairPopulation,
-    ]),
-  );
-  const auditPlan = buildCatalogAcceptanceAuditPlan({
-    pilotPlanHash: plan.hash,
-    policy,
-    rubric,
-    randomizationHash: CATALOG_PILOT_AUDIT_RANDOMIZATION_HASH,
-    populations,
-  });
-  const auditReceipts = await readOptionalDirectoryJson(
-    options.get("--audit-receipts") ?? "registry/acceptance-audits",
-    CATALOG_ACCEPTANCE_AUDIT_RECEIPT_SCHEMA,
-  );
-  const qualification = buildCatalogQualificationReceipt({
-    policy,
-    pilotPlanHash: plan.hash,
-    rubricHash: rubric.hash,
-    receipts: inference.receipts,
-    references,
-    calibrations: calibrations.receipts,
-    predictions,
-    substitutions,
-    auditPlan,
-    auditReceipts,
-  });
-  const report = buildPilotReport({ plan, workerOutput, references, qualification });
-  await Promise.all([
-    writeCanonicalJson(paths.references, references),
-    writeCanonicalJson(paths.calibrations, calibrations),
-    writeCanonicalJson(paths.predictions, predictions),
-    writeCanonicalJson(paths.substitutions, substitutions),
-    writeCanonicalJson(paths.discovery, discovery),
-    writeCanonicalJson(paths.auditPlan, auditPlan),
-    writeCanonicalJson(paths.qualification, qualification),
-    writeCanonicalJson(paths.report, report),
-  ]);
-  print({
-    status: qualification.status,
-    stage: "evaluated",
-    groups: plan.groups.length,
-    sources: plan.selectedSourceContentHashes.length,
-    referenceJudgments: references.judgments.length,
-    visualNameAgreementMillionths: report.visualNameAgreementMillionths,
-    discoveryItems: discovery.items.length,
-    qualificationDiagnostics: qualification.diagnostics,
-    output: absolute(outputRoot),
-    qualificationHash: qualification.hash,
-  });
-}
-
-function buildPilotRequestSet(input: {
-  readonly plan: z.output<typeof CATALOG_QUALIFICATION_PILOT_PLAN_SCHEMA>;
-  readonly policy: z.output<typeof CATALOG_ADMISSION_POLICY_SCHEMA>;
-  readonly semanticModule: SemanticModule;
-  readonly lexicon: z.output<typeof SEMANTIC_LEXICON_SNAPSHOT_SCHEMA>;
-  readonly measurements: z.output<typeof CATALOG_MEASUREMENT_SET_SCHEMA>;
-  readonly visual: z.output<typeof CATALOG_VISUAL_REVIEW_INDEX_SCHEMA>;
-  readonly sourceNameHints: z.output<typeof CATALOG_SOURCE_NAME_HINT_SET_SCHEMA>;
-}) {
-  const promptTemplateHash = contentHash(
-    stableJson({
-      template: "3d_asset_identity_with_definition_positive_and_counterexamples",
-      semanticModuleHash: input.semanticModule.snapshot.hash,
-      semanticLexiconHash: input.lexicon.hash,
-    }),
-  );
-  const assets = new Map(
-    input.measurements.assets.map((entry) => [entry.source.contentHash, entry]),
-  );
-  const renders = new Map(input.visual.items.map((entry) => [entry.sourceContentHash, entry]));
-  const hints = new Map(
-    input.sourceNameHints.items.map((entry) => [entry.sourceContentHash, entry]),
-  );
-  const requestedConceptIds = input.semanticModule.concepts
-    .map((entry) => entry.conceptId)
-    .sort(compare);
-  const requests = input.plan.selectedSourceContentHashes.flatMap((sourceContentHash) => {
-    const asset = assets.get(sourceContentHash);
-    const render = renders.get(sourceContentHash);
-    const hint = hints.get(sourceContentHash);
-    if (!asset || !render || !hint)
-      throw new Error(`Pilot source lacks exact evidence: ${sourceContentHash}`);
-    return (["combined", "name_only", "visual_only"] as const).map((ablation) =>
-      sealAssetSemanticHypothesisRequest({
-        sourceContentHash,
-        measurementHash: asset.hash,
-        renderEvidenceHash: render.evidence.hash,
-        sourceNameHintHash: hint.hash,
-        semanticModuleHash: input.semanticModule.snapshot.hash,
-        semanticLexiconHash: input.lexicon.hash,
-        promptTemplateHash,
-        evidenceSelection: {
-          channels: ablation === "name_only" ? ["semantics"] : ["appearance", "semantics", "shape"],
-          viewIds:
-            ablation === "name_only" ? [] : CATALOG_REVIEW_VIEWPOINTS.map((entry) => entry.viewId),
-          includeMeasurements: false,
-          includeSourceNameHint: ablation !== "visual_only",
-          selectorImplementationHash: CATALOG_PILOT_SELECTOR_HASH,
-        },
-        ablation,
-        requestedAssertionKinds: input.policy.prediction.requiredAssertionKinds,
-        requestedConceptIds,
-      }),
-    );
-  });
-  return sealCatalogHypothesisRequestSet({
-    status: "eligible",
-    measurementSetHash: input.measurements.hash,
-    visualReviewIndexHash: input.visual.hash,
-    sourceNameHintSetHash: input.sourceNameHints.hash,
-    semanticModuleHash: input.semanticModule.snapshot.hash,
-    semanticLexiconHash: input.lexicon.hash,
-    promptTemplateHash,
-    requests,
-    diagnostics: [],
-  });
-}
-
-function buildPilotWorkerJob(input: {
-  readonly plan: z.output<typeof CATALOG_QUALIFICATION_PILOT_PLAN_SCHEMA>;
-  readonly semanticModule: SemanticModule;
-  readonly lexicon: z.output<typeof SEMANTIC_LEXICON_SNAPSHOT_SCHEMA>;
-  readonly visual: z.output<typeof CATALOG_VISUAL_REVIEW_INDEX_SCHEMA>;
-  readonly sourceNameHints: z.output<typeof CATALOG_SOURCE_NAME_HINT_SET_SCHEMA>;
-  readonly modelDeclarations: z.output<typeof CATALOG_INFERENCE_MODEL_DECLARATIONS_SCHEMA>;
-  readonly promptTemplateHash: string;
-}) {
-  const lexicon = new Map<string, (typeof input.lexicon.entries)[number]>(
-    input.lexicon.entries.map(
-      (entry) => [`${entry.subjectKind}:${entry.subjectId}`, entry] as const,
-    ),
-  );
-  const prompt = (subjectKind: string, subjectId: string, definition: string) => {
-    const entry = lexicon.get(`${subjectKind}:${subjectId}`);
-    const label = entry?.preferredLabels.en ?? subjectId;
-    const examples = entry?.examples.length ? ` Examples: ${entry.examples.join("; ")}.` : "";
-    const counterexamples = entry?.counterexamples.length
-      ? ` Not: ${entry.counterexamples.join("; ")}.`
-      : "";
-    return {
-      label,
-      labelTokens: normalizedLabelTokens(label),
-      prompt: `A 3D asset whose primary identity is ${label}. ${definition}${examples}${counterexamples}`,
-    };
-  };
-  const candidates: Array<{
-    assertionKind: z.output<typeof CATALOG_FACET_VALUE_SCHEMA>["assertionKind"];
-    valueKey: string;
-    value: z.output<typeof CATALOG_FACET_VALUE_SCHEMA>;
-    labelTokens: string[];
-    prompt: string;
-  }> = [];
-  for (const concept of input.semanticModule.concepts) {
-    const value = {
-      assertionKind: "denotation" as const,
-      concept: { conceptId: concept.conceptId, commitmentHash: concept.commitmentHash },
-    };
-    candidates.push({
-      assertionKind: "denotation",
-      valueKey: facetValueKey(value),
-      value,
-      ...prompt("concept", concept.conceptId, concept.normativeDefinition),
-    });
-  }
-  for (const definition of input.semanticModule.realizationForms) {
-    const value = {
-      assertionKind: "realization_form" as const,
-      realizationForm: definition.realizationForm,
-    };
-    candidates.push({
-      assertionKind: "realization_form",
-      valueKey: facetValueKey(value),
-      value,
-      ...prompt("realization_form", definition.realizationForm, definition.normativeDefinition),
-    });
-  }
-  for (const definition of input.semanticModule.affordances) {
-    const value = { assertionKind: "affordance" as const, affordanceId: definition.affordanceId };
-    candidates.push({
-      assertionKind: "affordance",
-      valueKey: facetValueKey(value),
-      value,
-      ...prompt("affordance", definition.affordanceId, definition.normativeDefinition),
-    });
-  }
-  for (const dimension of input.semanticModule.stateDimensions)
-    for (const definition of dimension.values) {
-      const value = {
-        assertionKind: "state" as const,
-        stateDimensionId: dimension.stateDimensionId,
-        stateValueId: definition.stateValueId,
-      };
-      candidates.push({
-        assertionKind: "state",
-        valueKey: facetValueKey(value),
-        value,
-        ...prompt(
-          "state_value",
-          definition.stateValueId,
-          `${dimension.normativeDefinition} ${definition.normativeDefinition}`,
-        ),
-      });
-    }
-  for (const definition of input.semanticModule.surfaceTreatments) {
-    const value = {
-      assertionKind: "surface_treatment" as const,
-      surfaceTreatmentId: definition.surfaceTreatmentId,
-    };
-    candidates.push({
-      assertionKind: "surface_treatment",
-      valueKey: facetValueKey(value),
-      value,
-      ...prompt("surface_treatment", definition.surfaceTreatmentId, definition.normativeDefinition),
-    });
-  }
-  candidates.sort((left, right) => compare(left.valueKey, right.valueKey));
-  const renders = new Map(input.visual.items.map((entry) => [entry.sourceContentHash, entry]));
-  const hints = new Map(
-    input.sourceNameHints.items.map((entry) => [entry.sourceContentHash, entry]),
-  );
-  const items = input.plan.selectedSourceContentHashes.map((sourceContentHash) => {
-    const render = renders.get(sourceContentHash);
-    const hint = hints.get(sourceContentHash);
-    if (!render || !hint)
-      throw new Error(`Pilot source lacks worker evidence: ${sourceContentHash}`);
-    const viewEvidence = new Map(render.evidence.views.map((view) => [view.viewId, view] as const));
-    return {
-      sourceContentHash,
-      renderEvidenceHash: render.evidence.hash,
-      sourceNames: hint.observations.map((entry) => entry.originalFilename).sort(compare),
-      views: render.viewArtifacts.map((view) => {
-        const evidence = viewEvidence.get(view.viewId);
-        if (!evidence) throw new Error(`Pilot render lacks evidence for ${view.viewId}`);
-        return {
-          viewId: view.viewId,
-          rgbRelativePath: view.rgbRelativePath,
-          rgbHash: evidence.rgbHash,
-          normalizedDepthRelativePath: view.normalizedDepthRelativePath,
-          normalizedDepthHash: evidence.normalizedDepthHash,
-        };
-      }),
-    };
-  });
-  const material = {
-    kind: "CatalogPilotWorkerJob" as const,
-    pilotPlanHash: input.plan.hash,
-    promptTemplateHash: input.promptTemplateHash,
-    normalizerImplementationHash: CATALOG_PILOT_NORMALIZER_HASH,
-    models: input.modelDeclarations.models,
-    candidates,
-    items,
-  };
-  return { ...material, hash: contentHash(stableJson(material)) };
-}
-
-async function loadOrCreatePilotReferences(
-  path: string,
-  plan: z.output<typeof CATALOG_QUALIFICATION_PILOT_PLAN_SCHEMA>,
-  rubricHash: string,
-) {
-  const existing = await readOptionalJson(path);
-  if (existing !== undefined) {
-    const parsed = CATALOG_REFERENCE_JUDGMENT_SET_SCHEMA.parse(existing);
-    if (parsed.pilotPlanHash !== plan.hash || parsed.rubricHash !== rubricHash)
-      throw new Error("Reference judgments bind another pilot plan or rubric");
-    return parsed;
-  }
-  return sealCatalogReferenceJudgmentSet({
-    pilotPlanHash: plan.hash,
-    rubricHash,
-    referenceAuthority: "human_curator",
-    reviewerId: "unassigned_curator",
-    judgments: [],
-    missingSourceContentHashes: plan.selectedSourceContentHashes,
-    diagnostics: ["The locked pilot requires independent human-curator judgments"],
-  });
-}
-
-function buildPilotReport(input: {
-  readonly plan: z.output<typeof CATALOG_QUALIFICATION_PILOT_PLAN_SCHEMA>;
-  readonly workerOutput: z.output<typeof CATALOG_PILOT_WORKER_OUTPUT_SCHEMA>;
-  readonly references: z.output<typeof CATALOG_REFERENCE_JUDGMENT_SET_SCHEMA>;
-  readonly qualification: z.output<typeof CATALOG_QUALIFICATION_RECEIPT_SCHEMA>;
-}) {
-  let compared = 0;
-  let agreement = 0;
-  const topConceptCounts = new Map<string, number>();
-  for (const item of input.workerOutput.items) {
-    const name = topDenotation(item.hypotheses.find((entry) => entry.evidenceSource === "name"));
-    const visual = topDenotation(
-      item.hypotheses.find((entry) => entry.evidenceSource === "visual"),
-    );
-    if (visual) topConceptCounts.set(visual, (topConceptCounts.get(visual) ?? 0) + 1);
-    if (name && visual) {
-      compared += 1;
-      if (name === visual) agreement += 1;
-    }
-  }
-  const material = {
-    kind: "CatalogQualificationPilotReport" as const,
-    status: input.qualification.status,
-    pilotPlanHash: input.plan.hash,
-    workerResultHash: input.workerOutput.resultHash,
-    qualificationHash: input.qualification.hash,
-    groupCount: input.plan.groups.length,
-    sourceCount: input.plan.selectedSourceContentHashes.length,
-    humanReferenceCount: input.references.judgments.length,
-    visualNameComparedCount: compared,
-    visualNameAgreementMillionths:
-      compared === 0 ? 0 : Math.round((agreement / compared) * 1_000_000),
-    topVisualDenotations: [...topConceptCounts.entries()]
-      .sort((left, right) => right[1] - left[1] || compare(left[0], right[0]))
-      .slice(0, 20)
-      .map(([conceptId, count]) => ({ conceptId, count })),
-    execution: input.workerOutput.execution,
-    diagnostics: input.qualification.diagnostics,
-  };
-  return { ...material, hash: contentHash(stableJson(material)) };
-}
-
-function topDenotation(
-  hypothesis:
-    | z.output<typeof CATALOG_PILOT_WORKER_OUTPUT_SCHEMA>["items"][number]["hypotheses"][number]
-    | undefined,
-): string | undefined {
-  if (!hypothesis) return undefined;
-  const candidates = hypothesis.facetScores
-    .filter((entry) => entry.value.assertionKind === "denotation")
-    .sort(
-      (left, right) =>
-        right.scoreMillionths - left.scoreMillionths ||
-        compare(facetValueKey(left.value), facetValueKey(right.value)),
-    );
-  const value = candidates[0]?.value;
-  return value?.assertionKind === "denotation" ? value.concept.conceptId : undefined;
-}
-
-function normalizedLabelTokens(value: string): string[] {
-  return [
-    ...new Set(
-      value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/gu, " ")
-        .trim()
-        .split(/\s+/u)
-        .filter(Boolean),
-    ),
-  ].sort(compare);
-}
-
-function runStreaming(
-  command: string,
-  values: readonly string[],
-  environment: Readonly<Record<string, string>> = {},
-): Promise<void> {
-  return new Promise((resolveRun, rejectRun) => {
-    const child = spawnChild(command, [...values], {
-      cwd: repositoryRoot,
-      env: { ...process.env, ...environment, PYTHONDONTWRITEBYTECODE: "1" },
-      stdio: "inherit",
-    });
-    child.once("error", rejectRun);
-    child.once("exit", (code) =>
-      code === 0 ? resolveRun() : rejectRun(new Error(`${command} exited with status ${code}`)),
-    );
-  });
-}
-
-async function executeCatalogPilotWorker(
-  executor: string,
-  jobPath: string,
-  outputPath: string,
-): Promise<void> {
-  if (executor === "modal") {
-    await runStreaming(
-      "modal",
-      [
-        "run",
-        "--quiet",
-        "workers/catalog-admission/modal_app.py",
-        "--job",
-        jobPath,
-        "--output",
-        outputPath,
-      ],
-      await catalogExecutionEnvironment(),
-    );
-    return;
-  }
-  if (executor === "local") {
-    await runStreaming(
-      "python3",
-      [CATALOG_PILOT_WORKER, "--job", jobPath, "--output", outputPath],
-      { ...(await catalogExecutionEnvironment()), BASALT_EXECUTION_ADAPTER: "local" },
-    );
-    return;
-  }
-  throw new Error("catalog pilot --executor must be modal or local");
-}
-
-async function catalogExecutionEnvironment(): Promise<Record<string, string>> {
-  const required = ["HUGGINGFACE_TOKEN", "MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET"] as const;
-  const parsed = new Map<string, string>();
-  const bytes = await readBoundedWorkspaceBytes(
-    repositoryRoot,
-    absolute(".env"),
-    1024 * 1024,
-  ).catch(() => undefined);
-  if (bytes)
-    for (const line of Buffer.from(bytes).toString("utf8").split(/\r?\n/u)) {
-      const match = /^(?:export\s+)?([A-Z][A-Z0-9_]*)=(.*)$/u.exec(line.trim());
-      if (!match) continue;
-      let value = match[2]!.trim();
-      if (
-        value.length >= 2 &&
-        ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'")))
-      )
-        value = value.slice(1, -1);
-      parsed.set(match[1]!, value);
-    }
-  const environment: Record<string, string> = {};
-  for (const key of required) {
-    const value = process.env[key] ?? parsed.get(key);
-    if (!value) throw new Error(`Catalog pilot execution credential ${key} is not configured`);
-    environment[key] = value;
-  }
-  environment.HF_TOKEN = environment.HUGGINGFACE_TOKEN!;
-  environment.BASALT_EXECUTION_ADAPTER = "modal";
-  environment.BASALT_GPU_KIND = "L40S";
-  return environment;
-}
-
 async function catalogValidate(values: string[]): Promise<void> {
   const options = parseOptions(values);
   const authority = await loadCatalogAuthority(options);
@@ -1374,7 +672,12 @@ async function robloxImport(values: string[]): Promise<void> {
     }, 250);
   });
   await bridge.stop();
-  print({ status: bridge.state, worldBuildHash: worldBuild.worldBuildHash });
+  print({
+    status: bridge.state,
+    worldBuildHash: worldBuild.worldBuildHash,
+    diagnostics: bridge.diagnostics,
+    report: resolve(repositoryRoot, ROBLOX_IMPORT_REPORT_PATH),
+  });
   if (bridge.state !== "complete") process.exitCode = 1;
 }
 
@@ -1388,7 +691,6 @@ interface CatalogAuthorityInputs {
   readonly dispositions: z.output<typeof CATALOG_DISPOSITION_SCHEMA>[];
   readonly assertions: z.output<typeof SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA>[];
   readonly admissionPolicy: z.output<typeof CATALOG_ADMISSION_POLICY_SCHEMA>;
-  readonly qualificationReceipts: z.output<typeof CATALOG_QUALIFICATION_RECEIPT_SCHEMA>[];
 }
 
 async function requireSourceProvenance(
@@ -1430,10 +732,6 @@ async function loadCatalogAuthority(
     SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA,
   );
   const admissionPolicy = await loadAdmissionPolicy(options.get("--policy"));
-  const qualificationReceipts = await readOptionalDirectoryJson(
-    options.get("--qualifications") ?? "registry/qualifications",
-    CATALOG_QUALIFICATION_RECEIPT_SCHEMA,
-  );
   return {
     semanticModule,
     semanticLexiconHash: lexicon.hash,
@@ -1444,7 +742,6 @@ async function loadCatalogAuthority(
     dispositions,
     assertions,
     admissionPolicy,
-    qualificationReceipts,
   };
 }
 
@@ -1475,7 +772,6 @@ async function materializeCatalogCommit(options: ReadonlyMap<string, string>) {
     assertions: authority.assertions,
     dispositions: authority.dispositions,
     admissionPolicy: authority.admissionPolicy,
-    qualificationReceipts: authority.qualificationReceipts,
     retainedEvidence,
   });
   await writeCanonicalJson(
@@ -1497,54 +793,6 @@ async function retainCatalogEvidence(
     {
       path: options.get("--renders") ?? ".basalt/catalog/review/index.json",
       schema: CATALOG_VISUAL_REVIEW_INDEX_SCHEMA,
-    },
-    {
-      path: options.get("--pilot-plan") ?? ".basalt/catalog/pilot/plan.json",
-      schema: CATALOG_QUALIFICATION_PILOT_PLAN_SCHEMA,
-    },
-    {
-      path: options.get("--requests") ?? ".basalt/catalog/pilot/hypothesis-requests.json",
-      schema: CATALOG_HYPOTHESIS_REQUEST_SET_SCHEMA,
-    },
-    {
-      path: options.get("--name-hints") ?? ".basalt/catalog/pilot/source-name-hints.json",
-      schema: CATALOG_SOURCE_NAME_HINT_SET_SCHEMA,
-    },
-    {
-      path: options.get("--receipts") ?? ".basalt/catalog/pilot/hypothesis-receipts.json",
-      schema: CATALOG_HYPOTHESIS_RECEIPT_SET_SCHEMA,
-    },
-    {
-      path: options.get("--features") ?? ".basalt/catalog/pilot/features.json",
-      schema: CATALOG_FEATURE_SET_SCHEMA,
-    },
-    {
-      path: options.get("--references") ?? ".basalt/catalog/pilot/reference-judgments.json",
-      schema: CATALOG_REFERENCE_JUDGMENT_SET_SCHEMA,
-    },
-    {
-      path: options.get("--calibrations") ?? ".basalt/catalog/pilot/calibrations.json",
-      schema: CATALOG_ADAPTER_CALIBRATION_SET_SCHEMA,
-    },
-    {
-      path: options.get("--predictions") ?? ".basalt/catalog/pilot/predictions.json",
-      schema: CATALOG_CALIBRATED_PREDICTION_SET_SCHEMA,
-    },
-    {
-      path: options.get("--substitutions") ?? ".basalt/catalog/pilot/substitution-proposals.json",
-      schema: CATALOG_SUBSTITUTION_PROPOSAL_SET_SCHEMA,
-    },
-    {
-      path: options.get("--discovery") ?? ".basalt/catalog/pilot/discovery-review.json",
-      schema: CATALOG_DISCOVERY_REVIEW_PLAN_SCHEMA,
-    },
-    {
-      path: options.get("--audit-plan") ?? ".basalt/catalog/pilot/acceptance-audit-plan.json",
-      schema: CATALOG_ACCEPTANCE_AUDIT_PLAN_SCHEMA,
-    },
-    {
-      path: options.get("--qualification") ?? ".basalt/catalog/pilot/qualification.json",
-      schema: CATALOG_QUALIFICATION_RECEIPT_SCHEMA,
     },
   ] as const;
   const retained: RetainedCatalogEvidence[] = [];
@@ -1620,7 +868,6 @@ async function verifyCatalogCommit(
     assertions: authority.assertions,
     dispositions: authority.dispositions,
     admissionPolicy: authority.admissionPolicy,
-    qualificationReceipts: authority.qualificationReceipts,
     retainedEvidence: committed.retainedEvidence,
   });
   return expected.hash === committed.hash
@@ -1780,17 +1027,6 @@ async function readDirectoryJson<T>(
   for (const name of names) result.push(schema.parse(await readJson(join(path, name))));
   return result;
 }
-async function readOptionalDirectoryJson<T>(
-  path: string,
-  schema: { parse(value: unknown): T },
-): Promise<T[]> {
-  try {
-    return await readDirectoryJson(path, schema);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw error;
-  }
-}
 async function loadAdmissionPolicy(path = "registry/admission-policy.json") {
   return CATALOG_ADMISSION_POLICY_SCHEMA.parse(await readJson(path));
 }
@@ -1858,7 +1094,11 @@ function usage(): void {
       "",
       "  basalt semantics validate|seal|explain",
       "  basalt catalog inventory|calibration|providers|measure|render",
-      "  basalt catalog pilot prepare|infer|evaluate|run",
+      "  basalt catalog metadata prepare|generate|commit",
+      "  basalt catalog index",
+      "  basalt catalog search <query>",
+      "  basalt catalog context prepare|generate|review",
+      "  basalt catalog qualify prepare|run|evaluate",
       "  basalt catalog validate|seal|commit",
       "  basalt world compile <plan> --catalog <committed-catalog>",
       "  basalt roblox install-plugin",

@@ -1,7 +1,7 @@
 # Semantic Kernel Rationale and Governance
 
 > **Status:** Non-authoritative rationale. The tracked registry and
-> [Architecture](../ARCHITECTURE.md#semantics) define the current implementation.
+> [Architecture](../ARCHITECTURE.md#semantic-authority) define the current implementation.
 
 This document records why Basalt’s implemented semantic kernel has its current
 shape and how it may be extended without invalidating unrelated worlds.

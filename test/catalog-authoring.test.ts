@@ -1,294 +1,867 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
-  ASSET_SEMANTIC_HYPOTHESIS_RECEIPT_SCHEMA,
+  ASSET_SEARCH_METADATA_REQUEST_SCHEMA,
   CATALOG_ADMISSION_POLICY_SCHEMA,
-  CATALOG_FEATURE_SET_SCHEMA,
-  CATALOG_RENDER_EVIDENCE_SCHEMA,
+  CATALOG_EMBEDDING_MATRIX_SCHEMA,
   CATALOG_REVIEW_VIEWPOINTS,
+  CATALOG_SEARCH_INDEX_SCHEMA,
+  CATALOG_SEARCH_RESULT_SET_SCHEMA,
+  CATALOG_SEARCH_SMOKE_FIXTURE_SCHEMA,
+  CATALOG_SEARCH_METADATA_JSON_SCHEMA_HASH,
+  CATALOG_SEARCH_METADATA_SCHEMA,
+  CATALOG_SEARCH_TOKENIZER_IMPLEMENTATION_HASH,
+  CATALOG_SOURCE_NAME_HINT_SET_SCHEMA,
+  annotateCatalogSearchResults,
+  assessConstructionEligibility,
+  buildCatalogSearchIndex,
+  contextReceiptMatchesRequest,
+  createAssetContextCandidate,
+  decodeCatalogEmbeddingMatrix,
+  decideCatalogSearchOutcome,
+  encodeCatalogEmbeddingMatrix,
   exactAcceptanceSampleSize,
-  sealAssetSemanticHypothesisReceipt,
-  sealAssetSemanticHypothesisRequest,
+  executeCatalogSearch,
+  metadataReceiptMatchesExecution,
+  sealAssetSearchMetadataReceipt,
+  sealAssetSearchMetadataRequest,
+  sealAssetContextHypothesisReceipt,
+  sealAssetContextHypothesisRequest,
   sealCatalogAdmissionPolicy,
   sealCatalogAuthorityCommit,
-  sealCatalogFeatureReceipt,
-  sealCatalogFeatureSet,
-  sealCatalogHypothesisReceiptSet,
-  sealCatalogHypothesisRequestSet,
-  sealCatalogRenderEvidence,
+  sealCatalogCandidateDecisionPolicy,
+  sealCatalogEmbeddingReceipt,
+  sealCatalogEmbeddingSet,
+  sealCatalogQueryEmbeddingReceipt,
+  sealCatalogSearchMetadataSet,
+  sealCatalogSearchPolicy,
+  sealCatalogSearchQuery,
+  sealCatalogSearchValidationRequest,
+  sealCatalogValidationReceipt,
+  tokenizeCatalogSearchText,
+  validationReceiptMatchesExecution,
+  type CatalogSearchMetadata,
 } from "@basalt/catalog-authoring";
-import { sealCatalogMeasurementSet, sourceAssetRelativePath } from "@basalt/catalog-model";
-import { contentHash, stableJson } from "@basalt/contracts";
-import { sealSemanticAssertionBundle } from "@basalt/semantic-kernel";
+import {
+  sealCatalogAssetArtifact,
+  sealCatalogMeasurementSet,
+  sourceAssetRelativePath,
+} from "@basalt/catalog-model";
+import { contentHash, quantizeQ32_32, stableJson } from "@basalt/contracts";
 import { catalogFixture } from "./helpers/catalog-fixture.js";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 
+const hash = (label: string): string => contentHash(label);
+const modelCommitHash = hash("metadata-model-commit");
+
 function admissionPolicy() {
   return sealCatalogAdmissionPolicy({
-    policyId: "catalog_qualification_test",
-    pilot: {
-      groupsPerRole: 2,
-      selectionSeedHash: contentHash("pilot-selection"),
-      requireStatic: true,
-      requireSinglePart: true,
-      requireSingleMaterial: true,
-      requireBottomContact: true,
-    },
-    prediction: {
-      requiredAssertionKinds: [
-        "affordance",
-        "denotation",
-        "realization_form",
-        "state",
-        "surface_treatment",
-      ],
-      minimumDependencyGroups: 2,
-      minimumCalibrationSamples: 50,
-      calibrationConfidenceMillionths: 950_000,
-      minimumPrecisionLowerBoundMillionths: 950_000,
-      maximumPredictionSetSize: 4,
-      noveltyThresholdMillionths: 700_000,
-    },
-    substitution: {
-      requiredFeatureChannels: ["appearance", "shape"],
-      minimumSimilarityMillionthsByChannel: {
-        appearance: 880_000,
-        semantics: 950_000,
-        shape: 900_000,
-      },
-      maximumAxisRatioMillionths: 2_500_000,
-    },
+    policyId: "catalog_authority_test",
     riskTargets: [
       {
-        riskId: "semantic_identity",
-        stratumId: "semantic_boundary",
+        riskId: "false_admission",
+        stratumId: "all_admissions",
         defectDomain: "semantics",
         subjectKind: "asset",
-        maximumDefectRateMillionths: 50_000,
+        maximumDefectRateMillionths: 10_000,
         confidenceMillionths: 950_000,
         acceptanceNumber: 0,
       },
     ],
-    automaticallyAdmissibleEntryKinds: ["substitution_set"],
   });
 }
 
-test("catalog render evidence requires the canonical multiview rig and every channel", () => {
-  const evidence = sealCatalogRenderEvidence({
-    sourceContentHash: contentHash("source"),
-    rendererImplementationHash: contentHash("renderer"),
-    cameraRigHash: contentHash("camera"),
-    lightingHash: contentHash("lighting"),
-    materialModeHash: contentHash("materials"),
-    channelEncodingHash: contentHash("channel-encoding"),
-    views: CATALOG_REVIEW_VIEWPOINTS.map((view) => ({
-      ...view,
-      rgbHash: contentHash(`${view.viewId}:rgb`),
-      silhouetteHash: contentHash(`${view.viewId}:silhouette`),
-      normalizedDepthHash: contentHash(`${view.viewId}:depth`),
-      surfaceNormalHash: contentHash(`${view.viewId}:normal`),
-      unlitBaseColorHash: contentHash(`${view.viewId}:base-color`),
+function searchPolicy() {
+  return sealCatalogSearchPolicy({
+    policyId: "catalog_search_test",
+    fieldWeights: {
+      alternateNouns: 3,
+      caption: 3,
+      colors: 2,
+      environments: 1,
+      materials: 2,
+      primaryNoun: 4,
+      sourceBasename: 1,
+      styleTerms: 2,
+      useCases: 1,
+      visibleText: 2,
+    },
+    lexicalCandidateLimit: 200,
+    embeddingCandidateLimit: 200,
+    reciprocalRankConstant: 60,
+    fusionNormalization: "per_document_available_channels",
+    maximumResults: 100,
+    maximumValidationCandidates: 8,
+    tokenizerImplementationHash: CATALOG_SEARCH_TOKENIZER_IMPLEMENTATION_HASH,
+  });
+}
+
+const observed = <T>(value: T) => ({ status: "observed" as const, value });
+const abstained = (reason: string) => ({ status: "abstained" as const, reason });
+
+function treeMetadata(): CatalogSearchMetadata {
+  return CATALOG_SEARCH_METADATA_SCHEMA.parse({
+    caption: observed("A stylized green tree with a broad leafy crown."),
+    primaryNoun: observed("Tree"),
+    alternateNouns: observed(["tree", "woody plant", "tree"]),
+    materials: observed(["bark", "leaves"]),
+    colors: observed(["brown", "green"]),
+    visibleText: abstained("No visible text."),
+    useCases: observed(["forest scenery"]),
+    environments: observed(["forest", "park"]),
+    styleTerms: observed(["Low Poly", "stylized"]),
+    visualComposition: observed("single_object"),
+    sourceRoleHint: observed("standalone"),
+    completeness: observed("complete"),
+    visibleDamage: observed("intact"),
+    issueNotes: abstained("No visible issue."),
+  });
+}
+
+function metadataRequest(
+  mode: "visual_and_name" | "visual_only",
+  sourceContentHash = hash("metadata-source"),
+  measurementHash = hash(`${sourceContentHash}:measurement`),
+) {
+  return sealAssetSearchMetadataRequest({
+    sourceContentHash,
+    measurementHash,
+    renderEvidenceHash: hash(`${sourceContentHash}:render`),
+    ...(mode === "visual_and_name"
+      ? { sourceNameHintHash: hash(`${sourceContentHash}:name`) }
+      : {}),
+    evidenceMode: mode,
+    metricSummary: metricSummary(sourceContentHash, measurementHash),
+    viewSet: "canonical_twelve",
+    promptTemplateHash: hash("metadata-prompt"),
+    preprocessingImplementationHash: hash("metadata-preprocessor"),
+    selectedRgbViews: CATALOG_REVIEW_VIEWPOINTS.map((view) => ({
+      viewId: view.viewId,
+      rgbHash: hash(`${sourceContentHash}:${view.viewId}:rgb`),
     })),
   });
+}
 
-  assert.equal(evidence.views.length, 12);
-  assert.equal(CATALOG_RENDER_EVIDENCE_SCHEMA.parse(evidence).hash, evidence.hash);
-  assert.throws(
-    () => CATALOG_RENDER_EVIDENCE_SCHEMA.parse({ ...evidence, views: evidence.views.slice(1) }),
-    /12|length/iu,
-  );
-});
+function metadataReceipt(request = metadataRequest("visual_and_name")) {
+  return sealAssetSearchMetadataReceipt({
+    request,
+    status: "eligible",
+    adapterId: "test_vlm_adapter",
+    adapterImplementationHash: hash("metadata-adapter"),
+    workerImplementationHash: hash("metadata-worker"),
+    runtimeImplementationHash: hash("metadata-runtime"),
+    modelId: "qwen_test",
+    modelCommitHash,
+    promptHash: hash("rendered-metadata-prompt"),
+    rawOutputHash: hash("metadata-raw-output"),
+    metadata: treeMetadata(),
+    diagnostics: [],
+    resourceUsage: {
+      inputImageCount: 12,
+      inputPixels: 1_000_000,
+      inputTokens: 100,
+      outputTokens: 200,
+      elapsedMilliseconds: 1_000,
+      peakResidentBytes: 1024,
+      gpuMilliseconds: 900,
+    },
+  });
+}
 
-test("admission policy is sealed, deterministic, and requires every feature threshold", () => {
-  const first = admissionPolicy();
-  const second = admissionPolicy();
-  assert.equal(first.hash, second.hash);
-  assert.equal(CATALOG_ADMISSION_POLICY_SCHEMA.parse(first).hash, first.hash);
+test("metadata requests isolate names and bind every selected render", () => {
+  const visual = metadataRequest("visual_only");
+  const combined = metadataRequest("visual_and_name");
+  const renamed = sealAssetSearchMetadataRequest({
+    ...stripArtifact(combined),
+    sourceNameHintHash: hash("another-name-hint"),
+  });
+
+  assert.equal(visual.sourceNameHintHash, undefined);
+  assert.equal("semanticModuleHash" in visual, false);
+  assert.equal("semanticLexiconHash" in visual, false);
+  assert.notEqual(combined.hash, renamed.hash);
+  assert.equal(combined.outputSchemaHash, CATALOG_SEARCH_METADATA_JSON_SCHEMA_HASH);
   assert.throws(
     () =>
-      CATALOG_ADMISSION_POLICY_SCHEMA.parse({
-        ...first,
-        substitution: {
-          ...first.substitution,
-          minimumSimilarityMillionthsByChannel: {
-            appearance: 880_000,
-            semantics: 950_000,
-          },
-        },
+      ASSET_SEARCH_METADATA_REQUEST_SCHEMA.parse({
+        ...visual,
+        sourceNameHintHash: hash("forbidden-name"),
       }),
-    /shape|threshold/iu,
+    /Only visual-and-name|hash mismatch/iu,
   );
 });
 
-test("inference receipts are deterministic hypotheses and never compiler authority", () => {
-  const promptTemplateHash = contentHash("hypothesis-prompt-template");
-  const request = sealAssetSemanticHypothesisRequest({
-    sourceContentHash: contentHash("hypothesis-source"),
-    measurementHash: contentHash("hypothesis-measurement"),
-    renderEvidenceHash: contentHash("hypothesis-render"),
-    sourceNameHintHash: contentHash("hypothesis-source-name-hint"),
-    semanticModuleHash: contentHash("hypothesis-module"),
-    semanticLexiconHash: contentHash("hypothesis-lexicon"),
-    promptTemplateHash,
-    evidenceSelection: {
-      channels: ["appearance", "semantics"],
-      viewIds: CATALOG_REVIEW_VIEWPOINTS.map((view) => view.viewId),
-      includeMeasurements: true,
-      includeSourceNameHint: true,
-      selectorImplementationHash: contentHash("hypothesis-evidence-selector"),
-    },
-    ablation: "combined",
-    requestedAssertionKinds: [
-      "affordance",
-      "denotation",
-      "realization_form",
-      "state",
-      "surface_treatment",
-    ],
-    requestedConceptIds: ["bsc_000003"],
-  });
-  const requests = sealCatalogHypothesisRequestSet({
-    status: "eligible",
-    measurementSetHash: contentHash("hypothesis-measurement-set"),
-    visualReviewIndexHash: contentHash("hypothesis-review-index"),
-    sourceNameHintSetHash: contentHash("hypothesis-source-name-hint-set"),
-    semanticModuleHash: request.semanticModuleHash,
-    semanticLexiconHash: request.semanticLexiconHash,
-    promptTemplateHash,
-    requests: [request],
-    diagnostics: [],
-  });
-  const assertions = sealSemanticAssertionBundle({
-    authority: "hypothesis",
-    hypothesisSourceHash: request.hash,
-    assertions: [],
-    abstentions: ["Insufficient evidence"],
-  });
-  const input = {
-    requestHash: request.hash,
-    sourceContentHash: request.sourceContentHash,
-    measurementHash: request.measurementHash,
-    renderEvidenceHash: request.renderEvidenceHash,
-    sourceNameHintHash: request.sourceNameHintHash,
-    semanticModuleHash: request.semanticModuleHash,
-    semanticLexiconHash: request.semanticLexiconHash,
-    ablation: request.ablation,
-    adapterId: "test_vision_adapter",
-    adapterImplementationHash: contentHash("vision-adapter"),
-    modelImplementationHash: contentHash("vision-model"),
-    dependencyGroupId: "test_visual_model",
-    promptHash: promptTemplateHash,
-    rawOutputHash: contentHash("vision-output"),
-    normalizationImplementationHash: contentHash("vision-normalizer"),
-    inference: {
-      seed: 0,
-      scoreNormalization: "softmax_per_facet" as const,
-      maximumCandidatesPerFacet: 4,
-    },
-    assertions,
-    facetScores: [],
-    noveltyScoreMillionths: 1_000_000,
-    diagnostics: [],
-    workload: { inputArtifactCount: 12, renderedViewCount: 12, candidateValueCount: 0 },
-  };
-  const first = sealAssetSemanticHypothesisReceipt(input);
-  const second = sealAssetSemanticHypothesisReceipt(input);
-  const receiptSet = sealCatalogHypothesisReceiptSet({
-    status: "eligible",
-    requestSetHash: requests.hash,
-    receipts: [first],
-    missingRequestHashes: [],
-    diagnostics: [],
-  });
-
-  assert.equal(first.hash, second.hash);
-  assert.equal(first.compilerAuthority, false);
-  assert.equal(receiptSet.status, "eligible");
-  assert.equal("timestamp" in first, false);
-  assert.throws(
-    () =>
-      ASSET_SEMANTIC_HYPOTHESIS_RECEIPT_SCHEMA.parse({
-        ...first,
-        assertions: sealSemanticAssertionBundle({
-          authority: "hypothesis",
-          hypothesisSourceHash: contentHash("another-request"),
-          assertions: [],
-          abstentions: [],
-        }),
-      }),
-    /exact request|hash mismatch/iu,
-  );
-});
-
-test("feature evidence is canonical and missing channels remain incomplete", () => {
-  const sourceContentHash = contentHash("feature-source");
-  const renderEvidenceHash = contentHash("feature-render");
-  const feature = (channel: "appearance" | "shape") =>
-    sealCatalogFeatureReceipt({
-      sourceContentHash,
-      renderEvidenceHash,
-      channel,
-      modelImplementationHash: contentHash(`${channel}:model`),
-      preprocessingImplementationHash: contentHash(`${channel}:preprocess`),
-      aggregationImplementationHash: contentHash(`${channel}:aggregate`),
-      perView: CATALOG_REVIEW_VIEWPOINTS.map((view, index) => ({
-        viewId: view.viewId,
-        feature: { scaleMillionths: 1, values: [index + 1, 1, 1, 1, 1, 1, 1, 1] },
-      })),
-      aggregate: { scaleMillionths: 1, values: [1, 1, 1, 1, 1, 1, 1, 1] },
-      maximumViewDisagreementMillionths: 1_000,
-    });
-  const appearance = feature("appearance");
-  const shape = feature("shape");
-  const expected = ["appearance", "shape"].map((channel) => ({
-    sourceContentHash,
-    channel: channel as "appearance" | "shape",
-  }));
-  const complete = sealCatalogFeatureSet({
-    pilotPlanHash: contentHash("feature-plan"),
-    visualReviewIndexHash: contentHash("feature-review"),
-    expected,
-    receipts: [shape, appearance],
-  });
-  const incomplete = sealCatalogFeatureSet({
-    pilotPlanHash: complete.pilotPlanHash,
-    visualReviewIndexHash: complete.visualReviewIndexHash,
-    expected,
-    receipts: [appearance],
-  });
-
-  assert.equal(complete.status, "eligible");
+test("open-vocabulary metadata normalizes set-like terms and remains non-authoritative", () => {
+  const receipt = metadataReceipt();
+  assert.equal(receipt.compilerAuthority, false);
+  assert.equal(receipt.metadata?.primaryNoun.status, "observed");
   assert.deepEqual(
-    complete.receipts.map((entry) => entry.channel),
-    ["appearance", "shape"],
+    receipt.metadata?.alternateNouns.status === "observed"
+      ? receipt.metadata.alternateNouns.value
+      : [],
+    ["tree", "woody plant"],
   );
-  assert.equal(CATALOG_FEATURE_SET_SCHEMA.parse(complete).hash, complete.hash);
-  assert.equal(incomplete.status, "incomplete");
-  assert.deepEqual(incomplete.missing, [{ sourceContentHash, channel: "shape" }]);
+  assert.deepEqual(
+    receipt.metadata?.styleTerms.status === "observed" ? receipt.metadata.styleTerms.value : [],
+    ["low poly", "stylized"],
+  );
+  assert.equal("confidence" in receipt, false);
+  assert.equal("timestamp" in receipt, false);
+  assert.throws(
+    () => CATALOG_SEARCH_METADATA_SCHEMA.parse({ primaryNoun: observed("tree") }),
+    /invalid_type/iu,
+  );
+  const ruinComponent = CATALOG_SEARCH_METADATA_SCHEMA.parse({
+    ...treeMetadata(),
+    completeness: observed("intentionally_partial"),
+    visibleDamage: observed("visibly_damaged"),
+  });
+  assert.equal(ruinComponent.completeness.status, "observed");
+  assert.equal(ruinComponent.visibleDamage.status, "observed");
 });
 
-test("finite-population acceptance sampling is exact and deterministic", () => {
-  const first = exactAcceptanceSampleSize({
-    populationCount: 100,
-    designDefectCount: 5,
-    acceptanceNumber: 0,
-    confidenceMillionths: 950_000,
-  });
-  const second = exactAcceptanceSampleSize({
-    populationCount: 100,
-    designDefectCount: 5,
-    acceptanceNumber: 0,
-    confidenceMillionths: 950_000,
-  });
-  assert.deepEqual(first, second);
-  assert.ok(first.sampleCount > 0 && first.sampleCount <= 100);
-  assert.ok(first.acceptanceProbabilityMillionths <= 50_000);
+test("metadata receipt reuse binds the exact model and worker implementation", () => {
+  const receipt = metadataReceipt();
+  const execution = {
+    modelId: receipt.modelId,
+    modelCommitHash: receipt.modelCommitHash,
+    workerImplementationHash: receipt.workerImplementationHash,
+  };
+
+  assert.equal(metadataReceiptMatchesExecution(receipt, execution), true);
+  assert.equal(
+    metadataReceiptMatchesExecution(receipt, {
+      ...execution,
+      workerImplementationHash: hash("changed-metadata-worker"),
+    }),
+    false,
+  );
+  assert.equal(
+    metadataReceiptMatchesExecution(receipt, {
+      ...execution,
+      modelCommitHash: hash("changed-model-commit"),
+    }),
+    false,
+  );
 });
 
-test("the tracked catalog root retains exact evidence and qualification receipts", async () => {
+test("validation receipt reuse binds the exact model and worker implementation", async () => {
+  const semantic = await loadSemanticRegistry();
+  const fixture = await catalogFixture(semantic);
+  const query = sealCatalogSearchQuery({
+    text: "tree",
+    rankingMode: "automatic",
+    styleTerms: [],
+    constraints: { commercialUseRequired: false, redistributionRequired: false },
+    limit: 1,
+    validationLimit: 1,
+  });
+  const request = sealCatalogSearchValidationRequest({
+    query,
+    candidate: {
+      sourceContentHash: fixture.asset.source.contentHash,
+      metadataReceiptHash: metadataReceipt().hash,
+      measurementHash: fixture.asset.hash,
+      renderEvidenceHash: hash("validation-cache-render"),
+      metricSummary: metricSummary(fixture.asset.source.contentHash, fixture.asset.hash),
+      selectedRgbViews: CATALOG_REVIEW_VIEWPOINTS.map((view) => ({
+        viewId: view.viewId,
+        rgbHash: hash(`validation-cache:${view.viewId}`),
+      })),
+    },
+    promptTemplateHash: hash("validation-cache-prompt"),
+    preprocessingImplementationHash: hash("validation-cache-preprocessor"),
+  });
+  const receipt = sealCatalogValidationReceipt({
+    request,
+    status: "eligible",
+    adapterId: "test_validation_adapter",
+    adapterImplementationHash: hash("validation-adapter"),
+    workerImplementationHash: hash("validation-worker"),
+    runtimeImplementationHash: hash("validation-runtime"),
+    modelId: "qwen_test",
+    modelCommitHash,
+    promptHash: hash("validation-rendered-prompt"),
+    rawOutputHash: hash("validation-raw-output"),
+    validation: {
+      verdict: "match",
+      observedObjectType: observed("tree"),
+      reasons: [
+        "Visible tree geometry matches the request.",
+        "Visible tree geometry matches the request.",
+      ],
+      mismatchedConstraints: [],
+      visibleLimitations: [],
+    },
+    diagnostics: [],
+    resourceUsage: {
+      inputImageCount: 12,
+      inputPixels: 1_000_000,
+      inputTokens: 100,
+      outputTokens: 50,
+      elapsedMilliseconds: 500,
+      peakResidentBytes: 1024,
+      gpuMilliseconds: 400,
+    },
+  });
+  const execution = {
+    modelId: receipt.modelId,
+    modelCommitHash: receipt.modelCommitHash,
+    workerImplementationHash: receipt.workerImplementationHash,
+  };
+
+  assert.deepEqual(receipt.validation?.reasons, ["Visible tree geometry matches the request."]);
+  assert.equal(validationReceiptMatchesExecution(receipt, execution), true);
+  assert.equal(
+    validationReceiptMatchesExecution(receipt, {
+      ...execution,
+      workerImplementationHash: hash("changed-validation-worker"),
+    }),
+    false,
+  );
+});
+
+test("retrieval embeddings are deterministic int16 little-endian evidence", () => {
+  const receipt = metadataReceipt();
+  const image = sealCatalogEmbeddingReceipt({
+    sourceContentHash: receipt.sourceContentHash,
+    renderEvidenceHash: receipt.renderEvidenceHash,
+    purpose: "image_text_retrieval",
+    modelId: "siglip_test",
+    modelCommitHash,
+    modelImplementationHash: hash("siglip-implementation"),
+    preprocessingImplementationHash: hash("siglip-preprocessing"),
+    aggregationImplementationHash: hash("embedding-aggregation"),
+    perViewEvidenceHash: hash("siglip-views"),
+    aggregate: { scaleMillionths: 10, values: [1, 2, 3, 4, 5, 6, 7, 8] },
+    maximumViewDisagreementMillionths: 10_000,
+  });
+  const shape = sealCatalogEmbeddingReceipt({
+    ...stripArtifact(image),
+    purpose: "shape_similarity",
+    modelId: "dinov3_test",
+    modelImplementationHash: hash("dinov3-implementation"),
+    preprocessingImplementationHash: hash("dinov3-preprocessing"),
+    perViewEvidenceHash: hash("dinov3-views"),
+  });
+  const set = sealCatalogEmbeddingSet({
+    sourceManifestHash: hash("source-manifest"),
+    visualReviewIndexHash: hash("review-index"),
+    expected: [
+      { sourceContentHash: receipt.sourceContentHash, purpose: "shape_similarity" },
+      { sourceContentHash: receipt.sourceContentHash, purpose: "image_text_retrieval" },
+    ],
+    receipts: [shape, image],
+  });
+  const encoded = encodeCatalogEmbeddingMatrix({
+    sourceManifestHash: set.sourceManifestHash,
+    embeddingSet: set,
+    purpose: "image_text_retrieval",
+  });
+
+  assert.equal(set.status, "eligible");
+  assert.equal(encoded.bytes[0], 1);
+  assert.equal(encoded.bytes[1], 0);
+  assert.deepEqual(
+    decodeCatalogEmbeddingMatrix(encoded.matrix, encoded.bytes).get(receipt.sourceContentHash),
+    image.aggregate,
+  );
+  assert.equal(CATALOG_EMBEDDING_MATRIX_SCHEMA.parse(encoded.matrix).compilerAuthority, false);
+  const tampered = encoded.bytes.slice();
+  tampered[0] = 2;
+  assert.throws(() => decodeCatalogEmbeddingMatrix(encoded.matrix, tampered), /descriptor/iu);
+});
+
+test("hybrid search keeps deterministic rank and annotates uncertain validation", async () => {
   const module = await loadSemanticRegistry();
   const fixture = await catalogFixture(module);
-  const provenanceHash = contentHash("fixture-source-provenance");
+  const request = metadataRequest(
+    "visual_and_name",
+    fixture.asset.source.contentHash,
+    fixture.asset.hash,
+  );
+  const receipt = metadataReceipt(request);
+  const metadata = sealCatalogSearchMetadataSet({
+    requestSetHash: hash("metadata-requests"),
+    requestedHashes: [request.hash],
+    receipts: [receipt],
+  });
+  const measurements = sealCatalogMeasurementSet({
+    sourceManifestHash: hash("source-manifest"),
+    assets: [fixture.asset],
+    diagnostics: [],
+  });
+  const sourceNames = seal({
+    kind: "CatalogSourceNameHintSet" as const,
+    status: "eligible" as const,
+    sourceManifestHash: measurements.sourceManifestHash,
+    normalizerImplementationHash: hash("source-name-normalizer"),
+    items: [
+      seal({
+        kind: "CatalogSourceNameHint" as const,
+        sourceContentHash: fixture.asset.source.contentHash,
+        normalizerImplementationHash: hash("source-name-normalizer"),
+        interpretation: "single_normalized_name" as const,
+        observations: [
+          {
+            originalFilename: "StylizedTree.glb",
+            normalizedStem: "stylized tree",
+            tokens: ["stylized", "tree"],
+          },
+        ],
+        diagnostics: [],
+        compilerAuthority: false as const,
+      }),
+    ],
+    diagnostics: [],
+    compilerAuthority: false as const,
+  });
+  const embedding = sealCatalogEmbeddingReceipt({
+    sourceContentHash: fixture.asset.source.contentHash,
+    renderEvidenceHash: receipt.renderEvidenceHash,
+    purpose: "image_text_retrieval",
+    modelId: "siglip_test",
+    modelCommitHash,
+    modelImplementationHash: hash("siglip-implementation"),
+    preprocessingImplementationHash: hash("siglip-image-preprocessing"),
+    aggregationImplementationHash: hash("embedding-aggregation"),
+    aggregate: { scaleMillionths: 10, values: [8, 7, 6, 5, 4, 3, 2, 1] },
+    maximumViewDisagreementMillionths: 1_000,
+  });
+  const shapeEmbedding = sealCatalogEmbeddingReceipt({
+    sourceContentHash: fixture.asset.source.contentHash,
+    renderEvidenceHash: receipt.renderEvidenceHash,
+    purpose: "shape_similarity",
+    modelId: "dinov3_test",
+    modelCommitHash,
+    modelImplementationHash: hash("dinov3-implementation"),
+    preprocessingImplementationHash: hash("dinov3-image-preprocessing"),
+    aggregationImplementationHash: hash("embedding-aggregation"),
+    aggregate: { scaleMillionths: 10, values: [1, 2, 3, 4, 5, 6, 7, 8] },
+    maximumViewDisagreementMillionths: 1_000,
+  });
+  const embeddingSet = sealCatalogEmbeddingSet({
+    sourceManifestHash: measurements.sourceManifestHash,
+    visualReviewIndexHash: hash("review-index"),
+    expected: [
+      { sourceContentHash: fixture.asset.source.contentHash, purpose: "image_text_retrieval" },
+      { sourceContentHash: fixture.asset.source.contentHash, purpose: "shape_similarity" },
+    ],
+    receipts: [embedding, shapeEmbedding],
+  });
+  const encoded = encodeCatalogEmbeddingMatrix({
+    sourceManifestHash: measurements.sourceManifestHash,
+    embeddingSet,
+    purpose: "image_text_retrieval",
+  });
+  const shapeEncoded = encodeCatalogEmbeddingMatrix({
+    sourceManifestHash: measurements.sourceManifestHash,
+    embeddingSet,
+    purpose: "shape_similarity",
+  });
+  const policy = searchPolicy();
+  const index = buildCatalogSearchIndex({
+    measurements,
+    metadata,
+    sourceNames: CATALOG_SOURCE_NAME_HINT_SET_SCHEMA.parse(sourceNames),
+    imageTextEmbeddings: encoded.matrix,
+    shapeEmbeddings: shapeEncoded.matrix,
+    policy,
+    buildImplementationHash: hash("search-builder"),
+  });
+  const query = sealCatalogSearchQuery({
+    text: "stylized forest tree",
+    rankingMode: "automatic",
+    styleTerms: ["low poly"],
+    constraints: { commercialUseRequired: true, redistributionRequired: true },
+    limit: 1,
+    validationLimit: 1,
+  });
+  const queryEmbedding = sealCatalogQueryEmbeddingReceipt({
+    queryHash: query.hash,
+    modelImplementationHash: encoded.matrix.modelImplementationHash,
+    preprocessingImplementationHash: hash("siglip-text-preprocessing"),
+    vector: { scaleMillionths: 10, values: [8, 7, 6, 5, 4, 3, 2, 1] },
+  });
+  const base = executeCatalogSearch({
+    index,
+    policy,
+    query,
+    imageTextMatrix: encoded.matrix,
+    imageTextMatrixBytes: encoded.bytes,
+    shapeMatrix: shapeEncoded.matrix,
+    shapeMatrixBytes: shapeEncoded.bytes,
+    queryEmbedding,
+  });
+  const referenceQuery = sealCatalogSearchQuery({
+    text: "similar silhouette",
+    rankingMode: "shape_only",
+    referenceSourceContentHash: fixture.asset.source.contentHash,
+    styleTerms: [],
+    constraints: { commercialUseRequired: false, redistributionRequired: false },
+    limit: 1,
+    validationLimit: 0,
+  });
+  const referenceResult = executeCatalogSearch({
+    index,
+    policy,
+    query: referenceQuery,
+    imageTextMatrix: encoded.matrix,
+    imageTextMatrixBytes: encoded.bytes,
+    shapeMatrix: shapeEncoded.matrix,
+    shapeMatrixBytes: shapeEncoded.bytes,
+  });
+  const validationRequest = sealCatalogSearchValidationRequest({
+    query,
+    candidate: {
+      sourceContentHash: fixture.asset.source.contentHash,
+      metadataReceiptHash: receipt.hash,
+      measurementHash: fixture.asset.hash,
+      renderEvidenceHash: receipt.renderEvidenceHash,
+      metricSummary: request.metricSummary,
+      selectedRgbViews: request.selectedRgbViews,
+    },
+    promptTemplateHash: hash("validation-prompt"),
+    preprocessingImplementationHash: hash("validation-preprocessor"),
+  });
+  const validation = sealCatalogValidationReceipt({
+    request: validationRequest,
+    status: "eligible",
+    adapterId: "test_validation_adapter",
+    adapterImplementationHash: hash("validation-adapter"),
+    workerImplementationHash: hash("validation-worker"),
+    runtimeImplementationHash: hash("validation-runtime"),
+    modelId: "qwen_test",
+    modelCommitHash,
+    promptHash: hash("rendered-validation-prompt"),
+    validation: {
+      verdict: "uncertain",
+      observedObjectType: observed("tree"),
+      reasons: ["The visible tree identity matches, but hidden constraints are not observable."],
+      mismatchedConstraints: [],
+      visibleLimitations: ["Sockets are not visible."],
+    },
+    diagnostics: [],
+    resourceUsage: {
+      inputImageCount: 12,
+      inputPixels: 1_000_000,
+      inputTokens: 100,
+      outputTokens: 100,
+      elapsedMilliseconds: 500,
+      peakResidentBytes: 1024,
+      gpuMilliseconds: 450,
+    },
+  });
+  const annotated = annotateCatalogSearchResults({ results: base, receipts: [validation] });
+
+  assert.equal(index.status, "eligible");
+  assert.equal(base.results[0]?.sourceContentHash, fixture.asset.source.contentHash);
+  assert.equal(referenceResult.status, "eligible");
+  assert.equal(referenceResult.results[0]?.channelRanks.shapeSimilarity, 1);
+  assert.equal(base.results[0]?.channelRanks.basenameLexical, 1);
+  assert.equal(base.results[0]?.channelRanks.imageTextRetrieval, 1);
+  assert.equal(annotated.results[0]?.fusedRank, 1);
+  assert.equal(annotated.results[0]?.validation, "uncertain");
+  assert.equal(annotated.results[0]?.validationReceiptHash, validation.hash);
+  assert.equal(annotated.compilerAuthority, false);
+});
+
+test("progressive search works from basename evidence and fails closed for missing shape evidence", () => {
+  const policy = searchPolicy();
+  const palmHash = "1".repeat(64);
+  const chairHash = "2".repeat(64);
+  const index = manualSearchIndex(policy, [
+    manualSearchDocument(palmHash, ["palm", "tree"]),
+    manualSearchDocument(chairHash, ["chair", "office"]),
+  ]);
+  const textQuery = sealCatalogSearchQuery({
+    text: "stylized palm tree",
+    rankingMode: "automatic",
+    styleTerms: [],
+    constraints: { commercialUseRequired: false, redistributionRequired: false },
+    limit: 2,
+    validationLimit: 0,
+  });
+  const textResult = executeCatalogSearch({ index, policy, query: textQuery });
+  assert.equal(textResult.status, "eligible");
+  assert.equal(textResult.results[0]?.sourceContentHash, palmHash);
+  assert.deepEqual(textResult.results[0]?.rankingChannels, ["basename_lexical"]);
+  assert.deepEqual(textResult.results[0]?.missingEvidence, [
+    "image_text_embedding",
+    "metadata",
+    "shape_embedding",
+  ]);
+
+  const referenceQuery = sealCatalogSearchQuery({
+    text: "similar silhouette",
+    referenceSourceContentHash: palmHash,
+    rankingMode: "shape_only",
+    styleTerms: [],
+    constraints: { commercialUseRequired: false, redistributionRequired: false },
+    limit: 2,
+    validationLimit: 0,
+  });
+  const referenceResult = executeCatalogSearch({ index, policy, query: referenceQuery });
+  assert.equal(referenceResult.status, "incomplete");
+  assert.equal(referenceResult.results.length, 0);
+  assert.ok(referenceResult.diagnostics.some((entry) => entry.includes("no shape embedding")));
+});
+
+test("mixed enrichment cannot gain an additive channel-count advantage", () => {
+  const policy = searchPolicy();
+  const minimalHash = "3".repeat(64);
+  const enrichedHash = "4".repeat(64);
+  const index = manualSearchIndex(policy, [
+    manualSearchDocument(minimalHash, ["palm"]),
+    manualSearchDocument(enrichedHash, ["palm"], palmSearchMetadata()),
+  ]);
+  const query = sealCatalogSearchQuery({
+    text: "palm",
+    rankingMode: "automatic",
+    styleTerms: [],
+    constraints: { commercialUseRequired: false, redistributionRequired: false },
+    limit: 2,
+    validationLimit: 0,
+  });
+  const result = executeCatalogSearch({ index, policy, query });
+  assert.equal(result.results.length, 2);
+  const maximumSingleChannelScore = Math.round(
+    (1 / (policy.reciprocalRankConstant + 1)) * 1_000_000_000,
+  );
+  assert.ok(
+    result.results.every((entry) => entry.fusedScoreBillionths <= maximumSingleChannelScore),
+  );
+  assert.equal(
+    result.results.find((entry) => entry.sourceContentHash === enrichedHash)?.rankingChannels
+      .length,
+    2,
+  );
+});
+
+test("only conclusive requirement validation can decide that no suitable match exists", () => {
+  const policy = searchPolicy();
+  const index = manualSearchIndex(
+    policy,
+    ["5", "6", "7"].map((prefix) => manualSearchDocument(prefix.repeat(64), ["tree"])),
+  );
+  const query = sealCatalogSearchQuery({
+    text: "tree",
+    rankingMode: "basename_only",
+    styleTerms: [],
+    constraints: { commercialUseRequired: false, redistributionRequired: false },
+    limit: 3,
+    validationLimit: 3,
+  });
+  const base = executeCatalogSearch({ index, policy, query });
+  const decisionPolicy = sealCatalogCandidateDecisionPolicy({
+    policyId: "catalog_candidate_decision_test",
+    minimumValidatedCandidates: 3,
+    minimumMatchCount: 1,
+    uncertainOutcome: "evidence_insufficient",
+    allMismatchOutcome: "no_suitable_match",
+  });
+  const withVerdicts = (verdicts: readonly ("match" | "mismatch" | "uncertain")[]) => {
+    const parsed = CATALOG_SEARCH_RESULT_SET_SCHEMA.safeParse(
+      seal({
+        kind: "CatalogSearchResultSet" as const,
+        ...stripArtifact(base),
+        results: base.results.map((entry, index) => ({
+          ...entry,
+          validation: verdicts[index]!,
+          validationReceiptHash: hash(`validation:${index}:${verdicts[index]}`),
+        })),
+      }),
+    );
+    if (!parsed.success) throw new Error(JSON.stringify(parsed.error.issues));
+    return parsed.data;
+  };
+  assert.equal(
+    decideCatalogSearchOutcome({
+      results: withVerdicts(["mismatch", "mismatch", "mismatch"]),
+      policy: decisionPolicy,
+    }).outcome,
+    "no_suitable_match",
+  );
+  assert.equal(
+    decideCatalogSearchOutcome({
+      results: withVerdicts(["mismatch", "uncertain", "mismatch"]),
+      policy: decisionPolicy,
+    }).outcome,
+    "evidence_insufficient",
+  );
+  assert.equal(
+    decideCatalogSearchOutcome({
+      results: withVerdicts(["mismatch", "match", "mismatch"]),
+      policy: decisionPolicy,
+    }).outcome,
+    "suitable_match",
+  );
+});
+
+test("attributed source assembly context can resolve an ambiguity isolated renders cannot", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await catalogFixture(module);
+  const secondSourceHash = hash("context-parent-source");
+  const {
+    kind: _kind,
+    assetId: _assetId,
+    hash: _assetHash,
+    source: originalSource,
+    ...assetMaterial
+  } = fixture.asset;
+  const parentAsset = sealCatalogAssetArtifact({
+    ...assetMaterial,
+    source: {
+      ...originalSource,
+      contentHash: secondSourceHash,
+      sourceArtifact: {
+        artifactHash: hash("context-parent-bytes"),
+        bytes: originalSource.sourceArtifact!.bytes,
+        mediaType: originalSource.sourceArtifact!.mediaType,
+      },
+    },
+  });
+  const selectedRgbViews = CATALOG_REVIEW_VIEWPOINTS.map((view) => ({
+    viewId: view.viewId,
+    rgbHash: hash(`context:${view.viewId}`),
+  }));
+  const candidates = [fixture.asset, parentAsset]
+    .map((asset) =>
+      createAssetContextCandidate({
+        asset,
+        renderEvidenceHash: hash(`context-render:${asset.source.contentHash}`),
+        contactSheetContentHash: hash(`context-sheet:${asset.source.contentHash}`),
+        selectedRgbViews,
+      }),
+    )
+    .sort((left, right) =>
+      left.sourceContentHash < right.sourceContentHash
+        ? -1
+        : left.sourceContentHash > right.sourceContentHash
+          ? 1
+          : 0,
+    );
+  const isolatedRequest = sealAssetContextHypothesisRequest({
+    groupingEvidence: ["bounded_retrieval"],
+    candidates,
+    attributedAssemblyEvidence: [],
+    promptTemplateHash: hash("context-prompt"),
+  });
+  const abstainedAsset = (sourceContentHash: string) => ({
+    sourceContentHash,
+    sourceRole: abstained("Isolated views do not establish installation semantics."),
+    componentRoleTerms: abstained("No demonstrated assembly is available."),
+    likelyMateSourceHashes: abstained("Mates are not observable in isolation."),
+    notes: abstained("Assembly role remains unresolved."),
+    supportingEvidenceHashes: [],
+  });
+  const isolatedReceipt = contextReceipt(isolatedRequest.hash, {
+    assets: candidates.map((entry) => abstainedAsset(entry.sourceContentHash)),
+    relations: [],
+    groupNotes: abstained("Grouped isolated renders remain ambiguous."),
+  });
+  assert.equal(contextReceiptMatchesRequest(isolatedRequest, isolatedReceipt), true);
+  assert.equal(
+    assessConstructionEligibility({ asset: fixture.asset, context: isolatedReceipt }).status,
+    "incomplete",
+  );
+
+  const assemblyEvidenceHash = hash("authored-observation-tower-prefab");
+  const attributedRequest = sealAssetContextHypothesisRequest({
+    groupingEvidence: ["attributed_assembly", "bounded_retrieval"],
+    candidates,
+    attributedAssemblyEvidence: [
+      {
+        evidenceId: "TowerPrefabEvidence",
+        evidenceKind: "source_prefab",
+        evidenceHash: assemblyEvidenceHash,
+        attribution: {
+          sourceKind: "source_manifest",
+          sourceIdentityHash: hash("authored-prefab-source"),
+        },
+        members: candidates.map((entry) => ({
+          sourceContentHash: entry.sourceContentHash,
+          authoredRoleTerms:
+            entry.sourceContentHash === fixture.asset.source.contentHash
+              ? ["support post"]
+              : ["assembled tower"],
+          ...(entry.sourceContentHash === fixture.asset.source.contentHash
+            ? {
+                parentSourceContentHash: parentAsset.source.contentHash,
+                transformMeters: {
+                  positionMeters: { x: 1, y: 0, z: 1 },
+                  rotation: [0, 0, 0, 1] as [number, number, number, number],
+                  scale: 1,
+                },
+              }
+            : {}),
+        })),
+      },
+    ],
+    promptTemplateHash: hash("context-prompt"),
+  });
+  const contextualAssets = candidates
+    .map((entry) =>
+      entry.sourceContentHash === fixture.asset.source.contentHash
+        ? {
+            sourceContentHash: entry.sourceContentHash,
+            sourceRole: observed("assembly_component" as const),
+            componentRoleTerms: observed(["support post"]),
+            likelyMateSourceHashes: observed([parentAsset.source.contentHash]),
+            notes: abstained("No additional role is claimed."),
+            supportingEvidenceHashes: [assemblyEvidenceHash],
+          }
+        : abstainedAsset(entry.sourceContentHash),
+    )
+    .sort((left, right) =>
+      left.sourceContentHash < right.sourceContentHash
+        ? -1
+        : left.sourceContentHash > right.sourceContentHash
+          ? 1
+          : 0,
+    );
+  const attributedReceipt = contextReceipt(attributedRequest.hash, {
+    assets: contextualAssets,
+    relations: [
+      {
+        kind: "part_of" as const,
+        subjectSourceContentHash: fixture.asset.source.contentHash,
+        objectSourceContentHash: parentAsset.source.contentHash,
+        rationale: "The source prefab places the post beneath the assembled tower root.",
+        supportingEvidenceHashes: [assemblyEvidenceHash],
+      },
+    ],
+    groupNotes: observed(["Source-prefab transforms disambiguate the support post."]),
+  });
+  assert.equal(contextReceiptMatchesRequest(attributedRequest, attributedReceipt), true);
+  assert.equal(
+    assessConstructionEligibility({ asset: fixture.asset, context: attributedReceipt })
+      .candidateKind,
+    "component_candidate",
+  );
+  assert.equal(contextReceiptMatchesRequest(isolatedRequest, attributedReceipt), false);
+});
+
+test("admission policy disables automatic authority and sampling remains exact", () => {
+  const policy = admissionPolicy();
+  assert.equal(policy.automaticAdmissionEnabled, false);
+  assert.deepEqual(policy.automaticallyAdmissibleEntryKinds, []);
+  assert.equal(CATALOG_ADMISSION_POLICY_SCHEMA.parse(policy).hash, policy.hash);
+  const sample = exactAcceptanceSampleSize({
+    populationCount: 100,
+    designDefectCount: 5,
+    acceptanceNumber: 0,
+    confidenceMillionths: 950_000,
+  });
+  assert.ok(sample.sampleCount > 0 && sample.sampleCount <= 100);
+  assert.ok(sample.acceptanceProbabilityMillionths <= 50_000);
+});
+
+test("the tracked catalog root excludes learned search evidence", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await catalogFixture(module);
+  const provenanceHash = hash("fixture-source-provenance");
   const sourceManifest = {
     kind: "TrustedSourceManifest" as const,
     rightsNotice: "registry/rights-note.md",
@@ -317,13 +890,13 @@ test("the tracked catalog root retains exact evidence and qualification receipts
     kind: "CatalogMeasurementSet",
     relativePath: `registry/evidence/${measurements.hash}.json`,
     artifactHash: measurements.hash,
-    bytesHash: contentHash("committed-measurement-bytes"),
+    bytesHash: hash("committed-measurement-bytes"),
     bytes: 1,
   };
   const input = {
     sourceManifest,
     semanticModuleHash: module.snapshot.hash,
-    semanticLexiconHash: contentHash("commit-lexicon"),
+    semanticLexiconHash: hash("commit-lexicon"),
     measurementSetHash: measurements.hash,
     snapshot: fixture.snapshot,
     styleProfiles: [fixture.styleProfile].map(({ kind: _kind, hash: _hash, ...entry }) => entry),
@@ -341,17 +914,189 @@ test("the tracked catalog root retains exact evidence and qualification receipts
       },
     ],
     admissionPolicy: admissionPolicy(),
-    qualificationReceipts: [],
     retainedEvidence: [retainedMeasurements],
   };
-  const first = sealCatalogAuthorityCommit(input);
-  const second = sealCatalogAuthorityCommit(input);
+  const commit = sealCatalogAuthorityCommit(input);
 
-  assert.equal(first.hash, second.hash);
-  assert.equal(first.snapshot.hash, fixture.snapshot.hash);
-  assert.equal(first.sourcePayloadPolicy, "external_content_addressed");
+  assert.equal(commit.sourcePayloadPolicy, "external_content_addressed");
+  assert.equal("metadata" in commit, false);
+  assert.equal("embedding" in commit, false);
   assert.throws(
     () => sealCatalogAuthorityCommit({ ...input, retainedEvidence: [] }),
     /measurement set must be retained/iu,
   );
 });
+
+test("the tracked smoke fixture is sealed, balanced, and cannot authorize corpus work", async () => {
+  const benchmark = CATALOG_SEARCH_SMOKE_FIXTURE_SCHEMA.parse(
+    JSON.parse(await readFile("registry/catalog-search-smoke.json", "utf8")),
+  );
+  assert.equal(benchmark.assets.length, 32);
+  assert.equal(benchmark.authority, "smoke_only");
+  assert.equal(new Set(benchmark.assets.map((asset) => asset.leakageGroupHash)).size, 32);
+});
+
+function palmSearchMetadata(): CatalogSearchMetadata {
+  return CATALOG_SEARCH_METADATA_SCHEMA.parse({
+    ...treeMetadata(),
+    caption: observed("A stylized palm tree."),
+    primaryNoun: observed("palm tree"),
+    alternateNouns: observed(["palm"]),
+  });
+}
+
+const searchFields = [
+  "alternateNouns",
+  "caption",
+  "colors",
+  "environments",
+  "materials",
+  "primaryNoun",
+  "sourceBasename",
+  "styleTerms",
+  "useCases",
+  "visibleText",
+] as const;
+
+function manualSearchDocument(
+  sourceContentHash: string,
+  basenameTokens: readonly string[],
+  metadata?: CatalogSearchMetadata,
+) {
+  const observationTokens = (field: (typeof searchFields)[number]): string[] => {
+    if (field === "sourceBasename") return [...basenameTokens].sort();
+    if (!metadata) return [];
+    const value = metadata[field];
+    if (value.status !== "observed") return [];
+    return tokenizeCatalogSearchText(
+      Array.isArray(value.value) ? value.value.join(" ") : value.value,
+    );
+  };
+  return {
+    sourceContentHash,
+    measurementHash: hash(`measurement:${sourceContentHash}`),
+    fields: searchFields.map((field) => ({ field, tokens: observationTokens(field) })),
+    ...(metadata
+      ? {
+          metadataEvidence: {
+            metadataReceiptHash: hash(`metadata:${sourceContentHash}`),
+            renderEvidenceHash: hash(`render:${sourceContentHash}`),
+            metadata,
+          },
+        }
+      : {}),
+    metric: {
+      sizeMeters: {
+        x: quantizeQ32_32(1),
+        y: quantizeQ32_32(2),
+        z: quantizeQ32_32(1),
+      },
+      triangleCount: 128,
+      sourceBytes: 1024,
+    },
+    rights: { commercialUsePermitted: true, redistributionPermitted: true },
+    missingEvidence: [
+      "image_text_embedding" as const,
+      ...(metadata ? [] : (["metadata"] as const)),
+      "shape_embedding" as const,
+    ],
+  };
+}
+
+function manualSearchIndex(
+  policy: ReturnType<typeof searchPolicy>,
+  documentsInput: readonly ReturnType<typeof manualSearchDocument>[],
+) {
+  const documents = [...documentsInput].sort((left, right) =>
+    left.sourceContentHash < right.sourceContentHash
+      ? -1
+      : left.sourceContentHash > right.sourceContentHash
+        ? 1
+        : 0,
+  );
+  return CATALOG_SEARCH_INDEX_SCHEMA.parse(
+    seal({
+      kind: "CatalogSearchIndex" as const,
+      status: "eligible" as const,
+      sourceManifestHash: hash("manual-search-source-manifest"),
+      measurementSetHash: hash("manual-search-measurements"),
+      sourceNameHintSetHash: hash("manual-search-source-names"),
+      searchPolicyHash: policy.hash,
+      tokenizerImplementationHash: CATALOG_SEARCH_TOKENIZER_IMPLEMENTATION_HASH,
+      buildImplementationHash: hash("manual-search-builder"),
+      coverage: {
+        measuredAndNamed: documents.length,
+        metadata: documents.filter((entry) => entry.metadataEvidence !== undefined).length,
+        imageTextEmbedding: 0,
+        shapeEmbedding: 0,
+      },
+      documents,
+      diagnostics: [],
+      compilerAuthority: false as const,
+    }),
+  );
+}
+
+function contextReceipt(
+  requestHash: string,
+  hypothesis: NonNullable<Parameters<typeof sealAssetContextHypothesisReceipt>[0]["hypothesis"]>,
+) {
+  return sealAssetContextHypothesisReceipt({
+    status: "eligible",
+    requestHash,
+    adapterId: "test_context_adapter",
+    adapterImplementationHash: hash("context-adapter"),
+    workerImplementationHash: hash("context-worker"),
+    runtimeImplementationHash: hash("context-runtime"),
+    modelId: "qwen_context_test",
+    modelCommitHash,
+    promptHash: hash("rendered-context-prompt"),
+    rawOutputHash: hash(`context-output:${requestHash}`),
+    hypothesis,
+    diagnostics: [],
+    resourceUsage: {
+      inputImageCount: 2,
+      inputPixels: 200_000,
+      inputTokens: 100,
+      outputTokens: 100,
+      elapsedMilliseconds: 500,
+      peakResidentBytes: 1024,
+      gpuMilliseconds: 450,
+    },
+  });
+}
+
+function seal<T extends object>(material: T): T & { readonly hash: string } {
+  return { ...material, hash: contentHash(stableJson(material)) };
+}
+
+function stripArtifact<T extends { readonly kind: string; readonly hash: string }>(
+  value: T,
+): Omit<T, "kind" | "hash"> {
+  const { kind: _kind, hash: _hash, ...material } = value;
+  return material;
+}
+
+function metricSummary(sourceContentHash: string, measurementHash: string) {
+  const material = {
+    kind: "AssetMetricPromptSummary" as const,
+    sourceContentHash,
+    measurementHash,
+    coordinateSystem: "right_handed_y_up_meters" as const,
+    boundsMeters: {
+      min: { x: -0.5, y: 0, z: -0.5 },
+      max: { x: 0.5, y: 2, z: 0.5 },
+    },
+    sizeMeters: { x: 1, y: 2, z: 1 },
+    sourceFrame: {
+      handedness: "right_handed" as const,
+      up: "+Y" as const,
+      forward: "-Z" as const,
+      unitsToMeters: 1,
+    },
+    partCounts: { total: 1, renderable: 1, collision: 0 },
+    triangleCount: 128,
+    support: { primaryContact: "bottom" as const, contactAreaSquareMeters: 1 },
+  };
+  return { ...material, hash: contentHash(stableJson(material)) };
+}

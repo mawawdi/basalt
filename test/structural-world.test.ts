@@ -224,6 +224,7 @@ test("assemblies bind exact components, sockets, surfaces, rooms, portals, and s
     placementSurfaces: [],
     terrainPlans: [],
     routes: [],
+    routeJunctions: [],
     lotPolicies: [
       {
         policyId: "MainLots",
@@ -323,6 +324,7 @@ test("assemblies bind exact components, sockets, surfaces, rooms, portals, and s
         ],
       },
     ],
+    constructionPrograms: [],
     catalogRequirements: [requirement],
     realizationIntents: [
       {

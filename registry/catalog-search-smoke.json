@@ -1,0 +1,1538 @@
+{
+  "kind": "CatalogSearchSmokeFixture",
+  "authority": "smoke_only",
+  "assets": [
+    {
+      "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+      "leakageGroupHash": "21f53aa33dcab7859fa5930fa7f0b76d6bda2c134616b1546dadb8ad1bd67bff",
+      "split": "selection",
+      "stratum": "style_contrast",
+      "acceptablePrimaryNouns": [
+        "arched footbridge",
+        "bridge",
+        "wooden footbridge"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "07e1d282ebbff9bb2c30bc4078d5948de6a4024b8ccdd1ca62ffb7f9ac43e1a7",
+      "leakageGroupHash": "3f7d87374b737403e82b7c9b10ca6a55bc73b0a41eec14e19bbda8616b401212",
+      "split": "selection",
+      "stratum": "material_or_name_failure",
+      "acceptablePrimaryNouns": [
+        "cylindrical wall module",
+        "round wall section"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "assembly_component"
+      ],
+      "misleadingName": true,
+      "outsideSemanticKernel": false,
+      "visibleDefects": [
+        "rendered geometry reads as a closed cylinder rather than an open wall segment"
+      ]
+    },
+    {
+      "sourceContentHash": "09c199c3ea03c5c922853fe77779feee5a429db277b914fd213f4838ddd9bce4",
+      "leakageGroupHash": "814a47f0de53ab6c7014c653c1bc57173bd0ffcc4ae65d095524f919604cc2ba",
+      "split": "development",
+      "stratum": "aggregate_or_collision",
+      "acceptablePrimaryNouns": [
+        "grove",
+        "tree cluster",
+        "tree patch"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "122e5a605b6901b0559c612ed48f7a8b1f17b3a079b10586963166372cf8d7aa",
+      "leakageGroupHash": "666fdecce2f13e3cb37b4cf76d4d37c3c0c84ed00dae9cf03c0bab5ef8d2233c",
+      "split": "development",
+      "stratum": "organic_or_environment",
+      "acceptablePrimaryNouns": [
+        "palm tree",
+        "tropical palm"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+      "leakageGroupHash": "106836fecc9eb98ad68b56f9d90b06a9e52bf09c736fa8e9613b64a3952f6692",
+      "split": "selection",
+      "stratum": "out_of_kernel",
+      "acceptablePrimaryNouns": [
+        "bone pile",
+        "pile of bones",
+        "scattered bones"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": true,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "2a08473899d99c0d0d8cc9771ce6c51ec0d4b2d376109107aab5a3e937b5f3f6",
+      "leakageGroupHash": "0f972c7e2eb4c7443612aea93f0cb365c169e54d117244c4ce5b7e5c573672f0",
+      "split": "holdout",
+      "stratum": "aggregate_or_collision",
+      "acceptablePrimaryNouns": [
+        "computer setup",
+        "computer workstation",
+        "desktop computer setup"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "realistic",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+      "leakageGroupHash": "b86f42e000540d9979a8efeb36ddd19278e297a09d28345c36c3856fd4269602",
+      "split": "development",
+      "stratum": "attachment_or_small_prop",
+      "acceptablePrimaryNouns": [
+        "air conditioner",
+        "air-conditioning condenser",
+        "outdoor air-conditioning unit"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "2c255cf3599865452c082b9bd4ffd7bdaffa03900a2c115a704bf58ed08f612e",
+      "leakageGroupHash": "00e5abdf766b502de6a77b2591140f0379a9b4b85bb98c4b1966adbd67b2eca4",
+      "split": "development",
+      "stratum": "out_of_kernel",
+      "acceptablePrimaryNouns": [
+        "artillery cannon",
+        "cannon",
+        "field cannon",
+        "wheeled cannon"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": true,
+      "visibleDefects": [
+        "source contains four separately addressable mesh parts"
+      ]
+    },
+    {
+      "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+      "leakageGroupHash": "dd0889cbee870a24296148cd591958d6d09f042ce7262740ce6fa159e9fd8be9",
+      "split": "development",
+      "stratum": "structural_or_route",
+      "acceptablePrimaryNouns": [
+        "bridge beam",
+        "bridge support",
+        "structural beam"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "assembly_component",
+        "attachment",
+        "route_component"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "43abf583f49091aef2a3077d555f001bc7762babd478ae6f541038836542f90f",
+      "leakageGroupHash": "66d1f3e400680173f112cebbab68d3f82e6e67b0bd9f8bffd970a11bd3b6541b",
+      "split": "holdout",
+      "stratum": "standalone_object",
+      "acceptablePrimaryNouns": [
+        "gaming chair",
+        "office chair"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "461870d63649a006d7d45cc3de1801690aa4b086514fd44892580047da952b7a",
+      "leakageGroupHash": "85c5b6e0d3203f1c37fce499a9badd50ff5d931c1651ee5d4f38c4eda3cc870c",
+      "split": "holdout",
+      "stratum": "style_contrast",
+      "acceptablePrimaryNouns": [
+        "computer monitor",
+        "curved monitor",
+        "ultrawide monitor"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "realistic",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "59967ec7d8abfec302e2ce3a241081400afcf7f1f2f1e9f324b3253f658158f3",
+      "leakageGroupHash": "ea216fa0ef36307bd30bde52976abc7548ed3dbcd770758585a15072416b84f4",
+      "split": "development",
+      "stratum": "organic_or_environment",
+      "acceptablePrimaryNouns": [
+        "cloud",
+        "low-poly cloud"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "environment_realizer",
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "59e7113e967b627a28f15d9392fffefce5a4953ac714f39822383551da44cbd3",
+      "leakageGroupHash": "09213a1395853a06dba480a499173a3c8fda896bd9b5ac0b73ac1dc6e6ecd786",
+      "split": "development",
+      "stratum": "structural_or_route",
+      "acceptablePrimaryNouns": [
+        "asphalt road",
+        "road segment",
+        "straight road"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "route_component"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "6684e72487d83d375842f2fb81c416b8553caa9c366b2d88e41c3b7e09450bf5",
+      "leakageGroupHash": "904426aff1d87c1a4194441d49f32ca9845d81ddb2f3fc3b1ac0b22b3f944e29",
+      "split": "development",
+      "stratum": "material_or_name_failure",
+      "acceptablePrimaryNouns": [
+        "curved brick wall",
+        "curved wall section",
+        "stone alcove wall"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "assembly_component",
+        "attachment"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "67c5a3467e1fbbb28d144968b598985f7a7b95e7ab8db5470aa2e5760aad2991",
+      "leakageGroupHash": "6bcf2dee1100d10b53e634b485bf735613211c7fe70dafce9c98a148daf9578f",
+      "split": "holdout",
+      "stratum": "material_or_name_failure",
+      "acceptablePrimaryNouns": [
+        "paper cutter",
+        "paper guillotine",
+        "trimmer"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "standalone"
+      ],
+      "misleadingName": true,
+      "outsideSemanticKernel": false,
+      "visibleDefects": [
+        "source basename is ambiguous while the render depicts a paper-cutting tool"
+      ]
+    },
+    {
+      "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+      "leakageGroupHash": "0257b6f5cdc1002e1974c7296c22af16ad640953dc65349378b1037278a633a4",
+      "split": "selection",
+      "stratum": "organic_or_environment",
+      "acceptablePrimaryNouns": [
+        "mushroom cluster",
+        "mushrooms"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "7d12df76b47f516848cd66691edb64a978f310b226151b9a63bedfb6a8eacb47",
+      "leakageGroupHash": "b3f723e2480450aba797e899ef7f3c46c10510f308b7123ca752ec6e5d1b22e7",
+      "split": "holdout",
+      "stratum": "organic_or_environment",
+      "acceptablePrimaryNouns": [
+        "cloud",
+        "low-poly cloud"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "environment_realizer",
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": [
+        "small detached mesh fragments are visible"
+      ]
+    },
+    {
+      "sourceContentHash": "82cc570112ce76ee0382651534fac2801396f95852ddf842e09a7de3ee251a3f",
+      "leakageGroupHash": "594768747a65a28106f0eb5f8628520744432fddce64614c8cdd30cad430eb99",
+      "split": "development",
+      "stratum": "aggregate_or_collision",
+      "acceptablePrimaryNouns": [
+        "barn collision mesh",
+        "building collision mesh",
+        "collision proxy"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "assembly_component"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": [
+        "collision companion is not independently renderable catalog content"
+      ]
+    },
+    {
+      "sourceContentHash": "8304738a0e26bd5b42f75c000d9bdb4896c0b4d13c44a8f6742ed3018ba984bc",
+      "leakageGroupHash": "82be52387e4e90f6dd4702ae1e066d2f2f73373b7fe9921663bad98ef270a4e2",
+      "split": "development",
+      "stratum": "out_of_kernel",
+      "acceptablePrimaryNouns": [
+        "leather waterskin",
+        "water flask",
+        "waterskin"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": true,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "8314a03a94574aa67499b2e8b28cb91971d4fd8505ee06f27bd6767375571e62",
+      "leakageGroupHash": "451187306f93c23fe8dd80ec282422d6a34a355f5fb2ef2260bad9848943f25a",
+      "split": "selection",
+      "stratum": "aggregate_or_collision",
+      "acceptablePrimaryNouns": [
+        "boulder cluster",
+        "rock pile",
+        "rocks"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": true,
+      "outsideSemanticKernel": false,
+      "visibleDefects": [
+        "no crate is visible despite the source basename"
+      ]
+    },
+    {
+      "sourceContentHash": "a22b657edfaa25e32b2f9c0e7dbb671ed8d2b307776d6435904b180fa5debb8e",
+      "leakageGroupHash": "0f7becea70238dc51b71e05d5727ee45a8087ac57e365c79fe36c8e2110d0a16",
+      "split": "selection",
+      "stratum": "structural_or_route",
+      "acceptablePrimaryNouns": [
+        "broken staircase",
+        "broken stairs",
+        "stair segment"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "assembly_component",
+        "attachment"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "ab9db73330c2bac4467485692b049f7ded3caf6a2d6b5192b4e5193e46ea88b8",
+      "leakageGroupHash": "4a02430866571cf9254d2b440634ab7aebd7db5b77d205ccf5f35a35198fb24c",
+      "split": "development",
+      "stratum": "material_or_name_failure",
+      "acceptablePrimaryNouns": [
+        "chair",
+        "shop chair",
+        "wooden chair"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "b6a76132349d1122c40fe31b83513c946f73c9874814dfeb21fb90cea1c4ea7f",
+      "leakageGroupHash": "7770ed0db12cb49d894a562385443ef9c09cb9e9d082da27d1d042d3ada141de",
+      "split": "development",
+      "stratum": "attachment_or_small_prop",
+      "acceptablePrimaryNouns": [
+        "advertising poster",
+        "poster",
+        "wall poster"
+      ],
+      "acceptableStyleTerms": [
+        "hand_painted",
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "route_component",
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "ba4467cdacc1c28c36dc8515a4c2e5fc2083475e3f6adfdfa8f41f936fe6a333",
+      "leakageGroupHash": "19639c19a9fe1ce7c3c50de91fd282f589afba6e98d6d0bbd7360403c51dc27f",
+      "split": "development",
+      "stratum": "standalone_object",
+      "acceptablePrimaryNouns": [
+        "barrel",
+        "wooden barrel"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "c4faf10d295ea8256b3b33cb4209db6e81b8c1c2c46c6e278e4ba7713a25e6a9",
+      "leakageGroupHash": "861081afe76dcc739e61f375a217686de94df2e8884be404d4926c79efea4460",
+      "split": "selection",
+      "stratum": "attachment_or_small_prop",
+      "acceptablePrimaryNouns": [
+        "medieval torch",
+        "ornate torch",
+        "torch"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "c9b1980d8187100a77490e0d36d6fc4559aa983152e1a46f4f69a379d6fe0145",
+      "leakageGroupHash": "027360a0c31bddd70c044de2552d1f2222438522d0eef13dbe081d8ee4a5ccef",
+      "split": "development",
+      "stratum": "standalone_object",
+      "acceptablePrimaryNouns": [
+        "boulder",
+        "large rock",
+        "rock"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "cf73656e26203182c2e5660fd5a4d5e2447276ff2d2074f2ed22904ef51b7c5e",
+      "leakageGroupHash": "39488a132dd0a5dde8e14cd13a34efd0b4b0c662d5ff70f6d474d8157aad01f3",
+      "split": "holdout",
+      "stratum": "structural_or_route",
+      "acceptablePrimaryNouns": [
+        "glazed wall panel",
+        "modular wall panel",
+        "window wall panel"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "realistic",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "assembly_component",
+        "attachment"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "d402bb95dda259335c2af95f704161c4157446343c5421e2891a6d666e8b1eef",
+      "leakageGroupHash": "d6c30aedc6a3cc2b03327f3db2519524788d2dd3022f6d19d9ca51825a523e6c",
+      "split": "selection",
+      "stratum": "standalone_object",
+      "acceptablePrimaryNouns": [
+        "greatsword",
+        "longsword",
+        "sword"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "d4423cd925cef68e913ea2d87ec17d2e74fb29d15c86a28ea2a4add7e4a3df53",
+      "leakageGroupHash": "328d016857e4e121c0d69744e287017b230d211e00c1b974a84c31dba3c813e3",
+      "split": "development",
+      "stratum": "style_contrast",
+      "acceptablePrimaryNouns": [
+        "floor tile",
+        "stone floor tile",
+        "tile panel"
+      ],
+      "acceptableStyleTerms": [
+        "hand_painted",
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "route_component"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62",
+      "leakageGroupHash": "66679574009f0b1d9b2726c5919c5bf637c9a60868e4cf40a6be9337cb971d43",
+      "split": "development",
+      "stratum": "style_contrast",
+      "acceptablePrimaryNouns": [
+        "farmhouse",
+        "farmhouse building",
+        "rural house"
+      ],
+      "acceptableStyleTerms": [
+        "hand_painted",
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "e53f62c82191dbc2017de9ee2615bc6b876901ea2903e307e98faef1dbe693d9",
+      "leakageGroupHash": "1e6379cab879ea7d8e93f4b5763333fda5f4ea3dac13750513a0cb5b2140da58",
+      "split": "holdout",
+      "stratum": "attachment_or_small_prop",
+      "acceptablePrimaryNouns": [
+        "desk lamp",
+        "table lamp"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": false,
+      "visibleDefects": []
+    },
+    {
+      "sourceContentHash": "f3a2b1a2d996dcd9f6ef844591d5440d4844043d8b86095122dd187a3562755b",
+      "leakageGroupHash": "1b7fe0c304cecd2ebbb00382cf99409aad60ff35d3ccda4c61c4123134a64e28",
+      "split": "holdout",
+      "stratum": "out_of_kernel",
+      "acceptablePrimaryNouns": [
+        "desk toy",
+        "kinetic desk toy",
+        "newton's cradle"
+      ],
+      "acceptableStyleTerms": [
+        "low_poly",
+        "realistic",
+        "stylized"
+      ],
+      "acceptableSourceRoles": [
+        "attachment",
+        "standalone"
+      ],
+      "misleadingName": false,
+      "outsideSemanticKernel": true,
+      "visibleDefects": []
+    }
+  ],
+  "queries": [
+    {
+      "queryId": "development_01_tree_patch",
+      "split": "development",
+      "text": "stylized low-poly grove of several trees",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "09c199c3ea03c5c922853fe77779feee5a429db277b914fd213f4838ddd9bce4"
+      ]
+    },
+    {
+      "queryId": "development_02_palm",
+      "split": "development",
+      "text": "stylized palm tree",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "122e5a605b6901b0559c612ed48f7a8b1f17b3a079b10586963166372cf8d7aa"
+      ]
+    },
+    {
+      "queryId": "development_03_aircon",
+      "split": "development",
+      "text": "wall-mounted outdoor air conditioner",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34"
+      ]
+    },
+    {
+      "queryId": "development_04_cannon",
+      "split": "development",
+      "text": "wooden wheeled cannon",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "2c255cf3599865452c082b9bd4ffd7bdaffa03900a2c115a704bf58ed08f612e"
+      ]
+    },
+    {
+      "queryId": "development_05_bridge_support",
+      "split": "development",
+      "text": "plain rectangular bridge support beam",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d"
+      ]
+    },
+    {
+      "queryId": "development_06_cloud",
+      "split": "development",
+      "text": "low-poly white cloud",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "59967ec7d8abfec302e2ce3a241081400afcf7f1f2f1e9f324b3253f658158f3"
+      ]
+    },
+    {
+      "queryId": "development_07_road",
+      "split": "development",
+      "text": "straight asphalt road slab",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "59e7113e967b627a28f15d9392fffefce5a4953ac714f39822383551da44cbd3"
+      ]
+    },
+    {
+      "queryId": "development_08_alcove_wall",
+      "split": "development",
+      "text": "curved dark stone brick wall",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "6684e72487d83d375842f2fb81c416b8553caa9c366b2d88e41c3b7e09450bf5"
+      ]
+    },
+    {
+      "queryId": "development_09_barn_collision",
+      "split": "development",
+      "text": "farm barn building collision proxy",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "82cc570112ce76ee0382651534fac2801396f95852ddf842e09a7de3ee251a3f"
+      ]
+    },
+    {
+      "queryId": "development_10_waterskin",
+      "split": "development",
+      "text": "brown leather waterskin",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "8304738a0e26bd5b42f75c000d9bdb4896c0b4d13c44a8f6742ed3018ba984bc"
+      ]
+    },
+    {
+      "queryId": "development_11_blue_chair",
+      "split": "development",
+      "text": "blue wooden shop chair",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "ab9db73330c2bac4467485692b049f7ded3caf6a2d6b5192b4e5193e46ea88b8"
+      ]
+    },
+    {
+      "queryId": "development_12_poster",
+      "split": "development",
+      "text": "wall poster with Viking Vengeance text",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "b6a76132349d1122c40fe31b83513c946f73c9874814dfeb21fb90cea1c4ea7f"
+      ]
+    },
+    {
+      "queryId": "development_13_barrel",
+      "split": "development",
+      "text": "wooden barrel with metal hoops",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "ba4467cdacc1c28c36dc8515a4c2e5fc2083475e3f6adfdfa8f41f936fe6a333"
+      ]
+    },
+    {
+      "queryId": "development_14_boulder",
+      "split": "development",
+      "text": "large low-poly gray boulder",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "c9b1980d8187100a77490e0d36d6fc4559aa983152e1a46f4f69a379d6fe0145"
+      ]
+    },
+    {
+      "queryId": "development_15_floor_tile",
+      "split": "development",
+      "text": "square stone floor tile with a curved pattern",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "d4423cd925cef68e913ea2d87ec17d2e74fb29d15c86a28ea2a4add7e4a3df53"
+      ]
+    },
+    {
+      "queryId": "development_16_farmhouse",
+      "split": "development",
+      "text": "large white two-storey farmhouse",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62"
+      ]
+    },
+    {
+      "queryId": "development_17_barn_roof",
+      "split": "development",
+      "text": "gable-roof farm barn",
+      "styleTerms": [
+        "low_poly"
+      ],
+      "relevantSourceContentHashes": [
+        "82cc570112ce76ee0382651534fac2801396f95852ddf842e09a7de3ee251a3f"
+      ]
+    },
+    {
+      "queryId": "development_18_tree_cluster",
+      "split": "development",
+      "text": "cluster of leafy low-poly trees",
+      "styleTerms": [
+        "low_poly"
+      ],
+      "relevantSourceContentHashes": [
+        "09c199c3ea03c5c922853fe77779feee5a429db277b914fd213f4838ddd9bce4"
+      ]
+    },
+    {
+      "queryId": "development_19_poster_colors",
+      "split": "development",
+      "text": "yellow and black advertising poster",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "b6a76132349d1122c40fe31b83513c946f73c9874814dfeb21fb90cea1c4ea7f"
+      ]
+    },
+    {
+      "queryId": "development_20_hvac",
+      "split": "development",
+      "text": "HVAC condenser unit with a circular fan",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34"
+      ]
+    },
+    {
+      "queryId": "development_21_tropical_tree",
+      "split": "development",
+      "text": "tropical tree with green fronds",
+      "styleTerms": [
+        "stylized"
+      ],
+      "relevantSourceContentHashes": [
+        "122e5a605b6901b0559c612ed48f7a8b1f17b3a079b10586963166372cf8d7aa"
+      ]
+    },
+    {
+      "queryId": "development_22_pirate_cannon",
+      "split": "development",
+      "text": "pirate artillery cannon",
+      "styleTerms": [
+        "stylized"
+      ],
+      "relevantSourceContentHashes": [
+        "2c255cf3599865452c082b9bd4ffd7bdaffa03900a2c115a704bf58ed08f612e"
+      ]
+    },
+    {
+      "queryId": "development_23_natural_rock",
+      "split": "development",
+      "text": "irregular natural rock obstacle",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "c9b1980d8187100a77490e0d36d6fc4559aa983152e1a46f4f69a379d6fe0145"
+      ]
+    },
+    {
+      "queryId": "development_24_rural_house",
+      "split": "development",
+      "text": "rural two-storey house with porch",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62"
+      ]
+    },
+    {
+      "queryId": "holdout_01_computer_setup",
+      "split": "holdout",
+      "text": "curved desktop monitor keyboard and mouse setup",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "2a08473899d99c0d0d8cc9771ce6c51ec0d4b2d376109107aab5a3e937b5f3f6"
+      ]
+    },
+    {
+      "queryId": "holdout_02_gaming_chair",
+      "split": "holdout",
+      "text": "red and black gaming office chair",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "43abf583f49091aef2a3077d555f001bc7762babd478ae6f541038836542f90f"
+      ]
+    },
+    {
+      "queryId": "holdout_03_monitor",
+      "split": "holdout",
+      "text": "curved widescreen computer monitor",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "461870d63649a006d7d45cc3de1801690aa4b086514fd44892580047da952b7a"
+      ]
+    },
+    {
+      "queryId": "holdout_04_paper_cutter",
+      "split": "holdout",
+      "text": "white paper guillotine cutter",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "67c5a3467e1fbbb28d144968b598985f7a7b95e7ab8db5470aa2e5760aad2991"
+      ]
+    },
+    {
+      "queryId": "holdout_05_fragmented_cloud",
+      "split": "holdout",
+      "text": "long low-poly white cloud",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "7d12df76b47f516848cd66691edb64a978f310b226151b9a63bedfb6a8eacb47"
+      ]
+    },
+    {
+      "queryId": "holdout_06_glass_wall",
+      "split": "holdout",
+      "text": "modular glass wall panel",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "cf73656e26203182c2e5660fd5a4d5e2447276ff2d2074f2ed22904ef51b7c5e"
+      ]
+    },
+    {
+      "queryId": "holdout_07_desk_lamp",
+      "split": "holdout",
+      "text": "small beige desk lamp",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "e53f62c82191dbc2017de9ee2615bc6b876901ea2903e307e98faef1dbe693d9"
+      ]
+    },
+    {
+      "queryId": "holdout_08_newtons_cradle",
+      "split": "holdout",
+      "text": "Newton's cradle desk toy",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "f3a2b1a2d996dcd9f6ef844591d5440d4844043d8b86095122dd187a3562755b"
+      ]
+    },
+    {
+      "queryId": "holdout_09_workstation",
+      "split": "holdout",
+      "text": "complete desktop computer workstation",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "2a08473899d99c0d0d8cc9771ce6c51ec0d4b2d376109107aab5a3e937b5f3f6"
+      ]
+    },
+    {
+      "queryId": "holdout_10_paper_trimmer",
+      "split": "holdout",
+      "text": "desktop paper trimmer with a cutting arm",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "67c5a3467e1fbbb28d144968b598985f7a7b95e7ab8db5470aa2e5760aad2991"
+      ]
+    },
+    {
+      "queryId": "holdout_11_kinetic_toy",
+      "split": "holdout",
+      "text": "kinetic desk toy with hanging metal balls",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "f3a2b1a2d996dcd9f6ef844591d5440d4844043d8b86095122dd187a3562755b"
+      ]
+    },
+    {
+      "queryId": "holdout_12_ultrawide",
+      "split": "holdout",
+      "text": "ultrawide display on a desk stand",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "461870d63649a006d7d45cc3de1801690aa4b086514fd44892580047da952b7a"
+      ]
+    },
+    {
+      "queryId": "selection_01_bridge",
+      "split": "selection",
+      "text": "curved wooden footbridge",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9"
+      ]
+    },
+    {
+      "queryId": "selection_02_round_wall",
+      "split": "selection",
+      "text": "red cylindrical dungeon wall module with a skull emblem",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "07e1d282ebbff9bb2c30bc4078d5948de6a4024b8ccdd1ca62ffb7f9ac43e1a7"
+      ]
+    },
+    {
+      "queryId": "selection_03_bone_pile",
+      "split": "selection",
+      "text": "pile of scattered bones",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de"
+      ]
+    },
+    {
+      "queryId": "selection_04_mushrooms",
+      "split": "selection",
+      "text": "cluster of brown mushrooms",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107"
+      ]
+    },
+    {
+      "queryId": "selection_05_rock_pile",
+      "split": "selection",
+      "text": "pile of brown rocks",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "8314a03a94574aa67499b2e8b28cb91971d4fd8505ee06f27bd6767375571e62"
+      ]
+    },
+    {
+      "queryId": "selection_06_broken_stairs",
+      "split": "selection",
+      "text": "broken stone staircase section",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "a22b657edfaa25e32b2f9c0e7dbb671ed8d2b307776d6435904b180fa5debb8e"
+      ]
+    },
+    {
+      "queryId": "selection_07_torch",
+      "split": "selection",
+      "text": "ornate medieval torch",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "c4faf10d295ea8256b3b33cb4209db6e81b8c1c2c46c6e278e4ba7713a25e6a9"
+      ]
+    },
+    {
+      "queryId": "selection_08_greatsword",
+      "split": "selection",
+      "text": "long straight medieval greatsword",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "d402bb95dda259335c2af95f704161c4157446343c5421e2891a6d666e8b1eef"
+      ]
+    },
+    {
+      "queryId": "selection_09_rock_cluster",
+      "split": "selection",
+      "text": "low-poly boulder cluster",
+      "styleTerms": [
+        "low_poly"
+      ],
+      "relevantSourceContentHashes": [
+        "8314a03a94574aa67499b2e8b28cb91971d4fd8505ee06f27bd6767375571e62"
+      ]
+    },
+    {
+      "queryId": "selection_10_round_wall",
+      "split": "selection",
+      "text": "round red and gray wall texture piece",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "07e1d282ebbff9bb2c30bc4078d5948de6a4024b8ccdd1ca62ffb7f9ac43e1a7"
+      ]
+    },
+    {
+      "queryId": "selection_11_bones",
+      "split": "selection",
+      "text": "ground scatter made from many loose bones",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de"
+      ]
+    },
+    {
+      "queryId": "selection_12_damaged_stairs",
+      "split": "selection",
+      "text": "damaged modular stair component",
+      "styleTerms": [],
+      "relevantSourceContentHashes": [
+        "a22b657edfaa25e32b2f9c0e7dbb671ed8d2b307776d6435904b180fa5debb8e"
+      ]
+    }
+  ],
+  "validationCases": [
+    {
+      "caseId": "negative_aircon",
+      "queryText": "tropical palm tree",
+      "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_alcove_wall",
+      "queryText": "brown leather waterskin",
+      "sourceContentHash": "6684e72487d83d375842f2fb81c416b8553caa9c366b2d88e41c3b7e09450bf5",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_barn_collision",
+      "queryText": "small beige desk lamp",
+      "sourceContentHash": "82cc570112ce76ee0382651534fac2801396f95852ddf842e09a7de3ee251a3f",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_barrel",
+      "queryText": "modular glass wall panel",
+      "sourceContentHash": "ba4467cdacc1c28c36dc8515a4c2e5fc2083475e3f6adfdfa8f41f936fe6a333",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_blue_chair",
+      "queryText": "white farmhouse",
+      "sourceContentHash": "ab9db73330c2bac4467485692b049f7ded3caf6a2d6b5192b4e5193e46ea88b8",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_bone_pile",
+      "queryText": "outdoor air conditioner condenser",
+      "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_boulder",
+      "queryText": "yellow and black wall poster",
+      "sourceContentHash": "c9b1980d8187100a77490e0d36d6fc4559aa983152e1a46f4f69a379d6fe0145",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_bridge",
+      "queryText": "curved widescreen computer monitor",
+      "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_bridge_support",
+      "queryText": "large white farmhouse",
+      "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_broken_stairs",
+      "queryText": "curved computer monitor",
+      "sourceContentHash": "a22b657edfaa25e32b2f9c0e7dbb671ed8d2b307776d6435904b180fa5debb8e",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_cannon",
+      "queryText": "cluster of brown mushrooms",
+      "sourceContentHash": "2c255cf3599865452c082b9bd4ffd7bdaffa03900a2c115a704bf58ed08f612e",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_cloud",
+      "queryText": "wooden barrel",
+      "sourceContentHash": "59967ec7d8abfec302e2ce3a241081400afcf7f1f2f1e9f324b3253f658158f3",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_computer_setup",
+      "queryText": "pile of scattered bones",
+      "sourceContentHash": "2a08473899d99c0d0d8cc9771ce6c51ec0d4b2d376109107aab5a3e937b5f3f6",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_desk_lamp",
+      "queryText": "straight asphalt road",
+      "sourceContentHash": "e53f62c82191dbc2017de9ee2615bc6b876901ea2903e307e98faef1dbe693d9",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_farmhouse",
+      "queryText": "ornate medieval torch",
+      "sourceContentHash": "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_floor_tile",
+      "queryText": "palm tree",
+      "sourceContentHash": "d4423cd925cef68e913ea2d87ec17d2e74fb29d15c86a28ea2a4add7e4a3df53",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_fragmented_cloud",
+      "queryText": "broken stone staircase",
+      "sourceContentHash": "7d12df76b47f516848cd66691edb64a978f310b226151b9a63bedfb6a8eacb47",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_gaming_chair",
+      "queryText": "wooden artillery cannon",
+      "sourceContentHash": "43abf583f49091aef2a3077d555f001bc7762babd478ae6f541038836542f90f",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_glass_wall",
+      "queryText": "pile of bones",
+      "sourceContentHash": "cf73656e26203182c2e5660fd5a4d5e2447276ff2d2074f2ed22904ef51b7c5e",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_greatsword",
+      "queryText": "rock pile",
+      "sourceContentHash": "d402bb95dda259335c2af95f704161c4157446343c5421e2891a6d666e8b1eef",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_monitor",
+      "queryText": "grove of leafy trees",
+      "sourceContentHash": "461870d63649a006d7d45cc3de1801690aa4b086514fd44892580047da952b7a",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_mushrooms",
+      "queryText": "desktop computer setup",
+      "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_newtons_cradle",
+      "queryText": "tropical palm tree",
+      "sourceContentHash": "f3a2b1a2d996dcd9f6ef844591d5440d4844043d8b86095122dd187a3562755b",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_palm",
+      "queryText": "white paper cutter",
+      "sourceContentHash": "122e5a605b6901b0559c612ed48f7a8b1f17b3a079b10586963166372cf8d7aa",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_paper_cutter",
+      "queryText": "low-poly white cloud",
+      "sourceContentHash": "67c5a3467e1fbbb28d144968b598985f7a7b95e7ab8db5470aa2e5760aad2991",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_poster",
+      "queryText": "large gray boulder",
+      "sourceContentHash": "b6a76132349d1122c40fe31b83513c946f73c9874814dfeb21fb90cea1c4ea7f",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_road",
+      "queryText": "Newton's cradle desk toy",
+      "sourceContentHash": "59e7113e967b627a28f15d9392fffefce5a4953ac714f39822383551da44cbd3",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_rock_pile",
+      "queryText": "curved wooden footbridge",
+      "sourceContentHash": "8314a03a94574aa67499b2e8b28cb91971d4fd8505ee06f27bd6767375571e62",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_round_wall",
+      "queryText": "red and black gaming office chair",
+      "sourceContentHash": "07e1d282ebbff9bb2c30bc4078d5948de6a4024b8ccdd1ca62ffb7f9ac43e1a7",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_torch",
+      "queryText": "blue wooden chair",
+      "sourceContentHash": "c4faf10d295ea8256b3b33cb4209db6e81b8c1c2c46c6e278e4ba7713a25e6a9",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_tree_patch",
+      "queryText": "curved computer monitor",
+      "sourceContentHash": "09c199c3ea03c5c922853fe77779feee5a429db277b914fd213f4838ddd9bce4",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "negative_waterskin",
+      "queryText": "curved brick wall",
+      "sourceContentHash": "8304738a0e26bd5b42f75c000d9bdb4896c0b4d13c44a8f6742ed3018ba984bc",
+      "expectedVerdict": "mismatch"
+    },
+    {
+      "caseId": "positive_aircon",
+      "queryText": "wall-mounted outdoor air conditioner",
+      "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_alcove_wall",
+      "queryText": "curved dark stone brick wall",
+      "sourceContentHash": "6684e72487d83d375842f2fb81c416b8553caa9c366b2d88e41c3b7e09450bf5",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_barn_collision",
+      "queryText": "farm barn building collision proxy",
+      "sourceContentHash": "82cc570112ce76ee0382651534fac2801396f95852ddf842e09a7de3ee251a3f",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_barrel",
+      "queryText": "wooden barrel with metal hoops",
+      "sourceContentHash": "ba4467cdacc1c28c36dc8515a4c2e5fc2083475e3f6adfdfa8f41f936fe6a333",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_blue_chair",
+      "queryText": "blue wooden shop chair",
+      "sourceContentHash": "ab9db73330c2bac4467485692b049f7ded3caf6a2d6b5192b4e5193e46ea88b8",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_bone_pile",
+      "queryText": "pile of scattered bones",
+      "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_boulder",
+      "queryText": "large low-poly gray boulder",
+      "sourceContentHash": "c9b1980d8187100a77490e0d36d6fc4559aa983152e1a46f4f69a379d6fe0145",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_bridge",
+      "queryText": "curved wooden footbridge",
+      "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_bridge_support",
+      "queryText": "plain rectangular bridge support beam",
+      "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_broken_stairs",
+      "queryText": "broken stone staircase section",
+      "sourceContentHash": "a22b657edfaa25e32b2f9c0e7dbb671ed8d2b307776d6435904b180fa5debb8e",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_cannon",
+      "queryText": "wooden wheeled cannon",
+      "sourceContentHash": "2c255cf3599865452c082b9bd4ffd7bdaffa03900a2c115a704bf58ed08f612e",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_cloud",
+      "queryText": "low-poly white cloud",
+      "sourceContentHash": "59967ec7d8abfec302e2ce3a241081400afcf7f1f2f1e9f324b3253f658158f3",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_computer_setup",
+      "queryText": "curved desktop monitor keyboard and mouse setup",
+      "sourceContentHash": "2a08473899d99c0d0d8cc9771ce6c51ec0d4b2d376109107aab5a3e937b5f3f6",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_desk_lamp",
+      "queryText": "small beige desk lamp",
+      "sourceContentHash": "e53f62c82191dbc2017de9ee2615bc6b876901ea2903e307e98faef1dbe693d9",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_farmhouse",
+      "queryText": "large white two-storey farmhouse",
+      "sourceContentHash": "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_floor_tile",
+      "queryText": "square stone floor tile with a curved pattern",
+      "sourceContentHash": "d4423cd925cef68e913ea2d87ec17d2e74fb29d15c86a28ea2a4add7e4a3df53",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_fragmented_cloud",
+      "queryText": "long low-poly white cloud",
+      "sourceContentHash": "7d12df76b47f516848cd66691edb64a978f310b226151b9a63bedfb6a8eacb47",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_gaming_chair",
+      "queryText": "red and black gaming office chair",
+      "sourceContentHash": "43abf583f49091aef2a3077d555f001bc7762babd478ae6f541038836542f90f",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_glass_wall",
+      "queryText": "modular glass wall panel",
+      "sourceContentHash": "cf73656e26203182c2e5660fd5a4d5e2447276ff2d2074f2ed22904ef51b7c5e",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_greatsword",
+      "queryText": "long straight medieval greatsword",
+      "sourceContentHash": "d402bb95dda259335c2af95f704161c4157446343c5421e2891a6d666e8b1eef",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_monitor",
+      "queryText": "curved widescreen computer monitor",
+      "sourceContentHash": "461870d63649a006d7d45cc3de1801690aa4b086514fd44892580047da952b7a",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_mushrooms",
+      "queryText": "cluster of brown mushrooms",
+      "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_newtons_cradle",
+      "queryText": "Newton's cradle desk toy",
+      "sourceContentHash": "f3a2b1a2d996dcd9f6ef844591d5440d4844043d8b86095122dd187a3562755b",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_palm",
+      "queryText": "stylized palm tree",
+      "sourceContentHash": "122e5a605b6901b0559c612ed48f7a8b1f17b3a079b10586963166372cf8d7aa",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_paper_cutter",
+      "queryText": "white paper guillotine cutter",
+      "sourceContentHash": "67c5a3467e1fbbb28d144968b598985f7a7b95e7ab8db5470aa2e5760aad2991",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_poster",
+      "queryText": "wall poster with Viking Vengeance text",
+      "sourceContentHash": "b6a76132349d1122c40fe31b83513c946f73c9874814dfeb21fb90cea1c4ea7f",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_road",
+      "queryText": "straight asphalt road slab",
+      "sourceContentHash": "59e7113e967b627a28f15d9392fffefce5a4953ac714f39822383551da44cbd3",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_rock_pile",
+      "queryText": "pile of brown rocks",
+      "sourceContentHash": "8314a03a94574aa67499b2e8b28cb91971d4fd8505ee06f27bd6767375571e62",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_round_wall",
+      "queryText": "red cylindrical dungeon wall module with a skull emblem",
+      "sourceContentHash": "07e1d282ebbff9bb2c30bc4078d5948de6a4024b8ccdd1ca62ffb7f9ac43e1a7",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_torch",
+      "queryText": "ornate medieval torch",
+      "sourceContentHash": "c4faf10d295ea8256b3b33cb4209db6e81b8c1c2c46c6e278e4ba7713a25e6a9",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_tree_patch",
+      "queryText": "stylized low-poly grove of several trees",
+      "sourceContentHash": "09c199c3ea03c5c922853fe77779feee5a429db277b914fd213f4838ddd9bce4",
+      "expectedVerdict": "match"
+    },
+    {
+      "caseId": "positive_waterskin",
+      "queryText": "brown leather waterskin",
+      "sourceContentHash": "8304738a0e26bd5b42f75c000d9bdb4896c0b4d13c44a8f6742ed3018ba984bc",
+      "expectedVerdict": "match"
+    }
+  ],
+  "hash": "efb125370b6008e1f6ad1b22f21ba049d7912372cde41e4c5ed101d7a2e42b1a"
+}

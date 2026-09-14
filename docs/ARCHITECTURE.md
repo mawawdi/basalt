@@ -1,263 +1,309 @@
 # Architecture
 
-This document is the authority for Basalt’s implemented architecture. Product
-invariants, visual/admission policy, evaluation claims, and future work have
-separate owners in the [documentation map](README.md).
+Basalt is a content-addressed, hierarchical world compiler. Learned systems interpret
+and propose; sealed contracts and deterministic solvers decide what becomes a world.
+The engine-neutral result is a `WorldBuild`. Roblox-specific behavior begins only after
+that boundary.
 
-## Authority flow
-
-```text
-creator intent + SemanticLexiconSnapshot
-  -> hypothesis-only interpretation trace
-  -> admitted SemanticAssertionBundle values
-  -> SemanticDependencyClosure values
-  -> immutable SpatialWorldPlan
-  -> CompiledWorldFoundation
-  -> CatalogResolutionPlan
-  -> MesoLayout
-  -> MicroRealization
-  -> WorldBuild
-  -> packages/roblox
-```
-
-The compiler never edits a parsed plan. Terrain fields, road assemblies, lots,
-constructed surfaces, rooms, portals, and realized instances are derived artifacts
-bound to exact predecessor hashes.
-
-## Package graph
-
-The repository is an npm workspace with one manifest and one TypeScript composite
-project per package. Imports use package exports; cross-package relative source
-imports and internal deep imports are rejected.
-
-| Layer                 | Packages                                                                                   |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| Foundations           | `contracts`, `artifact-store`, `spatial-core`                                              |
-| Semantics and catalog | `semantic-kernel`, `catalog-model`, `catalog-authoring`                                    |
-| Asset pipeline        | `asset-inspection`, `asset-production`, `asset-factory`, `neural-asset`, `reference-image` |
-| Planning and compiler | `authoring-graph`, `world-planning`, `region-composition`, `world-compiler`                |
-| Adapter and operator  | `roblox`, `cli`                                                                            |
-
-`semantic-kernel` alone owns commitments, facets, assertions, requirements,
-closures, and the lexicon contract. `catalog-model` owns measured assets,
-dispositions, entry declarations, resolution requirements, and typed gaps.
-`catalog-authoring` owns non-authoritative model/embedding receipts, calibrated
-prediction sets, substitution evidence, discovery review plans, acceptance
-audits, qualification receipts, and the tracked catalog transaction root.
-Provider names never enter semantic, catalog, planning, or world identities.
-
-All generic geometry is right-handed, positive-Y-up, and measured in meters.
-Q32.32 catalog measurements are meters. The stud conversion and four-stud terrain
-voxel rule exist only in `roblox`.
-
-## Semantics
-
-The kernel freezes seven upper sorts: object, aggregate, substance, space,
-boundary, phenomenon, and information content. Denotation, affordance, state,
-surface treatment, contextual role, relation, and realization form are separate
-facets. Runtime reasoning is intentionally bounded to exact commitments,
-materialized ancestry, set inclusion, state equality, evidence ordering, and
-declared inverse or symmetric relations.
-
-Labels, examples, translations, counterexamples, and search terms live outside
-commitment hashes. Source folders, archive identities, and vendors are provenance
-only. Original basenames may enter interpretation only through separately hashed
-weak-hint artifacts; they cannot enter authority, grouping, or splitting. A task binds
-the smallest closure of commitment and facet hashes it consumes. Adding an
-unrelated sibling therefore does not invalidate existing catalog entries or
-builds.
-
-## Catalog and realization
-
-`CatalogAssetArtifact` is semantic-free measured evidence. A disposition separately
-records whether a source identity is eligible, incomplete, or rejected. Runtime
-entry kinds are substitution sets, assembly kits, attachment sets, route kits, and
-environment realizers. Collections are authoring-only.
-
-A substitution set means complete independent substitutability: every member must
-prove the same denotation, realization form, fixed state, affordances, treatments,
-placement/contact signature, interfaces, metric envelope, rights, and style
-contract. Collision companions remain evidence attached to renderable assets.
-
-Resolution performs hard filtering before deterministic lexicographic ranking.
-Missing candidates become typed semantic, evidence, or catalog gaps. Member
-weights are canonical integers and affect hash-seeded selection.
-
-### Current admission implementation
-
-Catalog admission deliberately separates inference, review, and authority:
+## Compiler flow
 
 ```text
-canonical source identity
-  -> measured asset + orthogonal 12-view render channels
-  -> basename-only weak hints for semantic hypotheses
-  -> source-neutral physical leakage graph and whole-group split
-  -> bounded, leakage-group-disjoint qualification pilot
-  -> visual-only, name-only, and combined hypothesis receipts
-  -> facet and dependency-group calibration against human references
-  -> hierarchy-aware prediction sets, abstention, and novelty detection
-  -> explicit pairwise substitution compatibility and whole-set proof
-  -> non-statistical discovery review + independent random acceptance audit
-  -> qualification receipt
-  -> admitted assertions, entries, and dispositions
-  -> tracked CatalogAuthorityCommit
+creator intent + semantic lexicon
+  -> IntentInterpretationTrace and semantic hypotheses
+  -> admitted assertions and minimal semantic closures
+  -> immutable SpatialWorldPlan (meters, right-handed, +Y up)
+  -> CompiledWorldFoundation (terrain, routes, regions, surfaces)
+  -> CatalogResolutionPlan (exact bindings or typed gaps)
+  -> MesoLayout (lots, structures, rooms, portals)
+  -> MicroRealization (instances, attachments, environment)
+  -> sealed WorldBuild
+  -> Roblox lowering, sequential import, authoritative readback
 ```
 
-The qualification machinery is implemented, but running strong encoders does not
-qualify it. The current pilot uses pinned DINOv3 ViT-L normalized-depth features,
-SigLIP2 So400M/384 RGB-text alignment, and a separately identified basename model.
-One Modal GPU executes the two visual models sequentially; Modal is an execution
-adapter and never appears in semantic or catalog authority. Missing human
-reference judgments, insufficient Wilson precision bounds, novelty, dependency
-failure, unresolved pair evidence, or missing acceptance-audit receipts leave the
-result `incomplete`. Only genuine whole/aggregate substitution sets can be
-automatically proposed. Assemblies, attachments, routes, socket-hosted assets,
-and environment realizers still require their typed authoring contracts.
+Every artifact binds its exact predecessors by cryptographic hash. Derived roadbeds,
+surfaces, placements, and solver evidence live in successor artifacts; a parsed plan is
+never mutated. Region and structural subtrees are independently hashable so unrelated
+changes do not invalidate the entire world.
 
-`registry/catalog.json` is the single replaceable transaction root, not a journal
-or compatibility stream. It embeds all compiler authority and the sealed runtime
-snapshot. Non-authoritative evidence that was expensive to produce is retained
-under content-addressed `registry/evidence/` names, including the exact
-measurement set needed by compilation. Unreferenced evidence is removed from the
-live tree after atomic root publication; Git provides history. A stale root fails
-`catalog validate --require-commit true`; `world compile` accepts the committed
-root and its retained measurements rather than unrelated local state.
+Every gate returns exactly one of:
 
-The statistical and evidence rationale is recorded in the
-[catalog-admission research](research/catalog-admission-state-of-the-art.md); the
-remaining human calibration and qualification work is ordered in the
-[roadmap](ROADMAP.md#catalog-admission-qualification).
+- `eligible`: all required claims are satisfied.
+- `incomplete`: the request is valid, but evidence, an asset, or a solver result is
+  missing.
+- `rejected`: an input or evidence item violates a contract or policy.
 
-## Storage and recovery
+No fallback promotes `incomplete` or `rejected` to success.
 
-The current storage boundary is local-first and has two distinct classes:
-
-- Tracked authority consists of `registry/semantics/`, `registry/catalog.json`,
-  authored declarations and decisions, and content-addressed compact JSON under
-  `registry/evidence/`. `catalog commit` atomically replaces the one current root;
-  Git supplies history.
-- Bulk payloads consist of source archives, source GLBs, generated RGB/depth/mask
-  frames, point samples, and future embedding buffers. They are identified by
-  cryptographic hashes but remain in ignored local roots such as the source asset
-  tree and `.basalt/` working state.
-
-All extracted GLBs share the single canonical pool
-`registry/source-assets/sha256/<aa>/<bb>/<content-hash>.glb`. Exact byte identity
-is the only storage partition: duplicate files from different archives resolve to
-one source identity. `registry/source-provenance.json` separately records every
-origin and rights claim; `registry/source-manifest.json` contains only canonical
-content identities, metric scale, and a source-neutral hash of the effective
-rights claim. Adding another origin for identical bytes does not change the
-manifest or compiler inputs.
-
-Semantic hypothesis adapters receive one separately hashed, non-authoritative
-`CatalogSourceNameHint` per content identity. It contains every distinct original
-GLB basename plus deterministic normalized tokens; it contains no origin ID,
-archive path, or directory. Extraction collision suffixes are excluded from the
-normalized form. Multiple names are preserved rather than resolved by pack
-precedence. These hints are weak supervision only: they cannot enter admitted
-assertions, catalog declarations, runtime indices, or compiler requirements.
-
-Calibration/evaluation split construction does not receive name hints. It is
-partitioned by connected components of physical leakage evidence—exact content or
-canonical geometry, component containment, and near-duplicate rendered shape—not
-by the archive in which an asset happened to arrive. Shared texture payload bytes remain contextual
-stratification evidence rather than identity edges because one common atlas can
-serve thousands of unrelated objects. Equal default material parameters do not
-count as shared payload evidence.
-
-`CatalogNearDuplicateSearch` binds every compared source, the exact multiview
-index, the all-pairs comparison count, descriptor-set hash, threshold, worker and
-image-decoder implementation, and pair evidence. Its compact tracked manifest has
-no compiler authority. `CatalogLeakageAnalysis` binds that search plus the exact
-source manifest, measurement set, grouping policy, coverage flags, relation
-evidence, and analysis implementation. `CatalogLeakageGroup` values are derived
-as the deterministic transitive closure of the policy's identity-bearing
-relations. Context relations remain in the analysis without collapsing the split.
-`CatalogCalibrationSplit` binds that exact analysis and assigns whole groups—never
-individual members—to development, calibration, or evaluation. The split stays
-`incomplete` while any physical channel lacks population-wide coverage.
-
-The local renderer and measurement runner import a single resource policy and
-reject concurrency above four. The near-duplicate comparison is one bounded
-process; later distributed scheduling must retain a per-host resource ceiling.
-
-`AssetSemanticHypothesisRequest` binds the exact measurement, multiview render,
-source-name hint, semantic module, and lexicon hashes. Receipts repeat and verify
-those bindings. Filename/model disagreement remains visible to factorized
-aggregation and may result in abstention or `incomplete`; no source-name token is
-promoted directly into a concept, realization form, role, or substitution set.
-
-Local reads and writes use bounded, no-follow, hash-checked artifact-store
-primitives where wired into a pipeline. The catalog does not currently have a
-remote CAS transport, replication guarantee, retention service, or garbage
-collector. A clean clone therefore recovers semantic and catalog authority plus
-retained JSON evidence, but not every bulk payload. Do not delete the local source
-or render corpus on the assumption that Git can restore it.
-
-Remote replication is deliberately deferred. It is a future durability layer,
-not a prerequisite silently embedded in current catalog semantics; see
-[Deferred infrastructure](ROADMAP.md#deferred-infrastructure).
-
-### Catalog fulfillment
-
-`asset-factory` turns one exact resolution outcome into a content-addressed
-`CatalogFulfillmentPlan`. The decision cascade is:
+## Package dependency direction
 
 ```text
-coherent binding -> reuse
-style-only mismatch -> restyle retained geometry
-incomplete substitution set -> generate missing members
-no matching substitution set -> synthesize a new set
+contracts, artifact-store, spatial-core
+  -> semantic-kernel, catalog-model
+  -> catalog-authoring and asset packages
+  -> world-planning, region-composition
+  -> world-compiler
+  -> world-refinement and roblox
+  -> cli
 ```
 
-Neural generation is offline catalog acquisition, never a compiler fallback.
-Semantic and evidence gaps require authoring decisions; attachment, assembly,
-route, and environment gaps require their typed host, grammar, topology, or mode
-contracts before generation. A provider receives one exact factory job,
-reference-image identity, semantic closure, style profile, metric target, and
-immutable paid-attempt claim. Provider names and runtime transports exist only in
-`neural-asset` and worker adapters.
+Workspaces have package manifests, explicit exports, and TypeScript project references.
+Architecture checks reject undeclared dependencies, source-deep imports, fixture leakage,
+and engine imports in generic packages.
 
-TRELLIS.2 has a restored executable worker and a typed host-to-worker lowering.
-Its raw safetensors positions are explicitly provider-normalized and carry a
-source-to-canonical orientation transform; they do not claim meters. Pixal3D and
-Hunyuan3D 2.1 retain their original fail-closed qualification scaffolds but have
-no inference implementation yet. All three routes remain `incomplete` until exact
-worker/runtime/dependency/rights evidence is requalified. Provider output passes
-generic finishing, measurement, rendering, hypothesis review, assertion
-admission, and catalog sealing before the resolver can see it.
+### Foundations
 
-The spatial compiler owns full transformed bounds, occupancy, routes, lots, typed
-intents, and the deterministic AC-3/backtracking solver. Models cannot author
-transforms or executable engine code. Unknown regions, routes, surfaces, normals,
-or structural targets are rejected at the plan boundary.
+- `@basalt/contracts` owns hashes, stable serialization, IDs, diagnostics, and gate
+  contracts.
+- `@basalt/artifact-store` owns bounded no-follow workspace I/O, atomic replacement,
+  locks, and the immutable local binary store.
+- `@basalt/spatial-core` owns vectors, transforms, fixed-point math, bounds, occupancy,
+  and deterministic constraint primitives.
 
-## Artifact graph
+### Semantics and catalog
 
-`CompilationTaskResult` describes world, region, route, lot, structure, floor, and
-room scopes. It binds exact inputs, policy, outputs, status, resources, and
-diagnostics. The executor is local and bounded. Durable or distributed execution
-is not implemented; the artifact contracts keep that future concern out of core
-compiler semantics.
+- `@basalt/semantic-kernel` is the sole owner of semantic commitments, seven upper
+  sorts, facets, relations, roles, lexicon records, assertions, requirements, and
+  minimal dependency closures.
+- `@basalt/catalog-model` owns semantic-free measurements, dispositions, catalog entry
+  declarations, requirements, exact resolution bindings, typed gaps, and snapshots.
+- `@basalt/catalog-authoring` owns non-authoritative review material: render evidence,
+  source-name hints, open-vocabulary metadata, embeddings, hybrid search, validator
+  receipts, contextual assembly hypotheses, qualification evidence, leakage grouping,
+  and audits.
 
-## Roblox boundary
+Search artifacts and catalog authority are separate roots. Refreshing a caption or an
+embedding cannot invalidate a compiled world.
 
-`WorldBuild` is the one engine adapter boundary. Basalt does not define a generic
-adapter abstraction before a second adapter exists.
+### Asset pipeline
 
-The Roblox import service binds to `127.0.0.1`, holds an exclusive workspace lock,
-selects the first free port from 8787–8797, bounds request bodies, and validates a
-private bearer token in constant time. Only `/health` is unauthenticated, and it
-contains no credential or world data. Workspace reads reject links and escaping
-paths; writes are bounded, hash-guarded, and atomic.
+- `asset-inspection` and `asset-production` measure and finish generic assets.
+- `asset-factory`, `reference-image`, and `neural-asset` implement provider-neutral,
+  offline catalog-gap fulfillment.
+- Neural output always re-enters measurement, rendering, review, and admission. It may
+  not author concepts, assertions, entry semantics, or substitution membership.
 
-The plugin auto-discovers the service and executes preflight, foundation, meso,
-micro, readback, and commit without per-stage clicks. Foundation lowering converts
-height fields to Roblox’s 1.12-meter voxel grid, retains the original voxel channels,
-and restores them on cancellation or failure. Readback checks terrain channels,
-route hashes, exact bound assets and material/PBR fields, assembly components,
-constructed surfaces, room bindings, portal opening poses, procedural stair
-geometry, and the complete world-build identity before returning the host-sealed
-observed-state hash. Only a successful creator-run readback can support
-`engine_verified` evidence.
+### Planning and compilation
+
+- `world-planning` owns plans and interpretation traces.
+- `region-composition` owns generic regional composition policies.
+- `world-compiler` realizes foundation, catalog bindings, meso structure, micro detail,
+  and the sealed `WorldBuild` using meters only.
+- `world-refinement` consumes a compiler and exact world observations. It may propose only
+  policy-whitelisted parameter or route changes, recompiles the affected dependency
+  closure, and reports executed versus reused tasks.
+
+Terrain and routes remain compilable when catalog-dependent stages are incomplete.
+Structural grammars use explicit component roles, interfaces, topology, pitch, and
+coverage. Bounds or filenames never infer structural meaning.
+
+## Declarative construction
+
+A sealed `ConstructionProgram` is a bounded graph of parameters and fixed operations:
+boxes, vertical cylinders, linear repetition, rectangular panel openings, surface
+attachments, and stair runs. Values are literals or affine bindings to declared scalar
+parameters; repeat counts may bind integer parameters. Programs also bind a region,
+semantic closure, style profile, placement-surface or region-point anchor, and local
+quarter-turn frame.
+
+Sealing validates every reference, parameter use, host/child relationship, template,
+opening host, landing, and dependency cycle. There is no arbitrary expression evaluator,
+callback, or generated script. Changing the observation tower's height or width therefore
+updates its supports, platform, rails, opening, and stairs by changing those two parameters
+alone.
+
+The compiler realizes programs as `ConstructedStructureArtifact` values containing exact
+primitive elements, surfaces, openings, portals, attachments, access paths, occupancy
+reservations, bounds, and evidence. Constructed geometry remains distinct from catalog
+instances and assembly-kit components, but both contribute complete extents to
+`MesoLayout`, `WorldBuild`, chunking, and task hashes. Unsupported operations fail with a
+typed lowering gap at an engine boundary.
+
+## Coordinated route and terrain construction
+
+A route declaration separates horizontal alignment, bend radius, elevation controls,
+appearance, and construction treatment. The four treatments have different authority:
+
+- `follow_surface` follows relief within explicit grade, cut, fill, and grounding bounds;
+- `cut_fill` designs a smooth control-point profile and grades a roadbed plus shoulders;
+- `elevated` preserves terrain and emits a deck with measured supports; and
+- `stepped` emits bounded treads and landings instead of disguising an infeasible slope.
+
+Foundation compilation seals authored terrain first as a `BaseTerrainFieldArtifact`. It
+then replaces control-polyline corners with radius-constrained tangent arcs, samples one
+resolved centerline, solves its vertical profile, and emits exact travel spans, bend
+evidence, supports, material masks, vegetation masks, and terrain treatment. Ordinary bend
+spans are angle-bounded to five degrees and receive sealed miter extensions so fixed native
+rectangles close their outside edge instead of exposing triangular seams. Smooth cut/fill
+and elevated profiles are adaptively refined to at most one degree of pitch deflection;
+every ordinary pitch change receives a sealed full-depth profile miter. Terrain-following
+profiles retain their measured relief but still receive gap-closing profile miters, while
+explicit stepped construction remains discrete. Segment bounds include the complete sloped
+underside. A bend that cannot fit its adjacent spans is rejected at plan sealing rather than
+silently sharpened.
+Shared junctions own one position and elevation; connected profiles receive a bounded flat
+landing at the junction before grade validation.
+
+Only eligible grounded treatments enter `TerrainFieldArtifact`. This artifact is a compact
+composition of the exact base hash plus ordered route and junction hashes, not a dense copy
+of the whole world. Sampling grades beneath actual travel polygons, uses the lowest safe
+bed where fixed spans overlap, blends shoulders against the base field, and grades a shared
+junction disk after its participants. The foundation gate probes a 5-by-5 grid over every
+travel span and the full junction perimeter. It checks both minimum reveal and maximum
+permitted grounding gap; exceeding the explicit probe budget is `incomplete`.
+
+The dependency order is acyclic:
+
+```text
+authored terrain -> base terrain -> route/junction construction -> final terrain composition
+```
+
+Changing a route reuses base terrain but invalidates its route construction, affected
+junctions, final terrain, dependent observations, and their ancestors. Placement-surface
+anchors consume the exact final composition. Derived roadbeds and sampled elevations never
+mutate the immutable `SpatialWorldPlan`.
+
+## Bounded observation and refinement
+
+`WorldObservationReport` separates deterministic geometric status from visual assessment.
+The engine-neutral diagnostic renderer emits bounded approach, overview, and platform PPM
+renders tied to exact cameras, primitive hashes, renderer implementation, and
+`worldBuildHash`. Those images make visual review possible but do not claim harmony;
+visual status stays `unassessed` until a creator or model supplies explicit evidence.
+
+The first geometric verifier set checks dimensions, region containment, full 3D occupancy,
+continuous route-to-platform access, exact supported-primitive line of sight, opening
+clearance, style-profile consistency, and protected task hashes. Unsupported visibility
+geometry is incomplete rather than approximated as conclusive. Access checks include the
+entry transition, landings, stair width, tread, riser, and headroom constraints.
+
+A `WorldChangeProposal` may change only policy-whitelisted construction parameters or route
+alternatives. The controller computes the affected task dependency closure, recompiles it,
+reruns dependent observations, preserves unrelated task hashes, and stops at eligibility,
+policy rejection, or the iteration budget. Compilation and observation traces enumerate
+which tasks, checks, and cameras actually ran; deterministic full recompilation cannot
+masquerade as incremental reuse.
+
+### Roblox boundary
+
+`@basalt/roblox` contains all studs, Roblox materials and asset bindings, terrain voxel
+lowering, import schemas, local bridge code, plugin code, Rojo files, and Luau.
+`ROBLOX_STUD_METERS = 0.28` exists only there. Generic terrain is converted to Roblox's
+1.12-meter voxel grid by evaluating the same base/route/junction composition at voxel
+centers. Because reconstructed smooth terrain is not identical to the engine-neutral field,
+the connector raycasts the written terrain and permits only a bounded upward residual at
+route stations. Junction participants and the junction surface converge on one shared
+endpoint correction before parts are created. Readback recomputes each realized span and
+junction's transform, dimensions, material, collision state, and terrain contact against
+actual smooth terrain. Minimum reveal is measured from the travel top. Exposed space is
+measured from the authored route body's underside—not from the top—so route thickness is not
+misclassified as a void. When that body gap is within the authored grounding tolerance, the
+adapter emits a deterministic, exactly read-back grounding skirt down into the voxel surface;
+larger discrepancies remain incomplete. Maximum top clearance is retained as a diagnostic,
+not used as a proxy for grounding. Roblox publishes newly written voxel channels before its
+terrain collision representation is ray-queryable, so a missing terrain query crosses at most
+four scheduler frames before remaining a hard observation failure. A stored route hash alone
+is not evidence.
+
+The import command binds a private local bridge to `127.0.0.1`, selects one port from
+8787–8797, authenticates requests, and streams one canonical import plan. The plugin
+discovers it automatically and exposes one contextual primary action. Import runs in
+order:
+
+```text
+preflight -> foundation -> meso -> micro -> readback -> commit or rollback
+```
+
+Bridge state is `idle | pending | complete | incomplete`. Constructed readback recomputes
+primitive geometry and properties from actual Studio instances and queries actual opening
+volumes for blockers; expected hash attributes alone are insufficient. Only creator-run
+readback can support `engine_verified` assertions.
+
+Every import atomically replaces `.basalt/roblox/import-report.json` after each acknowledged
+stage and on failure. The token-free, content-hashed report records stage progress, exact
+readback identities, full diagnostics, and bounded per-segment/junction terrain observations,
+including extrema coordinates, surface clearance, body gap, residual correction, and
+grounding depth. A correctly received `incomplete` readback is an acknowledged stage outcome;
+HTTP conflict is reserved for a malformed or contradictory readback.
+
+## Semantic authority
+
+The kernel freezes seven upper sorts: `object`, `aggregate`, `substance`, `space`,
+`boundary`, `phenomenon`, and `information_content`. Denotation, affordance, state,
+treatment, contextual role, relation, and realization form remain orthogonal.
+
+Commitments contain opaque IDs, definitions, identity criteria, direct parent hashes,
+and materialized ancestors. Labels, aliases, examples, mappings, search terms, model
+confidence, and paths are lexicon or review data and cannot influence runtime reasoning.
+Reasoning is bounded to exact/descendant matching, ancestry, set inclusion, state
+equality, evidence ordering, and declared relation symmetry/inverses.
+
+Artifacts bind only the semantic dependency closure they use. Adding an unrelated leaf
+does not change an existing catalog entry or world hash.
+
+## Catalog authority and search
+
+`CatalogAssetArtifact` stores source identity, metric bounds, geometry, materials,
+contacts, collisions, interfaces, rights, and provenance without semantic claims. An
+admitted assertion bundle supplies semantics separately. Each source identity has one
+disposition: eligible, incomplete, or rejected.
+
+Runtime entry kinds are:
+
+- `substitution_set`: genuinely interchangeable whole alternatives.
+- `assembly_kit`: structural providers plus an explicit grammar.
+- `attachment_set`: members requiring a host surface or interface.
+- `route_kit`: network pieces and topology transitions.
+- `environment_realizer`: non-local environmental realization.
+- `collection`: authoring-only grouping, never a runtime resolution result.
+
+Progressive open-vocabulary authoring search follows:
+
+```text
+measurement + original basename
+  + optional Qwen factual metadata
+  + optional SigLIP text/image evidence
+  + optional DINO shape evidence
+  -> available-channel retrieval
+  -> optional requirement-specific Qwen validation
+  -> deterministic physical/rights/resource filters
+  -> non-authoritative candidate packet
+```
+
+Every measured, named asset is searchable before enrichment. Results state contributing
+channels and missing evidence. Text search fuses basename, metadata, and SigLIP channels
+that are actually present, with per-document available-channel normalization so partial
+coverage does not receive an automatic channel-count penalty or bonus. Reference-asset
+search requires DINOv3 and returns `incomplete` when shape evidence is absent. DINO remains
+shape-only and is used for bounded substitution proposals, never semantic authority.
+
+Requirement validation preserves base rank. A frozen candidate-decision policy is the only
+stage allowed to conclude `suitable_match`, `evidence_insufficient`, or
+`no_suitable_match`; nearest-neighbor retrieval alone never claims suitability. Search
+cannot emit admitted assertions or entries. Unknown nouns remain open vocabulary and
+surface a semantic gap when compilation needs a commitment.
+
+Context interpretation is a separate bounded operation over 2–32 assets. Group proposals
+may use basename stems, metric/interface compatibility, or bounded retrieval. Requests may
+also bind attributed source prefabs, demonstrated assemblies, component transforms,
+parent/child relationships, authored roles, or documentation by exact identity and evidence
+hash. Pack and directory identity are excluded. The result can propose components, mates,
+aggregates, collision companions, and alternatives or abstain. A deterministic construction
+eligibility assessment combines this with measurements and visual metadata for review, but
+only admitted assertions and authored declarations can seal catalog entries.
+
+Metadata jobs use deterministic resource-bounded shards: at most eight assets, 192
+evidence files, 64 MiB of evidence bytes, and a fixed preprocessed-pixel ceiling at a
+384-pixel long edge. A shard is a resumable checkpoint and transport unit, not a model
+batch. Only one Modal GPU container and no more than four local CPU tasks may run.
+
+## Storage and identity
+
+Git stores semantic authority, catalog declarations and dispositions, compact qualified
+metadata shards, manifests, policies, prompts, and evaluation reports. Binary GLBs,
+renders, depth evidence, and quantized embedding matrices live in the local
+content-addressed store under `.basalt/cas`. Remote CAS distribution is intentionally
+deferred.
+
+Basalt-owned schemas and paths are unversioned. Content hashes, implementation hashes,
+source commit hashes, and observed-world-state hashes record identity and provenance;
+they are not compatibility streams. Contract changes are clean replacements.

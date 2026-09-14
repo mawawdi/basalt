@@ -277,6 +277,32 @@ export async function readBoundedWorkspaceBytes(
   }
 }
 
+/** Inspect a bounded regular workspace file through the same no-follow path
+ * checks as a workspace read, without loading its payload into memory. */
+export async function getBoundedWorkspaceFileSize(
+  rootInput: string,
+  pathInput: string,
+  maxBytes = DEFAULT_MAX_BYTES,
+): Promise<number> {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0)
+    throw new Error("Workspace inspection limit must be a positive safe integer");
+  const root = resolve(rootInput);
+  await assertSafeAbsoluteDirectory(root);
+  const destination = isAbsolute(pathInput) ? resolve(pathInput) : resolve(root, pathInput);
+  await assertSafeExistingPathWithinRoot(root, destination, true);
+  const descriptor = await open(destination, constants.O_RDONLY | constants.O_NOFOLLOW);
+  try {
+    const info = await descriptor.stat();
+    if (!info.isFile()) throw new Error("Workspace target is not a regular file");
+    if (info.size <= 0) throw new Error("Workspace file must not be empty");
+    if (info.size > maxBytes)
+      throw new Error(`Workspace file exceeds byte limit (${info.size} > ${maxBytes})`);
+    return info.size;
+  } finally {
+    await descriptor.close();
+  }
+}
+
 export async function readBoundedWorkspaceJson(
   root: string,
   path: string,

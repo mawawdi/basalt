@@ -36,6 +36,21 @@ export type Diagnostic = z.output<typeof DIAGNOSTIC_SCHEMA>;
 export const ARTIFACT_REF_SCHEMA = z.object({ kind: ASCII_ID_SCHEMA, hash: HASH_SCHEMA }).strict();
 export type ArtifactRef = z.output<typeof ARTIFACT_REF_SCHEMA>;
 
+/** Descriptor for immutable binary evidence stored outside Git. */
+export const CONTENT_DESCRIPTOR_SCHEMA = z
+  .object({
+    kind: ASCII_ID_SCHEMA,
+    contentHash: HASH_SCHEMA,
+    sizeBytes: z
+      .number()
+      .int()
+      .positive()
+      .max(2 * 1024 * 1024 * 1024),
+    mediaType: z.string().regex(/^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*$/u),
+  })
+  .strict();
+export type ContentDescriptor = z.output<typeof CONTENT_DESCRIPTOR_SCHEMA>;
+
 export type GateResult<T> =
   | { readonly status: "eligible"; readonly value: T; readonly diagnostics: readonly Diagnostic[] }
   | { readonly status: "incomplete"; readonly diagnostics: readonly Diagnostic[] }

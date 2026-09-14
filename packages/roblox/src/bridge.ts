@@ -11,11 +11,16 @@ import {
   type WorkspaceExclusiveLock,
 } from "@basalt/artifact-store";
 import {
+  ROBLOX_IMPORT_REPORT_SCHEMA,
   ROBLOX_IMPORT_MANIFEST_SCHEMA,
   ROBLOX_READBACK_SCHEMA,
   computeRobloxObservedWorldStateHash,
   verifyRobloxReadback,
+  verifyRobloxReadbackEnvelope,
+  type RobloxImportReport,
   type RobloxImportManifest,
+  type RobloxReadback,
+  type RobloxTraceEvent,
 } from "./protocol.js";
 
 export const ROBLOX_PORT_RANGE: Readonly<{ minimum: number; maximum: number }> = Object.freeze({
@@ -25,6 +30,8 @@ export const ROBLOX_PORT_RANGE: Readonly<{ minimum: number; maximum: number }> =
 export const ROBLOX_CREDENTIAL_PATH = ".basalt/roblox/credential.json";
 export const ROBLOX_CONNECTION_BOOTSTRAP_PATH = ".basalt/roblox/EmbeddedConnection.luau";
 export const ROBLOX_IMPORT_LOCK_PATH = ".basalt/roblox/import.lock";
+export const ROBLOX_IMPORT_REPORT_PATH = ".basalt/roblox/import-report.json";
+const ROBLOX_IMPORT_REPORT_MAX_BYTES = 16 * 1024 * 1024;
 
 export const ROBLOX_CREDENTIAL_SCHEMA = z
   .object({
@@ -81,6 +88,8 @@ export class RobloxImportBridge {
   #index = 0;
   #state: RobloxBridgeState = "idle";
   #diagnostics: string[] = [];
+  #records: RobloxImportReport["records"][number][] = [];
+  #traceEvents: RobloxTraceEvent[] = [];
   #server: ReturnType<typeof createServer> | undefined;
   #lock: WorkspaceExclusiveLock | undefined;
   #port: number | undefined;
@@ -103,6 +112,10 @@ export class RobloxImportBridge {
     return this.#port;
   }
 
+  public get diagnostics(): readonly string[] {
+    return Object.freeze([...this.#diagnostics]);
+  }
+
   public async start(): Promise<number> {
     if (this.#server) throw new Error("Roblox bridge is already active");
     try {
@@ -119,6 +132,7 @@ export class RobloxImportBridge {
       try {
         await listen(this.#server, port);
         this.#port = port;
+        await this.#persistReport();
         return port;
       } catch (error) {
         if (!isAddressInUse(error) || port === ROBLOX_PORT_RANGE.maximum) {
@@ -130,12 +144,95 @@ export class RobloxImportBridge {
   }
 
   public async stop(): Promise<void> {
-    if (this.#server) await close(this.#server);
+    const server = this.#server;
+    const lock = this.#lock;
     this.#server = undefined;
     this.#port = undefined;
-    if (this.#lock) await this.#lock.release();
     this.#lock = undefined;
-    if (this.#state === "pending") this.#state = "incomplete";
+    try {
+      if (server?.listening) await close(server);
+    } finally {
+      try {
+        if (this.#state === "pending") {
+          this.#state = "incomplete";
+          this.#addDiagnostics("Bridge stopped before the import reached a terminal state");
+          await this.#persistReport();
+        }
+      } finally {
+        if (lock) await lock.release();
+      }
+    }
+  }
+
+  #sessionStatus() {
+    return {
+      state: this.#state,
+      sessionHash: this.manifest.sessionHash,
+      worldBuildHash: this.manifest.worldBuildHash,
+      worldStatus: this.manifest.worldStatus,
+      loweringGapCount: this.manifest.loweringGaps.length,
+      stage: this.manifest.transactions[this.#index]?.stage ?? "complete",
+      progress: { complete: this.#index, total: this.manifest.transactions.length },
+      diagnosticCount: this.#diagnostics.length,
+    };
+  }
+
+  #addDiagnostics(...messages: readonly string[]): void {
+    for (const message of messages) {
+      const normalized = message.trim().slice(0, 1_024);
+      if (normalized.length > 0 && !this.#diagnostics.includes(normalized))
+        this.#diagnostics.push(normalized);
+      if (this.#diagnostics.length >= 4_096) break;
+    }
+  }
+
+  #recordReadback(
+    transaction: RobloxImportManifest["transactions"][number],
+    readback: RobloxReadback,
+    observedWorldStateHash?: string,
+  ): void {
+    this.#traceEvents.push(...readback.traceEvents);
+    this.#records.push({
+      transactionId: transaction.transactionId,
+      stage: transaction.stage,
+      status: readback.status,
+      readbackHash: contentHash(stableJson(readback)),
+      ...(observedWorldStateHash ? { observedWorldStateHash } : {}),
+      instanceCount: readback.instances.length,
+      artifactCount: readback.artifacts.length,
+      constructedElementCount: readback.constructedElements.length,
+      constructedOpeningCount: readback.constructedOpenings.length,
+      diagnosticCount: readback.diagnostics.length,
+      traceEventCount: readback.traceEvents.length,
+    });
+  }
+
+  #report(): RobloxImportReport {
+    const status = this.#sessionStatus();
+    const material = {
+      kind: "RobloxImportReport" as const,
+      sessionHash: this.manifest.sessionHash,
+      worldBuildHash: this.manifest.worldBuildHash,
+      state: this.#state,
+      stage: status.stage,
+      progress: status.progress,
+      records: this.#records,
+      diagnostics: this.#diagnostics,
+      traceEvents: this.#traceEvents,
+    };
+    return ROBLOX_IMPORT_REPORT_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    });
+  }
+
+  async #persistReport(): Promise<void> {
+    await replaceWorkspaceJson(
+      this.workspaceRoot,
+      ROBLOX_IMPORT_REPORT_PATH,
+      this.#report(),
+      ROBLOX_IMPORT_REPORT_MAX_BYTES,
+    );
   }
 
   async #handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -149,67 +246,102 @@ export class RobloxImportBridge {
         return;
       }
       if (request.method === "GET" && request.url === "/session") {
-        sendJson(response, 200, {
-          state: this.#state,
-          sessionHash: this.manifest.sessionHash,
-          worldBuildHash: this.manifest.worldBuildHash,
-          worldStatus: this.manifest.worldStatus,
-          loweringGapCount: this.manifest.loweringGaps.length,
-          stage: this.manifest.transactions[this.#index]?.stage ?? "complete",
-          progress: { complete: this.#index, total: this.manifest.transactions.length },
-          diagnosticCount: this.#diagnostics.length,
-        });
+        sendJson(response, 200, this.#sessionStatus());
         return;
       }
       if (request.method === "GET" && request.url === "/next") {
         sendJson(response, 200, {
-          state: this.#state,
+          ...this.#sessionStatus(),
           transaction: this.manifest.transactions[this.#index] ?? null,
         });
         return;
       }
       if (request.method === "POST" && request.url === "/readback") {
-        const transaction = this.manifest.transactions[this.#index];
-        if (!transaction) throw new Error("Import has no pending transaction");
         const readback = ROBLOX_READBACK_SCHEMA.parse(await readJsonBody(request, 4 * 1024 * 1024));
-        const diagnostics = verifyRobloxReadback(transaction, readback);
-        if (readback.status === "incomplete" || diagnostics.length > 0) {
-          this.#diagnostics.push(...readback.diagnostics, ...diagnostics);
-          this.#state = "incomplete";
-          sendJson(response, 409, { state: this.#state, diagnostics: this.#diagnostics });
+        const sequence = this.manifest.transactions.findIndex(
+          (candidate) => candidate.transactionId === readback.transactionId,
+        );
+        if (sequence < 0) throw new Error("Readback references an unknown transaction");
+        const transaction = this.manifest.transactions[sequence]!;
+        const diagnostics =
+          readback.status === "incomplete"
+            ? verifyRobloxReadbackEnvelope(transaction, readback)
+            : verifyRobloxReadback(transaction, readback);
+        if (sequence < this.#index && readback.status === "complete" && diagnostics.length === 0) {
+          // A loopback response can be lost after the server advances. Exact
+          // readbacks are idempotent, so replay reports current state without
+          // applying or advancing the transaction a second time.
+          sendJson(response, 200, {
+            ...this.#sessionStatus(),
+            observedWorldStateHash: computeRobloxObservedWorldStateHash(transaction, readback),
+          });
           return;
         }
+        if (sequence !== this.#index) throw new Error("Readback transaction is out of order");
+        if (this.#state !== "pending") {
+          sendJson(response, 409, {
+            ...this.#sessionStatus(),
+            diagnostics: this.#diagnostics,
+          });
+          return;
+        }
+        if (readback.status === "incomplete") {
+          this.#addDiagnostics(...readback.diagnostics, ...diagnostics);
+          this.#state = "incomplete";
+          this.#recordReadback(transaction, readback);
+          await this.#persistReport();
+          sendJson(response, diagnostics.length === 0 ? 200 : 409, {
+            ...this.#sessionStatus(),
+            diagnostics: this.#diagnostics,
+          });
+          return;
+        }
+        if (diagnostics.length > 0) {
+          this.#addDiagnostics(...diagnostics);
+          this.#state = "incomplete";
+          this.#recordReadback(transaction, readback);
+          await this.#persistReport();
+          sendJson(response, 409, {
+            ...this.#sessionStatus(),
+            diagnostics: this.#diagnostics,
+          });
+          return;
+        }
+        const observedWorldStateHash = computeRobloxObservedWorldStateHash(transaction, readback);
+        this.#recordReadback(transaction, readback, observedWorldStateHash);
         this.#index += 1;
         this.#state = this.#index >= this.manifest.transactions.length ? "complete" : "pending";
+        await this.#persistReport();
         sendJson(response, 200, {
-          state: this.#state,
-          observedWorldStateHash: computeRobloxObservedWorldStateHash(transaction, readback),
-          progress: { complete: this.#index, total: this.manifest.transactions.length },
+          ...this.#sessionStatus(),
+          observedWorldStateHash,
         });
         return;
       }
       if (request.method === "POST" && request.url === "/cancel") {
         this.#state = "incomplete";
-        this.#diagnostics.push("Import cancelled at a transaction boundary");
-        sendJson(response, 200, { state: this.#state });
+        this.#addDiagnostics("Import cancelled at a transaction boundary");
+        await this.#persistReport();
+        sendJson(response, 200, this.#sessionStatus());
         return;
       }
       if (request.method === "POST" && request.url === "/restart") {
         this.#index = 0;
         this.#diagnostics = [];
+        this.#records = [];
+        this.#traceEvents = [];
         this.#state = "pending";
-        sendJson(response, 200, {
-          state: this.#state,
-          progress: { complete: 0, total: this.manifest.transactions.length },
-        });
+        await this.#persistReport();
+        sendJson(response, 200, this.#sessionStatus());
         return;
       }
       sendJson(response, 404, { error: "not_found" });
     } catch (error) {
       this.#state = "incomplete";
       const message = error instanceof Error ? error.message : String(error);
-      this.#diagnostics.push(message);
-      sendJson(response, 400, { state: this.#state, error: message });
+      this.#addDiagnostics(message);
+      await this.#persistReport().catch(() => undefined);
+      sendJson(response, 400, { ...this.#sessionStatus(), error: message });
     }
   }
 }
@@ -283,10 +415,15 @@ function isAlreadyExists(error: unknown): boolean {
   return typeof error === "object" && error !== null && "code" in error && error.code === "EEXIST";
 }
 
-async function replaceWorkspaceJson(root: string, path: string, value: unknown): Promise<void> {
-  const expectedExistingHash = await existingHash(root, path);
+async function replaceWorkspaceJson(
+  root: string,
+  path: string,
+  value: unknown,
+  maxBytes = 4_096,
+): Promise<void> {
+  const expectedExistingHash = await existingHash(root, path, maxBytes);
   await writeCanonicalWorkspaceJson(root, path, value, {
-    maxBytes: 4096,
+    maxBytes,
     ...(expectedExistingHash ? { expectedExistingHash } : {}),
   });
 }
@@ -299,9 +436,13 @@ async function replaceWorkspaceText(root: string, path: string, value: string): 
   });
 }
 
-async function existingHash(root: string, path: string): Promise<string | undefined> {
+async function existingHash(
+  root: string,
+  path: string,
+  maxBytes = 4_096,
+): Promise<string | undefined> {
   try {
-    const bytes = await readBoundedWorkspaceBytes(root, path, 4096);
+    const bytes = await readBoundedWorkspaceBytes(root, path, maxBytes);
     return contentHash(Buffer.from(bytes).toString("utf8"));
   } catch (error) {
     if (

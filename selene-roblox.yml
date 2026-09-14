@@ -1,0 +1,45 @@
+base: luau
+name: basalt_plugin
+globals:
+  game:
+    struct: RobloxGlobal
+  plugin:
+    struct: RobloxGlobal
+  script:
+    struct: RobloxGlobal
+  settings:
+    args: []
+  Instance:
+    struct: RobloxGlobal
+  Enum:
+    struct: RobloxGlobal
+  CFrame:
+    struct: RobloxGlobal
+  Color3:
+    struct: RobloxGlobal
+  DockWidgetPluginGuiInfo:
+    struct: RobloxGlobal
+  OverlapParams:
+    struct: RobloxGlobal
+  RaycastParams:
+    struct: RobloxGlobal
+  Region3:
+    struct: RobloxGlobal
+  UDim:
+    struct: RobloxGlobal
+  UDim2:
+    struct: RobloxGlobal
+  Vector2:
+    struct: RobloxGlobal
+  Vector3:
+    struct: RobloxGlobal
+  task:
+    struct: RobloxGlobal
+  warn:
+    args:
+      - required: false
+        type: "..."
+structs:
+  RobloxGlobal:
+    "*":
+      any: true

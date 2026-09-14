@@ -5,8 +5,16 @@ import {
   createSemanticDependencyClosure,
   sealSemanticAssertionBundle,
 } from "@basalt/semantic-kernel";
-import { compileBasaltWorld, sealCompilationTaskResult } from "@basalt/world-compiler";
-import { sealSpatialWorldPlan, SPATIAL_WORLD_PLAN_SCHEMA } from "@basalt/world-planning";
+import {
+  compileBasaltWorld,
+  sampleTerrainFieldElevation,
+  sealCompilationTaskResult,
+} from "@basalt/world-compiler";
+import {
+  sealSpatialWorldPlan,
+  SPATIAL_WORLD_PLAN_SCHEMA,
+  worldFoundationInputHash,
+} from "@basalt/world-planning";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 import { worldFixture } from "./helpers/world-fixture.js";
 
@@ -24,18 +32,73 @@ test("foundation, resolution, and realization are deterministic and keep the pla
   const second = compileBasaltWorld(input);
   assert.equal(first.worldBuildHash, second.worldBuildHash);
   assert.equal(first.status, "eligible");
-  assert.equal(first.foundation.worldPlanHash, fixture.plan.planHash);
-  assert.equal(first.foundation.terrainFields[0]?.samples.length, 9);
-  assert.ok((first.foundation.roadAssemblies[0]?.segments.length ?? 0) > 1);
+  assert.equal(first.foundation.foundationInputHash, worldFoundationInputHash(fixture.plan));
+  assert.equal(first.foundation.baseTerrainFields[0]?.samples.length, 9);
+  assert.ok((first.foundation.routeConstructions[0]?.travelSegments.length ?? 0) > 1);
+  const terrain = first.foundation.terrainFields[0]!;
+  const baseTerrain = first.foundation.baseTerrainFields[0]!;
+  const route = first.foundation.routeConstructions[0]!;
+  assert.equal(route.baseTerrainFieldHash, first.foundation.baseTerrainFields[0]!.hash);
+  assert.ok(terrain.routeConstructionHashes.includes(route.hash));
+  assert.equal(route.treatmentKind, "follow_surface");
+  for (const vertex of route.travelSegments.flatMap((segment) => segment.vertices))
+    assert.ok(
+      vertex.positionMeters.y -
+        sampleTerrainFieldElevation(
+          terrain,
+          baseTerrain,
+          first.foundation.routeConstructions,
+          first.foundation.routeJunctions,
+          vertex.positionMeters.x,
+          vertex.positionMeters.z,
+        ) >=
+        0.08 - 1e-9,
+    );
+  for (const segment of route.travelSegments) {
+    const [a, b, c, d] = segment.vertices.map((entry) => entry.positionMeters);
+    for (const along of [0.25, 0.5, 0.75])
+      for (const across of [0, 0.25, 0.5, 0.75, 1]) {
+        const left = interpolate(a!, c!, along);
+        const right = interpolate(b!, d!, along);
+        const probe = interpolate(left, right, across);
+        assert.ok(
+          probe.y -
+            sampleTerrainFieldElevation(
+              terrain,
+              baseTerrain,
+              first.foundation.routeConstructions,
+              first.foundation.routeJunctions,
+              probe.x,
+              probe.z,
+            ) >=
+            0.08 - 1e-9,
+          `route travel surface lacks its constructed terrain reveal at ${JSON.stringify(probe)}`,
+        );
+      }
+  }
   assert.equal(first.instances.length, 1);
   assert.equal(first.instances[0]?.entryHandle, "tree_whole_ground");
   assert.equal(JSON.stringify(fixture.plan), before);
 });
 
+function interpolate(
+  left: { readonly x: number; readonly y: number; readonly z: number },
+  right: { readonly x: number; readonly y: number; readonly z: number },
+  amount: number,
+) {
+  return {
+    x: left.x + (right.x - left.x) * amount,
+    y: left.y + (right.y - left.y) * amount,
+    z: left.z + (right.z - left.z) * amount,
+  };
+}
+
 test("compilation task identity names inputs while result hashes include outcomes", () => {
   const input = {
+    subjectId: "MainRegion",
     scope: "region" as const,
     stage: "micro" as const,
+    dependencyTaskIds: [],
     inputHashes: [contentHash("task-input")],
     policyHash: contentHash("task-policy"),
     resourceUse: { wallMilliseconds: 0, decisions: 0, backtracks: 0 },
@@ -333,8 +396,8 @@ test("lake and road plans preserve space, substance, and boundary decomposition"
     catalogAssets: [fixture.asset],
     spatialPlan: plan,
   });
-  assert.equal(build.foundation.plan.planHash, plan.planHash);
-  assert.equal(build.foundation.plan.placementSurfaces.at(-1)?.kind, "water");
-  assert.equal(build.foundation.roadAssemblies[0]?.routeId, "MainRoute");
+  assert.equal(build.foundation.foundationInputHash, worldFoundationInputHash(plan));
+  assert.equal(build.foundation.placementSurfaces.at(-1)?.kind, "water");
+  assert.equal(build.foundation.routeConstructions[0]?.routeId, "MainRoute");
   assert.ok(build.semanticClosureHashes.includes(closure(lake, ["bre_000005"]).hash));
 });

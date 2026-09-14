@@ -1,0 +1,15 @@
+{
+  "kind": "CatalogQualificationPolicy",
+  "policyId": "catalog_retrieval_production",
+  "minimumUniformRecallAtFiveMillionths": 900000,
+  "minimumUniformMeanReciprocalRankMillionths": 750000,
+  "minimumMixedRecallAtFiveMillionths": 850000,
+  "minimumMixedMeanReciprocalRankMillionths": 700000,
+  "minimumDecisionAccuracyMillionths": 900000,
+  "minimumValidatorAccuracyMillionths": 900000,
+  "maximumHardNegativeFalseMatches": 0,
+  "requireFourAndTwelveViewEvidence": true,
+  "requireIndependentWriterAndValidatorRuns": true,
+  "holdoutMutationPolicy": "freeze_prompt_schema_models_and_thresholds_before_holdout",
+  "hash": "be3b95689c400b868af439adeb6c8fc2bbea52cdf38d795723aa16b9fe83be13"
+}

@@ -20,20 +20,20 @@ export const CATALOG_EVIDENCE_CHANNEL_SCHEMA = z.enum(CATALOG_EVIDENCE_CHANNELS)
 export type CatalogEvidenceChannelName = z.output<typeof CATALOG_EVIDENCE_CHANNEL_SCHEMA>;
 
 export const CATALOG_EVIDENCE_ARTIFACT_KINDS = [
-  "appearance_embedding",
   "collision_measurement",
   "geometry_embedding",
   "geometry_sample",
+  "image_text_retrieval_embedding",
   "integrity_report",
   "interface_measurement",
   "material_embedding",
   "material_inventory",
   "metric_measurement",
   "normalized_depth_render_set",
+  "requirement_validation",
   "rgb_render_set",
-  "semantic_embedding",
-  "semantic_hypothesis_set",
-  "shape_embedding",
+  "search_metadata",
+  "shape_similarity_embedding",
   "silhouette_render_set",
   "support_measurement",
   "surface_normal_render_set",
@@ -43,15 +43,15 @@ export const CATALOG_EVIDENCE_ARTIFACT_KIND_SCHEMA = z.enum(CATALOG_EVIDENCE_ART
 export type CatalogEvidenceArtifactKind = z.output<typeof CATALOG_EVIDENCE_ARTIFACT_KIND_SCHEMA>;
 
 export const CATALOG_EVIDENCE_KINDS_BY_CHANNEL = Object.freeze({
-  appearance: ["appearance_embedding", "rgb_render_set"],
+  appearance: ["image_text_retrieval_embedding", "rgb_render_set"],
   geometry: ["geometry_embedding", "geometry_sample", "metric_measurement"],
   installation: ["collision_measurement", "interface_measurement", "support_measurement"],
   integrity: ["integrity_report"],
   material: ["material_embedding", "material_inventory", "unlit_base_color_render_set"],
-  semantics: ["semantic_embedding", "semantic_hypothesis_set"],
+  semantics: ["requirement_validation", "search_metadata"],
   shape: [
     "normalized_depth_render_set",
-    "shape_embedding",
+    "shape_similarity_embedding",
     "silhouette_render_set",
     "surface_normal_render_set",
   ],
@@ -63,7 +63,7 @@ export const CATALOG_MINIMUM_EVIDENCE_KINDS_BY_CHANNEL = Object.freeze({
   installation: ["collision_measurement", "interface_measurement", "support_measurement"],
   integrity: ["integrity_report"],
   material: ["material_inventory", "unlit_base_color_render_set"],
-  semantics: ["semantic_hypothesis_set"],
+  semantics: ["search_metadata"],
   shape: ["normalized_depth_render_set", "silhouette_render_set", "surface_normal_render_set"],
 } satisfies Record<CatalogEvidenceChannelName, readonly CatalogEvidenceArtifactKind[]>);
 

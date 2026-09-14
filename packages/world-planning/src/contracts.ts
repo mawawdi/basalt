@@ -13,6 +13,8 @@ import {
   UPPER_SORT_SCHEMA,
 } from "@basalt/semantic-kernel";
 import { COMPILER_RENDER_READABILITY_INTENT_SCHEMA } from "@basalt/spatial-core";
+import { CONSTRUCTION_PROGRAM_SCHEMA } from "./construction.js";
+import { resolveHorizontalAlignment } from "./route-horizontal.js";
 
 const finite = z.number().finite();
 const positive = finite.positive();
@@ -154,58 +156,278 @@ export const TERRAIN_PLAN_SCHEMA = z
   });
 export type TerrainPlan = z.output<typeof TERRAIN_PLAN_SCHEMA>;
 
+export const ROUTE_APPEARANCE_SCHEMA = z
+  .object({
+    materialId: WORLD_ENTITY_ID_SCHEMA,
+    styleProfileHash: HASH_SCHEMA,
+    baseColorSrgb: z
+      .object({
+        red: z.number().int().min(0).max(255),
+        green: z.number().int().min(0).max(255),
+        blue: z.number().int().min(0).max(255),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const ROUTE_ELEVATION_REFERENCE_SCHEMA = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("terrain_clearance"),
+      clearanceMeters: nonnegative.max(1_000),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("absolute"),
+      elevationMeters: finite,
+    })
+    .strict(),
+]);
+
+export const ROUTE_ELEVATION_CONTROL_SCHEMA = z
+  .object({
+    controlId: WORLD_ENTITY_ID_SCHEMA,
+    stationFraction: finite.min(0).max(1),
+    surfaceElevation: ROUTE_ELEVATION_REFERENCE_SCHEMA,
+  })
+  .strict();
+
+const groundedRouteTreatment = {
+  surfaceRevealMeters: nonnegative.max(10),
+  crossfallRatio: finite.min(-0.25).max(0.25),
+  maximumGradeRatio: positive.max(4),
+  shoulderWidthMeters: nonnegative.max(100),
+  blendWidthMeters: nonnegative.max(1_000),
+  maximumCutDepthMeters: nonnegative.max(1_000),
+  maximumFillDepthMeters: nonnegative.max(1_000),
+  groundingToleranceMeters: nonnegative.max(10),
+  vegetationClearanceMeters: nonnegative.max(1_000),
+  terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
+};
+
+/**
+ * Construction treatment is deliberately separate from route denotation and
+ * appearance. It determines how a resolved travel surface changes, or
+ * preserves, the terrain beneath it.
+ */
+export const ROUTE_CONSTRUCTION_TREATMENT_SCHEMA = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("follow_surface"),
+      ...groundedRouteTreatment,
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("cut_fill"),
+      ...groundedRouteTreatment,
+      maximumGradeChangePerMeter: nonnegative.max(4),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("elevated"),
+      maximumGradeRatio: positive.max(4),
+      minimumGroundClearanceMeters: nonnegative.max(1_000),
+      supportSpacingMeters: positive.max(1_000),
+      supportRadiusMeters: positive.max(100),
+      maximumSupportHeightMeters: positive.max(10_000),
+      vegetationClearanceMeters: nonnegative.max(1_000),
+      supportAppearance: ROUTE_APPEARANCE_SCHEMA,
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("stepped"),
+      surfaceRevealMeters: nonnegative.max(10),
+      maximumRiserHeightMeters: positive.max(10),
+      minimumTreadDepthMeters: positive.max(100),
+      landingIntervalMeters: positive.max(1_000),
+      shoulderWidthMeters: nonnegative.max(100),
+      blendWidthMeters: nonnegative.max(1_000),
+      maximumCutDepthMeters: nonnegative.max(1_000),
+      maximumFillDepthMeters: nonnegative.max(1_000),
+      groundingToleranceMeters: nonnegative.max(10),
+      vegetationClearanceMeters: nonnegative.max(1_000),
+      terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
+    })
+    .strict(),
+]);
+
 export const WORLD_ROUTE_SCHEMA = z
   .object({
     routeId: WORLD_ENTITY_ID_SCHEMA,
     semanticEntityId: WORLD_ENTITY_ID_SCHEMA,
     regionIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(4096),
     surfaceId: WORLD_ENTITY_ID_SCHEMA,
-    pointsMeters: z.array(WORLD_VECTOR3_SCHEMA).min(2).max(65_536),
+    alignmentMeters: z.array(WORLD_POINT2_SCHEMA).min(2).max(65_536),
+    elevationControls: z.array(ROUTE_ELEVATION_CONTROL_SCHEMA).min(2).max(4_096),
     widthMeters: positive,
-    heightClearanceMeters: positive,
+    thicknessMeters: positive,
+    bendRadiusMeters: positive.max(10_000),
+    maximumSegmentLengthMeters: positive.max(1_000),
+    terrainPriority: z.number().int().min(-1_000_000).max(1_000_000),
+    appearance: ROUTE_APPEARANCE_SCHEMA,
+    construction: ROUTE_CONSTRUCTION_TREATMENT_SCHEMA,
     closed: z.boolean(),
   })
   .strict()
   .superRefine((value, context) => {
-    for (let index = 1; index < value.pointsMeters.length; index += 1) {
-      const left = value.pointsMeters[index - 1]!;
-      const right = value.pointsMeters[index]!;
-      if (Math.hypot(right.x - left.x, right.y - left.y, right.z - left.z) <= 1e-9)
+    if (value.bendRadiusMeters <= value.widthMeters / 2)
+      context.addIssue({
+        code: "custom",
+        path: ["bendRadiusMeters"],
+        message: "Route bend radius must exceed half the travel-surface width",
+      });
+    for (let index = 1; index < value.alignmentMeters.length; index += 1) {
+      const left = value.alignmentMeters[index - 1]!;
+      const right = value.alignmentMeters[index]!;
+      if (Math.hypot(right.x - left.x, right.z - left.z) <= 1e-9)
         context.addIssue({
           code: "custom",
-          path: ["pointsMeters", index],
-          message: "Route segments cannot have zero length",
+          path: ["alignmentMeters", index],
+          message: "Route segments require non-zero horizontal length",
         });
     }
-    if (value.closed) {
-      if (value.pointsMeters.length < 4)
+    if (
+      new Set(value.elevationControls.map((entry) => entry.controlId)).size !==
+      value.elevationControls.length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["elevationControls"],
+        message: "Route elevation control IDs must be unique",
+      });
+    for (let index = 1; index < value.elevationControls.length; index += 1)
+      if (
+        value.elevationControls[index]!.stationFraction <=
+        value.elevationControls[index - 1]!.stationFraction
+      )
         context.addIssue({
           code: "custom",
-          path: ["pointsMeters"],
+          path: ["elevationControls", index, "stationFraction"],
+          message: "Route elevation controls must be strictly ordered",
+        });
+    if (
+      value.elevationControls[0]?.stationFraction !== 0 ||
+      value.elevationControls.at(-1)?.stationFraction !== 1
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["elevationControls"],
+        message: "Route elevation controls must bind both endpoints",
+      });
+    if (
+      value.construction.kind === "follow_surface" &&
+      value.elevationControls.some((entry) => entry.surfaceElevation.kind !== "terrain_clearance")
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["elevationControls"],
+        message: "Surface-following routes require terrain-clearance controls",
+      });
+    if (value.closed) {
+      if (value.alignmentMeters.length < 4)
+        context.addIssue({
+          code: "custom",
+          path: ["alignmentMeters"],
           message: "A closed route requires at least three vertices and a repeated endpoint",
         });
-      const first = value.pointsMeters[0]!;
-      const last = value.pointsMeters[value.pointsMeters.length - 1]!;
-      if (Math.hypot(last.x - first.x, last.y - first.y, last.z - first.z) > 1e-9)
+      const first = value.alignmentMeters[0]!;
+      const last = value.alignmentMeters[value.alignmentMeters.length - 1]!;
+      if (Math.hypot(last.x - first.x, last.z - first.z) > 1e-9)
         context.addIssue({
           code: "custom",
-          path: ["pointsMeters", value.pointsMeters.length - 1],
+          path: ["alignmentMeters", value.alignmentMeters.length - 1],
           message: "A closed route must repeat its first point as its final point",
         });
       const unique = new Set(
-        value.pointsMeters
+        value.alignmentMeters
           .slice(0, -1)
-          .map((point) => `${point.x.toString()},${point.y.toString()},${point.z.toString()}`),
+          .map((point) => `${point.x.toString()},${point.z.toString()}`),
       );
       if (unique.size < 3)
         context.addIssue({
           code: "custom",
-          path: ["pointsMeters"],
+          path: ["alignmentMeters"],
           message: "A closed route requires at least three distinct vertices",
         });
+      if (
+        stableJson(value.elevationControls[0]?.surfaceElevation) !==
+        stableJson(value.elevationControls.at(-1)?.surfaceElevation)
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["elevationControls"],
+          message: "A closed route must close its elevation profile",
+        });
+    }
+    try {
+      resolveHorizontalAlignment({
+        routeId: value.routeId,
+        points: value.alignmentMeters,
+        bendRadiusMeters: value.bendRadiusMeters,
+        closed: value.closed,
+      });
+    } catch (error) {
+      context.addIssue({
+        code: "custom",
+        path: ["alignmentMeters"],
+        message: error instanceof Error ? error.message : "Route horizontal alignment is invalid",
+      });
     }
   });
 export type WorldRoute = z.output<typeof WORLD_ROUTE_SCHEMA>;
+
+const routeEndpoint = z
+  .object({
+    routeId: WORLD_ENTITY_ID_SCHEMA,
+    endpoint: z.enum(["start", "end"]),
+  })
+  .strict();
+
+export const ROUTE_JUNCTION_SCHEMA = z
+  .object({
+    junctionId: WORLD_ENTITY_ID_SCHEMA,
+    kind: z.enum(["intersection", "entrance"]),
+    positionMeters: WORLD_POINT2_SCHEMA,
+    surfaceElevation: ROUTE_ELEVATION_REFERENCE_SCHEMA,
+    participants: z.array(routeEndpoint).min(1).max(32),
+    maximumSnapDistanceMeters: nonnegative.max(1_000),
+    radiusMeters: positive.max(1_000),
+    appearance: ROUTE_APPEARANCE_SCHEMA,
+    targetHash: HASH_SCHEMA.optional(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const participantKeys = value.participants.map((entry) => `${entry.routeId}:${entry.endpoint}`);
+    if (new Set(participantKeys).size !== participantKeys.length)
+      context.addIssue({
+        code: "custom",
+        path: ["participants"],
+        message: "Route junction participants must be unique",
+      });
+    if (value.kind === "intersection" && value.participants.length < 2)
+      context.addIssue({
+        code: "custom",
+        path: ["participants"],
+        message: "An intersection requires at least two route endpoints",
+      });
+    if (value.kind === "entrance" && value.participants.length !== 1)
+      context.addIssue({
+        code: "custom",
+        path: ["participants"],
+        message: "An entrance binds exactly one route endpoint",
+      });
+    if ((value.kind === "entrance") !== (value.targetHash !== undefined))
+      context.addIssue({
+        code: "custom",
+        path: ["targetHash"],
+        message: "Only entrances bind an exact target hash",
+      });
+  });
+export type RouteJunction = z.output<typeof ROUTE_JUNCTION_SCHEMA>;
 
 export const LOT_SUBDIVISION_POLICY_SCHEMA = z
   .object({
@@ -564,8 +786,10 @@ export const SPATIAL_WORLD_PLAN_SCHEMA = z
     placementSurfaces: z.array(PLACEMENT_SURFACE_SCHEMA).max(65_536),
     terrainPlans: z.array(TERRAIN_PLAN_SCHEMA).max(4096),
     routes: z.array(WORLD_ROUTE_SCHEMA).max(65_536),
+    routeJunctions: z.array(ROUTE_JUNCTION_SCHEMA).max(65_536),
     lotPolicies: z.array(LOT_SUBDIVISION_POLICY_SCHEMA).max(4096),
     structuralPrograms: z.array(STRUCTURAL_PROGRAM_SCHEMA).max(4096),
+    constructionPrograms: z.array(CONSTRUCTION_PROGRAM_SCHEMA).max(4096),
     catalogRequirements: z.array(CATALOG_REQUIREMENT_SCHEMA).max(65_536),
     realizationIntents: z.array(REALIZATION_INTENT_SCHEMA).max(65_536),
     cameras: z.array(WORLD_CAMERA_SCHEMA).max(4096),
@@ -695,8 +919,18 @@ function canonicalPlan<T extends Omit<SpatialWorldPlan, "planHash">>(value: T): 
     placementSurfaces: by(value.placementSurfaces, (entry) => entry.surfaceId),
     terrainPlans: by(value.terrainPlans, (entry) => entry.terrainPlanId),
     routes: by(value.routes, (entry) => entry.routeId),
+    routeJunctions: by(value.routeJunctions, (entry) => entry.junctionId).map((junction) => ({
+      ...junction,
+      participants: [...junction.participants].sort((left, right) =>
+        compareCanonicalStrings(
+          `${left.routeId}:${left.endpoint}`,
+          `${right.routeId}:${right.endpoint}`,
+        ),
+      ),
+    })),
     lotPolicies: by(value.lotPolicies, (entry) => entry.policyId),
     structuralPrograms,
+    constructionPrograms: by(value.constructionPrograms, (entry) => entry.programId),
     catalogRequirements: by(value.catalogRequirements, (entry) => entry.requirementId),
     realizationIntents: by(value.realizationIntents, (entry) => entry.intentId),
     cameras: by(value.cameras, (entry) => entry.cameraId),
@@ -725,8 +959,16 @@ function validateWorldPlan(value: SpatialWorldPlan, context: z.RefinementCtx): v
     "Surface",
   );
   unique(
+    value.terrainPlans.map((entry) => entry.surfaceId),
+    "Terrain surface",
+  );
+  unique(
     value.routes.map((entry) => entry.routeId),
     "Route",
+  );
+  unique(
+    value.routeJunctions.map((entry) => entry.junctionId),
+    "Route junction",
   );
   unique(
     value.catalogRequirements.map((entry) => entry.requirementId),
@@ -847,10 +1089,127 @@ function validateWorldPlan(value: SpatialWorldPlan, context: z.RefinementCtx): v
       context.addIssue({ code: "custom", message: `Route ${route.routeId} has unknown surface` });
     if (route.regionIds.some((id) => !regions.has(id)))
       context.addIssue({ code: "custom", message: `Route ${route.routeId} has unknown region` });
+    if (value.terrainPlans.filter((terrain) => terrain.surfaceId === route.surfaceId).length !== 1)
+      context.addIssue({
+        code: "custom",
+        message: `Route ${route.routeId} requires exactly one authored base-terrain field`,
+      });
   }
   const routes = new Set(value.routes.map((entry) => entry.routeId));
+  const routeById = new Map(value.routes.map((entry) => [entry.routeId, entry]));
+  const boundRouteEndpoints = new Set<string>();
+  for (const junction of value.routeJunctions) {
+    const participantRoutes = junction.participants
+      .map((participant) => routeById.get(participant.routeId))
+      .filter((route): route is WorldRoute => route !== undefined);
+    if (participantRoutes.length !== junction.participants.length)
+      context.addIssue({
+        code: "custom",
+        message: `Route junction ${junction.junctionId} references an unknown route`,
+      });
+    if (new Set(participantRoutes.map((route) => route.surfaceId)).size > 1)
+      context.addIssue({
+        code: "custom",
+        message: `Route junction ${junction.junctionId} crosses unrelated placement surfaces`,
+      });
+    const groundedParticipants = participantRoutes.filter(
+      (route) => route.construction.kind !== "elevated",
+    );
+    const groundedSurfaceReveals = groundedParticipants.flatMap((route) =>
+      route.construction.kind === "elevated" ? [] : [route.construction.surfaceRevealMeters],
+    );
+    if (participantRoutes.some((route) => route.closed))
+      context.addIssue({
+        code: "custom",
+        message: `Route junction ${junction.junctionId} cannot bind a closed route endpoint`,
+      });
+    if (new Set(groundedSurfaceReveals).size > 1)
+      context.addIssue({
+        code: "custom",
+        message: `Route junction ${junction.junctionId} has incompatible surface reveals`,
+      });
+    if (
+      groundedParticipants.length > 0 &&
+      junction.radiusMeters >
+        Math.min(...groundedParticipants.map((route) => route.widthMeters / 2)) + 1e-9
+    )
+      context.addIssue({
+        code: "custom",
+        message: `Route junction ${junction.junctionId} extends beyond its grounded corridor`,
+      });
+    for (const participant of junction.participants) {
+      const key = `${participant.routeId}:${participant.endpoint}`;
+      if (boundRouteEndpoints.has(key))
+        context.addIssue({
+          code: "custom",
+          message: `Route endpoint ${key} belongs to more than one junction`,
+        });
+      boundRouteEndpoints.add(key);
+      const route = routeById.get(participant.routeId);
+      if (!route) continue;
+      const endpoint =
+        participant.endpoint === "start"
+          ? route.alignmentMeters[0]!
+          : route.alignmentMeters.at(-1)!;
+      if (
+        Math.hypot(endpoint.x - junction.positionMeters.x, endpoint.z - junction.positionMeters.z) >
+        junction.maximumSnapDistanceMeters + 1e-9
+      )
+        context.addIssue({
+          code: "custom",
+          message: `Route endpoint ${key} lies outside junction ${junction.junctionId}'s snap bound`,
+        });
+    }
+  }
   const lotPolicies = new Set(value.lotPolicies.map((entry) => entry.policyId));
   const programs = new Set(value.structuralPrograms.map((entry) => entry.programId));
+  const constructionPrograms = new Set(value.constructionPrograms.map((entry) => entry.programId));
+  unique([...constructionPrograms], "Construction program");
+  for (const program of value.constructionPrograms) {
+    if (!regions.has(program.regionId))
+      context.addIssue({
+        code: "custom",
+        message: `Construction program ${program.programId} has unknown region`,
+      });
+    if (program.anchor.kind === "placement_surface") {
+      const surfaceRegion = surfaceRegionById.get(program.anchor.surfaceId);
+      if (surfaceRegion === undefined)
+        context.addIssue({
+          code: "custom",
+          message: `Construction program ${program.programId} has unknown anchor surface`,
+        });
+      else if (surfaceRegion !== program.regionId)
+        context.addIssue({
+          code: "custom",
+          message: `Construction program ${program.programId} anchor surface belongs to another region`,
+        });
+    }
+    const anchorRegion = value.regions.find((entry) => entry.regionId === program.regionId);
+    if (anchorRegion) {
+      const anchorPosition =
+        program.anchor.kind === "region_point"
+          ? program.anchor.positionMeters
+          : {
+              x: program.anchor.horizontalPositionMeters.x,
+              y: Math.max(
+                worldRegionVolumeBounds(anchorRegion.volume).min.y,
+                Math.min(0, worldRegionVolumeBounds(anchorRegion.volume).max.y),
+              ),
+              z: program.anchor.horizontalPositionMeters.z,
+            };
+      if (!worldRegionContainsPoint(anchorRegion, anchorPosition))
+        context.addIssue({
+          code: "custom",
+          message: `Construction program ${program.programId} anchor lies outside its region`,
+        });
+    }
+    for (const stair of program.operations)
+      if (stair.kind === "stair_run" && !routes.has(stair.entryRouteId))
+        context.addIssue({
+          code: "custom",
+          message: `Construction stair ${stair.operationId} has unknown entry route`,
+        });
+  }
   for (const intent of value.realizationIntents) {
     if (!requirements.has(intent.requirementId))
       context.addIssue({

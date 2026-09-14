@@ -6,7 +6,7 @@ import {
   deepFreezeJson,
   stableJson,
 } from "@basalt/contracts";
-import { routeCorridorIntersectsAabbXZ } from "./roads.js";
+import { routeCorridorIntersectsAabbXZ } from "./routes.js";
 import {
   LOT_SUBDIVISION_POLICY_SCHEMA,
   WORLD_AABB_SCHEMA,
@@ -36,7 +36,7 @@ export const LOT_SUBDIVISION_SCHEMA = z
   .object({
     kind: z.literal("LotSubdivision"),
     policy: LOT_SUBDIVISION_POLICY_SCHEMA,
-    planHash: HASH_SCHEMA,
+    inputHash: HASH_SCHEMA,
     lots: z.array(lotSchema).max(100_000),
     status: z.enum(["eligible", "incomplete"]),
     diagnostics: z.array(z.string().min(1).max(1024)).max(4096),
@@ -82,7 +82,7 @@ export function subdivideRegion(
           (route) =>
             route.regionIds.includes(policy.regionId) &&
             routeCorridorIntersectsAabbXZ(
-              route.pointsMeters,
+              route.alignmentMeters,
               lotBounds,
               route.widthMeters,
               policy.routeMarginMeters,
@@ -105,10 +105,12 @@ export function subdivideRegion(
       if (lots.length >= policy.maximumLots) break outer;
     }
   const diagnostics = lots.length === 0 ? ["No eligible lots fit the region policy"] : [];
+  const relevantRoutes = plan.routes.filter((route) => route.regionIds.includes(policy.regionId));
+  const inputHash = contentHash(stableJson({ policy, region, routes: relevantRoutes }));
   const material = {
     kind: "LotSubdivision" as const,
     policy,
-    planHash: plan.planHash,
+    inputHash,
     lots,
     status: lots.length > 0 ? ("eligible" as const) : ("incomplete" as const),
     diagnostics,

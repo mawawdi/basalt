@@ -14,15 +14,29 @@ import {
   MEMBER_ID_SCHEMA,
 } from "@basalt/catalog-model";
 import { ROLE_ID_SCHEMA, ROLE_SCHEME_ID_SCHEMA } from "@basalt/semantic-kernel";
-import { SPATIAL_AABB_SCHEMA, SPATIAL_VECTOR3_SCHEMA } from "@basalt/spatial-core";
+import {
+  OCCUPANCY_RESERVATION_SCHEMA,
+  SPATIAL_AABB_SCHEMA,
+  SPATIAL_VECTOR3_SCHEMA,
+} from "@basalt/spatial-core";
 import {
   LOT_SUBDIVISION_SCHEMA,
   PLACEMENT_SURFACE_SCHEMA,
-  ROAD_ASSEMBLY_SCHEMA,
-  SPATIAL_WORLD_PLAN_SCHEMA,
   WORLD_ENTITY_ID_SCHEMA,
   type CompiledWorldPlan,
 } from "@basalt/world-planning";
+import {
+  ROUTE_CONSTRUCTION_ARTIFACT_SCHEMA,
+  ROUTE_JUNCTION_ARTIFACT_SCHEMA,
+  resolveRouteConstructions,
+} from "./route-construction.js";
+import {
+  BASE_TERRAIN_FIELD_ARTIFACT_SCHEMA,
+  TERRAIN_FIELD_ARTIFACT_SCHEMA,
+  sealBaseTerrainFieldArtifact,
+  sealTerrainFieldArtifact,
+  verifyTerrainConstruction,
+} from "./terrain-foundation.js";
 
 const quaternion = z
   .tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()])
@@ -124,85 +138,111 @@ export function sealRealizedInstance(
   );
 }
 
-const terrainSample = z
-  .object({
-    xMeters: z.number().finite(),
-    zMeters: z.number().finite(),
-    elevationMeters: z.number().finite(),
-    materialId: WORLD_ENTITY_ID_SCHEMA,
-  })
-  .strict();
-export const TERRAIN_FIELD_ARTIFACT_SCHEMA = z
-  .object({
-    kind: z.literal("TerrainFieldArtifact"),
-    terrainPlanId: WORLD_ENTITY_ID_SCHEMA,
-    worldPlanHash: HASH_SCHEMA,
-    surfaceId: WORLD_ENTITY_ID_SCHEMA,
-    samples: z.array(terrainSample).min(4).max(4_000_000),
-    hash: HASH_SCHEMA,
-  })
-  .strict()
-  .superRefine((value, context) => verifyHash(value, "hash", context));
-export type TerrainFieldArtifact = z.output<typeof TERRAIN_FIELD_ARTIFACT_SCHEMA>;
-
 export const COMPILED_WORLD_FOUNDATION_SCHEMA = z
   .object({
     kind: z.literal("CompiledWorldFoundation"),
-    status: z.literal("eligible"),
-    worldPlanHash: HASH_SCHEMA,
-    plan: SPATIAL_WORLD_PLAN_SCHEMA,
+    status: COMPILATION_STATUS_SCHEMA,
+    foundationInputHash: HASH_SCHEMA,
+    boundsMeters: SPATIAL_AABB_SCHEMA,
+    baseTerrainFields: z.array(BASE_TERRAIN_FIELD_ARTIFACT_SCHEMA).max(4096),
     terrainFields: z.array(TERRAIN_FIELD_ARTIFACT_SCHEMA).max(4096),
-    roadAssemblies: z.array(ROAD_ASSEMBLY_SCHEMA).max(65_536),
+    routeConstructions: z.array(ROUTE_CONSTRUCTION_ARTIFACT_SCHEMA).max(65_536),
+    routeJunctions: z.array(ROUTE_JUNCTION_ARTIFACT_SCHEMA).max(65_536),
     lotSubdivisions: z.array(LOT_SUBDIVISION_SCHEMA).max(4096),
     placementSurfaces: z.array(PLACEMENT_SURFACE_SCHEMA).max(65_536),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(65_536),
     foundationHash: HASH_SCHEMA,
   })
   .strict()
   .superRefine((value, context) => {
     verifyHash(value, "foundationHash", context);
-    if (value.plan.planHash !== value.worldPlanHash)
-      context.addIssue({
-        code: "custom",
-        path: ["worldPlanHash"],
-        message: "Foundation must bind the untouched spatial plan hash",
-      });
-    const routeHashes = new Map(
-      value.plan.routes.map((route) => [route.routeId, contentHash(stableJson(route))]),
-    );
-    for (const terrain of value.terrainFields)
-      if (terrain.worldPlanHash !== value.worldPlanHash)
-        context.addIssue({
-          code: "custom",
-          message: `Terrain ${terrain.terrainPlanId} binds a different world plan`,
-        });
-    for (const road of value.roadAssemblies)
-      if (routeHashes.get(road.routeId) !== road.routeHash)
-        context.addIssue({
-          code: "custom",
-          message: `Road assembly ${road.routeId} does not bind its exact route`,
-        });
-    for (const subdivision of value.lotSubdivisions)
-      if (subdivision.planHash !== value.worldPlanHash)
-        context.addIssue({
-          code: "custom",
-          message: `Lot subdivision ${subdivision.policy.policyId} binds a different world plan`,
-        });
+    if (
+      new Set(value.terrainFields.map((entry) => entry.terrainPlanId)).size !==
+      value.terrainFields.length
+    )
+      context.addIssue({ code: "custom", message: "Foundation repeats terrain artifacts" });
+    if (
+      new Set(value.baseTerrainFields.map((entry) => entry.terrainPlanId)).size !==
+      value.baseTerrainFields.length
+    )
+      context.addIssue({ code: "custom", message: "Foundation repeats base-terrain artifacts" });
+    if (
+      new Set(value.routeConstructions.map((entry) => entry.routeId)).size !==
+      value.routeConstructions.length
+    )
+      context.addIssue({ code: "custom", message: "Foundation repeats route artifacts" });
+    if (
+      new Set(value.routeJunctions.map((entry) => entry.junctionId)).size !==
+      value.routeJunctions.length
+    )
+      context.addIssue({ code: "custom", message: "Foundation repeats route junctions" });
+    if (
+      new Set(value.lotSubdivisions.map((entry) => entry.policy.policyId)).size !==
+      value.lotSubdivisions.length
+    )
+      context.addIssue({ code: "custom", message: "Foundation repeats lot artifacts" });
   });
 export type CompiledWorldFoundation = z.output<typeof COMPILED_WORLD_FOUNDATION_SCHEMA>;
 
 export function sealCompiledWorldFoundation(compiled: CompiledWorldPlan): CompiledWorldFoundation {
-  const terrainFields = compiled.plan.terrainPlans.map((plan) =>
-    sealTerrainField(compiled.worldPlanHash, plan),
+  const baseTerrainFields = compiled.plan.terrainPlans.map(sealBaseTerrainFieldArtifact);
+  const routeResult = resolveRouteConstructions(compiled.plan, baseTerrainFields);
+  const terrainFields = baseTerrainFields.map((field) =>
+    sealTerrainFieldArtifact(field, routeResult.routes, routeResult.junctions),
   );
-  const material = {
-    kind: "CompiledWorldFoundation" as const,
-    status: "eligible" as const,
-    worldPlanHash: compiled.worldPlanHash,
-    plan: compiled.plan,
+  const diagnostics = [
+    ...routeResult.routes.flatMap((route) => route.diagnostics),
+    ...verifyTerrainConstruction(
+      terrainFields,
+      baseTerrainFields,
+      routeResult.routes,
+      routeResult.junctions,
+    ),
+  ];
+  const status = routeResult.routes.some((route) => route.status === "rejected")
+    ? "rejected"
+    : routeResult.routes.some((route) => route.status === "incomplete") || diagnostics.length > 0
+      ? "incomplete"
+      : "eligible";
+  return sealCompiledWorldFoundationArtifacts({
+    status,
+    foundationInputHash: compiled.foundationInputHash,
+    boundsMeters: compiled.plan.boundsMeters,
+    baseTerrainFields,
     terrainFields,
-    roadAssemblies: [...compiled.roadAssemblies],
+    routeConstructions: [...routeResult.routes],
+    routeJunctions: [...routeResult.junctions],
     lotSubdivisions: [...compiled.lotSubdivisions],
     placementSurfaces: [...compiled.plan.placementSurfaces],
+    diagnostics,
+  });
+}
+
+export function sealCompiledWorldFoundationArtifacts(
+  input: Omit<CompiledWorldFoundation, "kind" | "foundationHash">,
+): CompiledWorldFoundation {
+  const material = {
+    kind: "CompiledWorldFoundation" as const,
+    ...input,
+    baseTerrainFields: [...input.baseTerrainFields].sort((left, right) =>
+      compareCanonicalStrings(left.terrainPlanId, right.terrainPlanId),
+    ),
+    terrainFields: [...input.terrainFields].sort((left, right) =>
+      compareCanonicalStrings(left.terrainPlanId, right.terrainPlanId),
+    ),
+    routeConstructions: [...input.routeConstructions].sort((left, right) =>
+      compareCanonicalStrings(left.routeId, right.routeId),
+    ),
+    routeJunctions: [...input.routeJunctions].sort((left, right) =>
+      compareCanonicalStrings(left.junctionId, right.junctionId),
+    ),
+    lotSubdivisions: [...input.lotSubdivisions].sort((left, right) =>
+      compareCanonicalStrings(left.policy.policyId, right.policy.policyId),
+    ),
+    placementSurfaces: [...input.placementSurfaces].sort((left, right) =>
+      compareCanonicalStrings(left.surfaceId, right.surfaceId),
+    ),
+    diagnostics: [...new Set(input.diagnostics)].sort(compareCanonicalStrings),
   };
   return deepFreezeJson(
     COMPILED_WORLD_FOUNDATION_SCHEMA.parse({
@@ -299,6 +339,181 @@ export type ProceduralStairArtifact = z.output<typeof PROCEDURAL_STAIR_ARTIFACT_
 export type AssemblyArtifact = z.output<typeof ASSEMBLY_ARTIFACT_SCHEMA>;
 export type RoomArtifact = z.output<typeof ROOM_ARTIFACT_SCHEMA>;
 
+const constructedGeometry = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("box"),
+      centerMeters: SPATIAL_VECTOR3_SCHEMA,
+      sizeMeters: SPATIAL_VECTOR3_SCHEMA.refine(
+        (value) => value.x > 0 && value.y > 0 && value.z > 0,
+        "Constructed boxes require positive dimensions",
+      ),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("cylinder"),
+      centerMeters: SPATIAL_VECTOR3_SCHEMA,
+      radiusMeters: z.number().finite().positive(),
+      heightMeters: z.number().finite().positive(),
+      sides: z.number().int().min(8).max(128),
+    })
+    .strict(),
+]);
+
+export const CONSTRUCTED_ELEMENT_SCHEMA = z
+  .object({
+    kind: z.literal("ConstructedElement"),
+    elementId: WORLD_ENTITY_ID_SCHEMA,
+    constructionProgramHash: HASH_SCHEMA,
+    operationId: WORLD_ENTITY_ID_SCHEMA,
+    repetitionIndex: z.number().int().nonnegative().max(65_535).optional(),
+    elementRole: z.enum(["opening_panel", "solid", "stair_step"]),
+    geometry: constructedGeometry,
+    boundsMeters: SPATIAL_AABB_SCHEMA,
+    materialId: WORLD_ENTITY_ID_SCHEMA,
+    styleProfileHash: HASH_SCHEMA,
+    evidenceHashes: z.array(HASH_SCHEMA).min(1).max(64),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, "hash", context));
+
+export const DECLARATIVE_CONSTRUCTED_SURFACE_SCHEMA = z
+  .object({
+    surfaceId: WORLD_ENTITY_ID_SCHEMA,
+    constructionProgramHash: HASH_SCHEMA,
+    sourceElementId: WORLD_ENTITY_ID_SCHEMA,
+    face: z.enum([
+      "negative_x",
+      "negative_y",
+      "negative_z",
+      "positive_x",
+      "positive_y",
+      "positive_z",
+    ]),
+    boundsMeters: SPATIAL_AABB_SCHEMA,
+    normal: SPATIAL_VECTOR3_SCHEMA,
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, "hash", context));
+
+export const CONSTRUCTED_OPENING_ARTIFACT_SCHEMA = z
+  .object({
+    openingId: WORLD_ENTITY_ID_SCHEMA,
+    constructionProgramHash: HASH_SCHEMA,
+    operationId: WORLD_ENTITY_ID_SCHEMA,
+    hostOperationId: WORLD_ENTITY_ID_SCHEMA,
+    panelElementIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(2).max(4),
+    boundsMeters: SPATIAL_AABB_SCHEMA,
+    clearanceBoundsMeters: SPATIAL_AABB_SCHEMA,
+    portalId: WORLD_ENTITY_ID_SCHEMA.optional(),
+    clearanceMeters: z.number().finite().nonnegative(),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, "hash", context));
+
+export const CONSTRUCTED_PORTAL_ARTIFACT_SCHEMA = z
+  .object({
+    portalId: WORLD_ENTITY_ID_SCHEMA,
+    constructionProgramHash: HASH_SCHEMA,
+    openingHash: HASH_SCHEMA,
+    boundsMeters: SPATIAL_AABB_SCHEMA,
+    clearanceMeters: z.number().finite().nonnegative(),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, "hash", context));
+
+export const CONSTRUCTED_ATTACHMENT_ARTIFACT_SCHEMA = z
+  .object({
+    attachmentId: WORLD_ENTITY_ID_SCHEMA,
+    constructionProgramHash: HASH_SCHEMA,
+    operationId: WORLD_ENTITY_ID_SCHEMA,
+    hostElementId: WORLD_ENTITY_ID_SCHEMA,
+    childElementId: WORLD_ENTITY_ID_SCHEMA,
+    hostFace: z.enum([
+      "negative_x",
+      "negative_y",
+      "negative_z",
+      "positive_x",
+      "positive_y",
+      "positive_z",
+    ]),
+    childFace: z.enum([
+      "negative_x",
+      "negative_y",
+      "negative_z",
+      "positive_x",
+      "positive_y",
+      "positive_z",
+    ]),
+    measuredGapMeters: z.number().finite().nonnegative(),
+    maximumGapMeters: z.number().finite().nonnegative(),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, "hash", context));
+
+export const CONSTRUCTED_ACCESS_PATH_SCHEMA = z
+  .object({
+    accessPathId: WORLD_ENTITY_ID_SCHEMA,
+    constructionProgramHash: HASH_SCHEMA,
+    stairOperationId: WORLD_ENTITY_ID_SCHEMA,
+    entryRouteId: WORLD_ENTITY_ID_SCHEMA,
+    landingElementId: WORLD_ENTITY_ID_SCHEMA,
+    stepElementIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(65_536),
+    entryMeters: SPATIAL_VECTOR3_SCHEMA,
+    exitMeters: SPATIAL_VECTOR3_SCHEMA,
+    widthMeters: z.number().finite().positive(),
+    riserHeightMeters: z.number().finite().positive(),
+    treadDepthMeters: z.number().finite().positive(),
+    minimumHeadroomMeters: z.number().finite().positive(),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    verifyHash(value, "hash", context);
+    if (new Set(value.stepElementIds).size !== value.stepElementIds.length)
+      context.addIssue({ code: "custom", message: "Access path steps must be unique" });
+  });
+
+export const CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA = z
+  .object({
+    kind: z.literal("ConstructedStructureArtifact"),
+    structureId: WORLD_ENTITY_ID_SCHEMA,
+    regionId: WORLD_ENTITY_ID_SCHEMA,
+    constructionProgramHash: HASH_SCHEMA,
+    semanticDependencyClosureHash: HASH_SCHEMA,
+    resolvedAnchorMeters: SPATIAL_VECTOR3_SCHEMA,
+    placementEvidenceHash: HASH_SCHEMA,
+    placementSurfaceId: WORLD_ENTITY_ID_SCHEMA.optional(),
+    elements: z.array(CONSTRUCTED_ELEMENT_SCHEMA).min(1).max(65_536),
+    surfaces: z.array(DECLARATIVE_CONSTRUCTED_SURFACE_SCHEMA).max(393_216),
+    openings: z.array(CONSTRUCTED_OPENING_ARTIFACT_SCHEMA).max(8_192),
+    portals: z.array(CONSTRUCTED_PORTAL_ARTIFACT_SCHEMA).max(8_192),
+    attachments: z.array(CONSTRUCTED_ATTACHMENT_ARTIFACT_SCHEMA).max(8_192),
+    accessPaths: z.array(CONSTRUCTED_ACCESS_PATH_SCHEMA).max(8_192),
+    occupancyReservations: z.array(OCCUPANCY_RESERVATION_SCHEMA).min(1).max(65_536),
+    boundsMeters: SPATIAL_AABB_SCHEMA,
+    evidenceHashes: z.array(HASH_SCHEMA).min(1).max(65_536),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    verifyHash(value, "hash", context);
+    validateConstructedStructure(value, context);
+  });
+export type ConstructedElement = z.output<typeof CONSTRUCTED_ELEMENT_SCHEMA>;
+export type DeclarativeConstructedSurface = z.output<typeof DECLARATIVE_CONSTRUCTED_SURFACE_SCHEMA>;
+export type ConstructedOpeningArtifact = z.output<typeof CONSTRUCTED_OPENING_ARTIFACT_SCHEMA>;
+export type ConstructedPortalArtifact = z.output<typeof CONSTRUCTED_PORTAL_ARTIFACT_SCHEMA>;
+export type ConstructedAttachmentArtifact = z.output<typeof CONSTRUCTED_ATTACHMENT_ARTIFACT_SCHEMA>;
+export type ConstructedAccessPath = z.output<typeof CONSTRUCTED_ACCESS_PATH_SCHEMA>;
+export type ConstructedStructureArtifact = z.output<typeof CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA>;
+
 export const MESO_LAYOUT_SCHEMA = z
   .object({
     kind: z.literal("MesoLayout"),
@@ -307,6 +522,7 @@ export const MESO_LAYOUT_SCHEMA = z
     catalogResolutionHash: HASH_SCHEMA,
     instances: z.array(REALIZED_INSTANCE_SCHEMA).max(1_000_000),
     assemblies: z.array(ASSEMBLY_ARTIFACT_SCHEMA).max(65_536),
+    constructedStructures: z.array(CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA).max(65_536),
     constructedSurfaces: z.array(CONSTRUCTED_SURFACE_SCHEMA).max(65_536),
     portals: z.array(PORTAL_ARTIFACT_SCHEMA).max(65_536),
     rooms: z.array(ROOM_ARTIFACT_SCHEMA).max(65_536),
@@ -339,8 +555,29 @@ export const COMPILATION_TASK_RESULT_SCHEMA = z
   .object({
     kind: z.literal("CompilationTaskResult"),
     taskId: WORLD_ENTITY_ID_SCHEMA,
-    scope: z.enum(["world", "region", "route", "lot", "structure", "floor", "room"]),
-    stage: z.enum(["foundation", "catalog_resolution", "meso", "micro", "world_build"]),
+    subjectId: WORLD_ENTITY_ID_SCHEMA,
+    scope: z.enum([
+      "world",
+      "region",
+      "terrain",
+      "route",
+      "junction",
+      "lot",
+      "structure",
+      "floor",
+      "room",
+    ]),
+    stage: z.enum([
+      "terrain_base",
+      "route_construction",
+      "terrain_final",
+      "foundation",
+      "catalog_resolution",
+      "meso",
+      "micro",
+      "world_build",
+    ]),
+    dependencyTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(65_536),
     inputHashes: z.array(HASH_SCHEMA).min(1),
     policyHash: HASH_SCHEMA,
     outputHashes: z.array(HASH_SCHEMA),
@@ -356,7 +593,32 @@ export const COMPILATION_TASK_RESULT_SCHEMA = z
     taskHash: HASH_SCHEMA,
   })
   .strict()
-  .superRefine((value, context) => verifyHash(value, "taskHash", context));
+  .superRefine((value, context) => {
+    verifyHash(value, "taskHash", context);
+    const expectedId = compilationTaskId(value.scope, value.stage, value.subjectId);
+    if (value.taskId !== expectedId)
+      context.addIssue({
+        code: "custom",
+        path: ["taskId"],
+        message: "Compilation task ID mismatch",
+      });
+    if (
+      new Set(value.dependencyTaskIds).size !== value.dependencyTaskIds.length ||
+      stableJson([...value.dependencyTaskIds].sort(compareCanonicalStrings)) !==
+        stableJson(value.dependencyTaskIds)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["dependencyTaskIds"],
+        message: "Task dependencies must be unique and canonical",
+      });
+    if (value.dependencyTaskIds.includes(value.taskId))
+      context.addIssue({
+        code: "custom",
+        path: ["dependencyTaskIds"],
+        message: "A task cannot depend on itself",
+      });
+  });
 export type CompilationTaskResult = z.output<typeof COMPILATION_TASK_RESULT_SCHEMA>;
 
 export function sealCompilationTaskResult(
@@ -364,16 +626,12 @@ export function sealCompilationTaskResult(
 ): CompilationTaskResult {
   const canonical = {
     ...input,
+    dependencyTaskIds: [...new Set(input.dependencyTaskIds)].sort(compareCanonicalStrings),
     inputHashes: [...new Set(input.inputHashes)].sort(compareCanonicalStrings),
     outputHashes: [...new Set(input.outputHashes)].sort(compareCanonicalStrings),
     diagnostics: [...input.diagnostics].sort(compareCanonicalStrings),
   };
-  const taskId = contentAddressedEntityId("Task", {
-    scope: canonical.scope,
-    stage: canonical.stage,
-    inputHashes: canonical.inputHashes,
-    policyHash: canonical.policyHash,
-  });
+  const taskId = compilationTaskId(canonical.scope, canonical.stage, canonical.subjectId);
   const material = { kind: "CompilationTaskResult" as const, taskId, ...canonical };
   return deepFreezeJson(
     COMPILATION_TASK_RESULT_SCHEMA.parse({
@@ -381,6 +639,15 @@ export function sealCompilationTaskResult(
       taskHash: contentHash(stableJson(material)),
     }),
   );
+}
+
+/** Stable logical identity; taskHash records the exact execution result. */
+export function compilationTaskId(
+  scope: CompilationTaskResult["scope"],
+  stage: CompilationTaskResult["stage"],
+  subjectId: string,
+): string {
+  return contentAddressedEntityId("Task", { scope, stage, subjectId });
 }
 
 export const WORLD_BUILD_SCHEMA = z
@@ -414,6 +681,9 @@ export function sealMesoLayout(input: Omit<MesoLayout, "kind" | "hash">): MesoLa
     instances: canonicalInstances(input.instances),
     assemblies: [...input.assemblies].sort((a, b) =>
       compareCanonicalStrings(a.assemblyId, b.assemblyId),
+    ),
+    constructedStructures: [...input.constructedStructures].sort((a, b) =>
+      compareCanonicalStrings(a.structureId, b.structureId),
     ),
     constructedSurfaces: [...input.constructedSurfaces].sort((a, b) =>
       compareCanonicalStrings(a.surfaceId, b.surfaceId),
@@ -499,6 +769,126 @@ export function sealProceduralStairArtifact(
     }),
   );
 }
+
+export function sealConstructedElement(
+  input: Omit<ConstructedElement, "kind" | "elementId" | "hash">,
+): ConstructedElement {
+  const canonical = {
+    ...input,
+    evidenceHashes: [...new Set(input.evidenceHashes)].sort(compareCanonicalStrings),
+  };
+  const elementId = contentAddressedEntityId("ConstructedElement", canonical);
+  const material = { kind: "ConstructedElement" as const, elementId, ...canonical };
+  return deepFreezeJson(
+    CONSTRUCTED_ELEMENT_SCHEMA.parse({ ...material, hash: contentHash(stableJson(material)) }),
+  );
+}
+
+export function sealDeclarativeConstructedSurface(
+  input: Omit<DeclarativeConstructedSurface, "surfaceId" | "hash">,
+): DeclarativeConstructedSurface {
+  const surfaceId = contentAddressedEntityId("ConstructedSurface", input);
+  const material = { surfaceId, ...input };
+  return deepFreezeJson(
+    DECLARATIVE_CONSTRUCTED_SURFACE_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    }),
+  );
+}
+
+export function sealConstructedOpeningArtifact(
+  input: Omit<ConstructedOpeningArtifact, "openingId" | "hash">,
+): ConstructedOpeningArtifact {
+  const canonical = {
+    ...input,
+    panelElementIds: [...input.panelElementIds].sort(compareCanonicalStrings),
+  };
+  const openingId = contentAddressedEntityId("ConstructedOpening", canonical);
+  const material = { openingId, ...canonical };
+  return deepFreezeJson(
+    CONSTRUCTED_OPENING_ARTIFACT_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    }),
+  );
+}
+
+export function sealConstructedPortalArtifact(
+  input: Omit<ConstructedPortalArtifact, "hash">,
+): ConstructedPortalArtifact {
+  return deepFreezeJson(
+    CONSTRUCTED_PORTAL_ARTIFACT_SCHEMA.parse({
+      ...input,
+      hash: contentHash(stableJson(input)),
+    }),
+  );
+}
+
+export function sealConstructedAttachmentArtifact(
+  input: Omit<ConstructedAttachmentArtifact, "attachmentId" | "hash">,
+): ConstructedAttachmentArtifact {
+  const attachmentId = contentAddressedEntityId("ConstructedAttachment", input);
+  const material = { attachmentId, ...input };
+  return deepFreezeJson(
+    CONSTRUCTED_ATTACHMENT_ARTIFACT_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    }),
+  );
+}
+
+export function sealConstructedAccessPath(
+  input: Omit<ConstructedAccessPath, "accessPathId" | "hash">,
+): ConstructedAccessPath {
+  const canonical = { ...input, stepElementIds: [...input.stepElementIds] };
+  const accessPathId = contentAddressedEntityId("AccessPath", canonical);
+  const material = { accessPathId, ...canonical };
+  return deepFreezeJson(
+    CONSTRUCTED_ACCESS_PATH_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    }),
+  );
+}
+
+export function sealConstructedStructureArtifact(
+  input: Omit<ConstructedStructureArtifact, "kind" | "structureId" | "hash">,
+): ConstructedStructureArtifact {
+  const canonical = {
+    ...input,
+    elements: [...input.elements].sort((left, right) =>
+      compareCanonicalStrings(left.elementId, right.elementId),
+    ),
+    surfaces: [...input.surfaces].sort((left, right) =>
+      compareCanonicalStrings(left.surfaceId, right.surfaceId),
+    ),
+    openings: [...input.openings].sort((left, right) =>
+      compareCanonicalStrings(left.openingId, right.openingId),
+    ),
+    portals: [...input.portals].sort((left, right) =>
+      compareCanonicalStrings(left.portalId, right.portalId),
+    ),
+    attachments: [...input.attachments].sort((left, right) =>
+      compareCanonicalStrings(left.attachmentId, right.attachmentId),
+    ),
+    accessPaths: [...input.accessPaths].sort((left, right) =>
+      compareCanonicalStrings(left.accessPathId, right.accessPathId),
+    ),
+    occupancyReservations: [...input.occupancyReservations].sort((left, right) =>
+      compareCanonicalStrings(left.id, right.id),
+    ),
+    evidenceHashes: [...new Set(input.evidenceHashes)].sort(compareCanonicalStrings),
+  };
+  const structureId = contentAddressedEntityId("ConstructedStructure", canonical);
+  const material = { kind: "ConstructedStructureArtifact" as const, structureId, ...canonical };
+  return deepFreezeJson(
+    CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    }),
+  );
+}
 export function sealWorldBuild(
   input: Omit<WorldBuild, "kind" | "coordinateSystem" | "instances" | "worldBuildHash">,
 ): WorldBuild {
@@ -517,64 +907,6 @@ export function sealWorldBuild(
   );
 }
 
-function sealTerrainField(
-  worldPlanHash: string,
-  plan: CompiledWorldPlan["plan"]["terrainPlans"][number],
-): TerrainFieldArtifact {
-  const samples = [];
-  for (let row = 0; row < plan.resolution.rows; row += 1)
-    for (let column = 0; column < plan.resolution.columns; column += 1) {
-      const xMeters =
-        plan.boundsMeters.x.minimum +
-        (column / (plan.resolution.columns - 1)) *
-          (plan.boundsMeters.x.maximum - plan.boundsMeters.x.minimum);
-      const zMeters =
-        plan.boundsMeters.z.minimum +
-        (row / (plan.resolution.rows - 1)) *
-          (plan.boundsMeters.z.maximum - plan.boundsMeters.z.minimum);
-      let elevationMeters = plan.baseElevationMeters;
-      for (const operation of plan.operations) {
-        if (operation.kind === "raise") {
-          const distance = Math.hypot(xMeters - operation.center.x, zMeters - operation.center.z);
-          if (distance < operation.radiusMeters)
-            elevationMeters += operation.deltaMeters * (1 - distance / operation.radiusMeters);
-        } else if (operation.kind === "carve") {
-          const distance = Math.hypot(xMeters - operation.center.x, zMeters - operation.center.z);
-          if (distance < operation.radiusMeters)
-            elevationMeters -= operation.depthMeters * (1 - distance / operation.radiusMeters);
-        } else if (pointInPolygon(xMeters, zMeters, operation.polygon))
-          elevationMeters = operation.elevationMeters;
-      }
-      samples.push({ xMeters, zMeters, elevationMeters, materialId: plan.materialId });
-    }
-  const material = {
-    kind: "TerrainFieldArtifact" as const,
-    terrainPlanId: plan.terrainPlanId,
-    worldPlanHash,
-    surfaceId: plan.surfaceId,
-    samples,
-  };
-  return deepFreezeJson(
-    TERRAIN_FIELD_ARTIFACT_SCHEMA.parse({ ...material, hash: contentHash(stableJson(material)) }),
-  );
-}
-function pointInPolygon(
-  x: number,
-  zCoordinate: number,
-  polygon: readonly { x: number; z: number }[],
-): boolean {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const a = polygon[i]!;
-    const b = polygon[j]!;
-    if (
-      a.z > zCoordinate !== b.z > zCoordinate &&
-      x < ((b.x - a.x) * (zCoordinate - a.z)) / (b.z - a.z) + a.x
-    )
-      inside = !inside;
-  }
-  return inside;
-}
 function canonicalInstances(instances: readonly RealizedInstance[]): RealizedInstance[] {
   return [...instances].sort((a, b) => compareCanonicalStrings(a.instanceId, b.instanceId));
 }
@@ -582,6 +914,9 @@ function validateMesoGraph(value: MesoLayout, context: z.RefinementCtx): void {
   const instanceIds = new Set(value.instances.map((entry) => entry.instanceId));
   const assemblyByHash = new Map(value.assemblies.map((entry) => [entry.hash, entry]));
   const assemblyById = new Map(value.assemblies.map((entry) => [entry.assemblyId, entry]));
+  const structureById = new Map(
+    value.constructedStructures.map((entry) => [entry.structureId, entry]),
+  );
   const surfaces = new Map(value.constructedSurfaces.map((entry) => [entry.surfaceId, entry]));
   const portals = new Map(value.portals.map((entry) => [entry.portalId, entry]));
   const rooms = new Map(value.rooms.map((entry) => [entry.roomId, entry]));
@@ -590,6 +925,7 @@ function validateMesoGraph(value: MesoLayout, context: z.RefinementCtx): void {
     ["instance", instanceIds.size, value.instances.length],
     ["assembly hash", assemblyByHash.size, value.assemblies.length],
     ["assembly ID", assemblyById.size, value.assemblies.length],
+    ["constructed structure", structureById.size, value.constructedStructures.length],
     ["surface", surfaces.size, value.constructedSurfaces.length],
     ["portal", portals.size, value.portals.length],
     ["room", rooms.size, value.rooms.length],
@@ -677,6 +1013,115 @@ function validateMesoGraph(value: MesoLayout, context: z.RefinementCtx): void {
       });
 }
 
+function validateConstructedStructure(
+  value: ConstructedStructureArtifact,
+  context: z.RefinementCtx,
+): void {
+  const elements = new Map(value.elements.map((entry) => [entry.elementId, entry] as const));
+  const surfaces = new Map(value.surfaces.map((entry) => [entry.surfaceId, entry] as const));
+  const openings = new Map(value.openings.map((entry) => [entry.openingId, entry] as const));
+  const reservations = new Map(
+    value.occupancyReservations.map((entry) => [entry.sourceInstanceId, entry] as const),
+  );
+  const accessPaths = new Map(
+    value.accessPaths.map((entry) => [entry.accessPathId, entry] as const),
+  );
+  for (const [label, actual, expected] of [
+    ["element", elements.size, value.elements.length],
+    ["surface", surfaces.size, value.surfaces.length],
+    ["opening", openings.size, value.openings.length],
+    ["access path", accessPaths.size, value.accessPaths.length],
+    ["occupancy reservation", reservations.size, value.occupancyReservations.length],
+  ] as const)
+    if (actual !== expected)
+      context.addIssue({
+        code: "custom",
+        message: `Constructed structure repeats ${label} identity`,
+      });
+  if (
+    value.elements.some((entry) => entry.constructionProgramHash !== value.constructionProgramHash)
+  )
+    context.addIssue({ code: "custom", message: "Constructed element binds another program" });
+  if (
+    value.surfaces.some(
+      (entry) =>
+        entry.constructionProgramHash !== value.constructionProgramHash ||
+        !elements.has(entry.sourceElementId),
+    )
+  )
+    context.addIssue({ code: "custom", message: "Constructed surface has invalid provenance" });
+  if (
+    value.openings.some(
+      (entry) =>
+        entry.constructionProgramHash !== value.constructionProgramHash ||
+        entry.panelElementIds.some((id) => !elements.has(id)),
+    )
+  )
+    context.addIssue({ code: "custom", message: "Constructed opening has invalid panels" });
+  if (
+    value.portals.some(
+      (entry) =>
+        entry.constructionProgramHash !== value.constructionProgramHash ||
+        ![...openings.values()].some((opening) => opening.hash === entry.openingHash),
+    )
+  )
+    context.addIssue({
+      code: "custom",
+      message: "Constructed portal has invalid opening provenance",
+    });
+  if (
+    value.attachments.some(
+      (entry) =>
+        entry.constructionProgramHash !== value.constructionProgramHash ||
+        !elements.has(entry.hostElementId) ||
+        !elements.has(entry.childElementId),
+    )
+  )
+    context.addIssue({ code: "custom", message: "Constructed attachment has invalid endpoints" });
+  if (
+    value.accessPaths.some(
+      (entry) =>
+        entry.constructionProgramHash !== value.constructionProgramHash ||
+        !elements.has(entry.landingElementId) ||
+        entry.stepElementIds.some((id) => !elements.has(id)),
+    )
+  )
+    context.addIssue({ code: "custom", message: "Constructed access path has invalid geometry" });
+  if (
+    value.elements.some((entry) => {
+      const reservation = reservations.get(entry.elementId);
+      return !reservation || stableJson(reservation.bounds) !== stableJson(entry.boundsMeters);
+    })
+  )
+    context.addIssue({
+      code: "custom",
+      message: "Constructed occupancy does not cover each element",
+    });
+  const actualBounds = mergeBounds(value.elements.map((entry) => entry.boundsMeters));
+  if (stableJson(actualBounds) !== stableJson(value.boundsMeters))
+    context.addIssue({
+      code: "custom",
+      path: ["boundsMeters"],
+      message: "Constructed structure bounds mismatch",
+    });
+}
+
+function mergeBounds(bounds: readonly z.output<typeof SPATIAL_AABB_SCHEMA>[]) {
+  if (bounds.length === 0) throw new Error("Cannot merge an empty bounds set");
+  return {
+    min: {
+      x: Math.min(...bounds.map((entry) => entry.min.x)),
+      y: Math.min(...bounds.map((entry) => entry.min.y)),
+      z: Math.min(...bounds.map((entry) => entry.min.z)),
+    },
+    max: {
+      x: Math.max(...bounds.map((entry) => entry.max.x)),
+      y: Math.max(...bounds.map((entry) => entry.max.y)),
+      z: Math.max(...bounds.map((entry) => entry.max.z)),
+    },
+  };
+}
+
 function validateWorldBuildGraph(value: WorldBuild, context: z.RefinementCtx): void {
   if (value.catalogResolution.semanticKernelHash !== value.semanticKernelHash)
     context.addIssue({
@@ -716,7 +1161,12 @@ function validateWorldBuildGraph(value: WorldBuild, context: z.RefinementCtx): v
       path: ["instances"],
       message: "World build instances must be the exact meso and micro union",
     });
-  const statuses = [value.catalogResolution.status, value.meso.status, value.micro.status];
+  const statuses = [
+    value.foundation.status,
+    value.catalogResolution.status,
+    value.meso.status,
+    value.micro.status,
+  ];
   const expectedStatus = statuses.includes("rejected")
     ? "rejected"
     : statuses.includes("incomplete")
@@ -728,6 +1178,39 @@ function validateWorldBuildGraph(value: WorldBuild, context: z.RefinementCtx): v
       path: ["status"],
       message: "World build status does not reflect its compilation gates",
     });
+  const taskById = new Map(value.tasks.map((entry) => [entry.taskId, entry] as const));
+  if (taskById.size !== value.tasks.length)
+    context.addIssue({
+      code: "custom",
+      path: ["tasks"],
+      message: "World build repeats task identities",
+    });
+  for (const task of value.tasks)
+    for (const dependencyId of task.dependencyTaskIds)
+      if (!taskById.has(dependencyId))
+        context.addIssue({
+          code: "custom",
+          path: ["tasks"],
+          message: `Task ${task.taskId} has an unknown dependency`,
+        });
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+  const visit = (taskId: string): void => {
+    if (visited.has(taskId)) return;
+    if (visiting.has(taskId)) {
+      context.addIssue({
+        code: "custom",
+        path: ["tasks"],
+        message: "Compilation task dependencies contain a cycle",
+      });
+      return;
+    }
+    visiting.add(taskId);
+    for (const dependency of taskById.get(taskId)?.dependencyTaskIds ?? []) visit(dependency);
+    visiting.delete(taskId);
+    visited.add(taskId);
+  };
+  for (const taskId of taskById.keys()) visit(taskId);
 }
 
 function verifyHash(value: Record<string, unknown>, field: string, context: z.RefinementCtx): void {

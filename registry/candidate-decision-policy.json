@@ -1,0 +1,9 @@
+{
+  "kind": "CatalogCandidateDecisionPolicy",
+  "policyId": "validated_catalog_candidate_decision",
+  "minimumValidatedCandidates": 3,
+  "minimumMatchCount": 1,
+  "uncertainOutcome": "evidence_insufficient",
+  "allMismatchOutcome": "no_suitable_match",
+  "hash": "195ef9bd3ab1744f0981ea00a80d99a4fb91e88bc552ec8c8d8fef9eda6a10df"
+}

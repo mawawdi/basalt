@@ -16,6 +16,7 @@
     { "path": "packages/world-planning" },
     { "path": "packages/region-composition" },
     { "path": "packages/world-compiler" },
+    { "path": "packages/world-refinement" },
     { "path": "packages/roblox" },
     { "path": "packages/cli" },
     { "path": "tsconfig.test.json" }

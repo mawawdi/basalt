@@ -1,137 +1,171 @@
-# Visual and Catalog Evidence
+# Visual system
 
-This document owns Basalt’s visual, physical-evidence, catalog-entry, and
-admission policies. The implemented dataflow lives in
-[Architecture](ARCHITECTURE.md); unfinished qualification work lives in the
-[Roadmap](ROADMAP.md).
+Basalt treats visual quality as hierarchical art direction plus measurable realization,
+not as a bag of asset labels.
 
-Visual compilation keeps denotation, realization form, state, affordance,
-treatment, contextual role, placement, interfaces, style, and evidence level
-orthogonal. Neither a noun nor an embedding is a placement contract.
+## Hierarchy
 
-## Entry kinds
+- **World:** palette, climate, atmosphere, silhouette language, density, and global
+  landmarks.
+- **Region:** biome or district identity, terrain profile, route rhythm, focal hierarchy,
+  and transitions to neighbors.
+- **Meso:** lots, structures, vegetation clusters, shoreline bands, room programs, and
+  repeated motifs.
+- **Micro:** individual props, attachments, trim, clutter, decals, material variation,
+  and local effects.
 
-- `substitution_set`: independently interchangeable realizations of one complete
-  semantic and placement signature.
-- `assembly_kit`: leaf providers plus authored roles, interfaces, lattice,
-  transitions, terminal rules, topology, and coverage.
-- `attachment_set`: members that require a host surface or typed socket.
-- `route_kit`: network components and admitted topology transitions.
-- `environment_realizer`: typed sky, atmosphere, water-surface, overhead, or
-  far-field realization.
-- `collection`: authoring organization that runtime resolution cannot return.
+Each level seals its constraints and references its parent direction. A beautiful region
+that contradicts the world palette is not coherent; a good asset cannot repair a broken
+composition.
 
-Multi-object dumps, broken objects, animation-only payloads, ambiguous components,
-and unbound collision geometry remain incomplete until their exact identity and
-use are adjudicated. A collision companion is evidence attached to a renderable
-asset, never a standalone entry.
+## Asset evidence
 
-## Evidence channels
+Every source identity is measured independently of its semantic admission. Measurement
+records source bytes and rights, axes and units, Q32.32 metric bounds, geometry and parts,
+materials and PBR evidence, support/contact evidence, collision companions, and measured
+interfaces. Collision companions are evidence, never catalog entries.
 
-Measurement is independent of semantic admission. Each source identity retains
-source and rights hashes, coordinate frame, units, transforms, bounds, parts,
-topology, deformation/rest-pose state, material/PBR channels, contact/support
-facts, collision geometry, and measured interfaces. Measurement proves geometry;
-an author declares interface meaning. Pose-dependent support and interfaces are
-refused rather than inferred from a skinned rest pose.
+Canonical review evidence contains twelve deterministic views:
 
-Evidence remains separated by what it can prove:
+- eight azimuths at 25 degrees elevation;
+- four offset azimuths at 55 degrees elevation;
+- RGB, silhouette/alpha, normalized depth, and surface-normal channels;
+- exact camera, renderer, lighting, material-mode, and source hashes;
+- one deterministic contact sheet.
 
-| Channel      | Purpose                                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------------------------- |
-| Integrity    | Parse closure, empty or degenerate geometry, components, animation, skinning, and external resources      |
-| Geometry     | Point or mesh samples, normals, topology, connected components, oriented bounds, and metric compatibility |
-| Appearance   | Canonical multiview RGB and appearance features                                                           |
-| Material     | Unlit base color, UV coverage, texture/PBR channels, transparency, and material count                     |
-| Shape        | Silhouette, normalized depth, normals, and shape features independent of texture                          |
-| Installation | Contact surfaces, support direction, sockets, collision companions, and host requirements                 |
-| Semantics    | Hypotheses grounded in exact evidence and the pinned semantic module and lexicon                          |
+Embedded and external glTF textures must resolve before evidence is accepted. A renderer
+that substitutes black placeholders makes the visual gate incomplete rather than
+misclassifying the asset.
 
-Renderer, camera, lighting, material mode, source, and implementation hashes bind
-render receipts, together with an explicit channel-encoding hash. Existing evidence
-is reusable only when every relevant input hash matches. The canonical 12-view
-outputs bind lit RGBA, alpha silhouette, linear normalized depth, world-space
-encoded surface normals, and linear unlit base color. Contact sheets are derived
-review UI and changing their layout does not invalidate those views.
-Origin archives, vendor folders, and directory paths are absent from inference and
-review contracts. Original GLB basenames are the one deliberate exception: pilot
-preparation aggregates every name observed for the same content bytes,
-normalizes it with a hashed deterministic tokenizer, and binds the resulting
-`CatalogSourceNameHint` into each model request. The artifact is explicitly
-non-authoritative and pack-neutral. It may improve candidate generation for nouns,
-components, numbered alternatives, and `_Collision` companions, but it cannot
-decide semantics, placement, entry kind, or substitution membership. Conflicting
-names are retained as disagreement evidence; image and measurement evidence remain
-independent channels.
+## Open-vocabulary metadata
 
-## Admission policy
+The metadata adapter receives a measured decimal summary plus either four cardinal RGB
+views or the canonical twelve, resized by a hashed preprocessor to a maximum 384-pixel
+long edge. Twelve is the safe default until production qualification demonstrates that
+four is non-inferior. Qualification compares:
 
-A substitution set is a relation stronger than shared classification or visual
-similarity. Every member must independently satisfy the complete denotation,
-realization, state, affordance, treatment, placement, interface, evidence, metric,
-rights, and style signature. The set exposes only capability intersections and
-measured envelopes. False splits reduce variety; false merges can silently break a
-world, so admission prefers abstention and smaller sets.
+- `visual_only`, which cannot expose any source name; and
+- `visual_and_name`, which may receive original basenames marked as weak hints.
 
-Model and embedding adapters emit non-authoritative receipts with confidence,
-abstention, provenance, and resource use. Compiler authority requires an explicit
-curator assertion or a separately qualified policy receipt. Qualification must be
-based on leakage-group-disjoint calibration and evaluation, factorized facet
-predictions, explicit unknown/shift behavior, pairwise substitution evidence, a
-whole-set invariant check, active discovery review, and a distinct random
-acceptance audit whose risk is declared. Exact and near-duplicate geometry and
-contained components must remain in one split. Shared material payloads are
-contextual stratification evidence rather than identity proof because one atlas
-can serve many unrelated objects. Source-pack membership is neither a feature nor
-a grouping rule. Model
-self-confidence and raw majority vote cannot become authority.
+Pack, archive, and directory identities are never model or ranking inputs. The compact
+receipt contains a caption, primary and alternate nouns, materials, colors, style terms,
+visible text, plausible uses and environments, visual composition, a source-role
+hypothesis, completeness relative to intended use, visible damage, and issue notes.
+Completeness and damage are independent: a purposeful ruin component may be both
+intentionally partial and visibly damaged. Scale, axes, dimensions, support/contact, part
+counts, and triangles come from the bound measurement summary and are not guessed by the
+model. Every uncertain field explicitly abstains. Confidence scores and magic unknown
+labels are forbidden.
 
-The implemented leakage pre-pass uses canonical metric geometry for exact matches,
-records exact texture bytes as material context, and uses a source-neutral
-perceptual signature over silhouette, normalized depth, and surface-normal views
-for near duplicates.
-It compares every rendered source pair at the sealed threshold and binds the image
-decoder and worker bytes. This is a split-safety signal, not semantic evidence and
-not proof of substitutability.
+The current writer and validator are independently selected roles. Qwen3-VL 8B is the
+default for both; Qwen3-VL 32B remains a challenger until production qualification shows
+a material role-specific gain. Receipts bind the source,
+measurement, render, prompt, schema, preprocessor, adapter, worker, model commit, raw
+output, and resource use. They have `compilerAuthority: false`.
 
-The implemented qualification pilot uses separately hashed DINOv3 shape features,
-SigLIP2 image-text evidence, and basename weak supervision. It emits visual-only,
-name-only, and combined hypotheses, calibrates each facet and declared dependency
-group against leakage-disjoint human references, applies bounded prediction sets
-and novelty refusal, and requires explicit pairwise compatibility before a
-substitution proposal exists. Discovery review is deliberately non-statistical;
-acceptance uses a separate deterministic finite-population sample and exact audit
-receipts. Until those human references and audits meet the policy, qualification
-remains `incomplete`. The rationale is in the
-[admission research](research/catalog-admission-state-of-the-art.md).
+## Hybrid search
 
-## Neural fulfillment
+Every measured asset with an original basename can enter the index before learned
+enrichment is complete. Search applies hard rights, size, triangle, and byte filters before
+ranking. It then:
 
-Neural 3D output follows the same evidence spine as imported assets. A generation
-receipt is only source evidence: raw provider coordinates may be normalized and
-unscaled, and the receipt records that fact. `asset-production` owns orientation
-baking, scale establishment, geometry repair, UVs, PBR baking, and previews;
-`asset-inspection` measures the finished GLB. A provider response cannot admit
-itself.
+1. runs independent field-weighted BM25 channels over weak basename tokens and available
+   metadata;
+2. ranks query text against aggregate SigLIP2 image embeddings when present;
+3. fuses the top 200 from available channels with reciprocal-rank fusion at `k = 60`,
+   normalized by each document's available channels;
+4. breaks ties by source-content hash; and
+5. optionally asks the selected VLM to validate at most eight candidates against the
+   exact requirement and all twelve views.
 
-Style mismatch and missing coverage are different operations. Restyling binds the
-retained source-geometry hash and changes material evidence. Extending or
-synthesizing a substitution set creates independently admissible members with
-content-derived seeds. A failed restyle returns evidence to planning rather than
-silently becoming whole-object regeneration. Provider names and transports remain
-outside catalog and compiler contracts.
+Reference-asset queries use DINOv3 shape embeddings instead of SigLIP text/image vectors.
+They return `incomplete` if DINO evidence is absent; DINO is not required for text search.
+Per-view vectors are optional diagnostics; canonical aggregate matrices are little-endian
+quantized `int16` blobs in the local CAS. Metadata style matches affect rank but do not
+silently exclude an asset. Validator results annotate the base rank as `match`,
+`uncertain`, or `mismatch`; evidence is never discarded.
 
-## Style and placement
+Nearest-neighbor retrieval never decides that an asset is suitable. A separately hashed,
+frozen decision policy considers the bounded validated candidates and returns
+`suitable_match`, `evidence_insufficient`, or `no_suitable_match`. An uncertain candidate
+prevents a conclusive no-match claim.
 
-Style profiles are independent of semantics. The neutral profile preserves source
-shape, materials, and measured detail without inventing art direction.
+Search remains authoring evidence. It cannot create a concept, admitted assertion,
+catalog entry, or substitution set. Hidden affordances, sockets, collision behavior, and
+assembly semantics stay incomplete without measured or engine evidence.
 
-Every placement uses one typed intent: single, surface scatter, cluster, along
-route, surface grid, socket attachment, wall attachment, route network, assembly,
-or environment layer. Intent kinds have exhaustive validator and realizer maps; no
-kind degrades into scatter. Occupancy uses full 3D bounds and measured narrow-phase
-geometry. Attachments use qualified `{instanceId, socketId}` endpoints.
+## Assembly context
 
-Basalt makes no visibility claim until a real visibility solver exists. Catalog
-storage and recovery are defined only in
-[Architecture](ARCHITECTURE.md#storage-and-recovery).
+Per-asset renders often cannot reveal whether a mesh is a whole object, one module, a
+collision companion, or a piece intended to mate with another. Context requests therefore
+group 2–32 assets from auditable basename stems, metric/interface compatibility, and bounded
+retrieval. Pack and directory identity never supply meaning.
+
+A request may include attributed source prefabs or demonstrated assemblies, exact
+component transforms and parent/child relationships, authored role declarations, and
+supporting documentation. Every source and claim binds an identity and evidence hash.
+Observed context claims without evidence are invalid. The interpreter may propose
+whole/component relationships, roles, mates, aggregates, collision companions, or visual
+alternatives, but it must abstain when isolated or contextual evidence is insufficient.
+A deterministic construction-eligibility assessment turns this into a review queue; it
+does not admit an assertion or entry.
+
+## Catalog realization
+
+Style profiles are orthogonal to semantic identity and placement. Resolution first checks
+exact or descendant semantic compatibility, entry kind, realization form, state,
+treatment, affordances, placement, interfaces, rights, resources, and metric bounds.
+Only survivors are ranked deterministically.
+
+A substitution set is valid only when every member independently satisfies the complete
+site signature. Member weights are canonical integers and participate in content-hash
+seeded selection. Components that require assembly, a host surface, or a route topology
+belong to their typed entry instead.
+
+Shared full-3D occupancy uses transformed bounds, collision evidence, surfaces, and
+vertical strata. Unknown surfaces, regions, routes, normals, interfaces, or endpoints are
+rejected instead of coerced. Required underfill is incomplete and visible in diagnostics.
+
+Route appearance is independent of route construction. A woodland trail, paved road, and
+boardwalk may share a destination while using different materials, colors, terrain
+treatments, and support behavior. Every grounded route emits a material mask and
+vegetation-clearance mask from its resolved footprint; an elevated route clears vegetation
+but preserves terrain. Radius-constrained bends and authored junctions are composition
+evidence, not catalog assets. Smooth ordinary bends use deterministic five-degree-or-finer
+sampling and mitered native spans. Designed elevation profiles use one-degree-or-finer pitch
+sampling and full-depth profile miters, so a changing grade does not expose each native
+span's end face. Terrain-following routes retain real relief, and visible tread boundaries
+remain intentional only for explicit stepped construction. The deterministic grounding gate
+establishes geometry, not visual harmony; player-view route readability remains a separate
+visual observation.
+
+At the Roblox boundary, the visible route top must clear reconstructed smooth terrain while
+the route body's underside determines whether a void is exposed. Small voxel-only residuals
+are covered by deterministic grounding geometry in the same appearance; they are not hidden
+by widening a tolerance. Both the residual and the added depth remain available in the import
+diagnostic report for visual review.
+
+## Neural asset production
+
+TRELLIS.2, Hunyuan3D 2.1, and Pixel3D remain provider adapters for offline catalog-gap
+fulfillment. Generation and retexturing are not part of macro world compilation. Every
+result is content-addressed and must pass the same measurement, render, review, rights,
+and admission gates as a sourced asset. A generated output cannot automatically define
+semantics or overwrite an entry.
+
+## Evidence scalability
+
+Metadata, embedding, and validation work is split into deterministic resumable shards.
+Each shard is bounded by all of the following:
+
+- at most eight assets;
+- at most 192 evidence files;
+- at most 64 MiB of input evidence;
+- a fixed preprocessed-pixel ceiling derived from a 384-pixel long edge.
+
+The asset count is a checkpoint ceiling, not a GPU batch size. Actual inference may be
+sequential. One Modal GPU container and at most four local CPU tasks are allowed. The
+tracked 32-asset fixture is a smoke test only. Corpus execution remains locked until the
+larger pooled, leakage-isolated qualification covers mixed enrichment, independent writer
+and validator roles, four versus twelve views, confusers, no-match cases, and
+evidence-insufficient cases.

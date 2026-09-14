@@ -1,0 +1,22 @@
+{
+  "kind": "CatalogModelRolePolicy",
+  "metadataWriter": {
+    "modelId": "qwen3_vl_8b",
+    "viewSet": "canonical_twelve"
+  },
+  "requirementValidator": {
+    "modelId": "qwen3_vl_8b",
+    "viewSet": "canonical_twelve"
+  },
+  "challengers": [
+    {
+      "role": "metadata_writer",
+      "modelId": "qwen3_vl_32b"
+    },
+    {
+      "role": "requirement_validator",
+      "modelId": "qwen3_vl_32b"
+    }
+  ],
+  "hash": "e44e98cef4708e2412daa0f5aa8338db63eca185428708b73cc9a399b187d8d9"
+}

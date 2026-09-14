@@ -1,5 +1,10 @@
 --!strict
 local ImportSequence = require("../src/Basalt/ImportSequence")
+local BoundedQuery = require("../src/Basalt/BoundedQuery")
+local RouteGeometry = require("../src/Basalt/RouteGeometry")
+local RouteGrounding = require("../src/Basalt/RouteGrounding")
+local TransactionBoundary = require("../src/Basalt/TransactionBoundary")
+local Roblox = require("@lune/roblox")
 
 local failures = 0
 local function check(name: string, body: () -> ()): ()
@@ -65,6 +70,134 @@ check("step budget is a hard bound", function()
 		)
 	end)
 	assert(not ok and string.find(tostring(message), "bounded step budget") ~= nil)
+end)
+
+check("terrain collision readiness waits only for missing query results", function()
+	local reads = 0
+	local waits = 0
+	local result = BoundedQuery.awaitResult(
+		function(): any
+			reads += 1
+			return if reads == 3 then "ready" else nil
+		end,
+		function(): () waits += 1 end,
+		4
+	)
+	assert(result == "ready" and reads == 3 and waits == 2)
+end)
+
+check("terrain collision readiness terminates at its frame bound", function()
+	local reads = 0
+	local waits = 0
+	local result = BoundedQuery.awaitResult(
+		function(): any
+			reads += 1
+			return nil
+		end,
+		function(): () waits += 1 end,
+		4
+	)
+	assert(result == nil and reads == 5 and waits == 4)
+end)
+
+check("skewed route quads lower through an orthonormal frame", function()
+	-- Exact axes from the Studio segment that exposed the former raw-matrix
+	-- lowering bug. Its cross-section is measurably non-perpendicular to travel.
+	local travel = Roblox.Vector3.new(
+		0.9691072910723079,
+		-0.24216732206769034,
+		0.04675517632366488
+	)
+	local rawLateral = Roblox.Vector3.new(
+		-0.04817992765151553,
+		-0.019996001199600166,
+		0.9986385004131977
+	)
+	assert(math.abs(rawLateral:Dot(travel)) > 0.004)
+	local lateral = (rawLateral - travel * rawLateral:Dot(travel)).Unit
+	local up = lateral:Cross(travel).Unit
+	local frame = Roblox.CFrame.fromMatrix(Roblox.Vector3.zero, lateral, up)
+	local part = Roblox.Instance.new("Part")
+	part.CFrame = frame
+	assert(math.abs(lateral:Dot(travel)) < 0.000001)
+	assert(math.abs(up:Dot(travel)) < 0.000001)
+	assert(math.abs(up:Dot(lateral)) < 0.000001)
+	assert(part.CFrame.RightVector:Dot(frame.RightVector) > 0.99999)
+	assert(part.CFrame.UpVector:Dot(frame.UpVector) > 0.99999)
+	assert(part.CFrame.LookVector:Dot(frame.LookVector) > 0.99999)
+end)
+
+check("grounding measures exposed space beneath the road body, not its travel top", function()
+	-- Exact failure reported by Studio: the top was 0.2371m above terrain,
+	-- but the 0.16m road body left only 0.0771m exposed underneath it.
+	local studMeters = 0.28
+	local topClearanceStuds = 0.2371 / studMeters
+	local bodyClearanceStuds = topClearanceStuds - 0.16 / studMeters
+	local maximumGapStuds = 0.12 / studMeters
+	local observationToleranceStuds = 0.1
+	assert(math.abs(bodyClearanceStuds * studMeters - 0.0771) < 0.0000001)
+	assert(RouteGrounding.withinTolerance(
+		bodyClearanceStuds,
+		maximumGapStuds,
+		observationToleranceStuds
+	))
+	local depth = RouteGrounding.initialDepthStuds(bodyClearanceStuds, 1, 0.02)
+	assert(depth > bodyClearanceStuds)
+end)
+
+check("profile miters preserve their sealed sloped extension", function()
+	local extensionMeters = 0.16 * math.tan(math.rad(1) / 2)
+	local gradeRatio = 0.25
+	local horizontalMeters, verticalMeters = RouteGeometry.profileMiterOffset(
+		extensionMeters,
+		gradeRatio
+	)
+	assert(math.abs(math.sqrt(horizontalMeters ^ 2 + verticalMeters ^ 2) - extensionMeters) < 1e-12)
+	assert(math.abs(verticalMeters / horizontalMeters - gradeRatio) < 1e-12)
+end)
+
+check("commit finalizes only after bridge acknowledgement", function()
+	local order = {}
+	local outcome = TransactionBoundary.commit(
+		function(): () table.insert(order, "prepare") end,
+		function(): any
+			table.insert(order, "acknowledge")
+			return { state = "complete" }
+		end,
+		function(): (boolean, any)
+			table.insert(order, "confirm")
+			return false, nil
+		end,
+		function(): () table.insert(order, "finalize") end
+	)
+	assert(outcome.state == "complete")
+	assert(table.concat(order, ",") == "prepare,acknowledge,finalize")
+end)
+
+check("commit remains reversible when acknowledgement is rejected", function()
+	local finalized = false
+	local ok, message = pcall(function()
+		TransactionBoundary.commit(
+			function(): () end,
+			function(): any error("rejected") end,
+			function(): (boolean, any) return false, nil end,
+			function(): () finalized = true end
+		)
+	end)
+	assert(not ok and string.find(tostring(message), "rejected") ~= nil)
+	assert(not finalized)
+end)
+
+check("commit recovers a lost acknowledgement by exact discovery", function()
+	local finalized = false
+	local recovered = { state = "complete", recovered = true }
+	local outcome = TransactionBoundary.commit(
+		function(): () end,
+		function(): any error("response lost") end,
+		function(): (boolean, any) return true, recovered end,
+		function(): () finalized = true end
+	)
+	assert(outcome == recovered and finalized)
 end)
 
 if failures > 0 then error(failures .. " Lune checks failed") end

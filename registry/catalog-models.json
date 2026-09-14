@@ -1,0 +1,37 @@
+{
+  "kind": "CatalogModelDeclarations",
+  "models": [
+    {
+      "modelId": "dinov3_vitl16_lvd1689m",
+      "source": "huggingface",
+      "repository": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+      "sourceCommitHash": "ea8dc2863c51be0a264bab82070e3e8836b02d51",
+      "capabilities": ["shape_similarity"],
+      "accelerator": "L40S"
+    },
+    {
+      "modelId": "qwen3_vl_32b",
+      "source": "huggingface",
+      "repository": "Qwen/Qwen3-VL-32B-Instruct",
+      "sourceCommitHash": "0cfaf48183f594c314753d30a4c4974bc75f3ccb",
+      "capabilities": ["context_interpreter", "metadata_writer", "requirement_validator"],
+      "accelerator": "A100-80GB"
+    },
+    {
+      "modelId": "qwen3_vl_8b",
+      "source": "huggingface",
+      "repository": "Qwen/Qwen3-VL-8B-Instruct",
+      "sourceCommitHash": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+      "capabilities": ["context_interpreter", "metadata_writer", "requirement_validator"],
+      "accelerator": "L40S"
+    },
+    {
+      "modelId": "siglip2_so400m_384",
+      "source": "huggingface",
+      "repository": "google/siglip2-so400m-patch14-384",
+      "sourceCommitHash": "e8e487298228002f3d8a82e0cd5c8ea9c567f57f",
+      "capabilities": ["image_text_retrieval"],
+      "accelerator": "L40S"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
-import { lstat, mkdtemp, rm } from "node:fs/promises";
+import { lstat, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -54,6 +54,7 @@ async function main() {
       await execFile(binary, ["build", projectPath, "--output", output], execOptions);
       const artifact = await assertRegular(output, `${name} temporary Rojo build`);
       if (artifact.size === 0) throw new Error(`${name} temporary Rojo build is empty`);
+      if (name === "plugin") await verifyPluginArtifact(output);
     }
   } finally {
     await rm(temporary, { recursive: true, force: true, maxRetries: 3 });
@@ -61,6 +62,31 @@ async function main() {
   process.stdout.write(
     `Rojo check passed with ${renderedVersion.split("\n")[0]}: ${projects.map(([name]) => name).join(", ")}\n`,
   );
+}
+
+async function verifyPluginArtifact(path) {
+  const xml = await readFile(path, "utf8");
+  const modules = (
+    await readdir(resolve(root, "packages/roblox/plugin/src/Basalt"), {
+      withFileTypes: true,
+    })
+  )
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".luau"))
+    .map((entry) => entry.name.slice(0, -".luau".length))
+    .concat("EmbeddedConnection")
+    .sort();
+  for (const moduleName of modules) {
+    const marker = `<string name="Name">${moduleName}</string>`;
+    const count = xml.split(marker).length - 1;
+    if (count !== 1)
+      throw new Error(
+        `Rojo plugin must contain exactly one ${moduleName} module; observed ${count}`,
+      );
+  }
+  const helper = xml.indexOf("local function artifactObservation");
+  const firstCall = xml.indexOf('artifactObservation("route_junction"');
+  if (helper < 0 || firstCall < 0 || helper > firstCall)
+    throw new Error("Built plugin calls artifactObservation before its local declaration");
 }
 
 await main();

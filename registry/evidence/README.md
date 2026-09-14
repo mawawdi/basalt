@@ -1,15 +1,12 @@
 # Retained catalog evidence
 
-`basalt catalog commit` copies the exact measurement, pilot-plan, request,
-render-index, source-name hint, hypothesis, feature, calibration, prediction,
-substitution, discovery-review, acceptance-audit, and qualification metadata used
-by the current catalog here by content hash. These files preserve runtime inputs
-and admission provenance in Git. Source-name hints are basename-only,
-non-authoritative weak supervision; pack and directory identity are excluded.
-Source GLBs and rendered images remain external content-addressed payloads.
-Unreferenced JSON evidence is removed after a new root is published because Git
-supplies history.
+`basalt catalog commit` retains only the exact measured-asset set and canonical
+render index required to reproduce catalog authority. Learned metadata,
+embeddings, search results, and validator verdicts stay outside the authority
+root.
 
-This directory is not a binary artifact store. Bulk payloads are local-only in the
-current baseline and require independent backup; see
-[storage and recovery](../../docs/ARCHITECTURE.md#storage-and-recovery).
+After the search benchmark passes, `basalt catalog metadata commit` writes compact
+metadata shards below `catalog-search-metadata/`; those shards remain explicitly
+non-authoritative. GLBs, rendered images, and embedding matrices remain in the
+local content-addressed store. Unreferenced hashed JSON evidence is removed when
+the replaceable catalog root is published because Git supplies history.

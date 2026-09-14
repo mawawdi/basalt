@@ -1,0 +1,24 @@
+{
+  "kind": "CatalogSearchPolicy",
+  "policyId": "hybrid_catalog_search",
+  "fieldWeights": {
+    "alternateNouns": 3,
+    "caption": 3,
+    "colors": 2,
+    "environments": 1,
+    "materials": 2,
+    "primaryNoun": 4,
+    "sourceBasename": 1,
+    "styleTerms": 2,
+    "useCases": 1,
+    "visibleText": 2
+  },
+  "lexicalCandidateLimit": 200,
+  "embeddingCandidateLimit": 200,
+  "reciprocalRankConstant": 60,
+  "fusionNormalization": "per_document_available_channels",
+  "maximumResults": 100,
+  "maximumValidationCandidates": 8,
+  "tokenizerImplementationHash": "7a4bb77177b8451358010ab61d8f9d2914f72ff50e23e6939e5fccdafcd59413",
+  "hash": "bd2773d1b17616ddbbb672bbbdaa83d6e9c8cac077e86a3a583b208bc3cb1659"
+}

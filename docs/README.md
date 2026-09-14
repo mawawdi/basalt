@@ -1,44 +1,39 @@
-# Documentation Authority
+# Basalt documentation
 
-This page owns the documentation map. Basalt has one current design; research
-notes explain decisions and the roadmap records work that does not exist yet.
+These documents describe the one implemented baseline. They are not a journal and do
+not retain superseded contracts, command names, migrations, or compatibility paths.
 
-## Current authority
+## Authority map
 
-| Document                        | Sole responsibility                                                                            |
-| ------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [Architecture](ARCHITECTURE.md) | Implemented package boundaries, artifact flow, compiler behavior, storage, and Roblox boundary |
-| [Product thesis](BASALT.md)     | Product definition and non-negotiable invariants                                               |
-| [Visuals](VISUALS.md)           | Catalog entry meaning, visual/physical evidence, admission policy, style, and placement        |
-| [Evaluations](EVALS.md)         | Gate semantics, evidence levels, automated claims, and creator-run gates                       |
-| [Roadmap](ROADMAP.md)           | Unimplemented work, ordered milestones, and known limits                                       |
-| [Research index](RESEARCH.md)   | Non-authoritative rationale and external source material                                       |
+- [ARCHITECTURE.md](ARCHITECTURE.md) — package boundaries, artifact flow, and runtime
+  architecture.
+- [BASALT.md](BASALT.md) — product thesis and non-negotiable invariants.
+- [VISUALS.md](VISUALS.md) — art direction, asset evidence, metadata, search, and visual
+  realization.
+- [EVALS.md](EVALS.md) — gate statuses, evidence levels, benchmark design, and claims.
+- [RESEARCH.md](RESEARCH.md) — current research rationale and source index.
+- [TASKS.md](../TASKS.md) — the only future-work and status authority.
 
-The tracked semantic registry under `registry/semantics/` and the public schemas
-in `packages/` are executable authority. When they and an active document
-disagree, that is a documentation defect to fix; a research note never overrides
-either one.
+Tracked JSON is authoritative where a document names a registry contract. In
+particular, semantic authority lives under `registry/semantics`, catalog authority is
+rooted at `registry/catalog.json`, and qualified corpus search evidence is rooted at
+`registry/catalog-search.json`. Before corpus enrichment, progressive local search uses
+the rebuildable index at `.basalt/catalog/search/index.json`.
 
-## Status rules
+## Reading order
 
-- `README.md` is an entry point and command reference, not a second architecture.
-- Current behavior belongs in the active owner above.
-- Future behavior belongs only in the roadmap. Active documents may name a known
-  limitation, but must link to the roadmap instead of presenting a proposal as
-  implemented.
-- Files under `docs/research/` are rationale and recommendations. Files under
-  `docs/sources/` are preserved source surveys. Neither directory is compiler or
-  product authority.
-- Superseded proposals are deleted after their accepted decisions are represented
-  by the current owner. Git is the archive.
-- Basalt has one unversioned contract. Documentation must not preserve removed
-  schemas, commands, package names, or compatibility paths.
+Read `BASALT.md`, then `ARCHITECTURE.md`. Read `VISUALS.md` for catalog work and
+`EVALS.md` before making or interpreting quality claims. Read `TASKS.md` for work that
+is not yet implemented.
 
-## Current storage decision
+## Documentation rules
 
-Catalog authority and compact evidence are commit-ready in Git. Bulk source and
-render payloads are content-identified but local-only. Basalt has no configured
-remote content-addressed store and makes no clean-clone recovery claim for those
-payloads. See [Architecture: storage and recovery](ARCHITECTURE.md#storage-and-recovery)
-for the exact implemented boundary; remote replication remains deferred in the
-[roadmap](ROADMAP.md#deferred-infrastructure).
+- A current contract is described once and linked elsewhere.
+- Content hashes are identity and provenance, not schema editions.
+- External standards may name their own formats; Basalt-owned protocols are
+  unversioned.
+- Research notes must declare their status and must not silently override implemented
+  architecture.
+- `TASKS.md` is the only active backlog and work-status authority. Historical research
+  may retain recommendations, and evaluation documents may define acceptance protocols.
+- Generated `.basalt` state is rebuildable and is not documentation authority.

@@ -3,6 +3,7 @@ local BridgeClient = require(script.Parent.BridgeClient)
 local Constants = require(script.Parent.Constants)
 local ImportSequence = require(script.Parent.ImportSequence)
 local PluginPanel = require(script.Parent.PluginPanel)
+local TransactionBoundary = require(script.Parent.TransactionBoundary)
 local WorldLowering = require(script.Parent.WorldLowering)
 
 local ConnectorRuntime = {}
@@ -14,7 +15,20 @@ local function compact(value: any): string
 	return if #message > 180 then string.sub(message, 1, 177) .. "..." else message
 end
 
-local function readback(transaction: any, status: "complete" | "incomplete", observations: any, diagnostics: { string }): any
+local function diagnostic(value: any): string
+	local message = tostring(value):gsub("[\r\n]+", " ")
+	local marker = string.find(message, "Basalt connector: ", 1, true)
+	if marker ~= nil then message = string.sub(message, marker + #"Basalt connector: ") end
+	return if #message > 1024 then string.sub(message, 1, 1021) .. "..." else message
+end
+
+local function readback(
+	transaction: any,
+	status: "complete" | "incomplete",
+	observations: any,
+	diagnostics: { string },
+	traceEvents: { any }
+): any
 	return {
 		kind = "RobloxReadback",
 		sessionHash = transaction.sessionHash,
@@ -23,11 +37,14 @@ local function readback(transaction: any, status: "complete" | "incomplete", obs
 		status = status,
 		instances = observations.instances or {},
 		artifacts = observations.artifacts or {},
+		constructedElements = observations.constructedElements or {},
+		constructedOpenings = observations.constructedOpenings or {},
+		traceEvents = traceEvents,
 		diagnostics = diagnostics,
 	}
 end
 
-local function applyTransaction(transaction: any, session: any): any
+local function applyTransaction(transaction: any, session: any, shouldCancel: () -> boolean): any
 	local observations = { instances = {}, artifacts = {} }
 	if transaction.stage == "preflight" then
 		WorldLowering.preflight(transaction, session)
@@ -38,11 +55,41 @@ local function applyTransaction(transaction: any, session: any): any
 	elseif transaction.stage == "readback" then
 		observations = WorldLowering.readback(transaction)
 	elseif transaction.stage == "commit" then
-		WorldLowering.commit(transaction)
+		return TransactionBoundary.commit(
+			function(): () WorldLowering.prepareCommit(transaction) end,
+			function(): any
+				return BridgeClient.postReadback(readback(
+					transaction,
+					"complete",
+					observations,
+					{},
+					WorldLowering.takeTraceEvents()
+				))
+			end,
+			function(): (boolean, any)
+				local connected, status = BridgeClient.discover()
+				local accepted = connected
+					and typeof(status) == "table"
+					and status.state == "complete"
+					and status.sessionHash == transaction.sessionHash
+					and status.worldBuildHash == transaction.worldBuildHash
+				return accepted, status
+			end,
+			function(): ()
+				if shouldCancel() then error("Basalt connector: import cancelled at the commit boundary") end
+				WorldLowering.finalizeCommit(transaction)
+			end
+		)
 	else
 		error("Basalt connector: unsupported import stage")
 	end
-	return BridgeClient.postReadback(readback(transaction, "complete", observations, {}))
+	return BridgeClient.postReadback(readback(
+		transaction,
+		"complete",
+		observations,
+		{},
+		WorldLowering.takeTraceEvents()
+	))
 end
 
 function ConnectorRuntime.start(pluginInstance: Plugin): ()
@@ -60,6 +107,7 @@ function ConnectorRuntime.start(pluginInstance: Plugin): ()
 	local alive = true
 	local importing = false
 	local cancelRequested = false
+	local restartRequired = false
 	local session: any = nil
 
 	local function progress(status: any): number
@@ -83,10 +131,22 @@ function ConnectorRuntime.start(pluginInstance: Plugin): ()
 	end
 
 	local function renderStatus(status: any): ()
-		session = status
-		if typeof(status) ~= "table" or typeof(status.state) ~= "string" then
+		if typeof(status) ~= "table"
+			or typeof(status.state) ~= "string"
+			or typeof(status.worldBuildHash) ~= "string"
+			or typeof(status.loweringGapCount) ~= "number"
+		then
+			session = nil
 			renderDisconnected()
 			return
+		end
+		session = status
+		if not importing
+			and status.state == "pending"
+			and typeof(status.progress) == "table"
+			and typeof(status.progress.complete) == "number"
+			and status.progress.complete > 0 then
+			restartRequired = true
 		end
 		if status.loweringGapCount > 0 then
 			panel:setState({
@@ -108,10 +168,10 @@ function ConnectorRuntime.start(pluginInstance: Plugin): ()
 				primaryEnabled = true,
 				stopVisible = false,
 			})
-		elseif status.state == "incomplete" then
+		elseif status.state == "incomplete" or restartRequired then
 			panel:setState({
 				title = "Import incomplete",
-				detail = "The failed stage remains selected; retry after addressing the diagnostic.",
+				detail = "Full diagnostics are in .basalt/roblox/import-report.json. Retry starts cleanly.",
 				tone = "error",
 				progress = progress(status),
 				primaryText = "Retry",
@@ -135,25 +195,39 @@ function ConnectorRuntime.start(pluginInstance: Plugin): ()
 		if importing or session == nil then return end
 		importing = true
 		cancelRequested = false
-		if session.state == "complete" or session.state == "incomplete" then
-			session = BridgeClient.restart()
-			WorldLowering.rollback()
-		end
 		task.spawn(function()
 			local ok, outcome = pcall(function()
+				if restartRequired or session.state == "complete" or session.state == "incomplete" then
+					WorldLowering.rollback()
+					session = BridgeClient.restart()
+					restartRequired = false
+				end
 				return ImportSequence.run(
 					function(beforeStep: (transaction: any) -> ()): any
 						local next = BridgeClient.getNext()
 						if next.transaction == nil then return next end
 						beforeStep(next.transaction)
 						local stepOk, result = pcall(function()
-							return applyTransaction(next.transaction, session)
+							return applyTransaction(next.transaction, session, function(): boolean
+								return cancelRequested or not alive
+							end)
 						end)
 						if not stepOk then
+							local traceEvents = WorldLowering.takeTraceEvents()
 							WorldLowering.rollback()
-							pcall(function()
-								BridgeClient.postReadback(readback(next.transaction, "incomplete", { instances = {}, artifacts = {} }, { compact(result) }))
+							restartRequired = true
+							local reported = pcall(function()
+								BridgeClient.postReadback(readback(next.transaction, "incomplete", {
+									instances = {},
+									artifacts = {},
+									constructedElements = {},
+									constructedOpenings = {},
+								}, { diagnostic(result) }, traceEvents))
 							end)
+							if not reported then
+								local connected = BridgeClient.discover()
+								if connected then pcall(function() BridgeClient.cancel() end) end
+							end
 							error(result)
 						end
 						return result
@@ -172,14 +246,20 @@ function ConnectorRuntime.start(pluginInstance: Plugin): ()
 						})
 					end,
 					function(status: any, _steps: number): () session = status end,
-					function(): boolean return cancelRequested or not alive end,
+					function(): boolean
+						if not cancelRequested and alive then return false end
+						restartRequired = true
+						pcall(function() BridgeClient.cancel() end)
+						WorldLowering.rollback()
+						return true
+					end,
 					Constants.MAX_TRANSACTIONS
 				)
 			end)
 			importing = false
 			if not alive then return end
 			if not ok then
-				warn("Basalt connector: " .. compact(outcome))
+				warn("Basalt connector: " .. compact(outcome) .. " (full report: .basalt/roblox/import-report.json)")
 				local connected, status = BridgeClient.discover()
 				if connected then renderStatus(status) else renderDisconnected() end
 			elseif outcome.status ~= nil then
@@ -195,8 +275,6 @@ function ConnectorRuntime.start(pluginInstance: Plugin): ()
 	panel:onStop(function()
 		if not importing then return end
 		cancelRequested = true
-		pcall(function() BridgeClient.cancel() end)
-		WorldLowering.rollback()
 	end)
 	renderDisconnected()
 

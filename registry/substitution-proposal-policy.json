@@ -1,0 +1,9 @@
+{
+  "kind": "CatalogSubstitutionProposalPolicy",
+  "policyId": "bounded_substitution_proposals",
+  "maximumCandidatePoolSize": 32,
+  "minimumImageTextSimilarityMillionths": 250000,
+  "minimumShapeSimilarityMillionths": 700000,
+  "maximumAxisRatioMillionths": 2000000,
+  "hash": "a90ecd70bee9275b24fe2e00907c2e14f25033db683abc1b0b2009376acaf653"
+}

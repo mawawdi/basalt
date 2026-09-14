@@ -9,3 +9,7 @@ package-lock.json
 # This implementation is hashed into every corpus-render receipt. Format it
 # explicitly before starting a corpus run; never mutate it underneath evidence.
 scripts/render-catalog-review.mjs
+
+# Frozen research assessments are retained byte-for-byte as evidence.
+docs/research/catalog-search-assessment.md
+docs/research/world-construction-and-refinement.md

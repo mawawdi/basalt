@@ -8,8 +8,6 @@ import {
   sealArtifact,
   verifyArtifactHash,
 } from "./artifact.js";
-import { CATALOG_FEATURE_CHANNEL_SCHEMA } from "./features.js";
-import { CATALOG_PREDICTION_FACET_SCHEMA } from "./facets.js";
 
 const RISK_TARGET_SCHEMA = z
   .object({
@@ -23,104 +21,141 @@ const RISK_TARGET_SCHEMA = z
   })
   .strict();
 
+/** Catalog authority policy deliberately contains no model, ranking, or search settings. */
 export const CATALOG_ADMISSION_POLICY_SCHEMA = z
   .object({
     kind: z.literal("CatalogAdmissionPolicy"),
     policyId: ASCII_ID_SCHEMA,
-    pilot: z
-      .object({
-        groupsPerRole: z.number().int().positive().max(10_000),
-        selectionSeedHash: HASH_SCHEMA,
-        requireStatic: z.literal(true),
-        requireSinglePart: z.literal(true),
-        requireSingleMaterial: z.literal(true),
-        requireBottomContact: z.literal(true),
-      })
-      .strict(),
-    prediction: z
-      .object({
-        requiredAssertionKinds: z.array(CATALOG_PREDICTION_FACET_SCHEMA).min(1).max(5),
-        minimumDependencyGroups: z.number().int().positive().max(16),
-        minimumCalibrationSamples: z.number().int().positive().max(100_000),
-        calibrationConfidenceMillionths: z.number().int().positive().max(999_999),
-        minimumPrecisionLowerBoundMillionths: z.number().int().positive().max(1_000_000),
-        maximumPredictionSetSize: z.number().int().positive().max(64),
-        noveltyThresholdMillionths: z.number().int().positive().max(1_000_000),
-      })
-      .strict(),
-    substitution: z
-      .object({
-        requiredFeatureChannels: z.array(CATALOG_FEATURE_CHANNEL_SCHEMA).min(1).max(3),
-        minimumSimilarityMillionthsByChannel: z.record(
-          CATALOG_FEATURE_CHANNEL_SCHEMA,
-          z.number().int().min(-1_000_000).max(1_000_000),
-        ),
-        maximumAxisRatioMillionths: z.number().int().min(1_000_000).max(100_000_000),
-      })
-      .strict(),
+    automaticAdmissionEnabled: z.literal(false),
+    automaticallyAdmissibleEntryKinds: z.array(CATALOG_ENTRY_KIND_SCHEMA).length(0),
     riskTargets: z.array(RISK_TARGET_SCHEMA).min(1).max(128),
-    automaticallyAdmissibleEntryKinds: z.array(CATALOG_ENTRY_KIND_SCHEMA).max(6),
     hash: HASH_SCHEMA,
   })
   .strict()
   .superRefine((value, context) => {
     verifyArtifactHash(value, context);
-    requireCanonicalValues(
-      value.prediction.requiredAssertionKinds,
-      String,
-      "required assertion kinds",
-      context,
-    );
-    requireCanonicalValues(
-      value.substitution.requiredFeatureChannels,
-      String,
-      "required feature channels",
-      context,
-    );
     requireCanonicalValues(value.riskTargets, (entry) => entry.riskId, "risk targets", context);
-    requireCanonicalValues(
-      value.automaticallyAdmissibleEntryKinds,
-      String,
-      "automatically admissible entry kinds",
-      context,
-    );
-    for (const channel of value.substitution.requiredFeatureChannels)
-      if (value.substitution.minimumSimilarityMillionthsByChannel[channel] === undefined)
-        context.addIssue({
-          code: "custom",
-          path: ["substitution", "minimumSimilarityMillionthsByChannel", channel],
-          message: `Missing similarity threshold for ${channel}`,
-        });
   });
 export type CatalogAdmissionPolicy = z.output<typeof CATALOG_ADMISSION_POLICY_SCHEMA>;
 
+export const CATALOG_SEARCH_FIELD_NAMES = [
+  "alternateNouns",
+  "caption",
+  "colors",
+  "environments",
+  "materials",
+  "primaryNoun",
+  "sourceBasename",
+  "styleTerms",
+  "useCases",
+  "visibleText",
+] as const;
+export const CATALOG_SEARCH_FIELD_NAME_SCHEMA = z.enum(CATALOG_SEARCH_FIELD_NAMES);
+
+const SEARCH_FIELD_WEIGHTS_SCHEMA = z
+  .object({
+    alternateNouns: z.literal(3),
+    caption: z.literal(3),
+    colors: z.literal(2),
+    environments: z.literal(1),
+    materials: z.literal(2),
+    primaryNoun: z.literal(4),
+    sourceBasename: z.literal(1),
+    styleTerms: z.literal(2),
+    useCases: z.literal(1),
+    visibleText: z.literal(2),
+  })
+  .strict();
+
+export const CATALOG_SEARCH_POLICY_SCHEMA = z
+  .object({
+    kind: z.literal("CatalogSearchPolicy"),
+    policyId: ASCII_ID_SCHEMA,
+    fieldWeights: SEARCH_FIELD_WEIGHTS_SCHEMA,
+    lexicalCandidateLimit: z.literal(200),
+    embeddingCandidateLimit: z.literal(200),
+    reciprocalRankConstant: z.literal(60),
+    fusionNormalization: z.literal("per_document_available_channels"),
+    maximumResults: z.literal(100),
+    maximumValidationCandidates: z.literal(8),
+    tokenizerImplementationHash: HASH_SCHEMA,
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyArtifactHash(value, context));
+export type CatalogSearchPolicy = z.output<typeof CATALOG_SEARCH_POLICY_SCHEMA>;
+
+/** Frozen policy for the requirement-specific accept/abstain stage after retrieval. */
+export const CATALOG_CANDIDATE_DECISION_POLICY_SCHEMA = z
+  .object({
+    kind: z.literal("CatalogCandidateDecisionPolicy"),
+    policyId: ASCII_ID_SCHEMA,
+    minimumValidatedCandidates: z.number().int().min(1).max(8),
+    minimumMatchCount: z.literal(1),
+    uncertainOutcome: z.literal("evidence_insufficient"),
+    allMismatchOutcome: z.literal("no_suitable_match"),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyArtifactHash(value, context));
+export type CatalogCandidateDecisionPolicy = z.output<
+  typeof CATALOG_CANDIDATE_DECISION_POLICY_SCHEMA
+>;
+
+export const CATALOG_SUBSTITUTION_PROPOSAL_POLICY_SCHEMA = z
+  .object({
+    kind: z.literal("CatalogSubstitutionProposalPolicy"),
+    policyId: ASCII_ID_SCHEMA,
+    maximumCandidatePoolSize: z.number().int().positive().max(32),
+    minimumImageTextSimilarityMillionths: z.number().int().min(-1_000_000).max(1_000_000),
+    minimumShapeSimilarityMillionths: z.number().int().min(-1_000_000).max(1_000_000),
+    maximumAxisRatioMillionths: z.number().int().min(1_000_000).max(100_000_000),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyArtifactHash(value, context));
+export type CatalogSubstitutionProposalPolicy = z.output<
+  typeof CATALOG_SUBSTITUTION_PROPOSAL_POLICY_SCHEMA
+>;
+
 export function sealCatalogAdmissionPolicy(
-  input: Omit<CatalogAdmissionPolicy, "kind" | "hash">,
+  input: Omit<
+    CatalogAdmissionPolicy,
+    "kind" | "automaticAdmissionEnabled" | "automaticallyAdmissibleEntryKinds" | "hash"
+  >,
 ): CatalogAdmissionPolicy {
   return sealArtifact(CATALOG_ADMISSION_POLICY_SCHEMA, {
     kind: "CatalogAdmissionPolicy" as const,
     ...input,
-    prediction: {
-      ...input.prediction,
-      requiredAssertionKinds: canonicalValues(
-        input.prediction.requiredAssertionKinds,
-        String,
-        "required assertion kinds",
-      ),
-    },
-    substitution: {
-      ...input.substitution,
-      requiredFeatureChannels: canonicalValues(
-        input.substitution.requiredFeatureChannels,
-        String,
-        "required feature channels",
-      ),
-    },
+    automaticAdmissionEnabled: false as const,
+    automaticallyAdmissibleEntryKinds: [],
     riskTargets: canonicalValues(input.riskTargets, (entry) => entry.riskId, "risk targets"),
-    automaticallyAdmissibleEntryKinds: canonicalValues(
-      input.automaticallyAdmissibleEntryKinds,
-      String,
-      "automatically admissible entry kinds",
-    ),
+  });
+}
+
+export function sealCatalogSearchPolicy(
+  input: Omit<CatalogSearchPolicy, "kind" | "hash">,
+): CatalogSearchPolicy {
+  return sealArtifact(CATALOG_SEARCH_POLICY_SCHEMA, {
+    kind: "CatalogSearchPolicy" as const,
+    ...input,
+  });
+}
+
+export function sealCatalogCandidateDecisionPolicy(
+  input: Omit<CatalogCandidateDecisionPolicy, "kind" | "hash">,
+): CatalogCandidateDecisionPolicy {
+  return sealArtifact(CATALOG_CANDIDATE_DECISION_POLICY_SCHEMA, {
+    kind: "CatalogCandidateDecisionPolicy" as const,
+    ...input,
+  });
+}
+
+export function sealCatalogSubstitutionProposalPolicy(
+  input: Omit<CatalogSubstitutionProposalPolicy, "kind" | "hash">,
+): CatalogSubstitutionProposalPolicy {
+  return sealArtifact(CATALOG_SUBSTITUTION_PROPOSAL_POLICY_SCHEMA, {
+    kind: "CatalogSubstitutionProposalPolicy" as const,
+    ...input,
   });
 }

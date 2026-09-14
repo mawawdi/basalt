@@ -1,36 +1,50 @@
-# Research Index
+# Research Never Tells the Compiler What to Do
 
-Everything indexed here is non-authoritative. Implemented truth and document
-ownership are defined by the [documentation map](README.md); accepted mechanics
-must be reflected in the relevant active document before code relies on them.
+Research notes explain decisions; they are not runtime authority. The implemented
+contracts in `ARCHITECTURE.md` and the sealed registry win if rationale ever drifts.
 
 ## Current rationale
 
-- [Semantic kernel rationale](research/basalt-semantic-kernel.md) explains the
-  identity, facet, closure, and governance decisions behind the implemented
-  registry. The registry and [Architecture](ARCHITECTURE.md) remain authoritative.
-- [Catalog admission research](research/catalog-admission-state-of-the-art.md)
-  records the evidence design behind the implemented bounded qualification pilot:
-  calibrated multimodal prediction, explicit substitution proofs, discovery
-  review, and independent risk-bounded acceptance audits. Its remote-storage
-  analysis is retained as a future option; the accepted current decision is
-  local-only storage.
-- [Roblox asset lowering](research/mesh-strategy.md) records platform-specific mesh,
-  material, and performance rationale. The implemented adapter boundary is owned by
-  [Architecture](ARCHITECTURE.md#roblox-boundary).
+- [World construction and refinement](research/world-construction-and-refinement.md) —
+  non-authoritative walkthrough of a 40-square-kilometer world request, procedural and
+  neural tower construction, and the proposed integration with bounded refinement.
+- [Catalog search and architecture assessment](research/catalog-search-assessment.md) —
+  non-authoritative audit of selection results, model costs, evaluation design, and
+  proposed changes connecting asset discovery to world generation.
+- [Basalt and existing world-generation systems](research/world-generation-reuse.md) —
+  non-authoritative build-versus-reuse assessment, implementation evidence, and proposed
+  integration experiments.
+- [Semantic kernel rationale and governance](research/basalt-semantic-kernel.md) — stable
+  upper sorts, orthogonal facets, immutable commitments, and closure-local invalidation.
 
-## Provider implementation notes
+The first two assessments are immutable research snapshots. Their historical references
+describe the repository state they inspected; active documents and sealed contracts remain
+authoritative. The world-generation assessment is retained as cited foundation research,
+while its operating recommendations are superseded by those two newer assessments.
 
-- [TRELLIS.2 worker](../workers/trellis2/README.md)
-- [Hunyuan3D 2.1 worker](../workers/hunyuan3d/README.md)
-- [Pixal3D worker](../workers/pixal3d/README.md)
+The compact [catalog selection evidence record](research/evidence/catalog-search-selection-2026-09-14.json)
+preserves the retired benchmark's artifact identities, reproduced results, model commits,
+and limitations. It is inert research evidence, not a live fixture or compatibility path.
 
-These describe offline adapters and qualification limits. Provider documentation
-cannot grant catalog admission or compiler authority.
+## Preserved source surveys
 
-## Preserved sources
+- [WorldClaw](sources/world-claw.md) — long-horizon hierarchical world-generation source
+  context.
+- [Roblox terrain capability survey](sources/roblox-terrain.md) — dated platform evidence
+  supporting terrain lowering decisions.
 
-- [WorldClaw](sources/world-claw.md) is broad inspiration for hierarchical world
-  decomposition, not an instruction set or Basalt design specification.
-- [Roblox terrain survey](sources/roblox-terrain.md) records dated platform facts
-  and opportunities. Current lowering behavior remains owned by Architecture.
+## Current conclusions
+
+- A durable semantic kernel and an open-vocabulary search layer solve different problems:
+  search discovers candidates; admitted assertions authorize compilation.
+- Multiview factual metadata plus BM25 and SigLIP2 scales to nouns outside the kernel
+  without inventing concepts.
+- DINOv3 supports reference-shape retrieval, not semantic authority.
+- Basenames are weak auditable hints; pack, archive, and directory identity are excluded
+  from inference and ranking.
+- Deterministic measurement, rights, interfaces, topology, placement, and admission gates
+  decide what the compiler may use.
+- Neural generation is an offline catalog-factory route after a typed gap and returns to
+  the normal evidence pipeline.
+- Remote CAS distribution is deferred until local contracts and corpus evidence are
+  stable.
