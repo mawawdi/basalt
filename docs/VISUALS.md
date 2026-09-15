@@ -25,6 +25,13 @@ records source bytes and rights, axes and units, Q32.32 metric bounds, geometry 
 materials and PBR evidence, support/contact evidence, collision companions, and measured
 interfaces. Collision companions are evidence, never catalog entries.
 
+Bottom support distinguishes `planar_patch_fit` from `lower_extrema`. The former carries a
+positive fitted planar contact area. The latter proves only that static Y-up geometry can be
+aligned to a horizontal plane at its measured lower extent and therefore carries exactly zero
+planar area. It is not evidence of stability or intended installation. Animated and skinned
+support stays unknown because its lower extent is pose-dependent. An authored placement and
+creator admission remain separate authority.
+
 Canonical review evidence contains twelve deterministic views:
 
 - eight azimuths at 25 degrees elevation;
@@ -62,6 +69,18 @@ default for both; Qwen3-VL 32B remains a challenger until production qualificati
 a material role-specific gain. Receipts bind the source,
 measurement, render, prompt, schema, preprocessor, adapter, worker, model commit, raw
 output, and resource use. They have `compilerAuthority: false`.
+
+Qualification answer keys are a separate authority surface. Filename-derived nouns, confusers,
+query expectations, relevance judgments, and validator verdicts remain proposals until a creator
+independently reviews their bound visual pages. The finalized key is derived from the complete
+creator decision; a status label or provenance hash by itself cannot promote proposed labels.
+
+Platform upload adaptation is also separate from visual authority. Catalog source GLBs remain
+immutable; the Roblox boundary may derive an exact retained payload for importer compatibility.
+Its current rule preserves the primary glTF material color set (`COLOR_0`) and removes secondary
+color sets (`COLOR_1+`) that Roblox can expose as appearance even when source tooling used them as
+control data. A publication receipt records that derivation, while creator inspection still decides
+whether the imported materials are acceptable.
 
 ## Hybrid search
 

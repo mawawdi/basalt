@@ -15,6 +15,15 @@ export interface CatalogGlbSource {
   readonly metersPerSourceUnit: number;
 }
 
+export type CatalogBottomSupportMeasurement =
+  | {
+      readonly status: "measured";
+      readonly measurementMethod: "planar_patch_fit" | "lower_extrema";
+      readonly contactAreaSquareMeters: number;
+      readonly evidenceHash: string;
+    }
+  | { readonly status: "refused"; readonly reason: string };
+
 /** Measure GLB bytes without making any semantic admission decision. */
 export function measureCatalogGlb(
   bytes: Uint8Array,
@@ -49,16 +58,12 @@ export function measureCatalogGlb(
     throw new Error("Measured mesh inventory does not match bounded mesh nodes");
   const geometry = combineMeshes(measuredMeshes);
   const deformable = report.deformationMode !== "static";
-  const supportResult = deformable
+  const supportMeasurement = deformable
     ? ({
         status: "refused",
         reason: "Support is pose-dependent for animated or skinned geometry",
       } as const)
-    : fitSupportPlane(bottomContactPatches(geometry), seedFromAssetId(source.contentHash));
-  const supportEvidence =
-    supportResult.status === "fit"
-      ? contentHash(stableJson({ policy: MEASUREMENT_POLICY_HASH, result: supportResult }))
-      : undefined;
+    : measureCatalogBottomSupport(geometry, source.contentHash);
   const jointResult = deformable
     ? ({
         status: "refused",
@@ -84,7 +89,11 @@ export function measureCatalogGlb(
           };
         })
       : [];
-  const measurementEvidenceHashes = [report.hash, supportEvidence, socketEvidence]
+  const measurementEvidenceHashes = [
+    report.hash,
+    supportMeasurement.status === "measured" ? supportMeasurement.evidenceHash : undefined,
+    socketEvidence,
+  ]
     .filter((hash): hash is string => hash !== undefined)
     .sort();
   return sealCatalogAssetArtifact({
@@ -147,19 +156,20 @@ export function measureCatalogGlb(
       ),
     })),
     support: {
-      primaryContact: supportResult.status === "fit" ? "bottom" : "unknown",
+      primaryContact: supportMeasurement.status === "measured" ? "bottom" : "unknown",
       contactAreaSquareMeters:
-        supportResult.status === "fit"
-          ? quantizeQ32_32(
-              supportResult.fits.reduce(
-                (sum, fit) => sum + Math.PI * fit.boundaryRadiusMeters ** 2,
-                0,
-              ),
-            )
+        supportMeasurement.status === "measured"
+          ? quantizeQ32_32(supportMeasurement.contactAreaSquareMeters)
           : "0",
-      ...(supportEvidence ? { evidenceHash: supportEvidence } : {}),
-      ...(supportResult.status === "refused"
-        ? { refusalReason: `Geometric bottom-contact fit refused: ${supportResult.reason}` }
+      measurementMethod:
+        supportMeasurement.status === "measured" ? supportMeasurement.measurementMethod : "refused",
+      ...(supportMeasurement.status === "measured"
+        ? { evidenceHash: supportMeasurement.evidenceHash }
+        : {}),
+      ...(supportMeasurement.status === "refused"
+        ? {
+            refusalReason: `Geometric bottom-contact measurement refused: ${supportMeasurement.reason}`,
+          }
         : {}),
     },
     collision: { mode: "none", companionAssetHashes: [], orientedBounds: [] },
@@ -176,11 +186,74 @@ export function measureCatalogGlb(
 const MEASUREMENT_POLICY_HASH = contentHash(
   stableJson({
     coordinateSystem: "right_handed_y_up_meters",
-    support: "extreme_bottom_topology_area_stratified_ransac",
+    support: "planar_bottom_patch_fit_then_lower_extrema_alignment",
     interfaces: "exterior_planar_component_fit",
     interfaceLimit: 4096,
   }),
 );
+
+/**
+ * Measures geometric bottom placement without treating a planar mounting face as a
+ * prerequisite. Exact coplanar faces retain their fitted contact area. Otherwise the
+ * canonical lower extrema prove only Y-up bottom alignment and deliberately report zero
+ * planar area. Intended placement remains creator-authored catalog authority.
+ */
+export function measureCatalogBottomSupport(
+  mesh: NormalizedMesh,
+  assetId: string,
+): CatalogBottomSupportMeasurement {
+  if (mesh.vertices.length === 0 || mesh.triangles.length === 0)
+    return { status: "refused", reason: "no_geometry" };
+  const exactPatches = bottomContactPatches(mesh);
+  const planar = fitSupportPlane(exactPatches, seedFromAssetId(assetId));
+  if (planar.status === "fit") {
+    const contactAreaSquareMeters = planar.fits.reduce(
+      (sum, fit) => sum + Math.PI * fit.boundaryRadiusMeters ** 2,
+      0,
+    );
+    return {
+      status: "measured",
+      measurementMethod: "planar_patch_fit",
+      contactAreaSquareMeters,
+      evidenceHash: contentHash(
+        stableJson({
+          policy: MEASUREMENT_POLICY_HASH,
+          method: "planar_patch_fit",
+          result: planar,
+        }),
+      ),
+    };
+  }
+
+  const minimumY = Math.min(...mesh.vertices.map((vertex) => vertex.y));
+  const maximumY = Math.max(...mesh.vertices.map((vertex) => vertex.y));
+  const tolerance = Math.max(1e-6, (maximumY - minimumY) * 1e-5);
+  const lowerExtrema = mesh.vertices
+    .filter((vertex) => vertex.y <= minimumY + tolerance)
+    .map((vertex) => fixedVector(vertex));
+  const canonicalExtrema = [
+    ...new Map(
+      lowerExtrema.map((point) => [`${point.x},${point.y},${point.z}`, point] as const),
+    ).values(),
+  ].sort(compareFixedVectors);
+  if (canonicalExtrema.length === 0) return { status: "refused", reason: "no_lower_extrema" };
+  return {
+    status: "measured",
+    measurementMethod: "lower_extrema",
+    contactAreaSquareMeters: 0,
+    evidenceHash: contentHash(
+      stableJson({
+        policy: MEASUREMENT_POLICY_HASH,
+        method: "lower_extrema",
+        minimumY: quantizeQ32_32(minimumY),
+        toleranceMeters: quantizeQ32_32(tolerance),
+        planarFitRefusal: planar.reason,
+        extremaCount: canonicalExtrema.length,
+        extremaHash: contentHash(stableJson(canonicalExtrema)),
+      }),
+    ),
+  };
+}
 
 function scaleMesh(mesh: NormalizedMesh, scale: number): NormalizedMesh {
   return {

@@ -434,7 +434,12 @@ function componentAsset(
         pbrChannels: ["base_color"],
       },
     ],
-    support: { primaryContact: "bottom", contactAreaSquareMeters: q(1), evidenceHash },
+    support: {
+      primaryContact: "bottom",
+      contactAreaSquareMeters: q(1),
+      measurementMethod: "planar_patch_fit",
+      evidenceHash,
+    },
     collision: {
       mode: "part_obbs",
       companionAssetHashes: [],
@@ -529,6 +534,8 @@ function robloxBinding(asset: CatalogAssetArtifact, robloxAssetId: number) {
     assetHash: asset.hash,
     robloxAssetId,
     sourceArtifactHash: asset.source.sourceArtifact!.artifactHash,
+    uploadArtifactHash: "d".repeat(64),
+    publicationEvidenceHash: "c".repeat(64),
     materialExpectations: [
       {
         partPath: [{ name: "Renderable", siblingOrdinal: 0 }],

@@ -103,6 +103,7 @@ export const ASSET_METRIC_PROMPT_SUMMARY_SCHEMA = z
       .object({
         primaryContact: z.enum(["bottom", "lateral_wall", "top_ceiling", "socket_only", "unknown"]),
         contactAreaSquareMeters: z.number().finite().nonnegative(),
+        measurementMethod: z.enum(["planar_patch_fit", "lower_extrema", "refused"]),
       })
       .strict(),
     hash: HASH_SCHEMA,
@@ -420,6 +421,7 @@ export function sealAssetMetricPromptSummary(
     support: {
       primaryContact: asset.support.primaryContact,
       contactAreaSquareMeters: dequantizeQ32_32(asset.support.contactAreaSquareMeters),
+      measurementMethod: asset.support.measurementMethod,
     },
   });
 }

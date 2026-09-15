@@ -155,7 +155,7 @@ FUNCTION_OPTIONS = {
     "min_containers": 0,
     "max_containers": 1,
     "buffer_containers": 0,
-    "scaledown_window": 60,
+    "scaledown_window": 1,
     "retries": 0,
     "timeout": 2 * 60 * 60,
     "startup_timeout": 20 * 60,
@@ -164,14 +164,14 @@ FUNCTION_OPTIONS = {
 }
 
 
-@app.function(gpu="L40S", **FUNCTION_OPTIONS)
-def execute_l40s(job_hash: str, job_relative_path: str, output_relative_path: str) -> dict[str, Any]:
-    return execute_remote(job_hash, job_relative_path, output_relative_path, "L40S")
-
-
-@app.function(gpu="A100-80GB", **FUNCTION_OPTIONS)
-def execute_a100(job_hash: str, job_relative_path: str, output_relative_path: str) -> dict[str, Any]:
-    return execute_remote(job_hash, job_relative_path, output_relative_path, "A100-80GB")
+@app.function(**FUNCTION_OPTIONS)
+def execute_gpu(
+    job_hash: str,
+    job_relative_path: str,
+    output_relative_path: str,
+    accelerator: str,
+) -> dict[str, Any]:
+    return execute_remote(job_hash, job_relative_path, output_relative_path, accelerator)
 
 
 def evidence_paths(job: dict[str, Any], job_relative_path: str) -> list[str]:
@@ -225,9 +225,11 @@ def requested_accelerator(job: dict[str, Any]) -> str:
         return model["accelerator"]
     models = job.get("models", [])
     accelerators = {entry["accelerator"] for entry in models}
-    if accelerators == {"L40S"}:
-        return "L40S"
-    raise ValueError("A single embedding job must target the L40S execution path")
+    if len(accelerators) == 1:
+        accelerator = next(iter(accelerators))
+        if accelerator in ("L40S", "A100-80GB"):
+            return accelerator
+    raise ValueError("One worker job must target exactly one declared accelerator")
 
 
 @app.local_entrypoint()
@@ -268,10 +270,19 @@ def main(job: str, output: str) -> None:
         for relative_path, local_path in zip(paths, local_evidence, strict=True):
             upload.put_file(str(local_path), f"{remote_workspace}/{relative_path}")
     accelerator = requested_accelerator(job_value)
-    descriptor = (
-        execute_a100.remote(job_hash, job_relative_path, output_relative_path)
-        if accelerator == "A100-80GB"
-        else execute_l40s.remote(job_hash, job_relative_path, output_relative_path)
+    # One dynamically configured function plus single-use containers prevents the
+    # L40S and A100 routes from retaining independent warm GPU pools. Calls are
+    # synchronous, so this entrypoint can own at most one GPU container globally.
+    descriptor = execute_gpu.with_options(
+        gpu=accelerator,
+        max_containers=1,
+        buffer_containers=0,
+        scaledown_window=1,
+    ).remote(
+        job_hash,
+        job_relative_path,
+        output_relative_path,
+        accelerator,
     )
     remote_output = f"runs/{job_hash}/workspace/{output_relative_path}"
     payload = b"".join(EVIDENCE_VOLUME.read_file(remote_output))

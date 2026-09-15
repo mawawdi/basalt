@@ -51,8 +51,12 @@
   },
   {
     "sourceContentHash": "00d9775903130915c301b083bd09d00141b3607e132d32b09f9c44df832f3339",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_stump_04_ground",
+      "memberId": "source_00d9775903130915"
+    }
   },
   {
     "sourceContentHash": "00ea4e4fd82f25d560122f9a782a703fdeaad0863561ea74aadb4b9c7af84a5d",
@@ -116,8 +120,12 @@
   },
   {
     "sourceContentHash": "01b8c04e0bf9133aca28764f979c389c4d0d5e471bf9c81f47e128c4689f6299",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_log_01_ground",
+      "memberId": "source_01b8c04e0bf9133a"
+    }
   },
   {
     "sourceContentHash": "01c434c5f73d4dabdba65389033e11e09068200b821e71a182a3d3cd9086a74f",
@@ -161,8 +169,12 @@
   },
   {
     "sourceContentHash": "025f3575def4aa6c6797c596d948cf327a2bc1357cf01316489a6699a3e6ec32",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_willow_large_01_ground",
+      "memberId": "source_025f3575def4aa6c"
+    }
   },
   {
     "sourceContentHash": "0283b15a93c5b85334769f992f7a1cd8623be30589c8ee952442c8f461182188",
@@ -2311,8 +2323,12 @@
   },
   {
     "sourceContentHash": "20dd01e550ab59b1948e6247b138dbf5a9e5ee6b8ed66d970adbb672f0b8aba5",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rock_04_ground",
+      "memberId": "source_20dd01e550ab59b1"
+    }
   },
   {
     "sourceContentHash": "20e2a45c17f616dc97e396d92c5e606c169c594dcb1fac75b48970df6fbe511d",
@@ -2971,8 +2987,12 @@
   },
   {
     "sourceContentHash": "2cc52b5bed2ed8cc2a4370cb16fe0c7289dd87b58db64606d8d648feedf297f2",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rock_rounded_01_ground",
+      "memberId": "source_2cc52b5bed2ed8cc"
+    }
   },
   {
     "sourceContentHash": "2cce65420b33e4cdd745d0a48cb19dc6827343a0399289f24062a4ed6f0b21cf",
@@ -3626,8 +3646,12 @@
   },
   {
     "sourceContentHash": "36a7823395db528befe176580107558fd8c00697581dda7d12d2e2e844d048bc",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "plant_fern_02_ground",
+      "memberId": "source_36a7823395db528b"
+    }
   },
   {
     "sourceContentHash": "36ac4f84279c2e87f1e3852edf5576539913f8d25276f650e38b35eea66d5517",
@@ -3726,8 +3750,12 @@
   },
   {
     "sourceContentHash": "3887b64f53052461321f8ad03778a915fefbbb8546fdbdb7cae3f75734d9570c",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rock_03_ground",
+      "memberId": "source_3887b64f53052461"
+    }
   },
   {
     "sourceContentHash": "38ab28823d9d8ba4a342a510d2c7e0451f5fa7ab3a6e02edb4b4816f2e74b98f",
@@ -3951,8 +3979,12 @@
   },
   {
     "sourceContentHash": "3bd8fae39914bb8cb6d33a32cab04ee584f0cefeaa7536b185b7e1e5d7786420",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_round_03_ground",
+      "memberId": "source_3bd8fae39914bb8c"
+    }
   },
   {
     "sourceContentHash": "3bdb61a633d65ac25fd7534340c6fc92e0c39754501614b4504b484fe4a4937b",
@@ -5536,8 +5568,12 @@
   },
   {
     "sourceContentHash": "535d6f663a1ae46bbd863f5d27081f29c5f743fe1e5a01ab33197d388dc82c8a",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_log_02_ground",
+      "memberId": "source_535d6f663a1ae46b"
+    }
   },
   {
     "sourceContentHash": "53673bba2ee6a6c92dcfd09c4c3858b995b597cc33e7891d3a8d3cc033a442d9",
@@ -7026,8 +7062,12 @@
   },
   {
     "sourceContentHash": "6a457958e187c29934dc7e6ed2ed6a0fb1bb49f452b1d7b1f77251889bf7eb9a",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rock_01_ground",
+      "memberId": "source_6a457958e187c299"
+    }
   },
   {
     "sourceContentHash": "6a464f43e392d0e63c648b3a007a3130bcd2138084bcd430f514d11a157601e0",
@@ -8186,8 +8226,12 @@
   },
   {
     "sourceContentHash": "7a9d4305696ce362a57d5b4714cc35ebacbd4fba07c4b5b93a45ac235f9697bc",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_stump_03_ground",
+      "memberId": "source_7a9d4305696ce362"
+    }
   },
   {
     "sourceContentHash": "7aa558e38768514d3591140191133efce27314aae2a22827b4d1e63637ac79ae",
@@ -8966,8 +9010,12 @@
   },
   {
     "sourceContentHash": "856dbb16fd6fb2efa098b6faa7ae7a190ad4f0eae91bd26dff978c053cd548dc",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_pine_01_ground",
+      "memberId": "source_856dbb16fd6fb2ef"
+    }
   },
   {
     "sourceContentHash": "8575cf9e77c690afde5fe82928b55cd963c187cb50d5b83c58c00277b75cfc49",
@@ -9096,8 +9144,12 @@
   },
   {
     "sourceContentHash": "8730b69b9cdbd17b7b1a2b9c8b6e61d86d2454468722486f04b50e6d99f6fc12",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_birch_04_ground",
+      "memberId": "source_8730b69b9cdbd17b"
+    }
   },
   {
     "sourceContentHash": "873ef6bb6178fca36ec557df6e2a1b36afe8e25089f7d1a98d3c482a7476253c",
@@ -10301,8 +10353,12 @@
   },
   {
     "sourceContentHash": "99f17578c60f06a26686018536cfaf3271e6ab23b750a013c008649c51a4a35e",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "plant_fern_01_ground",
+      "memberId": "source_99f17578c60f06a2"
+    }
   },
   {
     "sourceContentHash": "99f48d6d1aa23514fef9dac5778677db5d66e58bb6bb90990f6ccf3530f9ee78",
@@ -10486,8 +10542,12 @@
   },
   {
     "sourceContentHash": "9cbd54bdf6f7601a949248f3bf86b442c1061972218a30f8475f6baaca7f9b4d",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "plant_grass_04_ground",
+      "memberId": "source_9cbd54bdf6f7601a"
+    }
   },
   {
     "sourceContentHash": "9cc2da2bb7cecf6c2acb894ba252a4e64bf2a3982b9824cfa1c6df1716b9c8a5",
@@ -11421,8 +11481,12 @@
   },
   {
     "sourceContentHash": "accdd7742e4d06cf93f1c09a7a01607ae5686ba5daf5dbd791534341dcf84dde",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_round_04_ground",
+      "memberId": "source_accdd7742e4d06cf"
+    }
   },
   {
     "sourceContentHash": "acd46a4d5db1cd5ba2844015ebdb7261013762903f20d97cc40c98fd4dbf6497",
@@ -11891,8 +11955,12 @@
   },
   {
     "sourceContentHash": "b2d9a9a20a7ab70d877c6569eac34dd822020d49cfa47af6820fc1961228485a",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_tallround_01_ground",
+      "memberId": "source_b2d9a9a20a7ab70d"
+    }
   },
   {
     "sourceContentHash": "b2e0a6cc5384409068534b445c51a1ae7265ee0764cdc4a0005fb119fd73d8e9",
@@ -12171,8 +12239,12 @@
   },
   {
     "sourceContentHash": "b6368c3f2c7b48872a60db5c74feb32d934b87af3fdfa77a2c47a1c7ccf9ad3c",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rock_02_ground",
+      "memberId": "source_b6368c3f2c7b4887"
+    }
   },
   {
     "sourceContentHash": "b63e3196d28f1bf9bfe6ed063371a21d847674a118a131ddb7c533c7cac83f05",
@@ -13221,8 +13293,12 @@
   },
   {
     "sourceContentHash": "c453b2f0b6854e5b69e75254200e0f0602f1a83b4df57439c5532b01435dd463",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rock_boulder_01_ground",
+      "memberId": "source_c453b2f0b6854e5b"
+    }
   },
   {
     "sourceContentHash": "c487f42a076332ae0417abf2c8d323fcceec6535a6e4dc2e9e8a77f9eaf5bff6",
@@ -13896,8 +13972,12 @@
   },
   {
     "sourceContentHash": "cfc507647e476208b4636bd67a0451175c15d6881ec2ee98a5a0fa351b910ed1",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "plant_bush_03_ground",
+      "memberId": "source_cfc507647e476208"
+    }
   },
   {
     "sourceContentHash": "cfcd55985597637e5e3fd041e9e0ea7f40dcef783a4ffb3be88db687dde06ebf",
@@ -14406,8 +14486,12 @@
   },
   {
     "sourceContentHash": "d6c118d28bb052840ad3a2e5ee601a5fc2c8c06278c3d28062712650fb672e0f",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_pine_large_01_ground",
+      "memberId": "source_d6c118d28bb05284"
+    }
   },
   {
     "sourceContentHash": "d6c6d5a5b41c0b451b59104e1db5be46699f7b1268f9c15bbab910b39b9ac5e9",
@@ -15566,8 +15650,12 @@
   },
   {
     "sourceContentHash": "e7c6213201dab0c27af13c7df05a263dd5aab25e6b6e5b6b00ddf386a6689978",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "plant_bush_02_ground",
+      "memberId": "source_e7c6213201dab0c2"
+    }
   },
   {
     "sourceContentHash": "e7c75ed33b1802cfb65d66451be80846ea1d46ad3ffe58fc882ed544f7a62dcb",
@@ -15666,8 +15754,12 @@
   },
   {
     "sourceContentHash": "e8b17a35b6cac682a55945c1b83321d36d9f162dbde417a8422ada50831b8109",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "plant_bush_01_ground",
+      "memberId": "source_e8b17a35b6cac682"
+    }
   },
   {
     "sourceContentHash": "e8dc7700870dc413984ea2838734b3e77c6896179fa891f1188003fa5aae7151",
@@ -16131,8 +16223,12 @@
   },
   {
     "sourceContentHash": "f020fe057d2ad733517f83fafac66d297528826b48251633100e191ef255fab6",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "tree_03_ground",
+      "memberId": "source_f020fe057d2ad733"
+    }
   },
   {
     "sourceContentHash": "f030293470cf05e4fb04b7d735c1558fc82767ab6aab245fd3e668459330dd50",

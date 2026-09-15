@@ -4,6 +4,8 @@ local InsertService = game:GetService("InsertService")
 local Workspace = game:GetService("Workspace")
 local BoundedQuery = require(script.Parent.BoundedQuery)
 local Constants = require(script.Parent.Constants)
+local LoadedAsset = require(script.Parent.LoadedAsset)
+local ModelBounds = require(script.Parent.ModelBounds)
 local RouteGeometry = require(script.Parent.RouteGeometry)
 local RouteGrounding = require(script.Parent.RouteGrounding)
 local TerrainLowering = require(script.Parent.TerrainLowering)
@@ -1348,7 +1350,14 @@ function WorldLowering.foundation(transaction: any): any
 	return { instances = {}, artifacts = observations }
 end
 
-local function lowerInstance(parent: Instance, entry: any, realizedHash: string): any
+local function compactFailure(value: any): string
+	local message = tostring(value):gsub("[\r\n]+", " ")
+	local marker = string.find(message, "Basalt connector: ", 1, true)
+	if marker ~= nil then message = string.sub(message, marker + #"Basalt connector: ") end
+	return if #message > 240 then string.sub(message, 1, 237) .. "..." else message
+end
+
+local function loadAssetModel(entry: any): Model
 	if typeof(entry.robloxAssetId) ~= "number" then fail("instance has no admitted Roblox asset id") end
 	local ok, container = pcall(function()
 		return InsertService:LoadAsset(entry.robloxAssetId)
@@ -1356,8 +1365,77 @@ local function lowerInstance(parent: Instance, entry: any, realizedHash: string)
 	if not ok or container == nil or not container:IsA("Model") then
 		fail("Roblox asset " .. tostring(entry.robloxAssetId) .. " could not be loaded")
 	end
-	local model = container :: Model
+	local wrapper = container :: Model
+	local unwrapOk, unwrapped = pcall(function()
+		return LoadedAsset.unwrap(wrapper)
+	end)
+	if not unwrapOk or unwrapped == nil or not unwrapped:IsA("Model") then
+		wrapper:Destroy()
+		fail(
+			"Roblox asset "
+				.. tostring(entry.robloxAssetId)
+				.. " has an invalid loaded package: "
+				.. compactFailure(unwrapped)
+		)
+	end
+	return unwrapped :: Model
+end
+
+local function destroyAssetTemplates(templates: { [string]: Model }): ()
+	for _, template in pairs(templates) do template:Destroy() end
+end
+
+local function prepareAssetTemplates(entries: { any }): { [string]: Model }
+	local representatives: { [string]: any } = {}
+	local assetOrder = {}
+	for _, entry in ipairs(entries) do
+		local assetHash = requireHash(entry.assetHash, "instance.assetHash")
+		local representative = representatives[assetHash]
+		if representative == nil then
+			representatives[assetHash] = entry
+			table.insert(assetOrder, assetHash)
+		elseif representative.robloxAssetId ~= entry.robloxAssetId then
+			fail("one catalog asset resolves to multiple Roblox asset ids")
+		end
+	end
+
+	local templates: { [string]: Model } = {}
+	local diagnostics = {}
+	-- Validate every distinct binding before lowering any instance. One broken
+	-- package therefore reports alongside its peers and cannot leave a partial
+	-- layer or force the creator through asset-by-asset retries.
+	for _, assetHash in ipairs(assetOrder) do
+		local entry = representatives[assetHash]
+		local loaded: Model? = nil
+		local loadOk, loadFailure = pcall(function()
+			loaded = loadAssetModel(entry)
+			verifyMaterialExpectations(loaded :: Model, entry.materialExpectations)
+		end)
+		if loadOk and loaded ~= nil then
+			templates[assetHash] = loaded
+		else
+			if loaded ~= nil then loaded:Destroy() end
+			table.insert(diagnostics, string.format(
+				"%s (Roblox %s): %s",
+				string.sub(assetHash, 1, 12),
+				tostring(entry.robloxAssetId),
+				compactFailure(loadFailure)
+			))
+		end
+	end
+	if #diagnostics > 0 then
+		destroyAssetTemplates(templates)
+		fail("asset binding preflight failed: " .. table.concat(diagnostics, " | "))
+	end
+	return templates
+end
+
+local function lowerInstance(parent: Instance, entry: any, realizedHash: string, template: Model): any
+	local clone = template:Clone()
+	if clone == nil or not clone:IsA("Model") then fail("loaded package model could not be cloned") end
+	local model = clone :: Model
 	model.Name = entry.instanceId
+	local initialPivot = model:GetPivot()
 	local sourceBounds = entry.sourceBoundsMeters
 	if typeof(sourceBounds) ~= "table" then
 		model:Destroy()
@@ -1368,7 +1446,7 @@ local function lowerInstance(parent: Instance, entry: any, realizedHash: string)
 		meters(sourceBounds.max.y - sourceBounds.min.y),
 		meters(sourceBounds.max.z - sourceBounds.min.z)
 	) * entry.transformMeters.scale
-	local _, actualSize = model:GetBoundingBox()
+	local _, actualSize = ModelBounds.worldAabb(model)
 	local ratios = {}
 	for _, dimensions in ipairs({
 		{ desired = desiredSourceSize.X, actual = actualSize.X },
@@ -1394,9 +1472,11 @@ local function lowerInstance(parent: Instance, entry: any, realizedHash: string)
 	end
 	model:ScaleTo(model:GetScale() * uniform)
 	local position = entry.transformMeters.position
+	local initialOrientation = initialPivot - initialPivot.Position
 	model:PivotTo(
 		CFrame.new(meters(position.x), meters(position.y), meters(position.z))
 			* quaternion(entry.transformMeters.rotation)
+			* initialOrientation
 	)
 	local bounds = entry.boundsMeters
 	local expectedCenter = Vector3.new(
@@ -1409,10 +1489,20 @@ local function lowerInstance(parent: Instance, entry: any, realizedHash: string)
 		meters(bounds.max.y - bounds.min.y),
 		meters(bounds.max.z - bounds.min.z)
 	)
-	local settledFrame, settledSize = model:GetBoundingBox()
-	if (settledFrame.Position - expectedCenter).Magnitude > Constants.BOUND_TOLERANCE_STUDS or (settledSize - expectedSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
+	local rotatedCenter = ModelBounds.worldAabb(model)
+	model:TranslateBy(expectedCenter - rotatedCenter)
+	local settledCenter, settledSize = ModelBounds.worldAabb(model)
+	if (settledCenter - expectedCenter).Magnitude > Constants.BOUND_TOLERANCE_STUDS or (settledSize - expectedSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
 		model:Destroy()
-		fail("loaded asset transform or bounds do not match the sealed realization")
+		fail(string.format(
+			"loaded asset bounds drifted for %s (Roblox %d): expected center %s size %s, observed center %s size %s",
+			entry.instanceId,
+			entry.robloxAssetId,
+			formatVectorMeters(expectedCenter),
+			formatVectorMeters(expectedSize),
+			formatVectorMeters(settledCenter),
+			formatVectorMeters(settledSize)
+		))
 	end
 	verifyMaterialExpectations(model, entry.materialExpectations)
 	model:SetAttribute("BasaltAssetHash", requireHash(entry.assetHash, "instance.assetHash"))
@@ -1598,8 +1688,8 @@ local function lowerMeso(root: Instance, meso: any): { any }
 	for _, surface in ipairs(meso.constructedSurfaces) do
 		local model = findModel(root, surface.sourceComponentInstanceId)
 		local desiredCenter, desiredSize = boundsCenterAndSize(surface.bounds)
-		local actualFrame, actualSize = model:GetBoundingBox()
-		if (actualFrame.Position - desiredCenter).Magnitude > Constants.BOUND_TOLERANCE_STUDS or (actualSize - desiredSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
+		local actualCenter, actualSize = ModelBounds.worldAabb(model)
+		if (actualCenter - desiredCenter).Magnitude > Constants.BOUND_TOLERANCE_STUDS or (actualSize - desiredSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
 			fail("constructed surface source bounds drifted for " .. surface.surfaceId)
 		end
 		local record = Instance.new("Configuration")
@@ -1680,13 +1770,23 @@ function WorldLowering.instances(transaction: any): any
 	layer.Parent = root
 	local expected = {}
 	for _, item in ipairs(transaction.expectedInstanceHashes) do expected[item.instanceId] = item.hash end
-	local observations = {}
 	for _, entry in ipairs(transaction.instances) do
-		local hash = expected[entry.instanceId]
-		if hash == nil then fail("instance has no expected realization hash") end
-		table.insert(observations, lowerInstance(layer, entry, hash))
-		pendingInstances[entry.instanceId] = entry
+		if expected[entry.instanceId] == nil then fail("instance has no expected realization hash") end
 	end
+	local templates = prepareAssetTemplates(transaction.instances)
+	local observations = {}
+	local loweringOk, loweringFailure = pcall(function()
+		for _, entry in ipairs(transaction.instances) do
+			local hash = expected[entry.instanceId]
+			local template = templates[entry.assetHash]
+			if hash == nil then fail("instance has no expected realization hash") end
+			if template == nil then fail("instance has no prepared asset template") end
+			table.insert(observations, lowerInstance(layer, entry, hash, template))
+			pendingInstances[entry.instanceId] = entry
+		end
+	end)
+	destroyAssetTemplates(templates)
+	if not loweringOk then error(loweringFailure, 0) end
 	local artifacts = if transaction.stage == "meso" then lowerMeso(root, transaction.meso) else {}
 	pendingStage = transaction.stage
 	return { instances = observations, artifacts = artifacts }
@@ -1797,9 +1897,16 @@ function WorldLowering.readback(transaction: any): any
 		end
 		verifyMaterialExpectations(model, declaration.materialExpectations)
 		local expectedCenter, expectedSize = boundsCenterAndSize(declaration.boundsMeters)
-		local actualFrame, actualSize = model:GetBoundingBox()
-		if (actualFrame.Position - expectedCenter).Magnitude > Constants.BOUND_TOLERANCE_STUDS or (actualSize - expectedSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
-			fail("realized instance bounds drifted for " .. expected.instanceId)
+		local actualCenter, actualSize = ModelBounds.worldAabb(model)
+		if (actualCenter - expectedCenter).Magnitude > Constants.BOUND_TOLERANCE_STUDS or (actualSize - expectedSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
+			fail(string.format(
+				"realized instance bounds drifted for %s: expected center %s size %s, observed center %s size %s",
+				expected.instanceId,
+				formatVectorMeters(expectedCenter),
+				formatVectorMeters(expectedSize),
+				formatVectorMeters(actualCenter),
+				formatVectorMeters(actualSize)
+			))
 		end
 		local hasPart = false
 		for _, descendant in ipairs(model:GetDescendants()) do

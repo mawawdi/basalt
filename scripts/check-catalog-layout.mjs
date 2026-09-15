@@ -30,7 +30,10 @@ import {
   CATALOG_SEARCH_REGISTRY_SCHEMA,
   CATALOG_SUBSTITUTION_PROPOSAL_POLICY_SCHEMA,
   CATALOG_VISUAL_REVIEW_INDEX_SCHEMA,
+  CATALOG_CREATOR_REVIEW_DECISION_SCHEMA,
+  CATALOG_CREATOR_REVIEW_PACKET_SCHEMA,
   validateCatalogCalibrationSplit,
+  validateCatalogCreatorReviewDecision,
   validateCatalogModelRolePolicy,
 } from "@basalt/catalog-authoring";
 import { contentHash, stableJson } from "@basalt/contracts";
@@ -99,7 +102,9 @@ const sourceHashes = source.assets.map((asset) => asset.contentHash);
 if (new Set(source.assets.map((asset) => asset.relativePath)).size !== source.assets.length)
   throw new Error("Source manifest repeats canonical payload paths");
 
-CATALOG_ADMISSION_RUBRIC_SCHEMA.parse(await readJson("registry/admission-rubric.json"));
+const admissionRubric = CATALOG_ADMISSION_RUBRIC_SCHEMA.parse(
+  await readJson("registry/admission-rubric.json"),
+);
 const admissionPolicy = CATALOG_ADMISSION_POLICY_SCHEMA.parse(
   await readJson("registry/admission-policy.json"),
 );
@@ -189,9 +194,10 @@ if (stableJson(committed.sourceManifest) !== stableJson(source))
   throw new Error("Committed catalog does not embed the current source manifest");
 if (stableJson(committed.dispositions) !== stableJson(dispositions))
   throw new Error("Committed catalog does not embed the current dispositions");
-const retainedKinds = committed.retainedEvidence.map((entry) => entry.kind).sort();
-if (stableJson(retainedKinds) !== stableJson(["CatalogMeasurementSet", "CatalogVisualReviewIndex"]))
-  throw new Error("Catalog authority may retain only measurements and canonical render evidence");
+const referencedReviewHashes = new Set(
+  committed.acceptanceAudits.flatMap((audit) => [audit.reviewPacketHash, audit.reviewDecisionHash]),
+);
+const retainedArtifacts = new Map();
 for (const evidence of committed.retainedEvidence) {
   await assertRegular(evidence.relativePath);
   const bytes = await readFile(resolve(root, evidence.relativePath));
@@ -200,12 +206,50 @@ for (const evidence of committed.retainedEvidence) {
   if (createHash("sha256").update(bytes).digest("hex") !== evidence.bytesHash)
     throw new Error(`Retained catalog evidence bytes changed: ${evidence.relativePath}`);
   const raw = JSON.parse(bytes.toString("utf8"));
-  const artifact =
-    evidence.kind === "CatalogMeasurementSet"
-      ? CATALOG_MEASUREMENT_SET_SCHEMA.parse(raw)
-      : CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(raw);
-  if (artifact.hash !== evidence.artifactHash || artifact.sourceManifestHash !== sourceManifestHash)
+  const artifact = parseRetainedEvidence(raw, evidence.kind);
+  if (artifact.hash !== evidence.artifactHash)
     throw new Error(`Retained catalog evidence identity changed: ${evidence.relativePath}`);
+  if ("sourceManifestHash" in artifact && artifact.sourceManifestHash !== sourceManifestHash)
+    throw new Error(`Retained catalog evidence binds another source: ${evidence.relativePath}`);
+  if (
+    (evidence.kind === "CatalogCreatorReviewPacket" ||
+      evidence.kind === "CatalogCreatorReviewDecision") &&
+    !referencedReviewHashes.has(evidence.artifactHash)
+  )
+    throw new Error(
+      `Catalog retained unreferenced creator review evidence: ${evidence.relativePath}`,
+    );
+  retainedArtifacts.set(evidence.artifactHash, artifact);
+}
+const measurementEvidence = committed.retainedEvidence.filter(
+  (entry) => entry.kind === "CatalogMeasurementSet",
+);
+const visualEvidence = committed.retainedEvidence.filter(
+  (entry) => entry.kind === "CatalogVisualReviewIndex",
+);
+if (
+  measurementEvidence.length !== 1 ||
+  measurementEvidence[0]?.artifactHash !== committed.measurementSetHash ||
+  visualEvidence.length !== 1
+)
+  throw new Error("Catalog authority must retain exact measurement and visual-review evidence");
+for (const hash of referencedReviewHashes)
+  if (!retainedArtifacts.has(hash))
+    throw new Error(`Catalog acceptance audit lacks retained creator evidence ${hash}`);
+const validatedReviewPairs = new Set();
+for (const audit of committed.acceptanceAudits) {
+  if (audit.admissionRubricHash !== admissionRubric.hash)
+    throw new Error(`Catalog acceptance audit binds a stale rubric: ${audit.sourceContentHash}`);
+  const pair = `${audit.reviewPacketHash}:${audit.reviewDecisionHash}`;
+  if (validatedReviewPairs.has(pair)) continue;
+  const packet = CATALOG_CREATOR_REVIEW_PACKET_SCHEMA.parse(
+    retainedArtifacts.get(audit.reviewPacketHash),
+  );
+  const decision = CATALOG_CREATOR_REVIEW_DECISION_SCHEMA.parse(
+    retainedArtifacts.get(audit.reviewDecisionHash),
+  );
+  validateCatalogCreatorReviewDecision({ packet, decision, rubric: admissionRubric });
+  validatedReviewPairs.add(pair);
 }
 
 const optionalSearchRoot = await optionalRegular("registry/catalog-search.json");
@@ -264,6 +308,15 @@ for (const asset of source.assets) {
 console.log(
   `Catalog layout is valid (${sourceHashes.length} identities, ${entryFiles.length} admitted entries, ${smoke.assets.length}-asset search smoke fixture, authority ${committed.hash.slice(0, 12)}).`,
 );
+
+function parseRetainedEvidence(raw, kind) {
+  if (kind === "CatalogMeasurementSet") return CATALOG_MEASUREMENT_SET_SCHEMA.parse(raw);
+  if (kind === "CatalogVisualReviewIndex") return CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(raw);
+  if (kind === "CatalogCreatorReviewPacket") return CATALOG_CREATOR_REVIEW_PACKET_SCHEMA.parse(raw);
+  if (kind === "CatalogCreatorReviewDecision")
+    return CATALOG_CREATOR_REVIEW_DECISION_SCHEMA.parse(raw);
+  throw new Error(`Catalog authority retains unsupported evidence kind ${kind}`);
+}
 
 async function readJson(relativePath) {
   return JSON.parse(await readFile(resolve(root, relativePath), "utf8"));

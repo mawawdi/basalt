@@ -180,12 +180,14 @@ def query_result(
     model_implementation_hash: str,
     preprocessing_implementation_hash: str,
     items: list[dict[str, Any]],
+    gpu_milliseconds: int,
 ) -> dict[str, Any]:
     material = {
         "kind": "CatalogQueryEmbeddingWorkerOutput",
         "jobHash": job_hash,
         "modelImplementationHash": model_implementation_hash,
         "preprocessingImplementationHash": preprocessing_implementation_hash,
+        "gpuMilliseconds": gpu_milliseconds,
         "items": sorted(items, key=lambda item: item["queryHash"]),
     }
     return {**material, "resultHash": digest(canonical_json(material))}
@@ -291,6 +293,8 @@ def metadata_prompt(template: str, item: dict[str, Any]) -> str:
         + f"\nInspect all {len(item['views'])} views as observations of one source asset. "
         + "Describe only visible facts.\nExact decimal-meter measurement summary: "
         + canonical_json(request["metricSummary"])
+        + "\nA lower_extrema support method proves only Y-up bottom alignment and intentionally "
+        + "reports zero planar contact area; it does not prove intended placement or stability."
         + hint
         + "\nReturn exactly the constrained JSON object. Abstain field-by-field when evidence is insufficient."
     )
@@ -311,6 +315,8 @@ def validation_prompt(template: str, item: dict[str, Any]) -> str:
         + canonical_json(candidate)
         + "\nMeasured facts: "
         + canonical_json(metric)
+        + "\nA lower_extrema support method proves only Y-up bottom alignment and intentionally "
+        + "reports zero planar contact area; it does not prove intended placement or stability."
         + "\nRequested target: "
         + canonical_json(target)
         + "\nUse only the renders and measured facts. Do not infer hidden affordances, sockets, "
@@ -346,6 +352,8 @@ def context_prompt(template: str, job: dict[str, Any]) -> str:
         + canonical_json(candidates)
         + "\nAttributed assembly evidence: "
         + canonical_json(request["attributedAssemblyEvidence"])
+        + "\nA lower_extrema support method proves only Y-up bottom alignment and intentionally "
+        + "reports zero planar contact area; it does not prove intended placement or stability. "
         + "\nPack, archive, and directory identity are unavailable. Basenames are weak hints only. "
         + "Cite only hashes present in the supplied evidence and abstain when isolated geometry "
         + "or attributed context does not establish an intended role. Return exactly the constrained JSON object."
@@ -626,13 +634,33 @@ def aggregate_vectors(vectors: Any, view_ids: list[str]) -> tuple[dict[str, Any]
     return quantize(aggregate.tolist()), digest(canonical_json(per_view)), min(2_000_000, round(disagreement * 1_000_000))
 
 
-def load_retrieval_model(model: dict[str, Any]):
+def embedding_purposes(model: dict[str, Any]) -> list[str]:
+    capabilities = model.get("capabilities")
+    if not isinstance(capabilities, list):
+        raise ValueError("Catalog model declaration requires capabilities")
+    return sorted(
+        capability
+        for capability in capabilities
+        if capability in ("image_text_retrieval", "shape_similarity")
+    )
+
+
+def embedding_purpose(model: dict[str, Any]) -> str:
+    purposes = embedding_purposes(model)
+    if len(purposes) != 1:
+        raise ValueError("Embedding model must declare exactly one embedding capability")
+    return purposes[0]
+
+
+def load_retrieval_model(model: dict[str, Any], purpose: str):
     import torch
     from transformers import AutoImageProcessor, AutoModel, AutoProcessor
 
     location = model_snapshot(model)
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    if model["purpose"] == "image_text_retrieval":
+    if embedding_purpose(model) != purpose:
+        raise ValueError("Embedding model capability does not match the requested purpose")
+    if purpose == "image_text_retrieval":
         processor = AutoProcessor.from_pretrained(location, local_files_only=True, use_fast=True)
     else:
         processor = AutoImageProcessor.from_pretrained(location, local_files_only=True, use_fast=True)
@@ -666,10 +694,11 @@ def process_embeddings(root: Path, job: dict[str, Any], output_path: Path, worke
 
     existing = checkpoint(output_path, "CatalogEmbeddingWorkerOutput", job["hash"])
     receipts: list[dict[str, Any]] = list(existing["receipts"]) if existing is not None else []
-    models = {model["purpose"]: model for model in job["models"]}
-    for purpose, channel in [("image_text_retrieval", "rgb"), ("shape_similarity", "normalizedDepth")]:
+    models = {embedding_purpose(model): model for model in job["models"]}
+    for purpose in job["purposes"]:
+        channel = "rgb" if purpose == "image_text_retrieval" else "normalizedDepth"
         model = models[purpose]
-        processor, network, device = load_retrieval_model(model)
+        processor, network, device = load_retrieval_model(model, purpose)
         implementation, preprocessing, aggregation = embedding_identity(worker_hash, model, network, processor, channel)
         receipts = [
             receipt
@@ -689,6 +718,7 @@ def process_embeddings(root: Path, job: dict[str, Any], output_path: Path, worke
         for item in job["items"]:
             if item["sourceContentHash"] in completed:
                 continue
+            started = time.monotonic()
             images = []
             try:
                 for view in item["views"]:
@@ -736,6 +766,7 @@ def process_embeddings(root: Path, job: dict[str, Any], output_path: Path, worke
                         "perViewEvidenceHash": per_view_hash,
                         "aggregate": aggregate,
                         "maximumViewDisagreementMillionths": disagreement,
+                        "gpuMilliseconds": round((time.monotonic() - started) * 1000),
                     }
                 )
                 atomic_json(output_path, embedding_result(job["hash"], receipts))
@@ -753,8 +784,9 @@ def process_embeddings(root: Path, job: dict[str, Any], output_path: Path, worke
 def process_query_embeddings(job: dict[str, Any], output_path: Path, worker_hash: str) -> None:
     import torch
 
+    started = time.monotonic()
     model = job["model"]
-    processor, network, device = load_retrieval_model(model)
+    processor, network, device = load_retrieval_model(model, "image_text_retrieval")
     implementation, preprocessing, _aggregation = embedding_identity(worker_hash, model, network, processor, "text")
     texts = [item["text"] for item in job["queries"]]
     maximum = int(network.config.text_config.max_position_embeddings)
@@ -766,12 +798,23 @@ def process_query_embeddings(job: dict[str, Any], output_path: Path, worker_hash
         {"queryHash": item["queryHash"], "vector": quantize(vector.tolist())}
         for item, vector in zip(job["queries"], vectors, strict=True)
     ]
-    atomic_json(output_path, query_result(job["hash"], implementation, preprocessing, items))
+    atomic_json(
+        output_path,
+        query_result(
+            job["hash"],
+            implementation,
+            preprocessing,
+            items,
+            round((time.monotonic() - started) * 1000),
+        ),
+    )
 
 
 def validate_worker_input_budget(job: dict[str, Any]) -> None:
     kind = job.get("kind")
     if kind == "CatalogQueryEmbeddingWorkerJob":
+        if embedding_purpose(job.get("model", {})) != "image_text_retrieval":
+            raise ValueError("Query embedding requires an image-text retrieval model")
         return
     if kind == "CatalogContextWorkerJob":
         candidates = job.get("candidateEvidence", [])
@@ -792,7 +835,27 @@ def validate_worker_input_budget(job: dict[str, Any]) -> None:
     items = job.get("items", [])
     if not 1 <= len(items) <= MAX_ITEMS:
         raise ValueError("Worker shard asset count is outside its bounded range")
-    include_depth = kind == "CatalogEmbeddingWorkerJob"
+    embedding_job = kind == "CatalogEmbeddingWorkerJob"
+    purposes: list[str] = []
+    if embedding_job:
+        raw_purposes = job.get("purposes")
+        if (
+            not isinstance(raw_purposes, list)
+            or raw_purposes != sorted(set(raw_purposes))
+            or not 1 <= len(raw_purposes) <= 2
+            or any(
+                purpose not in ("image_text_retrieval", "shape_similarity")
+                for purpose in raw_purposes
+            )
+        ):
+            raise ValueError("Embedding purposes must be a non-empty canonical set")
+        purposes = raw_purposes
+        models = job.get("models")
+        if not isinstance(models, list) or len(models) != len(purposes):
+            raise ValueError("Embedding jobs require one model per requested purpose")
+        model_purposes = sorted(embedding_purpose(model) for model in models)
+        if model_purposes != purposes:
+            raise ValueError("Embedding models do not match the requested purposes")
     sizes: list[int] = []
     for item in items:
         views = item.get("views", [])
@@ -800,8 +863,34 @@ def validate_worker_input_budget(job: dict[str, Any]) -> None:
         if len(views) not in allowed_view_counts:
             raise ValueError("Worker asset binds an unsupported canonical view count")
         for view in views:
-            sizes.append(view["rgbSizeBytes"])
-            if include_depth:
+            rgb_fields = ("rgbRelativePath", "rgbHash", "rgbSizeBytes")
+            depth_fields = (
+                "normalizedDepthRelativePath",
+                "normalizedDepthHash",
+                "normalizedDepthSizeBytes",
+            )
+            rgb_field_count = sum(field in view for field in rgb_fields)
+            depth_field_count = sum(field in view for field in depth_fields)
+            if rgb_field_count not in (0, len(rgb_fields)):
+                raise ValueError("Embedding RGB evidence fields are incomplete")
+            if depth_field_count not in (0, len(depth_fields)):
+                raise ValueError("Embedding depth evidence fields are incomplete")
+            has_rgb = rgb_field_count == len(rgb_fields)
+            has_depth = depth_field_count == len(depth_fields)
+            if embedding_job:
+                if has_rgb != ("image_text_retrieval" in purposes):
+                    raise ValueError(
+                        "Embedding RGB evidence does not match the requested purposes"
+                    )
+                if has_depth != ("shape_similarity" in purposes):
+                    raise ValueError(
+                        "Embedding depth evidence does not match the requested purposes"
+                    )
+            elif not has_rgb or has_depth:
+                raise ValueError("Non-embedding workers require RGB-only view evidence")
+            if has_rgb:
+                sizes.append(view["rgbSizeBytes"])
+            if has_depth:
                 sizes.append(view["normalizedDepthSizeBytes"])
     expected = {
         "assetCount": len(items),
@@ -823,11 +912,17 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--job")
     parser.add_argument("--output")
+    parser.add_argument("--validate-job", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     arguments = parser.parse_args()
     if arguments.self_test:
         views = [
-            {"rgbSizeBytes": 1, "viewId": f"low_{index:02d}"}
+            {
+                "rgbRelativePath": f"view-{index}.png",
+                "rgbHash": "0" * 64,
+                "rgbSizeBytes": 1,
+                "viewId": f"low_{index:02d}",
+            }
             for index in range(MAX_VIEWS)
         ]
         job = {
@@ -843,12 +938,16 @@ def main() -> None:
         validate_worker_input_budget(job)
         print(canonical_json({"status": "eligible", "tested": "bounded_worker_contract"}))
         return
-    if not arguments.job or not arguments.output:
-        parser.error("--job and --output are required unless --self-test is used")
+    if not arguments.job or (not arguments.validate_job and not arguments.output):
+        parser.error(
+            "--job and --output are required unless --self-test or --validate-job is used"
+        )
     root = Path.cwd().resolve()
     job_path = Path(arguments.job).resolve()
-    output_path = Path(arguments.output).resolve()
-    if root not in job_path.parents or root not in output_path.parents:
+    output_path = Path(arguments.output).resolve() if arguments.output else None
+    if root not in job_path.parents or (
+        output_path is not None and root not in output_path.parents
+    ):
         raise ValueError("Worker job and output must remain inside the workspace")
     job = bounded_json(job_path)
     if artifact_hash(job) != job.get("hash"):
@@ -857,17 +956,34 @@ def main() -> None:
     worker_hash = digest(Path(__file__).read_bytes())
     if job.get("workerImplementationHash") != worker_hash:
         raise ValueError("Worker job does not bind this exact implementation")
+    if arguments.validate_job:
+        print(
+            canonical_json(
+                {
+                    "status": "eligible",
+                    "kind": job.get("kind"),
+                    "jobHash": job["hash"],
+                    "purposes": job.get("purposes", []),
+                }
+            )
+        )
+        return
     configure_runtime(root)
     kind = job.get("kind")
     if kind == "CatalogMetadataWorkerJob":
+        assert output_path is not None
         process_metadata(root, job, output_path, worker_hash)
     elif kind == "CatalogContextWorkerJob":
+        assert output_path is not None
         process_context(root, job, output_path, worker_hash)
     elif kind == "CatalogValidationWorkerJob":
+        assert output_path is not None
         process_validation(root, job, output_path, worker_hash)
     elif kind == "CatalogEmbeddingWorkerJob":
+        assert output_path is not None
         process_embeddings(root, job, output_path, worker_hash)
     elif kind == "CatalogQueryEmbeddingWorkerJob":
+        assert output_path is not None
         process_query_embeddings(job, output_path, worker_hash)
     else:
         raise ValueError(f"Unsupported catalog metadata job kind: {kind}")

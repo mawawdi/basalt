@@ -35,6 +35,62 @@ test("catalog sealing preserves genuine substitution and exact evidence", async 
   );
 });
 
+test("admitted entries remain resolvable while unrelated sources are incomplete", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await catalogFixture(module);
+  const {
+    kind: _kind,
+    assetId: _assetId,
+    hash: _hash,
+    source: originalSource,
+    ...assetMaterial
+  } = fixture.asset;
+  const pendingAsset = sealCatalogAssetArtifact({
+    ...assetMaterial,
+    source: {
+      ...originalSource,
+      contentHash: contentHash("unrelated-pending-catalog-source"),
+      sourceArtifact: {
+        artifactHash: contentHash("unrelated-pending-source-bytes"),
+        bytes: originalSource.sourceArtifact!.bytes,
+        mediaType: originalSource.sourceArtifact!.mediaType,
+      },
+    },
+  });
+  const snapshot = sealCatalogSnapshot({
+    semanticModule: module,
+    semanticAssertions: [fixture.assertions],
+    styleProfiles: [fixture.styleProfile],
+    assets: [fixture.asset, pendingAsset],
+    declarations: [fixture.declaration],
+    dispositions: [
+      {
+        sourceContentHash: fixture.asset.source.contentHash,
+        status: "eligible",
+        usage: {
+          kind: "entry_member",
+          entryHandle: fixture.declaration.handle,
+          memberId: fixture.declaration.members[0]!.memberId,
+        },
+      },
+      {
+        sourceContentHash: pendingAsset.source.contentHash,
+        status: "incomplete",
+        reason: "This unrelated source still awaits creator review",
+      },
+    ],
+    sourceContentHashes: [fixture.asset.source.contentHash, pendingAsset.source.contentHash],
+  });
+  const resolution = resolveCatalogRequirements({
+    semanticModule: module,
+    snapshot,
+    requirements: [fixture.requirement],
+  });
+  assert.equal(snapshot.status, "incomplete");
+  assert.equal(resolution.status, "eligible");
+  assert.equal(resolution.bindings[0]?.assetHash, fixture.asset.hash);
+});
+
 test("catalog measurement cannot disguise deformable rest-pose evidence as static geometry", async () => {
   const module = await loadSemanticRegistry();
   const fixture = await catalogFixture(module);
@@ -51,6 +107,25 @@ test("catalog measurement cannot disguise deformable rest-pose evidence as stati
         },
       }),
     /Static geometry cannot carry animation, skin, or rest-pose evidence/u,
+  );
+});
+
+test("lower-extrema support cannot claim a planar contact area", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await catalogFixture(module);
+  const { kind: _kind, assetId: _assetId, hash: _hash, ...material } = fixture.asset;
+  assert.throws(
+    () =>
+      sealCatalogAssetArtifact({
+        ...material,
+        support: {
+          primaryContact: "bottom",
+          contactAreaSquareMeters: quantizeQ32_32(0.25),
+          measurementMethod: "lower_extrema",
+          evidenceHash: contentHash("lower-extrema-evidence"),
+        },
+      }),
+    /without a planar contact area/iu,
   );
 });
 

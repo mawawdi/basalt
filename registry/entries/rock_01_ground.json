@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rock_01_ground",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000012",
+      "commitmentHash": "0c42e1825af9a77cbae1bd3369676372a02ddc6d1278f0ee03d514bc4fc5667d"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "2a2b7db38c2aaece8c2b2c8e2fa7217800adb49080966ae66e25ceed45157551"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_low_poly_nature",
+  "evidenceHashes": [
+    "3fd7b9704ccb3300e525322ccdfa6386db86558c1f75a7330a7e0f9beceeba5c",
+    "45ad8240999e31f8d057eb42a37068868411a4c67dcb99ac4976191f8eb2eac8",
+    "84214f9b591b9172e2bdc814e842d83c897f628031d3ef844551bb0f6f557c25",
+    "bd1f16c5c6d2a8010abe1ebf20994e80e63d4be108d3eba89ca25774321bf52a"
+  ],
+  "members": [
+    {
+      "memberId": "source_6a457958e187c299",
+      "assetHash": "84214f9b591b9172e2bdc814e842d83c897f628031d3ef844551bb0f6f557c25",
+      "assertionBundleHash": "4933261ed14c511b7560455ecb9a20db49d84eecd8afff2690779d095fff6fbe",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

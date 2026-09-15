@@ -96,6 +96,12 @@ Terrain and routes remain compilable when catalog-dependent stages are incomplet
 Structural grammars use explicit component roles, interfaces, topology, pitch, and
 coverage. Bounds or filenames never infer structural meaning.
 
+Cluster and surface-scatter population consumes a content-hash-seeded, bounded candidate
+stream until the authored target is reached or the attempt budget is exhausted. Region
+containment and shared measured 3D occupancy prune each candidate; a rejected candidate does
+not silently consume one of the requested instances. Exhaustion retains explicit underfill
+diagnostics and never weakens the authored minimum or separation.
+
 ## Declarative construction
 
 A sealed `ConstructionProgram` is a bounded graph of parameters and fixed operations:
@@ -225,6 +231,19 @@ including extrema coordinates, surface clearance, body gap, residual correction,
 grounding depth. A correctly received `incomplete` readback is an acknowledged stage outcome;
 HTTP conflict is reserved for a malformed or contradictory readback.
 
+Catalog mesh publication and binding are sealed separately from catalog admission. The Open Cloud
+uploader verifies exact source bytes, derives a deterministic Roblox GLB that preserves `COLOR_0`
+and strips secondary `COLOR_1+` attributes, and retains the derived bytes in a private immutable
+binary store. It verifies key scope, creator user, zero expected price, operation result, and
+moderation state, then checkpoints a receipt binding the source artifact, derived upload artifact,
+adaptation policy, and request. Publication never changes source disposition. Each binding record
+binds the exact measured asset hash, source-artifact hash, upload-artifact hash, eligible
+publication-receipt hash, positive Roblox asset ID, and creator-observed material expectations.
+Missing records remain typed `asset_binding` lowering gaps; the adapter never inserts placeholder
+geometry. The catalog-first-use handoff verifies its upload packet and publication ledger before
+merging any new binding, and only Studio readback can raise the resulting realization to
+`engine_verified`.
+
 ## Semantic authority
 
 The kernel freezes seven upper sorts: `object`, `aggregate`, `substance`, `space`,
@@ -246,6 +265,12 @@ does not change an existing catalog entry or world hash.
 contacts, collisions, interfaces, rights, and provenance without semantic claims. An
 admitted assertion bundle supplies semantics separately. Each source identity has one
 disposition: eligible, incomplete, or rejected.
+
+Static bottom contact has two explicit evidence methods. A `planar_patch_fit` records fitted
+positive area from exact bottom topology; `lower_extrema` records deterministic bottom
+alignment with zero planar area when rounded, open, pointed, or card geometry has no planar
+base. The latter never implies stable support or ground-placement intent. Deformable support
+is refused, and the entry declaration plus creator review still select the installation mode.
 
 Runtime entry kinds are:
 
@@ -290,6 +315,14 @@ hash. Pack and directory identity are excluded. The result can propose component
 aggregates, collision companions, and alternatives or abstain. A deterministic construction
 eligibility assessment combines this with measurements and visual metadata for review, but
 only admitted assertions and authored declarations can seal catalog entries.
+
+Production qualification is likewise non-authoritative until adjudicated. The proposal fixture,
+visual review packet, and creator decision are separate sealed artifacts. The decision enumerates
+asset descriptions, query expectations, query–asset relevance judgments, and validator verdicts;
+the executable fixture is deterministically derived from it. Runners load and verify all three
+artifacts before dispatch, and evaluation follows every evidence hash back to its exact request,
+candidate pool, model configuration, result set, validator receipt, and decision. Model selection
+is sealed before the holdout attempt, and corpus metadata stages recheck the frozen lineage.
 
 Metadata jobs use deterministic resource-bounded shards: at most eight assets, 192
 evidence files, 64 MiB of evidence bytes, and a fixed preprocessed-pixel ceiling at a

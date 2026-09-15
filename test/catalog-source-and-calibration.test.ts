@@ -518,6 +518,7 @@ function measuredAsset(
     support: {
       primaryContact: "unknown",
       contactAreaSquareMeters: q(0),
+      measurementMethod: "refused",
       refusalReason: "Synthetic fixture has no measured support surface",
     },
     collision: { mode: "none", companionAssetHashes: [], orientedBounds: [] },

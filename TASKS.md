@@ -7,13 +7,16 @@ implementation checklists. Completed cards are removed; Git history is the recor
 
 - [ ] **CAT-QUALIFY — Qualify catalog retrieval at realistic scale.** Author and run the
       leakage-isolated pooled benchmark, then freeze retrieval channels, view count, metadata
-      writer, and requirement validator. Complete when the untouched holdout produces an
-      eligible qualification report.
+      writer, and requirement validator. The 192-asset proposal and complete visual adjudication
+      packet are prepared; execution awaits independent creator review of descriptions,
+      query–asset relevance, and validator verdicts. Complete when the untouched holdout produces
+      an eligible qualification report.
 
 - [ ] **KIT-ADMIT — Admit the first contextual modular kits.** Inspect the Dungeon and
       Office context packets and author evidence-backed assembly, attachment, route, and
-      substitution entries. Complete when every reviewed source has one disposition and the
-      resulting catalog snapshot seals.
+      substitution entries. The bounded Office pilot currently abstains because attributed
+      assembly purpose and mate evidence are absent. Complete when every reviewed source has one
+      disposition and the resulting catalog snapshot seals.
 
 - [ ] **ROBLOX-TOWER — Complete the creator tower gate.** Import the baseline and refined
       observation towers in Studio, play-test access and view corridors, and capture exact

@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "plant_grass_04_ground",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000005",
+      "commitmentHash": "46cc92583e87b278992e0231f5d29daa27e7459dc849ff87c67b7c1fa7e61e7f"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "c1c1b2e0b9ae2b7eeb209fb9035ecaf8223906dc1247658becadadc8833f25db"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_low_poly_nature",
+  "evidenceHashes": [
+    "2e219e64ed63a86735d59d25a8ff9d58c851afb4be9f7bd2c649ed7fb1668607",
+    "3fd7b9704ccb3300e525322ccdfa6386db86558c1f75a7330a7e0f9beceeba5c",
+    "45ad8240999e31f8d057eb42a37068868411a4c67dcb99ac4976191f8eb2eac8",
+    "5db6424b3ce7c262dceed88325b96ff9a21f0e4953fe27840084e2aaecfa4391"
+  ],
+  "members": [
+    {
+      "memberId": "source_9cbd54bdf6f7601a",
+      "assetHash": "5db6424b3ce7c262dceed88325b96ff9a21f0e4953fe27840084e2aaecfa4391",
+      "assertionBundleHash": "cabcc353c00556f88181dc890e9a48a53b5785dbd0b04965ed22f99ddf3c4695",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

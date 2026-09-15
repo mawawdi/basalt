@@ -5,6 +5,7 @@
 -- failed or cancelled import restores the creator's terrain exactly.
 local Workspace = game:GetService("Workspace")
 local Constants = require(script.Parent.Constants)
+local TerrainReadback = require(script.Parent.TerrainReadback)
 
 local TerrainLowering = {}
 local CELL_STUDS = 4
@@ -14,7 +15,6 @@ local CELL_METERS = CELL_STUDS * Constants.STUD_METERS
 -- sample space before calculating the fractional boundary voxel.
 local SURFACE_SAMPLE_OFFSET_METERS = CELL_METERS / 2
 local CHANNELS = { "SolidMaterial", "SolidOccupancy", "LiquidOccupancy" }
-local OCCUPANCY_TOLERANCE = 1 / 255 + 0.000001
 local pending: { any } = {}
 
 local function fail(message: string): never
@@ -366,14 +366,51 @@ function TerrainLowering.verify(): ()
 		local live = terrain:ReadVoxelChannels(record.region, CELL_STUDS, CHANNELS)
 		local nx, ny, nz = record.dimensions[1], record.dimensions[2], record.dimensions[3]
 		for ix = 1, nx do for iy = 1, ny do for iz = 1, nz do
-			if live.SolidMaterial[ix][iy][iz] ~= record.expected.materials[ix][iy][iz] then
-				fail("terrain material readback drifted for " .. record.fieldHash)
+			local expectedOccupancy = record.expected.occupancy[ix][iy][iz]
+			local observedOccupancy = live.SolidOccupancy[ix][iy][iz]
+			if not TerrainReadback.occupancyMatches(expectedOccupancy, observedOccupancy) then
+				fail(string.format(
+					"terrain occupancy readback drifted for %s at [%d,%d,%d]: expected %.9f, observed %.9f",
+					record.fieldHash,
+					ix,
+					iy,
+					iz,
+					expectedOccupancy,
+					observedOccupancy
+				))
 			end
-			if math.abs(live.SolidOccupancy[ix][iy][iz] - record.expected.occupancy[ix][iy][iz]) > OCCUPANCY_TOLERANCE then
-				fail("terrain occupancy readback drifted for " .. record.fieldHash)
+			local expectedMaterial = record.expected.materials[ix][iy][iz]
+			local observedMaterial = live.SolidMaterial[ix][iy][iz]
+			if not TerrainReadback.materialMatches(
+				expectedMaterial,
+				observedMaterial,
+				expectedOccupancy,
+				observedOccupancy
+			) then
+				fail(string.format(
+					"terrain material readback drifted for %s at [%d,%d,%d]: expected %s @ %.9f, observed %s @ %.9f",
+					record.fieldHash,
+					ix,
+					iy,
+					iz,
+					tostring(expectedMaterial),
+					expectedOccupancy,
+					tostring(observedMaterial),
+					observedOccupancy
+				))
 			end
-			if math.abs(live.LiquidOccupancy[ix][iy][iz] - record.expected.liquid[ix][iy][iz]) > OCCUPANCY_TOLERANCE then
-				fail("terrain liquid readback drifted for " .. record.fieldHash)
+			local expectedLiquid = record.expected.liquid[ix][iy][iz]
+			local observedLiquid = live.LiquidOccupancy[ix][iy][iz]
+			if not TerrainReadback.occupancyMatches(expectedLiquid, observedLiquid) then
+				fail(string.format(
+					"terrain liquid readback drifted for %s at [%d,%d,%d]: expected %.9f, observed %.9f",
+					record.fieldHash,
+					ix,
+					iy,
+					iz,
+					expectedLiquid,
+					observedLiquid
+				))
 			end
 		end end end
 	end

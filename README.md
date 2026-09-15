@@ -50,29 +50,45 @@ npm test
 Catalog preparation and progressive search:
 
 ```sh
+node scripts/materialize-catalog-readiness.mjs
 node bin/basalt.js catalog inventory
 node bin/basalt.js catalog measure --workers 4
 node bin/basalt.js catalog render --workers 4
 node bin/basalt.js catalog metadata prepare --scope smoke
-node bin/basalt.js catalog metadata generate --executor modal
 node bin/basalt.js catalog index
-node bin/basalt.js catalog search "stylized palm tree" --limit 20 --validate 8
+node bin/basalt.js catalog search "tree" --mode basename_only --validate 0
 ```
 
-The 32-asset smoke fixture checks plumbing and determinism but cannot authorize a corpus
-run. Production qualification is explicit:
+The progressive index includes every valid measured source before metadata or embeddings are
+available, reports missing enrichment per document, and retains hard metric and rights filters.
+Retrieval without validation is candidate evidence, never a suitability verdict. The 32-asset
+smoke fixture checks plumbing and determinism but cannot authorize a corpus run.
+
+Production qualification has a mandatory independent creator adjudication gate. First inspect
+all asset-description, query–asset relevance, and validator-verdict pages under
+`.basalt/catalog/qualification/review/`; complete every action in the decision template; then
+seal the reviewed answer key:
 
 ```sh
+npm run catalog:qualification:review
+npm run catalog:qualification:finalize -- \
+  --decision .basalt/catalog/qualification/review/decision-template.json
 node bin/basalt.js catalog qualify prepare
-node bin/basalt.js catalog qualify run --input <qualification-evidence.json>
-node bin/basalt.js catalog qualify evaluate
+node bin/basalt.js catalog qualify run --split development --executor modal
+node bin/basalt.js catalog qualify run --split model_selection --executor modal
+node bin/basalt.js catalog qualify evaluate --split model_selection
+node bin/basalt.js catalog qualify run --split holdout --executor modal
+node bin/basalt.js catalog qualify evaluate --split holdout
 ```
 
-Only an eligible production report unlocks `catalog metadata prepare --scope corpus`;
-only a complete corpus run may be committed to `registry/catalog-search.json`. Metadata
-worker shards contain **up to** eight assets and are additionally bounded by evidence
-bytes, evidence-file count, and preprocessed pixels. Eight is a resumable checkpoint
-ceiling, not a GPU batch size.
+The runner loads and verifies the proposal, review packet, and creator decision artifact before
+any model call. It executes metadata, embeddings, retrieval ablations, independent validation,
+and the candidate-decision policy into resumable content-addressed evidence. Only an eligible
+holdout report bound to the frozen model-selection artifact unlocks
+`catalog metadata prepare --scope corpus`; only a complete corpus run may be committed to
+`registry/catalog-search.json`. Metadata worker shards contain **up to** eight assets and are
+also bounded by evidence bytes, file count, and preprocessed pixels. Eight is a resumable
+checkpoint ceiling, not a GPU batch size.
 
 Context packets for ambiguous modular assets are separate from per-asset metadata:
 
@@ -83,6 +99,47 @@ node bin/basalt.js catalog context review
 ```
 
 The context output is review evidence, never catalog authority.
+
+`npm run catalog:context:pilot` materializes one bounded four-source Office request. It runs no
+model and remains explicitly incomplete because no attributed assembly evidence currently proves
+purpose, mates, or socket compatibility.
+
+The first outdoor admission and real catalog-use handoffs are materialized with:
+
+```sh
+npm run catalog:admission:outdoor-review
+# creator completes the generated decision.json
+npm run catalog:admission:outdoor-apply -- --decision <decision.json>
+node bin/basalt.js catalog seal
+node bin/basalt.js catalog commit
+node bin/basalt.js catalog validate --require-commit true
+npm run eval:catalog-first-use
+npm run eval:catalog-first-use:upload -- --scope required
+npm run eval:catalog-first-use
+```
+
+The first-use fixture loads the committed catalog and retained measurements, compiles through the
+public command, and emits exact Roblox upload and binding inputs. The uploader reads
+`BASALT_ROBLOX_API_KEY` and `ROBLOX_USER_ID` from `.env`, verifies the key's exact read/write asset
+scope, validates every GLB and source hash before network access, and derives a deterministic
+Roblox upload payload. The derivation preserves `COLOR_0` and removes only secondary `COLOR_1+`
+attributes, which are not core material color and may contain engine-specific control data. Exact
+derived bytes are retained under `.basalt/roblox/upload-artifacts/`; receipts bind the source hash,
+derived hash, adaptation-policy hash, creator, and request. The uploader fixes the expected price at
+zero, polls Open Cloud operations, and checkpoints each result in
+`.basalt/roblox/asset-uploads.json`. Reruns reuse only that exact source/payload pair. Publication
+does not admit a catalog source or establish engine evidence.
+
+`--scope required` publishes only assets needed by the current lowering gaps. After a varied Studio
+pilot confirms both repaired and unchanged controls, `--scope all` publishes every admitted asset;
+pending or quarantined sources never enter either scope.
+
+After rerunning the fixture, uploaded IDs, upload-payload hashes, and publication evidence hashes
+are prefilled in `roblox-binding-decision-template.json`. Record the imported MeshPart material
+fields in Studio, then run
+`npm run eval:catalog-first-use:seal-bindings -- --decision <decision.json>`; the sealer accepts only
+exact packet coverage, IDs backed by the matching source-derived upload receipt, and complete
+observed material expectations.
 
 Roblox operator flow:
 

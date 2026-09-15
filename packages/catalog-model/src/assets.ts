@@ -108,6 +108,7 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
       .object({
         primaryContact: z.enum(["bottom", "lateral_wall", "top_ceiling", "socket_only", "unknown"]),
         contactAreaSquareMeters: NONNEGATIVE_Q32_SCHEMA,
+        measurementMethod: z.enum(["planar_patch_fit", "lower_extrema", "refused"]),
         evidenceHash: HASH_SCHEMA.optional(),
         refusalReason: z.string().trim().min(1).max(512).optional(),
       })
@@ -275,11 +276,48 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
       checkQuaternion(part.transform.rotationQuaternion, ["parts", index, "transform"], context),
     );
     value.sockets.forEach((socket, index) => checkSocket(socket, index, context));
-    if (value.support.primaryContact === "unknown" && !value.support.refusalReason)
+    if (value.support.measurementMethod === "refused") {
+      if (value.support.primaryContact !== "unknown" || !value.support.refusalReason)
+        context.addIssue({
+          code: "custom",
+          path: ["support"],
+          message: "Refused support must be unknown and carry a refusal reason",
+        });
+      if (value.support.evidenceHash)
+        context.addIssue({
+          code: "custom",
+          path: ["support", "evidenceHash"],
+          message: "Refused support cannot carry measured support evidence",
+        });
+      if (BigInt(value.support.contactAreaSquareMeters) !== 0n)
+        context.addIssue({
+          code: "custom",
+          path: ["support", "contactAreaSquareMeters"],
+          message: "Refused support cannot carry a contact area",
+        });
+    } else {
+      if (value.support.primaryContact === "unknown" || !value.support.evidenceHash)
+        context.addIssue({
+          code: "custom",
+          path: ["support"],
+          message: "Measured support requires a known contact and exact evidence",
+        });
+      if (value.support.refusalReason)
+        context.addIssue({
+          code: "custom",
+          path: ["support", "refusalReason"],
+          message: "Measured support cannot carry a refusal reason",
+        });
+    }
+    if (
+      value.support.measurementMethod === "lower_extrema" &&
+      (value.support.primaryContact !== "bottom" ||
+        BigInt(value.support.contactAreaSquareMeters) !== 0n)
+    )
       context.addIssue({
         code: "custom",
-        path: ["support", "refusalReason"],
-        message: "Unknown support requires a refusal reason",
+        path: ["support"],
+        message: "Lower-extrema support proves bottom alignment without a planar contact area",
       });
     if (value.sockets.length === 0 && !value.socketMeasurementRefusal)
       context.addIssue({

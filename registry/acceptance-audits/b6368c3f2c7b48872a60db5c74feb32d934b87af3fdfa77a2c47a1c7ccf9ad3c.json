@@ -1,0 +1,137 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "outdoor_tranche",
+  "reviewPacketHash": "45ad8240999e31f8d057eb42a37068868411a4c67dcb99ac4976191f8eb2eac8",
+  "reviewDecisionHash": "3fd7b9704ccb3300e525322ccdfa6386db86558c1f75a7330a7e0f9beceeba5c",
+  "reviewer": {
+    "authority": "creator",
+    "reviewerId": "mawawdi"
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "5ba0469335626fa05d78819c58cf28b4ad13360295b0f3023ddf016e6bfdb51f",
+  "sourceContentHash": "b6368c3f2c7b48872a60db5c74feb32d934b87af3fdfa77a2c47a1c7ccf9ad3c",
+  "assetHash": "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+  "renderEvidenceHash": "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5",
+  "assertionBundleHash": "026417203b0ebe7fb0dc3e3aa044577955f52ae1d561157e887baa7ae90c23c8",
+  "entryHandle": "rock_02_ground",
+  "memberId": "source_b6368c3f2c7b4887",
+  "entryDeclarationHash": "b047c2ddb956855d77a3a45c1b53dd7352011695d281a085e739a18822a31317",
+  "styleProfileHandle": "stylized_low_poly_nature",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "199dee1bbe730c8533c74e6f9d141c79e5c06479c7bca433a70be64d30fd70e4",
+        "3a4aedddfa14ed8ffa361fdfd4d5568fbcf3b630dce182a9ecf144fbfea4515a",
+        "4a00ed523cef252aff9dffad4a509c2baf16420cd835e8cd8c776d13b2dc1fa5"
+      ],
+      "note": "Creator independently reviewed the bound packet evidence and found this criterion satisfied."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "be22507c667e600a9f21fbdeefe38bdc293fb3c695ead1e72cce25145e8b2768"
+}

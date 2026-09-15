@@ -81,6 +81,7 @@ export async function catalogFixture(module: SemanticModule): Promise<{
     support: {
       primaryContact: "bottom",
       contactAreaSquareMeters: q(1),
+      measurementMethod: "planar_patch_fit",
       evidenceHash,
     },
     collision: {

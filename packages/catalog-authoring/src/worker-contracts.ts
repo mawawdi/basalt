@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { HASH_SCHEMA, contentHash, stableJson } from "@basalt/contracts";
 import { CATALOG_ASSET_ARTIFACT_SCHEMA } from "@basalt/catalog-model";
-import { CATALOG_QUANTIZED_VECTOR_SCHEMA } from "./embeddings.js";
+import { CATALOG_EMBEDDING_PURPOSE_SCHEMA, CATALOG_QUANTIZED_VECTOR_SCHEMA } from "./embeddings.js";
 import {
   ASSET_SEARCH_METADATA_REQUEST_SCHEMA,
   ASSET_SEARCH_METADATA_RECEIPT_SCHEMA,
@@ -188,7 +188,7 @@ export const CATALOG_METADATA_WORKER_JOB_SCHEMA = z
       "metadata worker items",
       context,
     );
-    validateInputBudget(value.items, value.inputBudget, false, context);
+    validateInputBudget(value.items, value.inputBudget, context);
   });
 export type CatalogMetadataWorkerJob = z.output<typeof CATALOG_METADATA_WORKER_JOB_SCHEMA>;
 
@@ -380,14 +380,34 @@ export const CATALOG_CONTEXT_WORKER_OUTPUT_SCHEMA = z
 const EMBEDDING_VIEW_SCHEMA = z
   .object({
     viewId: z.string().regex(/^(?:low|high)_[0-9]{2}$/u),
-    rgbRelativePath: RELATIVE_EVIDENCE_PATH_SCHEMA,
-    rgbHash: HASH_SCHEMA,
-    rgbSizeBytes: EVIDENCE_SIZE_SCHEMA,
-    normalizedDepthRelativePath: RELATIVE_EVIDENCE_PATH_SCHEMA,
-    normalizedDepthHash: HASH_SCHEMA,
-    normalizedDepthSizeBytes: EVIDENCE_SIZE_SCHEMA,
+    rgbRelativePath: RELATIVE_EVIDENCE_PATH_SCHEMA.optional(),
+    rgbHash: HASH_SCHEMA.optional(),
+    rgbSizeBytes: EVIDENCE_SIZE_SCHEMA.optional(),
+    normalizedDepthRelativePath: RELATIVE_EVIDENCE_PATH_SCHEMA.optional(),
+    normalizedDepthHash: HASH_SCHEMA.optional(),
+    normalizedDepthSizeBytes: EVIDENCE_SIZE_SCHEMA.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    const rgbFields = [value.rgbRelativePath, value.rgbHash, value.rgbSizeBytes];
+    const depthFields = [
+      value.normalizedDepthRelativePath,
+      value.normalizedDepthHash,
+      value.normalizedDepthSizeBytes,
+    ];
+    if (!allOrNone(rgbFields))
+      context.addIssue({
+        code: "custom",
+        path: ["rgbRelativePath"],
+        message: "Embedding RGB evidence must include path, hash, and byte size together",
+      });
+    if (!allOrNone(depthFields))
+      context.addIssue({
+        code: "custom",
+        path: ["normalizedDepthRelativePath"],
+        message: "Embedding depth evidence must include path, hash, and byte size together",
+      });
+  });
 
 export const CATALOG_EMBEDDING_WORKER_JOB_SCHEMA = z
   .object({
@@ -395,7 +415,8 @@ export const CATALOG_EMBEDDING_WORKER_JOB_SCHEMA = z
     sourceManifestHash: HASH_SCHEMA,
     visualReviewIndexHash: HASH_SCHEMA,
     workerImplementationHash: HASH_SCHEMA,
-    models: z.array(CATALOG_MODEL_DECLARATION_SCHEMA).length(2),
+    purposes: z.array(CATALOG_EMBEDDING_PURPOSE_SCHEMA).min(1).max(2),
+    models: z.array(CATALOG_MODEL_DECLARATION_SCHEMA).min(1).max(2),
     items: z
       .array(
         z
@@ -414,6 +435,7 @@ export const CATALOG_EMBEDDING_WORKER_JOB_SCHEMA = z
   .strict()
   .superRefine((value, context) => {
     verifyArtifactHash(value, context);
+    requireCanonicalValues(value.purposes, String, "embedding purposes", context);
     requireCanonicalValues(
       value.models,
       (entry) => entry.modelId,
@@ -426,21 +448,36 @@ export const CATALOG_EMBEDDING_WORKER_JOB_SCHEMA = z
       "embedding worker items",
       context,
     );
-    const purposes = value.models.flatMap((model) =>
-      model.capabilities.filter(
-        (capability): capability is "image_text_retrieval" | "shape_similarity" =>
-          capability === "image_text_retrieval" || capability === "shape_similarity",
-      ),
-    );
+    const purposesByModel = value.models.map(modelEmbeddingPurposes);
+    const modelPurposes = purposesByModel.flat();
     if (
-      stableJson([...purposes].sort()) !== stableJson(["image_text_retrieval", "shape_similarity"])
+      purposesByModel.some((purposes) => purposes.length !== 1) ||
+      value.models.length !== value.purposes.length ||
+      stableJson([...modelPurposes].sort()) !== stableJson(value.purposes)
     )
       context.addIssue({
         code: "custom",
         path: ["models"],
-        message: "Embedding jobs require one image-text and one shape model",
+        message: "Embedding jobs require exactly one model for every requested purpose",
       });
-    validateInputBudget(value.items, value.inputBudget, true, context);
+    for (const [itemIndex, item] of value.items.entries())
+      for (const [viewIndex, view] of item.views.entries()) {
+        const hasRgb = view.rgbRelativePath !== undefined;
+        const hasDepth = view.normalizedDepthRelativePath !== undefined;
+        if (hasRgb !== value.purposes.includes("image_text_retrieval"))
+          context.addIssue({
+            code: "custom",
+            path: ["items", itemIndex, "views", viewIndex, "rgbRelativePath"],
+            message: "RGB evidence must be present exactly when image-text retrieval is requested",
+          });
+        if (hasDepth !== value.purposes.includes("shape_similarity"))
+          context.addIssue({
+            code: "custom",
+            path: ["items", itemIndex, "views", viewIndex, "normalizedDepthRelativePath"],
+            message: "Depth evidence must be present exactly when shape similarity is requested",
+          });
+      }
+    validateInputBudget(value.items, value.inputBudget, context);
   });
 
 export const CATALOG_EMBEDDING_WORKER_OUTPUT_SCHEMA = z
@@ -462,10 +499,11 @@ export const CATALOG_EMBEDDING_WORKER_OUTPUT_SCHEMA = z
             perViewEvidenceHash: HASH_SCHEMA,
             aggregate: CATALOG_QUANTIZED_VECTOR_SCHEMA,
             maximumViewDisagreementMillionths: z.number().int().min(0).max(2_000_000),
+            gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
           })
           .strict(),
       )
-      .min(2)
+      .min(1)
       .max(16),
     resultHash: HASH_SCHEMA,
   })
@@ -509,6 +547,7 @@ export const CATALOG_QUERY_EMBEDDING_WORKER_OUTPUT_SCHEMA = z
     jobHash: HASH_SCHEMA,
     modelImplementationHash: HASH_SCHEMA,
     preprocessingImplementationHash: HASH_SCHEMA,
+    gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
     items: z
       .array(z.object({ queryHash: HASH_SCHEMA, vector: CATALOG_QUANTIZED_VECTOR_SCHEMA }).strict())
       .min(1)
@@ -583,7 +622,7 @@ export const CATALOG_VALIDATION_WORKER_JOB_SCHEMA = z
       "validation worker items",
       context,
     );
-    validateInputBudget(value.items, value.inputBudget, false, context);
+    validateInputBudget(value.items, value.inputBudget, context);
   });
 
 export const CATALOG_VALIDATION_WORKER_OUTPUT_SCHEMA = z
@@ -659,9 +698,7 @@ export function catalogWorkerOutputIsComplete(
     if (output.kind !== "CatalogEmbeddingWorkerOutput") return false;
     return sameIdentities(
       job.items.flatMap((item) =>
-        job.models.map(
-          (model) => `${item.sourceContentHash}:${embeddingPurpose(model.capabilities)}`,
-        ),
+        job.purposes.map((purpose) => `${item.sourceContentHash}:${purpose}`),
       ),
       output.receipts.map((entry) => `${entry.sourceContentHash}:${entry.purpose}`),
     );
@@ -671,16 +708,6 @@ export function catalogWorkerOutputIsComplete(
     job.queries.map((entry) => entry.queryHash),
     output.items.map((entry) => entry.queryHash),
   );
-}
-
-function embeddingPurpose(
-  capabilities: readonly string[],
-): "image_text_retrieval" | "shape_similarity" {
-  const purpose = capabilities.find(
-    (entry) => entry === "image_text_retrieval" || entry === "shape_similarity",
-  );
-  if (!purpose) throw new Error("Embedding model has no embedding capability");
-  return purpose;
 }
 
 /** Verify the raw JSON envelope before Zod applies string normalization. */
@@ -699,16 +726,23 @@ function sameIdentities(expected: readonly string[], actual: readonly string[]):
 function validateInputBudget(
   items: readonly {
     readonly views: readonly {
-      readonly rgbSizeBytes: number;
-      readonly normalizedDepthSizeBytes?: number;
+      readonly rgbSizeBytes?: number | undefined;
+      readonly normalizedDepthSizeBytes?: number | undefined;
     }[];
   }[],
   budget: z.output<typeof CATALOG_WORKER_INPUT_BUDGET_SCHEMA>,
-  includeDepth: boolean,
   context: z.RefinementCtx,
 ): void {
   const evidenceFileCount = items.reduce(
-    (count, item) => count + item.views.length * (includeDepth ? 2 : 1),
+    (count, item) =>
+      count +
+      item.views.reduce(
+        (viewCount, view) =>
+          viewCount +
+          (view.rgbSizeBytes === undefined ? 0 : 1) +
+          (view.normalizedDepthSizeBytes === undefined ? 0 : 1),
+        0,
+      ),
     0,
   );
   const evidenceBytes = items.reduce(
@@ -716,7 +750,7 @@ function validateInputBudget(
       total +
       item.views.reduce(
         (viewTotal, view) =>
-          viewTotal + view.rgbSizeBytes + (includeDepth ? (view.normalizedDepthSizeBytes ?? 0) : 0),
+          viewTotal + (view.rgbSizeBytes ?? 0) + (view.normalizedDepthSizeBytes ?? 0),
         0,
       ),
     0,
@@ -738,4 +772,18 @@ function validateInputBudget(
         path: ["inputBudget", field],
         message: `Worker input budget ${field} does not match the sealed evidence`,
       });
+}
+
+function modelEmbeddingPurposes(
+  model: z.output<typeof CATALOG_MODEL_DECLARATION_SCHEMA>,
+): Array<"image_text_retrieval" | "shape_similarity"> {
+  return model.capabilities.filter(
+    (capability): capability is "image_text_retrieval" | "shape_similarity" =>
+      capability === "image_text_retrieval" || capability === "shape_similarity",
+  );
+}
+
+function allOrNone(values: readonly unknown[]): boolean {
+  const present = values.filter((value) => value !== undefined).length;
+  return present === 0 || present === values.length;
 }

@@ -5,12 +5,19 @@ contracts in `ARCHITECTURE.md` and the sealed registry win if rationale ever dri
 
 ## Current rationale
 
+- [Deterministic population placement](research/population-placement.md) — bounded candidate
+  replenishment and measured-occupancy pruning for clusters and surface scatters.
 - [World construction and refinement](research/world-construction-and-refinement.md) —
   non-authoritative walkthrough of a 40-square-kilometer world request, procedural and
   neural tower construction, and the proposed integration with bounded refinement.
 - [Catalog search and architecture assessment](research/catalog-search-assessment.md) —
   non-authoritative audit of selection results, model costs, evaluation design, and
   proposed changes connecting asset discovery to world generation.
+- [Catalog support measurement](research/catalog-support-measurement.md) — root-cause audit,
+  established mesh-contact baseline, bounded pilot, and full-corpus result for planar and
+  lower-extrema support evidence.
+- [Roblox glTF upload color adaptation](research/roblox-gltf-upload-colors.md) — importer-color
+  root cause, standards baseline, deterministic payload rule, and affected/control pilot.
 - [Basalt and existing world-generation systems](research/world-generation-reuse.md) —
   non-authoritative build-versus-reuse assessment, implementation evidence, and proposed
   integration experiments.

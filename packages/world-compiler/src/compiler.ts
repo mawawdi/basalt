@@ -111,6 +111,10 @@ export const REALIZATION_INTENT_REALIZER_BY_KIND = Object.freeze({
   environment_layer: "realizeEnvironment",
 } satisfies Record<RealizationIntentKind, string>);
 
+const MINIMUM_POPULATION_CANDIDATE_ATTEMPTS = 4_096;
+const POPULATION_CANDIDATE_ATTEMPTS_PER_TARGET = 64;
+const MAXIMUM_POPULATION_CANDIDATE_ATTEMPTS = 10_000_000;
+
 export interface CompileBasaltWorldInput {
   readonly semanticModule: SemanticModule;
   readonly catalogSnapshot: CatalogSnapshot;
@@ -663,13 +667,16 @@ function realizeIntent(
     )
       throw new Error(`environment realizer does not support ${intent.mode}`);
     const targets = targetsForIntent(state, intent);
-    if (targets.length === 0) {
-      diagnostics.push(`intent:${intent.intentId}:has no valid spatial targets`);
-      return;
-    }
+    const targetCount = desiredCount(intent);
     let placed = 0;
-    for (const [index, target] of targets.entries()) {
-      const source = resolveMember(state, entry, binding, `${intent.intentId}:${index}`);
+    let candidateCount = 0;
+    let outsideRegionCount = 0;
+    let occupancyConflictCount = 0;
+    for (const target of targets) {
+      if (placed >= targetCount) break;
+      const candidateIndex = candidateCount;
+      candidateCount += 1;
+      const source = resolveMember(state, entry, binding, `${intent.intentId}:${candidateIndex}`);
       if (!source) {
         diagnostics.push(`intent:${intent.intentId}:entry has no realizable asset member`);
         break;
@@ -687,17 +694,26 @@ function realizeIntent(
       try {
         assertInstanceInsideRegion(state.input.spatialPlan, instance);
       } catch {
+        outsideRegionCount += 1;
         continue;
       }
       const reservation = reservationFor(instance, source.asset, separationForIntent(intent) / 2);
-      if (state.occupancy.conflicts(reservation).length > 0) continue;
+      if (state.occupancy.conflicts(reservation).length > 0) {
+        occupancyConflictCount += 1;
+        continue;
+      }
       state.occupancy.reserve(reservation);
       (stage === "meso" ? state.mesoInstances : state.microInstances).push(instance);
       placed += 1;
     }
     const minimum = requiredCount(intent);
-    if (placed < minimum)
-      diagnostics.push(`intent:${intent.intentId}:placed ${placed} of required ${minimum}`);
+    if (candidateCount === 0 && minimum > 0) {
+      diagnostics.push(`intent:${intent.intentId}:has no valid spatial targets`);
+    } else if (placed < minimum) {
+      diagnostics.push(
+        `intent:${intent.intentId}:placed ${placed} of required ${minimum} after ${candidateCount} candidates (${outsideRegionCount} outside region, ${occupancyConflictCount} occupancy conflicts)`,
+      );
+    }
   } catch (error) {
     diagnostics.push(
       `intent:${intent.intentId}:${error instanceof Error ? error.message : String(error)}`,
@@ -1637,7 +1653,7 @@ interface Target {
 function targetsForIntent(
   state: CompilerState,
   intent: Exclude<RealizationIntent, { kind: "assembly" }>,
-): Target[] {
+): Iterable<Target> {
   const plan = state.input.spatialPlan;
   if (intent.kind === "single")
     return [
@@ -1653,33 +1669,19 @@ function targetsForIntent(
     ];
   if (intent.kind === "wall_attachment") return [wallAttachmentTarget(state, intent)];
   if (intent.kind === "surface_scatter")
-    return scatter(intent.boundary, intent.targetCount, contentHash(stableJson(intent))).map(
-      (point) => ({
-        position: {
-          x: point.x,
-          y: surfaceHeight(state, intent.surfaceId, point.x, point.z),
-          z: point.z,
-        },
-        regionId: intent.regionId,
-        surfaceId: intent.surfaceId,
-      }),
+    return scatterTargets(
+      state,
+      intent,
+      populationCandidateAttemptLimit(intent.targetCount),
+      contentHash(stableJson(intent)),
     );
   if (intent.kind === "cluster")
-    return Array.from({ length: intent.targetCount }, (_, index) => {
-      const radius = intent.radiusMeters * Math.sqrt((index + 0.5) / intent.targetCount);
-      const angle = index * 2.399963229728653;
-      const x = intent.center.u + Math.cos(angle) * radius;
-      const z = intent.center.v + Math.sin(angle) * radius;
-      return {
-        position: {
-          x,
-          y: surfaceHeight(state, intent.surfaceId, x, z),
-          z,
-        },
-        regionId: intent.regionId,
-        surfaceId: intent.surfaceId,
-      };
-    });
+    return clusterTargets(
+      state,
+      intent,
+      populationCandidateAttemptLimit(intent.targetCount),
+      contentHash(stableJson(intent)),
+    );
   if (intent.kind === "surface_grid")
     return Array.from({ length: intent.rows * intent.columns }, (_, index) => {
       const x = intent.origin.u + (index % intent.columns) * intent.spacingUMeters;
@@ -2051,6 +2053,10 @@ function requiredCount(intent: RealizationIntent): number {
   if (intent.kind === "environment_layer") return intent.regionIds.length;
   return 1;
 }
+function desiredCount(intent: RealizationIntent): number {
+  if (intent.kind === "surface_scatter" || intent.kind === "cluster") return intent.targetCount;
+  return requiredCount(intent);
+}
 function stageStatus(
   resolution: CompilationStatus,
   diagnostics: readonly string[],
@@ -2069,26 +2075,76 @@ function yawQuaternion(hash: string): [number, number, number, number] {
   const angle = (Number.parseInt(hash.slice(0, 8), 16) / 0xffff_ffff) * Math.PI * 2;
   return [0, Math.sin(angle / 2), 0, Math.cos(angle / 2)];
 }
-function scatter(
-  boundary: readonly { u: number; v: number }[],
-  count: number,
+function populationCandidateAttemptLimit(targetCount: number): number {
+  return Math.min(
+    MAXIMUM_POPULATION_CANDIDATE_ATTEMPTS,
+    Math.max(
+      MINIMUM_POPULATION_CANDIDATE_ATTEMPTS,
+      targetCount * POPULATION_CANDIDATE_ATTEMPTS_PER_TARGET,
+    ),
+  );
+}
+
+function* scatterTargets(
+  state: CompilerState,
+  intent: Extract<RealizationIntent, { kind: "surface_scatter" }>,
+  maximumAttempts: number,
   hash: string,
-): Array<{ x: number; z: number }> {
+): Generator<Target> {
+  for (const point of candidatePointsInPolygon(intent.boundary, maximumAttempts, hash))
+    yield {
+      position: {
+        x: point.x,
+        y: surfaceHeight(state, intent.surfaceId, point.x, point.z),
+        z: point.z,
+      },
+      regionId: intent.regionId,
+      surfaceId: intent.surfaceId,
+    };
+}
+
+function* clusterTargets(
+  state: CompilerState,
+  intent: Extract<RealizationIntent, { kind: "cluster" }>,
+  maximumAttempts: number,
+  hash: string,
+): Generator<Target> {
+  const firstPhase = Number.parseInt(hash.slice(0, 8), 16) / 0xffff_ffff;
+  const secondPhase = Number.parseInt(hash.slice(8, 16), 16) / 0xffff_ffff;
+  for (let attempt = 0; attempt < maximumAttempts; attempt += 1) {
+    const radial = Math.sqrt(fractional(firstPhase + (attempt + 0.5) * 0.7548776662466927));
+    const angle = 2 * Math.PI * fractional(secondPhase + (attempt + 0.5) * 0.5698402909980532);
+    const x = intent.center.u + Math.cos(angle) * intent.radiusMeters * radial;
+    const z = intent.center.v + Math.sin(angle) * intent.radiusMeters * radial;
+    yield {
+      position: {
+        x,
+        y: surfaceHeight(state, intent.surfaceId, x, z),
+        z,
+      },
+      regionId: intent.regionId,
+      surfaceId: intent.surfaceId,
+    };
+  }
+}
+
+function* candidatePointsInPolygon(
+  boundary: readonly { u: number; v: number }[],
+  maximumAttempts: number,
+  hash: string,
+): Generator<{ x: number; z: number }> {
   const minX = Math.min(...boundary.map((point) => point.u));
   const maxX = Math.max(...boundary.map((point) => point.u));
   const minZ = Math.min(...boundary.map((point) => point.v));
   const maxZ = Math.max(...boundary.map((point) => point.v));
   const firstPhase = Number.parseInt(hash.slice(0, 8), 16) / 0xffff_ffff;
   const secondPhase = Number.parseInt(hash.slice(8, 16), 16) / 0xffff_ffff;
-  const points: Array<{ x: number; z: number }> = [];
-  const maximumAttempts = Math.min(10_000_000, Math.max(4096, count * 64));
-  for (let attempt = 0; attempt < maximumAttempts && points.length < count; attempt += 1) {
+  for (let attempt = 0; attempt < maximumAttempts; attempt += 1) {
     const u = fractional(firstPhase + (attempt + 0.5) * 0.7548776662466927);
     const v = fractional(secondPhase + (attempt + 0.5) * 0.5698402909980532);
     const candidate = { x: minX + u * (maxX - minX), z: minZ + v * (maxZ - minZ) };
-    if (pointInIntentPolygon(candidate, boundary)) points.push(candidate);
+    if (pointInIntentPolygon(candidate, boundary)) yield candidate;
   }
-  return points;
 }
 
 interface RouteFrame {

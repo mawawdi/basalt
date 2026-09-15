@@ -20,6 +20,7 @@ import {
   type WorldBuild,
 } from "@basalt/world-compiler";
 import { ROBLOX_STUD_METERS } from "./constants.js";
+import { ROBLOX_GLTF_UPLOAD_ADAPTATION_POLICY_HASH } from "./glb-upload.js";
 
 const entityId = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u);
 const diagnosticEntityId = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u);
@@ -197,11 +198,237 @@ export const ROBLOX_MATERIAL_EXPECTATION_SCHEMA = z
   .strict();
 export type RobloxMaterialExpectation = z.output<typeof ROBLOX_MATERIAL_EXPECTATION_SCHEMA>;
 
+const robloxUploadFailure = z
+  .object({
+    code: z.number().int().nullable(),
+    message: z.string().trim().min(1).max(1024),
+  })
+  .strict();
+
+const robloxUploadArtifact = z
+  .object({
+    locator: z.string().regex(/^binary-artifacts\/[a-f0-9]{64}\.bin$/u),
+    artifactHash: HASH_SCHEMA,
+    bytes: z
+      .number()
+      .int()
+      .positive()
+      .max(20 * 1024 * 1024),
+    mediaType: z.literal("model/gltf-binary"),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.locator !== `binary-artifacts/${value.artifactHash}.bin`)
+      context.addIssue({
+        code: "custom",
+        message: "Upload artifact locator does not match its hash",
+      });
+  });
+
+const robloxUploadAdaptation = z
+  .object({
+    policyHash: z.literal(ROBLOX_GLTF_UPLOAD_ADAPTATION_POLICY_HASH),
+    strippedSecondaryVertexColorSemantics: z
+      .array(z.string().regex(/^COLOR_[1-9][0-9]*$/u))
+      .max(32),
+    strippedPrimitiveAttributeCount: z.number().int().nonnegative().max(100_000),
+    preservedPrimaryVertexColorPrimitiveCount: z.number().int().nonnegative().max(100_000),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const semantics = value.strippedSecondaryVertexColorSemantics;
+    if (stableJson(semantics) !== stableJson([...new Set(semantics)].sort(compareCanonicalStrings)))
+      context.addIssue({ code: "custom", message: "Stripped color semantics are not canonical" });
+    if ((value.strippedPrimitiveAttributeCount === 0) !== (semantics.length === 0))
+      context.addIssue({ code: "custom", message: "Stripped color summary is inconsistent" });
+  });
+
+/**
+ * Durable Open Cloud publication state for one exact source-derived Roblox
+ * payload. Upload receipts establish the Roblox asset ID, but never engine
+ * verification or catalog admission.
+ */
+export const ROBLOX_ASSET_UPLOAD_SCHEMA = z
+  .object({
+    kind: z.literal("RobloxAssetUpload"),
+    status: z.enum(["pending_operation", "pending_moderation", "eligible", "rejected", "failed"]),
+    creator: z.object({ userId: z.number().int().positive().safe() }).strict(),
+    sourceContentHash: HASH_SCHEMA,
+    sourceArtifactHash: HASH_SCHEMA,
+    sourceRelativePath: z
+      .string()
+      .trim()
+      .min(1)
+      .max(1024)
+      .refine(
+        (value) =>
+          !value.startsWith("/") &&
+          !value.includes("\\") &&
+          !value.split("/").some((segment) => segment === ".."),
+        "Roblox upload source paths must be relative and traversal-free",
+      ),
+    sourceBytes: z
+      .number()
+      .int()
+      .positive()
+      .max(20 * 1024 * 1024),
+    uploadArtifact: robloxUploadArtifact,
+    adaptation: robloxUploadAdaptation,
+    assetType: z.literal("Model"),
+    displayName: z.string().trim().min(1).max(50),
+    description: z.string().trim().min(1).max(1000),
+    expectedPrice: z.literal(0),
+    requestHash: HASH_SCHEMA,
+    operationPath: z
+      .string()
+      .regex(/^operations\/[A-Za-z0-9_-]{1,256}$/u)
+      .nullable(),
+    robloxAssetId: z.number().int().positive().safe().nullable(),
+    revisionId: z.string().regex(/^\d+$/u).nullable(),
+    moderationState: z.string().trim().min(1).max(128).nullable(),
+    startedAt: z.string().datetime({ offset: true }),
+    completedAt: z.string().datetime({ offset: true }).nullable(),
+    failure: robloxUploadFailure.nullable(),
+    uploadHash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    verifyHash(value, "uploadHash", context);
+    if (robloxAssetUploadRequestHash(value) !== value.requestHash)
+      context.addIssue({
+        code: "custom",
+        path: ["requestHash"],
+        message: "Upload request hash mismatch",
+      });
+    const hasPublishedAsset = value.robloxAssetId !== null;
+    const isOperationPending = value.status === "pending_operation";
+    const isFailed = value.status === "failed";
+    if (
+      isOperationPending &&
+      (value.operationPath === null ||
+        hasPublishedAsset ||
+        value.completedAt !== null ||
+        value.moderationState !== null ||
+        value.failure !== null)
+    )
+      context.addIssue({ code: "custom", message: "Pending upload state is inconsistent" });
+    if (
+      isFailed &&
+      (hasPublishedAsset ||
+        value.completedAt === null ||
+        value.moderationState !== null ||
+        value.failure === null)
+    )
+      context.addIssue({ code: "custom", message: "Failed upload state is inconsistent" });
+    if (
+      !isOperationPending &&
+      !isFailed &&
+      (!hasPublishedAsset ||
+        value.operationPath === null ||
+        value.completedAt === null ||
+        value.moderationState === null ||
+        value.failure !== null)
+    )
+      context.addIssue({ code: "custom", message: "Completed upload state is inconsistent" });
+    if (value.status === "eligible" && !/approved/iu.test(value.moderationState ?? ""))
+      context.addIssue({ code: "custom", message: "Eligible uploads require approved moderation" });
+    if (value.status === "rejected" && !/rejected/iu.test(value.moderationState ?? ""))
+      context.addIssue({ code: "custom", message: "Rejected uploads require rejected moderation" });
+    if (
+      value.status === "pending_moderation" &&
+      /(approved|rejected)/iu.test(value.moderationState ?? "")
+    )
+      context.addIssue({ code: "custom", message: "Pending moderation state is terminal" });
+  });
+export type RobloxAssetUpload = z.output<typeof ROBLOX_ASSET_UPLOAD_SCHEMA>;
+
+export function robloxAssetUploadRequestHash(
+  value: Pick<
+    RobloxAssetUpload,
+    | "creator"
+    | "sourceArtifactHash"
+    | "uploadArtifact"
+    | "adaptation"
+    | "assetType"
+    | "displayName"
+    | "description"
+    | "expectedPrice"
+  >,
+): string {
+  return contentHash(
+    stableJson({
+      sourceArtifactHash: value.sourceArtifactHash,
+      uploadArtifact: {
+        artifactHash: value.uploadArtifact.artifactHash,
+        bytes: value.uploadArtifact.bytes,
+        mediaType: value.uploadArtifact.mediaType,
+      },
+      adaptationPolicyHash: value.adaptation.policyHash,
+      assetType: value.assetType,
+      displayName: value.displayName,
+      description: value.description,
+      creationContext: { creator: value.creator, expectedPrice: value.expectedPrice },
+    }),
+  );
+}
+
+export const ROBLOX_ASSET_UPLOAD_LEDGER_SCHEMA = z
+  .object({
+    kind: z.literal("RobloxAssetUploadLedger"),
+    creator: z.object({ userId: z.number().int().positive().safe() }).strict(),
+    uploads: z.array(ROBLOX_ASSET_UPLOAD_SCHEMA).max(100_000),
+    ledgerHash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    verifyHash(value, "ledgerHash", context);
+    requireCanonicalIds(
+      value.uploads,
+      (entry) => entry.sourceArtifactHash,
+      "Roblox asset uploads",
+      context,
+    );
+    if (value.uploads.some((entry) => entry.creator.userId !== value.creator.userId))
+      context.addIssue({ code: "custom", message: "Upload ledger mixes creator identities" });
+  });
+export type RobloxAssetUploadLedger = z.output<typeof ROBLOX_ASSET_UPLOAD_LEDGER_SCHEMA>;
+
+export function sealRobloxAssetUpload(
+  input: Omit<RobloxAssetUpload, "kind" | "uploadHash">,
+): RobloxAssetUpload {
+  const material = { kind: "RobloxAssetUpload" as const, ...input };
+  return deepFreezeJson(
+    ROBLOX_ASSET_UPLOAD_SCHEMA.parse({
+      ...material,
+      uploadHash: contentHash(stableJson(material)),
+    }),
+  );
+}
+
+export function sealRobloxAssetUploadLedger(
+  input: Omit<RobloxAssetUploadLedger, "kind" | "ledgerHash">,
+): RobloxAssetUploadLedger {
+  const material = {
+    kind: "RobloxAssetUploadLedger" as const,
+    creator: input.creator,
+    uploads: [...input.uploads].sort((left, right) =>
+      compareCanonicalStrings(left.sourceArtifactHash, right.sourceArtifactHash),
+    ),
+  };
+  return deepFreezeJson(
+    ROBLOX_ASSET_UPLOAD_LEDGER_SCHEMA.parse({
+      ...material,
+      ledgerHash: contentHash(stableJson(material)),
+    }),
+  );
+}
+
 export const ROBLOX_SCENE_INSTANCE_SCHEMA = z
   .object({
     instanceId: entityId,
     assetHash: HASH_SCHEMA,
     sourceArtifactHash: HASH_SCHEMA.optional(),
+    uploadArtifactHash: HASH_SCHEMA.optional(),
     robloxAssetId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional(),
     transformMeters: z
       .object({
@@ -217,6 +444,15 @@ export const ROBLOX_SCENE_INSTANCE_SCHEMA = z
   })
   .strict()
   .superRefine((value, context) => {
+    const hasBinding = value.robloxAssetId !== undefined;
+    if (
+      hasBinding !== (value.sourceArtifactHash !== undefined) ||
+      hasBinding !== (value.uploadArtifactHash !== undefined)
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Roblox instance binding lineage is incomplete",
+      });
     if ((value.robloxAssetId !== undefined) !== value.materialExpectations.length > 0)
       context.addIssue({
         code: "custom",
@@ -368,6 +604,8 @@ export const ROBLOX_ASSET_BINDING_SCHEMA = z
     assetHash: HASH_SCHEMA,
     robloxAssetId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
     sourceArtifactHash: HASH_SCHEMA,
+    uploadArtifactHash: HASH_SCHEMA,
+    publicationEvidenceHash: HASH_SCHEMA,
     materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA).min(1).max(100_000),
     bindingHash: HASH_SCHEMA,
   })
@@ -497,6 +735,7 @@ export function createRobloxImportManifest(
       ...(binding
         ? {
             sourceArtifactHash: binding.sourceArtifactHash,
+            uploadArtifactHash: binding.uploadArtifactHash,
             robloxAssetId: binding.robloxAssetId,
           }
         : {}),

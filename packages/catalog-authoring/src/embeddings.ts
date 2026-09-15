@@ -46,6 +46,7 @@ export const CATALOG_EMBEDDING_RECEIPT_SCHEMA = z
     perViewEvidenceHash: HASH_SCHEMA.optional(),
     aggregate: CATALOG_QUANTIZED_VECTOR_SCHEMA,
     maximumViewDisagreementMillionths: z.number().int().min(0).max(2_000_000),
+    gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -145,6 +146,8 @@ export const CATALOG_QUERY_EMBEDDING_RECEIPT_SCHEMA = z
     purpose: z.literal("image_text_retrieval"),
     modelImplementationHash: HASH_SCHEMA,
     preprocessingImplementationHash: HASH_SCHEMA,
+    workerOutputHash: HASH_SCHEMA,
+    batchGpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
     vector: CATALOG_QUANTIZED_VECTOR_SCHEMA,
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,

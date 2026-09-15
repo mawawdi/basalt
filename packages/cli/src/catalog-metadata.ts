@@ -1,19 +1,27 @@
 import { lstat, readdir, unlink } from "node:fs/promises";
 import { z } from "zod";
 import {
+  CATALOG_CANDIDATE_DECISION_POLICY_SCHEMA,
   CATALOG_METADATA_WORKER_JOB_SCHEMA,
   CATALOG_METADATA_WORKER_OUTPUT_SCHEMA,
   CATALOG_MODEL_DECLARATIONS_SCHEMA,
   CATALOG_MODEL_ROLE_POLICY_SCHEMA,
   CATALOG_QUALIFICATION_FIXTURE_SCHEMA,
+  CATALOG_QUALIFICATION_ADJUDICATION_DECISION_SCHEMA,
+  CATALOG_QUALIFICATION_POLICY_SCHEMA,
   CATALOG_QUALIFICATION_REPORT_SCHEMA,
+  CATALOG_QUALIFICATION_SELECTION_SCHEMA,
+  CATALOG_QUALIFICATION_SPLIT_SCHEMA,
+  CATALOG_QUALIFICATION_REVIEW_PACKET_SCHEMA,
   CATALOG_SEARCH_METADATA_JSON_SCHEMA,
   CATALOG_SEARCH_METADATA_JSON_SCHEMA_HASH,
   CATALOG_SEARCH_METADATA_REQUEST_SET_SCHEMA,
   CATALOG_SEARCH_METADATA_SET_SCHEMA,
+  CATALOG_SEARCH_POLICY_SCHEMA,
   CATALOG_SEARCH_SMOKE_FIXTURE_SCHEMA,
   CATALOG_SOURCE_NAME_HINT_SET_SCHEMA,
   CATALOG_VISUAL_REVIEW_INDEX_SCHEMA,
+  CATALOG_VISUAL_VALIDATION_JSON_SCHEMA_HASH,
   CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS,
   CATALOG_WORKER_MAX_ASSETS_PER_SHARD,
   CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD,
@@ -23,6 +31,7 @@ import {
   buildCatalogSourceNameHintSet,
   metadataViewIds,
   qualificationAuthorizesCorpus,
+  requireCreatorReviewedQualificationFixture,
   sealAssetMetricPromptSummary,
   sealAssetSearchMetadataReceipt,
   sealAssetSearchMetadataRequest,
@@ -208,11 +217,18 @@ async function generateMetadata(
   );
   if (requests.status !== "eligible")
     throw new Error("Cannot execute an incomplete metadata request set");
+  const authorization =
+    requests.scope === "corpus" ? await requireEligibleQualification(options, context) : undefined;
   const declarations = CATALOG_MODEL_DECLARATIONS_SCHEMA.parse(
     await context.readJson(options.get("--models") ?? "registry/catalog-models.json"),
   );
   const rolePolicy = CATALOG_MODEL_ROLE_POLICY_SCHEMA.parse(
-    await context.readJson(options.get("--model-policy") ?? "registry/catalog-model-policy.json"),
+    await context.readJson(
+      options.get("--model-policy") ??
+        (requests.scope === "corpus"
+          ? ".basalt/catalog/qualification/model-policy.json"
+          : "registry/catalog-model-policy.json"),
+    ),
   );
   validateCatalogModelRolePolicy(rolePolicy, declarations);
   const modelId = options.get("--model") ?? rolePolicy.metadataWriter.modelId;
@@ -220,6 +236,17 @@ async function generateMetadata(
   if (!model?.capabilities.includes("metadata_writer"))
     throw new Error(`Model ${modelId} is not a declared metadata writer`);
   const viewSet = options.get("--view-set") ?? rolePolicy.metadataWriter.viewSet;
+  if (
+    authorization &&
+    (rolePolicy.qualificationReportHash !== authorization.report.hash ||
+      modelId !== authorization.selection.selectedWriterModelId ||
+      model.sourceCommitHash !== authorization.selection.selectedWriterModelCommitHash ||
+      viewSet !== authorization.selection.selectedWriterViewSet ||
+      requests.sourceManifestHash !== authorization.fixture.sourceManifestHash ||
+      requests.measurementSetHash !== authorization.fixture.measurementSetHash ||
+      requests.visualReviewIndexHash !== authorization.fixture.visualReviewIndexHash)
+  )
+    throw new Error("Corpus metadata generation differs from the frozen qualification selection");
   const evidenceMode = options.get("--evidence-mode") ?? "visual_and_name";
   const selected = requests.requests.filter(
     (entry) => entry.viewSet === viewSet && entry.evidenceMode === evidenceMode,
@@ -363,12 +390,9 @@ async function commitMetadata(
   const metadata = CATALOG_SEARCH_METADATA_SET_SCHEMA.parse(
     await context.readJson(options.get("--metadata") ?? `${CATALOG_METADATA_ROOT}/set.json`),
   );
-  const report = CATALOG_QUALIFICATION_REPORT_SCHEMA.parse(
-    await context.readJson(
-      options.get("--qualification") ?? ".basalt/catalog/qualification/report.json",
-    ),
-  );
-  if (!qualificationAuthorizesCorpus(report) || metadata.status !== "eligible")
+  const authorization = await requireEligibleQualification(options, context);
+  const report = authorization.report;
+  if (metadata.status !== "eligible")
     throw new Error(
       "Metadata commit requires eligible production qualification and complete corpus evidence",
     );
@@ -377,7 +401,11 @@ async function commitMetadata(
       options.get("--model-policy") ?? ".basalt/catalog/qualification/model-policy.json",
     ),
   );
-  if (rolePolicy.qualificationReportHash !== report.hash)
+  if (
+    rolePolicy.qualificationReportHash !== report.hash ||
+    rolePolicy.metadataWriter.modelId !== authorization.selection.selectedWriterModelId ||
+    rolePolicy.metadataWriter.viewSet !== authorization.selection.selectedWriterViewSet
+  )
     throw new Error("Selected model-role policy does not bind the qualification report");
   const requestByHash = new Map(requestSet.requests.map((entry) => [entry.hash, entry] as const));
   const selectedReceipts = metadata.receipts.filter((receipt) => {
@@ -385,7 +413,8 @@ async function commitMetadata(
     return (
       request?.viewSet === report.selectedWriterViewSet &&
       request.evidenceMode === "visual_and_name" &&
-      receipt.modelId === report.selectedWriterModelId
+      receipt.modelId === report.selectedWriterModelId &&
+      receipt.modelCommitHash === report.selectedWriterModelCommitHash
     );
   });
   const selectedSet = sealCatalogSearchMetadataSet({
@@ -453,27 +482,119 @@ async function metadataScopeSources(
   const fixture = CATALOG_QUALIFICATION_FIXTURE_SCHEMA.parse(
     await context.readJson(options.get("--fixture") ?? "registry/catalog-qualification.json"),
   );
-  return fixture.assets.map((entry) => entry.sourceContentHash);
+  const split = CATALOG_QUALIFICATION_SPLIT_SCHEMA.parse(options.get("--split") ?? "development");
+  return fixture.assets
+    .filter((entry) => entry.split === split && entry.population === "cohort")
+    .map((entry) => entry.sourceContentHash);
 }
 
 async function requireEligibleQualification(
   options: ReadonlyMap<string, string>,
   context: CatalogCommandContext,
-): Promise<void> {
+): Promise<{
+  readonly report: z.output<typeof CATALOG_QUALIFICATION_REPORT_SCHEMA>;
+  readonly selection: z.output<typeof CATALOG_QUALIFICATION_SELECTION_SCHEMA>;
+  readonly fixture: z.output<typeof CATALOG_QUALIFICATION_FIXTURE_SCHEMA>;
+}> {
   const report = CATALOG_QUALIFICATION_REPORT_SCHEMA.parse(
     await context.readJson(
       options.get("--qualification") ?? ".basalt/catalog/qualification/report.json",
     ),
   );
-  if (!qualificationAuthorizesCorpus(report))
-    throw new Error(
-      "Full-corpus metadata remains blocked until production qualification is eligible",
-    );
+  const selection = CATALOG_QUALIFICATION_SELECTION_SCHEMA.parse(
+    await context.readJson(
+      options.get("--selection") ?? ".basalt/catalog/qualification/selection.json",
+    ),
+  );
   const fixture = CATALOG_QUALIFICATION_FIXTURE_SCHEMA.parse(
     await context.readJson(options.get("--fixture") ?? "registry/catalog-qualification.json"),
   );
+  const proposalFixture = CATALOG_QUALIFICATION_FIXTURE_SCHEMA.parse(
+    await context.readJson(
+      options.get("--proposal-fixture") ??
+        "registry/qualifications/catalog-qualification-proposal.json",
+    ),
+  );
+  const reviewPacket = CATALOG_QUALIFICATION_REVIEW_PACKET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--review-packet") ??
+        "registry/qualifications/catalog-adjudication-review-packet.json",
+    ),
+  );
+  const adjudicationDecision = CATALOG_QUALIFICATION_ADJUDICATION_DECISION_SCHEMA.parse(
+    await context.readJson(
+      options.get("--adjudication-decision") ??
+        "registry/qualifications/catalog-adjudication-decision.json",
+    ),
+  );
+  requireCreatorReviewedQualificationFixture({
+    fixture,
+    proposal: proposalFixture,
+    reviewPacket,
+    decision: adjudicationDecision,
+  });
+  if (
+    !qualificationAuthorizesCorpus(
+      report,
+      selection,
+      fixture,
+      proposalFixture,
+      reviewPacket,
+      adjudicationDecision,
+    )
+  )
+    throw new Error(
+      "Full-corpus metadata remains blocked until production qualification is eligible",
+    );
   if (report.fixtureHash !== fixture.hash)
     throw new Error("Qualification report binds another production fixture");
+  const qualificationPolicy = CATALOG_QUALIFICATION_POLICY_SCHEMA.parse(
+    await context.readJson(
+      options.get("--qualification-policy") ?? "registry/qualification-policy.json",
+    ),
+  );
+  const searchPolicy = CATALOG_SEARCH_POLICY_SCHEMA.parse(
+    await context.readJson(options.get("--search-policy") ?? "registry/search-policy.json"),
+  );
+  const decisionPolicy = CATALOG_CANDIDATE_DECISION_POLICY_SCHEMA.parse(
+    await context.readJson(
+      options.get("--decision-policy") ?? "registry/candidate-decision-policy.json",
+    ),
+  );
+  const declarations = CATALOG_MODEL_DECLARATIONS_SCHEMA.parse(
+    await context.readJson(options.get("--models") ?? "registry/catalog-models.json"),
+  );
+  const initialRolePolicy = CATALOG_MODEL_ROLE_POLICY_SCHEMA.parse(
+    await context.readJson(
+      options.get("--qualification-model-policy") ?? "registry/catalog-model-policy.json",
+    ),
+  );
+  const metadataPrompt = await readText(
+    context.root,
+    options.get("--prompt") ?? "registry/prompts/catalog-search-metadata.txt",
+  );
+  const validationPrompt = await readText(
+    context.root,
+    options.get("--validation-prompt") ?? "registry/prompts/catalog-search-validation.txt",
+  );
+  const workerImplementationHash = await fileHash(
+    context.root,
+    "workers/catalog-metadata/worker.py",
+  );
+  for (const [name, actual, expected] of [
+    ["qualification policy", qualificationPolicy.hash, fixture.qualificationPolicyHash],
+    ["search policy", searchPolicy.hash, fixture.searchPolicyHash],
+    ["candidate-decision policy", decisionPolicy.hash, fixture.candidateDecisionPolicyHash],
+    ["model declarations", contentHash(stableJson(declarations)), fixture.modelDeclarationsHash],
+    ["model-role policy", initialRolePolicy.hash, fixture.modelRolePolicyHash],
+    ["metadata prompt", contentHash(metadataPrompt), fixture.metadataPromptTemplateHash],
+    ["validation prompt", contentHash(validationPrompt), fixture.validationPromptTemplateHash],
+    ["metadata schema", CATALOG_SEARCH_METADATA_JSON_SCHEMA_HASH, fixture.metadataSchemaHash],
+    ["validation schema", CATALOG_VISUAL_VALIDATION_JSON_SCHEMA_HASH, fixture.validationSchemaHash],
+    ["worker implementation", workerImplementationHash, selection.workerImplementationHash],
+  ] as const)
+    if (actual !== expected) throw new Error(`Corpus metadata authorization has stale ${name}`);
+  return { report, selection, fixture };
 }
 
 type MetadataWorkerItem = z.output<typeof CATALOG_METADATA_WORKER_JOB_SCHEMA>["items"][number];

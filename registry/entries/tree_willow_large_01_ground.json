@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "tree_willow_large_01_ground",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000003",
+      "commitmentHash": "941f3e31cb795011c5f16329a17dafef61bfe718fcb68d499694f965fedfb582"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "161bbf9229258873d87f489081248e72ce9971c75c8103a907b5e4b17d466f33"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_low_poly_nature",
+  "evidenceHashes": [
+    "3fd7b9704ccb3300e525322ccdfa6386db86558c1f75a7330a7e0f9beceeba5c",
+    "45ad8240999e31f8d057eb42a37068868411a4c67dcb99ac4976191f8eb2eac8",
+    "dfc21ee2dd859314aa058177911d2954f4667686da3cd11bd241b1aee77438b7",
+    "f080e20f15d9cd7ce83d39687a04926566698359ca991d9c4e3104cbfbdf26cf"
+  ],
+  "members": [
+    {
+      "memberId": "source_025f3575def4aa6c",
+      "assetHash": "dfc21ee2dd859314aa058177911d2954f4667686da3cd11bd241b1aee77438b7",
+      "assertionBundleHash": "3185ab7a47954757ae67908b75259e1733704cac62daefee0c6b3dab15f8d63a",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

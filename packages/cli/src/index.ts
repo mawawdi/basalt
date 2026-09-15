@@ -15,6 +15,9 @@ import {
 import {
   CATALOG_ADMISSION_RUBRIC_SCHEMA,
   CATALOG_ADMISSION_POLICY_SCHEMA,
+  CATALOG_ACCEPTANCE_AUDIT_SCHEMA,
+  CATALOG_CREATOR_REVIEW_DECISION_SCHEMA,
+  CATALOG_CREATOR_REVIEW_PACKET_SCHEMA,
   CATALOG_CALIBRATION_SPLIT_SCHEMA,
   CATALOG_AUTHORITY_COMMIT_SCHEMA,
   CATALOG_LEAKAGE_ANALYSIS_SCHEMA,
@@ -31,6 +34,7 @@ import {
   sealCatalogNearDuplicateSearch,
   validateCatalogCalibrationSplit,
   type RetainedCatalogEvidence,
+  type CatalogAcceptanceAudit,
 } from "@basalt/catalog-authoring";
 import {
   CATALOG_ASSET_ARTIFACT_SCHEMA,
@@ -690,6 +694,7 @@ interface CatalogAuthorityInputs {
   readonly entryDeclarations: z.output<typeof CATALOG_ENTRY_DECLARATION_SCHEMA>[];
   readonly dispositions: z.output<typeof CATALOG_DISPOSITION_SCHEMA>[];
   readonly assertions: z.output<typeof SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA>[];
+  readonly acceptanceAudits: CatalogAcceptanceAudit[];
   readonly admissionPolicy: z.output<typeof CATALOG_ADMISSION_POLICY_SCHEMA>;
 }
 
@@ -731,6 +736,10 @@ async function loadCatalogAuthority(
     options.get("--assertions") ?? "registry/assertions",
     SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA,
   );
+  const acceptanceAudits = await readDirectoryJson(
+    options.get("--acceptance-audits") ?? "registry/acceptance-audits",
+    CATALOG_ACCEPTANCE_AUDIT_SCHEMA,
+  );
   const admissionPolicy = await loadAdmissionPolicy(options.get("--policy"));
   return {
     semanticModule,
@@ -741,6 +750,7 @@ async function loadCatalogAuthority(
     entryDeclarations,
     dispositions,
     assertions,
+    acceptanceAudits,
     admissionPolicy,
   };
 }
@@ -760,7 +770,7 @@ function sealCatalogAuthoritySnapshot(authority: CatalogAuthorityInputs) {
 async function materializeCatalogCommit(options: ReadonlyMap<string, string>) {
   const authority = await loadCatalogAuthority(options);
   const snapshot = sealCatalogAuthoritySnapshot(authority);
-  const retainedEvidence = await retainCatalogEvidence(options);
+  const retainedEvidence = await retainCatalogEvidence(options, authority.acceptanceAudits);
   const commit = sealCatalogAuthorityCommit({
     sourceManifest: authority.manifest,
     semanticModuleHash: authority.semanticModule.snapshot.hash,
@@ -770,6 +780,7 @@ async function materializeCatalogCommit(options: ReadonlyMap<string, string>) {
     styleProfiles: authority.styleDeclarations,
     declarations: authority.entryDeclarations,
     assertions: authority.assertions,
+    acceptanceAudits: authority.acceptanceAudits,
     dispositions: authority.dispositions,
     admissionPolicy: authority.admissionPolicy,
     retainedEvidence,
@@ -784,6 +795,7 @@ async function materializeCatalogCommit(options: ReadonlyMap<string, string>) {
 
 async function retainCatalogEvidence(
   options: ReadonlyMap<string, string>,
+  acceptanceAudits: readonly CatalogAcceptanceAudit[],
 ): Promise<RetainedCatalogEvidence[]> {
   const candidates = [
     {
@@ -815,6 +827,37 @@ async function retainCatalogEvidence(
       bytes: bytes.byteLength,
     });
   }
+  const reviewedArtifacts = [
+    ...new Set(
+      acceptanceAudits.flatMap((audit) => [audit.reviewPacketHash, audit.reviewDecisionHash]),
+    ),
+  ].sort(compare);
+  for (const artifactHash of reviewedArtifacts) {
+    const relativePath = `registry/evidence/${artifactHash}.json`;
+    const raw = (await readJson(relativePath)) as { readonly kind?: unknown };
+    const artifact =
+      raw?.kind === "CatalogCreatorReviewPacket"
+        ? CATALOG_CREATOR_REVIEW_PACKET_SCHEMA.parse(raw)
+        : raw?.kind === "CatalogCreatorReviewDecision"
+          ? CATALOG_CREATOR_REVIEW_DECISION_SCHEMA.parse(raw)
+          : undefined;
+    if (!artifact || artifact.hash !== artifactHash)
+      throw new Error(`Acceptance audit references invalid retained evidence ${artifactHash}`);
+    const bytes = await readBoundedWorkspaceBytes(
+      repositoryRoot,
+      absolute(relativePath),
+      512 * 1024 * 1024,
+    );
+    retained.push({
+      kind: artifact.kind,
+      relativePath,
+      artifactHash,
+      bytesHash: sha256(bytes),
+      bytes: bytes.byteLength,
+    });
+  }
+  if (new Set(retained.map((entry) => entry.relativePath)).size !== retained.length)
+    throw new Error("Catalog retained evidence paths must be unique");
   return retained.sort((left, right) => compare(left.relativePath, right.relativePath));
 }
 
@@ -866,6 +909,7 @@ async function verifyCatalogCommit(
     styleProfiles: authority.styleDeclarations,
     declarations: authority.entryDeclarations,
     assertions: authority.assertions,
+    acceptanceAudits: authority.acceptanceAudits,
     dispositions: authority.dispositions,
     admissionPolicy: authority.admissionPolicy,
     retainedEvidence: committed.retainedEvidence,

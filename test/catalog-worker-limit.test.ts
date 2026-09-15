@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { execFile } from "node:child_process";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import test from "node:test";
+import { promisify } from "node:util";
 import {
+  CATALOG_EMBEDDING_WORKER_JOB_SCHEMA,
+  CATALOG_EMBEDDING_WORKER_OUTPUT_SCHEMA,
   CATALOG_METADATA_WORKER_JOB_SCHEMA,
   CATALOG_METADATA_WORKER_OUTPUT_SCHEMA,
   CATALOG_QUERY_EMBEDDING_WORKER_JOB_SCHEMA,
@@ -19,6 +25,8 @@ import {
   sealAssetSearchMetadataRequest,
 } from "@basalt/catalog-authoring";
 import { contentHash, stableJson } from "@basalt/contracts";
+
+const executeFile = promisify(execFile);
 
 test("local catalog concurrency has one hard four-worker ceiling", () => {
   assert.equal(MAX_LOCAL_CATALOG_WORKERS, 4);
@@ -55,6 +63,7 @@ test("partial worker checkpoints are never reusable as complete shards", () => {
       jobHash: job.hash,
       modelImplementationHash: contentHash("query-model-implementation"),
       preprocessingImplementationHash: contentHash("query-preprocessor"),
+      gpuMilliseconds: 1,
       items,
     };
     return CATALOG_QUERY_EMBEDDING_WORKER_OUTPUT_SCHEMA.parse({
@@ -137,7 +146,11 @@ test("metadata shards bind exact count, file, byte, and pixel budgets", () => {
     },
     partCounts: { total: 1, renderable: 1, collision: 0 },
     triangleCount: 12,
-    support: { primaryContact: "bottom" as const, contactAreaSquareMeters: 1 },
+    support: {
+      primaryContact: "bottom" as const,
+      contactAreaSquareMeters: 1,
+      measurementMethod: "planar_patch_fit" as const,
+    },
   };
   const metricSummary = {
     ...metricMaterial,
@@ -209,4 +222,138 @@ test("metadata shards bind exact count, file, byte, and pixel budgets", () => {
   assert.equal(CATALOG_WORKER_MAX_ASSETS_PER_SHARD, 8);
   assert.equal(CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD, 192);
   assert.equal(CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD, 64 * 1024 * 1024);
+});
+
+test("TypeScript embedding jobs dispatch independently through the Python boundary", async () => {
+  const workerPath = "workers/catalog-metadata/worker.py";
+  const workerImplementationHash = createHash("sha256")
+    .update(await readFile(workerPath))
+    .digest("hex");
+  const sourceContentHash = contentHash("embedding-worker-source");
+  const renderEvidenceHash = contentHash("embedding-worker-render");
+  const viewIds = CATALOG_REVIEW_VIEWPOINTS.map((view) => view.viewId);
+  const siglipModel = {
+    modelId: "siglip_boundary",
+    source: "huggingface" as const,
+    repository: "google/siglip2-so400m-patch14-384",
+    sourceCommitHash: contentHash("siglip-boundary-commit"),
+    capabilities: ["image_text_retrieval"] as const,
+    accelerator: "L40S" as const,
+  };
+  const dinoModel = {
+    modelId: "dino_boundary",
+    source: "huggingface" as const,
+    repository: "facebook/dinov3-vitl16-pretrain-lvd1689m",
+    sourceCommitHash: contentHash("dino-boundary-commit"),
+    capabilities: ["shape_similarity"] as const,
+    accelerator: "L40S" as const,
+  };
+  const makeJob = (purpose: "image_text_retrieval" | "shape_similarity") => {
+    const rgb = purpose === "image_text_retrieval";
+    const material = {
+      kind: "CatalogEmbeddingWorkerJob" as const,
+      sourceManifestHash: contentHash("embedding-worker-manifest"),
+      visualReviewIndexHash: contentHash("embedding-worker-review"),
+      workerImplementationHash,
+      purposes: [purpose],
+      models: [rgb ? siglipModel : dinoModel],
+      items: [
+        {
+          sourceContentHash,
+          renderEvidenceHash,
+          views: viewIds.map((viewId) => ({
+            viewId,
+            ...(rgb
+              ? {
+                  rgbRelativePath: `.basalt/catalog/review/${viewId}-rgb.png`,
+                  rgbHash: contentHash(`${viewId}:rgb`),
+                  rgbSizeBytes: 100,
+                }
+              : {
+                  normalizedDepthRelativePath: `.basalt/catalog/review/${viewId}-depth.png`,
+                  normalizedDepthHash: contentHash(`${viewId}:depth`),
+                  normalizedDepthSizeBytes: 80,
+                }),
+          })),
+        },
+      ],
+      inputBudget: {
+        assetCount: 1,
+        evidenceFileCount: 12,
+        evidenceBytes: rgb ? 1_200 : 960,
+        preprocessedPixelCeiling: 12 * CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS ** 2,
+      },
+    };
+    return CATALOG_EMBEDDING_WORKER_JOB_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    });
+  };
+  const jobs = [makeJob("image_text_retrieval"), makeJob("shape_similarity")];
+  const temporaryRoot = `.basalt/test-worker-contract-${process.pid}`;
+  await mkdir(temporaryRoot, { recursive: false });
+  try {
+    for (const job of jobs) {
+      const path = `${temporaryRoot}/${job.purposes[0]}.json`;
+      await writeFile(path, `${stableJson(job)}\n`, { flag: "wx" });
+      const { stdout } = await executeFile(
+        "python3",
+        [workerPath, "--job", path, "--validate-job"],
+        { cwd: process.cwd() },
+      );
+      const result = JSON.parse(stdout) as {
+        readonly status: string;
+        readonly kind: string;
+        readonly purposes: readonly string[];
+      };
+      assert.deepEqual(result, {
+        status: "eligible",
+        kind: "CatalogEmbeddingWorkerJob",
+        jobHash: job.hash,
+        purposes: job.purposes,
+      });
+    }
+  } finally {
+    await rm(temporaryRoot, { recursive: true, force: false });
+  }
+
+  const siglipJob = jobs[0]!;
+  const receiptMaterial = {
+    sourceContentHash,
+    renderEvidenceHash,
+    purpose: "image_text_retrieval" as const,
+    modelId: siglipModel.modelId,
+    modelCommitHash: siglipModel.sourceCommitHash,
+    modelImplementationHash: contentHash("siglip-implementation"),
+    preprocessingImplementationHash: contentHash("siglip-preprocessing"),
+    aggregationImplementationHash: contentHash("siglip-aggregation"),
+    perViewEvidenceHash: contentHash("siglip-per-view"),
+    aggregate: { scaleMillionths: 1, values: [1, 2, 3, 4, 5, 6, 7, 8] },
+    maximumViewDisagreementMillionths: 0,
+    gpuMilliseconds: 1,
+  };
+  const outputMaterial = {
+    kind: "CatalogEmbeddingWorkerOutput" as const,
+    jobHash: siglipJob.hash,
+    receipts: [receiptMaterial],
+  };
+  const output = CATALOG_EMBEDDING_WORKER_OUTPUT_SCHEMA.parse({
+    ...outputMaterial,
+    resultHash: contentHash(stableJson(outputMaterial)),
+  });
+  assert.equal(catalogWorkerOutputIsComplete(siglipJob, output), true);
+
+  const invalidMaterial = {
+    ...siglipJob,
+    models: [dinoModel],
+  };
+  const { hash: _oldHash, ...invalidWithoutHash } = invalidMaterial;
+  assert.throws(
+    () =>
+      CATALOG_EMBEDDING_WORKER_JOB_SCHEMA.parse({
+        ...invalidWithoutHash,
+        hash: contentHash(stableJson(invalidWithoutHash)),
+      }),
+    /requested purpose/iu,
+  );
 });

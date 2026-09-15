@@ -29,6 +29,7 @@ import {
   sealAssetContextHypothesisReceipt,
   sealAssetContextHypothesisRequest,
   sealCatalogAdmissionPolicy,
+  sealCatalogAcceptanceAudit,
   sealCatalogAuthorityCommit,
   sealCatalogCandidateDecisionPolicy,
   sealCatalogEmbeddingReceipt,
@@ -336,6 +337,7 @@ test("retrieval embeddings are deterministic int16 little-endian evidence", () =
     perViewEvidenceHash: hash("siglip-views"),
     aggregate: { scaleMillionths: 10, values: [1, 2, 3, 4, 5, 6, 7, 8] },
     maximumViewDisagreementMillionths: 10_000,
+    gpuMilliseconds: 1,
   });
   const shape = sealCatalogEmbeddingReceipt({
     ...stripArtifact(image),
@@ -428,6 +430,7 @@ test("hybrid search keeps deterministic rank and annotates uncertain validation"
     aggregationImplementationHash: hash("embedding-aggregation"),
     aggregate: { scaleMillionths: 10, values: [8, 7, 6, 5, 4, 3, 2, 1] },
     maximumViewDisagreementMillionths: 1_000,
+    gpuMilliseconds: 1,
   });
   const shapeEmbedding = sealCatalogEmbeddingReceipt({
     sourceContentHash: fixture.asset.source.contentHash,
@@ -440,6 +443,7 @@ test("hybrid search keeps deterministic rank and annotates uncertain validation"
     aggregationImplementationHash: hash("embedding-aggregation"),
     aggregate: { scaleMillionths: 10, values: [1, 2, 3, 4, 5, 6, 7, 8] },
     maximumViewDisagreementMillionths: 1_000,
+    gpuMilliseconds: 1,
   });
   const embeddingSet = sealCatalogEmbeddingSet({
     sourceManifestHash: measurements.sourceManifestHash,
@@ -482,6 +486,8 @@ test("hybrid search keeps deterministic rank and annotates uncertain validation"
     queryHash: query.hash,
     modelImplementationHash: encoded.matrix.modelImplementationHash,
     preprocessingImplementationHash: hash("siglip-text-preprocessing"),
+    workerOutputHash: hash("siglip-query-output"),
+    batchGpuMilliseconds: 1,
     vector: { scaleMillionths: 10, values: [8, 7, 6, 5, 4, 3, 2, 1] },
   });
   const base = executeCatalogSearch({
@@ -893,6 +899,48 @@ test("the tracked catalog root excludes learned search evidence", async () => {
     bytesHash: hash("committed-measurement-bytes"),
     bytes: 1,
   };
+  const policy = admissionPolicy();
+  const reviewPacketHash = hash("catalog-review-packet");
+  const reviewDecisionHash = hash("catalog-review-decision");
+  const visualReviewIndexHash = hash("catalog-visual-review-index");
+  const acceptanceAudit = sealCatalogAcceptanceAudit({
+    batchId: "catalog_authority_test",
+    reviewPacketHash,
+    reviewDecisionHash,
+    reviewer: { authority: "creator", reviewerId: "test-creator" },
+    admissionPolicyHash: policy.hash,
+    admissionRubricHash: hash("catalog-admission-rubric"),
+    semanticModuleHash: module.snapshot.hash,
+    measurementSetHash: measurements.hash,
+    visualReviewIndexHash,
+    sourceContentHash: fixture.asset.source.contentHash,
+    assetHash: fixture.asset.hash,
+    renderEvidenceHash: hash("catalog-render-evidence"),
+    assertionBundleHash: fixture.assertions.hash,
+    entryHandle: fixture.declaration.handle,
+    memberId: fixture.declaration.members[0]!.memberId,
+    entryDeclarationHash: contentHash(stableJson(fixture.declaration)),
+    styleProfileHandle: fixture.declaration.styleProfileHandle,
+    criteria: [
+      {
+        criterionId: "semantic_identity",
+        outcome: "pass",
+        evidenceHashes: [fixture.asset.hash],
+        note: "The creator accepted the synthetic fixture's semantic identity.",
+      },
+    ],
+  });
+  const retainedReviewEvidence = [
+    ["CatalogCreatorReviewPacket", reviewPacketHash],
+    ["CatalogCreatorReviewDecision", reviewDecisionHash],
+    ["CatalogVisualReviewIndex", visualReviewIndexHash],
+  ].map(([kind, artifactHash]) => ({
+    kind: kind!,
+    relativePath: `registry/evidence/${artifactHash}.json`,
+    artifactHash: artifactHash!,
+    bytesHash: hash(`${kind}-bytes`),
+    bytes: 1,
+  }));
   const input = {
     sourceManifest,
     semanticModuleHash: module.snapshot.hash,
@@ -913,14 +961,22 @@ test("the tracked catalog root excludes learned search evidence", async () => {
         },
       },
     ],
-    admissionPolicy: admissionPolicy(),
-    retainedEvidence: [retainedMeasurements],
+    acceptanceAudits: [acceptanceAudit],
+    admissionPolicy: policy,
+    retainedEvidence: [retainedMeasurements, ...retainedReviewEvidence].sort((left, right) =>
+      left.relativePath.localeCompare(right.relativePath),
+    ),
   };
   const commit = sealCatalogAuthorityCommit(input);
 
   assert.equal(commit.sourcePayloadPolicy, "external_content_addressed");
   assert.equal("metadata" in commit, false);
   assert.equal("embedding" in commit, false);
+  assert.equal(commit.acceptanceAudits[0]?.reviewDecisionHash, reviewDecisionHash);
+  assert.throws(
+    () => sealCatalogAuthorityCommit({ ...input, acceptanceAudits: [] }),
+    /requires exactly one creator acceptance audit/iu,
+  );
   assert.throws(
     () => sealCatalogAuthorityCommit({ ...input, retainedEvidence: [] }),
     /measurement set must be retained/iu,
@@ -1096,7 +1152,11 @@ function metricSummary(sourceContentHash: string, measurementHash: string) {
     },
     partCounts: { total: 1, renderable: 1, collision: 0 },
     triangleCount: 128,
-    support: { primaryContact: "bottom" as const, contactAreaSquareMeters: 1 },
+    support: {
+      primaryContact: "bottom" as const,
+      contactAreaSquareMeters: 1,
+      measurementMethod: "planar_patch_fit" as const,
+    },
   };
   return { ...material, hash: contentHash(stableJson(material)) };
 }

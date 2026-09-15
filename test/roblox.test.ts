@@ -49,6 +49,8 @@ test("Roblox is the only unit-conversion and import-protocol boundary", async ()
       assetHash: fixture.asset.hash,
       robloxAssetId: 123,
       sourceArtifactHash: fixture.asset.source.sourceArtifact!.artifactHash,
+      uploadArtifactHash: "d".repeat(64),
+      publicationEvidenceHash: "c".repeat(64),
       materialExpectations: [materialExpectation()],
     }),
   ]);
@@ -83,12 +85,26 @@ test("Roblox material bindings are sealed against expectation changes", () => {
     assetHash: "a".repeat(64),
     robloxAssetId: 123,
     sourceArtifactHash: "b".repeat(64),
+    uploadArtifactHash: "d".repeat(64),
+    publicationEvidenceHash: "c".repeat(64),
     materialExpectations: [materialExpectation()],
   });
   assert.throws(() =>
     ROBLOX_ASSET_BINDING_SCHEMA.parse({
       ...binding,
       materialExpectations: [{ ...binding.materialExpectations[0]!, material: "Glass" }],
+    }),
+  );
+  assert.throws(() =>
+    ROBLOX_ASSET_BINDING_SCHEMA.parse({
+      ...binding,
+      publicationEvidenceHash: "d".repeat(64),
+    }),
+  );
+  assert.throws(() =>
+    ROBLOX_ASSET_BINDING_SCHEMA.parse({
+      ...binding,
+      uploadArtifactHash: "e".repeat(64),
     }),
   );
 });
@@ -110,6 +126,8 @@ test("local bridge requires authentication and advances only exact readback", as
         assetHash: fixture.asset.hash,
         robloxAssetId: 123,
         sourceArtifactHash: fixture.asset.source.sourceArtifact!.artifactHash,
+        uploadArtifactHash: "d".repeat(64),
+        publicationEvidenceHash: "c".repeat(64),
         materialExpectations: [materialExpectation()],
       }),
     ]);
@@ -243,6 +261,8 @@ test("local bridge drains the canonical transaction sequence and replays acknowl
         assetHash: fixture.asset.hash,
         robloxAssetId: 123,
         sourceArtifactHash: fixture.asset.source.sourceArtifact!.artifactHash,
+        uploadArtifactHash: "d".repeat(64),
+        publicationEvidenceHash: "c".repeat(64),
         materialExpectations: [materialExpectation()],
       }),
     ]);

@@ -40,10 +40,13 @@ evidence only.
 
 ## Production catalog qualification
 
-Production qualification uses a separately sealed fixture with at least 64 assets,
-queries, and validation cases. Leakage groups cannot cross development, model-selection,
-or holdout splits. Gold data supports pooled relevance judgments, multiple relevant assets,
-hard confusers, true no-match queries, and evidence-insufficient cases.
+Production qualification uses a separately sealed 192-asset cohort, with 64 cohort assets,
+48 queries, and 48 independent validator cases in each of development, model-selection, and
+holdout. Leakage groups cannot cross splits. The draft fixture's filename-derived labels are
+proposals, not gold data. A creator must independently review the asset descriptions, every
+query expectation and query–asset relevance judgment, and every validator verdict. The final
+fixture is derived from that decision and binds the exact proposal, review packet, and decision
+artifact hashes; editing status or provenance fields cannot authorize execution.
 
 Before holdout execution, the fixture pins the search policy, qualification thresholds,
 candidate-decision policy, prompt/schema/model choices, and adjudication protocol. It
@@ -62,23 +65,32 @@ The current frozen thresholds are:
 
 | Gate                                                    | Minimum |
 | ------------------------------------------------------- | ------: |
-| uniform hybrid recall at 5                              |    0.90 |
+| uniform hybrid Hit@5                                    |    0.90 |
 | uniform hybrid mean reciprocal rank                     |    0.75 |
-| mixed-coverage hybrid recall at 5                       |    0.85 |
+| mixed-coverage hybrid Hit@5                             |    0.85 |
 | mixed-coverage hybrid mean reciprocal rank              |    0.70 |
 | final decision accuracy                                 |    0.90 |
 | selected validator exact verdict                        |    0.90 |
 | hard-negative false matches                             |       0 |
+| no-match false acceptances                              |       0 |
 | evidence-insufficient cases incorrectly called no-match |       0 |
 
-The evaluator also requires complete ablation and mixed-coverage evidence, both view
-counts, and independent role runs. An eligible report freezes writer, writer view count,
-and validator independently. Failure remains `incomplete`; it cannot launch or commit a
-corpus metadata run and never revives the removed closed-set classifier.
+Hit@5 is the fraction of known-positive queries with at least one relevant top-five result.
+Pooled Recall@5 is reported separately over all relevant judgments. Ranking metrics exclude
+no-match and evidence-insufficient queries; those cases are scored by final-decision metrics,
+with false-acceptance rates divided by no-match cases and false-no-match rates divided by
+evidence-insufficient cases. The evaluator requires exact per-configuration ablation and
+mixed-coverage evidence, both view counts, independent role runs, and verified referenced
+artifacts. One writer's or validator's rows cannot fill another configuration's coverage.
+An eligible model-selection report freezes writer, view count, and validator independently.
+Holdout evidence must bind that exact selection. Failure remains `incomplete`; it cannot launch
+or commit a corpus metadata run and never revives the removed closed-set classifier.
 
-Live model execution is separate from offline tests. `catalog qualify prepare` freezes the
-fixture, `catalog qualify run` validates already content-addressed run evidence, and
-`catalog qualify evaluate` applies the frozen policy.
+Live model execution is separate from offline tests. `catalog qualify prepare` materializes the
+split request inputs, `catalog qualify run --split …` orchestrates real content-addressed worker
+and search evidence, and `catalog qualify evaluate --split …` verifies that evidence and applies
+the frozen policy. No qualification model execution is allowed while the creator decision is
+absent or inconsistent with the reviewed answer key.
 
 ## Retrieval and acceptance claims
 
@@ -108,10 +120,41 @@ case proves that an attributed source assembly—with exact members, transforms,
 parent/child relations, roles, and hashes—resolves an ambiguity that isolated renders do
 not. Context output remains review evidence.
 
+The reproducible modular pilot under `.basalt/catalog/context/modular-pilot/` binds four measured
+Office components and their 12-view evidence into one request. It intentionally contains no model
+receipt and records incomplete construction assessments: basename proximity and measured sockets
+do not establish assembly purpose, intended mates, or compatible interfaces without attributed
+assembly evidence.
+
 Construction tests cover operation validation, explicit parameter bindings, anchors and
 local frames, dependency cycles, rectangular opening decomposition, attachments, stairs,
 occupancy, exact extents, deterministic hashes, and adapter lowering gaps. Fixture-specific
 logic may not enter generic packages.
+
+## Catalog-first-use evidence
+
+`npm run eval:catalog-first-use` loads `registry/catalog.json` plus the exact retained measurement
+artifact, compiles four outdoor requirements through the public `world compile` command, and
+records candidate evidence, admitted selection identity, placement, and typed gaps. A second plan
+changes only the outdoor-prop source-byte budget and checks that unrelated realized placements
+remain stable. Until the creator admits the outdoor tranche, the honest result is four unresolved
+catalog requirements and zero hand-placed fallback instances.
+
+The same evaluation inventories sealed Roblox bindings and emits an upload packet plus a
+creator-fillable binding decision. The packet separates assets required by current lowering gaps
+from all admitted assets; pending sources are never upload candidates.
+`eval:catalog-first-use:upload` verifies exact source bytes, derives a Roblox payload by retaining
+`COLOR_0` and stripping `COLOR_1+`, and stores that payload content-addressably before publishing it
+with Roblox Open Cloud under `ROBLOX_USER_ID`. It authenticates from the ignored `.env`, requires
+read/write asset scope, refuses source, payload, or adaptation-policy drift and files over the API
+limit, pins the expected price to zero, resumes saved operation paths, and reuses only exact
+source-derived publications. The sealed upload ledger is publication evidence only.
+
+The binding sealer verifies the upload-packet hash, exact asset, source-artifact, and upload-artifact
+coverage, positive Roblox IDs, matching eligible publication-receipt hashes, and complete
+Studio-observed material expectations. Offline success cannot create engine evidence; only
+creator-run Studio import and readback can. The regression pilot contains affected secondary-color
+sources plus unchanged controls; full admitted publication waits for the creator to confirm both.
 
 ## World observation and refinement
 

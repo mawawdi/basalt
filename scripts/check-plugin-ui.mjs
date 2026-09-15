@@ -173,8 +173,11 @@ for (const moduleName of modules.keys())
 
 const panel = modules.get("PluginPanel").source;
 const connector = modules.get("ConnectorRuntime").source;
+const loadedAsset = modules.get("LoadedAsset").source;
 const worldLowering = modules.get("WorldLowering").source;
+const modelBounds = modules.get("ModelBounds").source;
 const terrainLowering = modules.get("TerrainLowering").source;
+const terrainReadback = modules.get("TerrainReadback").source;
 const routeGrounding = modules.get("RouteGrounding").source;
 for (const [source, pattern, invariant] of [
   [panel, "CreateDockWidgetPluginGuiAsync", "a docked Studio panel"],
@@ -186,7 +189,11 @@ for (const [source, pattern, invariant] of [
   [connector, 'typeof(status.loweringGapCount) ~= "number"', "validated bridge status"],
   [connector, "WorldLowering.takeTraceEvents()", "failure-safe diagnostic trace transfer"],
   [connector, ".basalt/roblox/import-report.json", "a discoverable durable diagnostic report"],
+  [worldLowering, "prepareAssetTemplates", "whole-transaction asset binding preflight"],
+  [loadedAsset, "exactly one geometric package model", "fail-closed loaded asset unwrapping"],
   [worldLowering, "route.thicknessMeters", "compiler-authored route thickness"],
+  [worldLowering, "ModelBounds.worldAabb", "world-axis-aligned asset readback"],
+  [modelBounds, "PointToWorldSpace", "BasePart-corner world bounds"],
   [
     worldLowering,
     "verifyRouteConstruction(root, routeConstruction)",
@@ -214,6 +221,12 @@ for (const [source, pattern, invariant] of [
     terrainLowering,
     "SURFACE_SAMPLE_OFFSET_METERS = CELL_METERS / 2",
     "centered smooth-terrain occupancy lowering",
+  ],
+  [terrainLowering, "TerrainReadback.materialMatches", "occupancy-aware terrain material readback"],
+  [
+    terrainReadback,
+    "math.max(expectedOccupancy, observedOccupancy)",
+    "quantized-empty terrain material semantics",
   ],
 ]) {
   if (!source.includes(pattern)) throw new Error(`Plugin UI must retain ${invariant}`);

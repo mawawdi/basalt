@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "plant_fern_01_ground",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000005",
+      "commitmentHash": "46cc92583e87b278992e0231f5d29daa27e7459dc849ff87c67b7c1fa7e61e7f"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "c1c1b2e0b9ae2b7eeb209fb9035ecaf8223906dc1247658becadadc8833f25db"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_low_poly_nature",
+  "evidenceHashes": [
+    "021f67b8b4a49f98f18fb0f44c3690b01966bcda96bb9de51748c25c800d8ea1",
+    "3fd7b9704ccb3300e525322ccdfa6386db86558c1f75a7330a7e0f9beceeba5c",
+    "45ad8240999e31f8d057eb42a37068868411a4c67dcb99ac4976191f8eb2eac8",
+    "caea6d5e895dc31fc0ba88c1decbaa84409bb639770f72359f09abcc09d419ac"
+  ],
+  "members": [
+    {
+      "memberId": "source_99f17578c60f06a2",
+      "assetHash": "021f67b8b4a49f98f18fb0f44c3690b01966bcda96bb9de51748c25c800d8ea1",
+      "assertionBundleHash": "2bfbaa6d512fcf2d291d2fc4a4d89e3d31833c00f367ce826f30ab773fc8358b",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

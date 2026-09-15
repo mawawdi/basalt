@@ -25,6 +25,10 @@ import {
   type SemanticAssertionBundle,
 } from "@basalt/semantic-kernel";
 import { CATALOG_ADMISSION_POLICY_SCHEMA, type CatalogAdmissionPolicy } from "./policy.js";
+import {
+  CATALOG_ACCEPTANCE_AUDIT_SCHEMA,
+  type CatalogAcceptanceAudit,
+} from "./admission-review.js";
 
 export const RETAINED_CATALOG_EVIDENCE_SCHEMA = z
   .object({
@@ -59,6 +63,7 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
     styleProfiles: z.array(STYLE_PROFILE_DECLARATION_SCHEMA).min(1).max(4096),
     declarations: z.array(CATALOG_ENTRY_DECLARATION_SCHEMA).max(65_536),
     assertions: z.array(SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA).max(100_000),
+    acceptanceAudits: z.array(CATALOG_ACCEPTANCE_AUDIT_SCHEMA).max(100_000),
     dispositions: z.array(CATALOG_DISPOSITION_SCHEMA).max(100_000),
     admissionPolicy: CATALOG_ADMISSION_POLICY_SCHEMA,
     retainedEvidence: z.array(RETAINED_CATALOG_EVIDENCE_SCHEMA).max(100_000),
@@ -71,6 +76,12 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
     canonicalIssue(value.styleProfiles, (entry) => entry.handle, "commit style profiles", context);
     canonicalIssue(value.declarations, (entry) => entry.handle, "commit declarations", context);
     canonicalIssue(value.assertions, (entry) => entry.hash, "commit assertions", context);
+    canonicalIssue(
+      value.acceptanceAudits,
+      (entry) => entry.sourceContentHash,
+      "commit acceptance audits",
+      context,
+    );
     canonicalIssue(
       value.dispositions,
       (entry) => entry.sourceContentHash,
@@ -124,6 +135,50 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
           path: ["assertions"],
           message: `Snapshot entry ${entry.handle} lacks exact admitted assertions`,
         });
+    const eligibleDispositions = value.dispositions.filter((entry) => entry.status === "eligible");
+    const auditBySource = new Map(
+      value.acceptanceAudits.map((entry) => [entry.sourceContentHash, entry] as const),
+    );
+    if (
+      eligibleDispositions.length !== value.acceptanceAudits.length ||
+      eligibleDispositions.some((entry) => !auditBySource.has(entry.sourceContentHash))
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["acceptanceAudits"],
+        message: "Every eligible source requires exactly one creator acceptance audit",
+      });
+    const declarationByHandle = new Map(
+      value.declarations.map((entry) => [entry.handle, entry] as const),
+    );
+    const retainedHashes = new Set(value.retainedEvidence.map((entry) => entry.artifactHash));
+    for (const disposition of eligibleDispositions) {
+      const audit = auditBySource.get(disposition.sourceContentHash);
+      if (!audit) continue;
+      const declaration =
+        disposition.usage.kind === "entry_member"
+          ? declarationByHandle.get(disposition.usage.entryHandle)
+          : undefined;
+      if (
+        disposition.usage.kind !== "entry_member" ||
+        audit.entryHandle !== disposition.usage.entryHandle ||
+        audit.memberId !== disposition.usage.memberId ||
+        !declaration ||
+        audit.entryDeclarationHash !== contentHash(stableJson(declaration)) ||
+        audit.measurementSetHash !== value.measurementSetHash ||
+        audit.semanticModuleHash !== value.semanticModuleHash ||
+        audit.admissionPolicyHash !== value.admissionPolicy.hash ||
+        !assertionHashes.has(audit.assertionBundleHash) ||
+        !retainedHashes.has(audit.reviewPacketHash) ||
+        !retainedHashes.has(audit.reviewDecisionHash) ||
+        !retainedHashes.has(audit.visualReviewIndexHash)
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["acceptanceAudits"],
+          message: `Acceptance audit is stale or incomplete for ${disposition.sourceContentHash}`,
+        });
+    }
     const styles = new Map(
       value.styleProfiles.map((entry) => [entry.handle, sealStyleProfile(entry)]),
     );
@@ -158,6 +213,7 @@ export function sealCatalogAuthorityCommit(input: {
   readonly styleProfiles: readonly StyleProfileDeclaration[];
   readonly declarations: readonly CatalogEntryDeclaration[];
   readonly assertions: readonly Extract<SemanticAssertionBundle, { authority: "admitted" }>[];
+  readonly acceptanceAudits: readonly CatalogAcceptanceAudit[];
   readonly dispositions: readonly CatalogDisposition[];
   readonly admissionPolicy: CatalogAdmissionPolicy;
   readonly retainedEvidence: readonly RetainedCatalogEvidence[];
@@ -175,6 +231,11 @@ export function sealCatalogAuthorityCommit(input: {
     styleProfiles: canonical(input.styleProfiles, (entry) => entry.handle, "commit style profiles"),
     declarations: canonical(input.declarations, (entry) => entry.handle, "commit declarations"),
     assertions: canonical(input.assertions, (entry) => entry.hash, "commit assertions"),
+    acceptanceAudits: canonical(
+      input.acceptanceAudits,
+      (entry) => entry.sourceContentHash,
+      "commit acceptance audits",
+    ),
     dispositions: canonical(
       input.dispositions,
       (entry) => entry.sourceContentHash,

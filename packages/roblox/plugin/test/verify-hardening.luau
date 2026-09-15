@@ -1,8 +1,11 @@
 --!strict
 local ImportSequence = require("../src/Basalt/ImportSequence")
 local BoundedQuery = require("../src/Basalt/BoundedQuery")
+local LoadedAsset = require("../src/Basalt/LoadedAsset")
+local ModelBounds = require("../src/Basalt/ModelBounds")
 local RouteGeometry = require("../src/Basalt/RouteGeometry")
 local RouteGrounding = require("../src/Basalt/RouteGrounding")
+local TerrainReadback = require("../src/Basalt/TerrainReadback")
 local TransactionBoundary = require("../src/Basalt/TransactionBoundary")
 local Roblox = require("@lune/roblox")
 
@@ -98,6 +101,71 @@ check("terrain collision readiness terminates at its frame bound", function()
 		4
 	)
 	assert(result == nil and reads == 5 and waits == 4)
+end)
+
+check("terrain readback ignores material labels only for quantized-empty voxels", function()
+	local tiny = 0.0026877875767169646
+	assert(TerrainReadback.occupancyMatches(tiny, 0))
+	assert(TerrainReadback.materialMatches("Grass", "Air", tiny, 0))
+	assert(not TerrainReadback.materialMatches("Grass", "Air", 0.01, 0.01))
+	assert(TerrainReadback.materialMatches("Grass", "Grass", 0.01, 0.01))
+	assert(not TerrainReadback.occupancyMatches(0.01, 0))
+end)
+
+check("model bounds are world-axis-aligned independently of the model pivot", function()
+	local center, size = ModelBounds.worldAabbForBoxes({
+		{
+			cframe = Roblox.CFrame.new(3, 4, 5) * Roblox.CFrame.Angles(0, math.pi / 2, 0),
+			size = Roblox.Vector3.new(2, 4, 6),
+		},
+	}, function(x: number, y: number, z: number): any
+		return Roblox.Vector3.new(x, y, z)
+	end)
+	assert((center - Roblox.Vector3.new(3, 4, 5)).Magnitude < 0.000001)
+	assert((size - Roblox.Vector3.new(6, 4, 2)).Magnitude < 0.000001)
+end)
+
+check("loaded model assets unwrap their transport container", function()
+	local wrapper = Roblox.Instance.new("Model")
+	local packageModel = Roblox.Instance.new("Model")
+	packageModel.Name = "PublishedPackage"
+	packageModel.Parent = wrapper
+	local node = Roblox.Instance.new("Model")
+	node.Name = "SM_Plant_Fern_01_Node"
+	node.Parent = packageModel
+	local part = Roblox.Instance.new("Part")
+	part.Name = "SM_Plant_Fern_01"
+	part.Parent = node
+	local resolved = LoadedAsset.unwrap(wrapper)
+	assert(resolved == packageModel)
+	assert(resolved.Parent == nil)
+	assert(resolved:FindFirstChild("SM_Plant_Fern_01_Node") == node)
+end)
+
+check("loaded model assets reject ambiguous package roots", function()
+	local wrapper = Roblox.Instance.new("Model")
+	for _ = 1, 2 do
+		local packageModel = Roblox.Instance.new("Model")
+		packageModel.Parent = wrapper
+		local part = Roblox.Instance.new("Part")
+		part.Parent = packageModel
+	end
+	local ok, message = pcall(function() LoadedAsset.unwrap(wrapper) end)
+	assert(not ok)
+	assert(string.find(tostring(message), "exactly one geometric package model", 1, true) ~= nil)
+end)
+
+check("loaded model assets reject geometry outside the package root", function()
+	local wrapper = Roblox.Instance.new("Model")
+	local packageModel = Roblox.Instance.new("Model")
+	packageModel.Parent = wrapper
+	local packagePart = Roblox.Instance.new("Part")
+	packagePart.Parent = packageModel
+	local strayPart = Roblox.Instance.new("Part")
+	strayPart.Parent = wrapper
+	local ok, message = pcall(function() LoadedAsset.unwrap(wrapper) end)
+	assert(not ok)
+	assert(string.find(tostring(message), "geometry outside", 1, true) ~= nil)
 end)
 
 check("skewed route quads lower through an orthonormal frame", function()

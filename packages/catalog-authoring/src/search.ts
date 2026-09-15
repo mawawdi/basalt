@@ -37,6 +37,7 @@ import {
   CATALOG_SOURCE_NAME_HINT_SET_SCHEMA,
   type CatalogSourceNameHintSet,
 } from "./source-name-hints.js";
+import { CATALOG_VISUAL_REVIEW_INDEX_SCHEMA, type CatalogVisualReviewIndex } from "./render.js";
 import {
   canonicalValues,
   requireCanonicalValues,
@@ -83,6 +84,7 @@ export const CATALOG_SEARCH_DOCUMENT_SCHEMA = z
   .object({
     sourceContentHash: HASH_SCHEMA,
     measurementHash: HASH_SCHEMA,
+    renderEvidenceHash: HASH_SCHEMA.optional(),
     fields: z.array(SEARCH_FIELD_TOKEN_SCHEMA).length(CATALOG_SEARCH_FIELD_NAMES.length),
     metadataEvidence: z
       .object({
@@ -126,6 +128,7 @@ export const CATALOG_SEARCH_INDEX_SCHEMA = z
     status: COMPILATION_STATUS_SCHEMA,
     sourceManifestHash: HASH_SCHEMA,
     measurementSetHash: HASH_SCHEMA,
+    visualReviewIndexHash: HASH_SCHEMA.optional(),
     sourceNameHintSetHash: HASH_SCHEMA,
     metadataSetHash: HASH_SCHEMA.optional(),
     imageTextEmbeddingMatrixHash: HASH_SCHEMA.optional(),
@@ -389,8 +392,10 @@ export function buildCatalogSearchIndex(input: {
   readonly measurements: CatalogMeasurementSet;
   readonly metadata?: CatalogSearchMetadataSet;
   readonly sourceNames: CatalogSourceNameHintSet;
+  readonly renders?: CatalogVisualReviewIndex;
   readonly imageTextEmbeddings?: CatalogEmbeddingMatrix;
   readonly shapeEmbeddings?: CatalogEmbeddingMatrix;
+  readonly candidateSourceContentHashes?: readonly string[];
   readonly policy: CatalogSearchPolicy;
   readonly buildImplementationHash: string;
 }): CatalogSearchIndex {
@@ -399,6 +404,9 @@ export function buildCatalogSearchIndex(input: {
     ? CATALOG_SEARCH_METADATA_SET_SCHEMA.parse(input.metadata)
     : undefined;
   const sourceNames = CATALOG_SOURCE_NAME_HINT_SET_SCHEMA.parse(input.sourceNames);
+  const renders = input.renders
+    ? CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(input.renders)
+    : undefined;
   const imageTextMatrix = input.imageTextEmbeddings
     ? CATALOG_EMBEDDING_MATRIX_SCHEMA.parse(input.imageTextEmbeddings)
     : undefined;
@@ -414,6 +422,7 @@ export function buildCatalogSearchIndex(input: {
     throw new Error("Search requires a shape-similarity embedding matrix");
   if (
     measurements.sourceManifestHash !== sourceNames.sourceManifestHash ||
+    (renders && measurements.sourceManifestHash !== renders.sourceManifestHash) ||
     (imageTextMatrix && measurements.sourceManifestHash !== imageTextMatrix.sourceManifestHash) ||
     (shapeMatrix && measurements.sourceManifestHash !== shapeMatrix.sourceManifestHash)
   )
@@ -428,6 +437,9 @@ export function buildCatalogSearchIndex(input: {
   const namesBySource = new Map(
     sourceNames.items.map((entry) => [entry.sourceContentHash, entry] as const),
   );
+  const renderBySource = new Map(
+    (renders?.items ?? []).map((entry) => [entry.sourceContentHash, entry] as const),
+  );
   const imageTextRowBySource = new Map(
     (imageTextMatrix?.rows ?? []).map((entry, index) => [entry.sourceContentHash, index] as const),
   );
@@ -436,10 +448,25 @@ export function buildCatalogSearchIndex(input: {
   );
   const diagnostics: string[] = [];
   const documents: CatalogSearchDocument[] = [];
+  const candidates = input.candidateSourceContentHashes
+    ? new Set(
+        canonicalValues(input.candidateSourceContentHashes, String, "search candidate sources"),
+      )
+    : undefined;
+  if (
+    candidates &&
+    [...candidates].some(
+      (sourceContentHash) =>
+        !measurements.assets.some((asset) => asset.source.contentHash === sourceContentHash),
+    )
+  )
+    throw new Error("Search candidate universe contains an unmeasured source");
   for (const asset of measurements.assets) {
     const sourceHash = asset.source.contentHash;
+    if (candidates && !candidates.has(sourceHash)) continue;
     const receipt = metadataBySource.get(sourceHash);
     const sourceName = namesBySource.get(sourceHash);
+    const render = renderBySource.get(sourceHash);
     const imageTextEmbeddingRow = imageTextRowBySource.get(sourceHash);
     const shapeEmbeddingRow = shapeRowBySource.get(sourceHash);
     if (!sourceName) {
@@ -448,6 +475,8 @@ export function buildCatalogSearchIndex(input: {
     }
     if (receipt && receipt.measurementHash !== asset.hash)
       throw new Error(`Search metadata binds a stale measurement for ${sourceHash}`);
+    if (receipt && render && receipt.renderEvidenceHash !== render.evidence.hash)
+      throw new Error(`Search metadata binds stale render evidence for ${sourceHash}`);
     const sourceTokens = sourceName.observations.flatMap((entry) => entry.tokens);
     const fields = documentFields(receipt?.metadata, sourceTokens);
     const missingEvidence = [
@@ -458,6 +487,9 @@ export function buildCatalogSearchIndex(input: {
     documents.push({
       sourceContentHash: sourceHash,
       measurementHash: asset.hash,
+      ...(render || receipt
+        ? { renderEvidenceHash: render?.evidence.hash ?? receipt!.renderEvidenceHash }
+        : {}),
       fields,
       ...(receipt?.metadata
         ? {
@@ -488,6 +520,7 @@ export function buildCatalogSearchIndex(input: {
     status: diagnostics.length === 0 ? ("eligible" as const) : ("incomplete" as const),
     sourceManifestHash: measurements.sourceManifestHash,
     measurementSetHash: measurements.hash,
+    ...(renders ? { visualReviewIndexHash: renders.hash } : {}),
     sourceNameHintSetHash: sourceNames.hash,
     ...(metadata ? { metadataSetHash: metadata.hash } : {}),
     ...(imageTextMatrix ? { imageTextEmbeddingMatrixHash: imageTextMatrix.hash } : {}),
@@ -674,7 +707,7 @@ export function executeCatalogSearch(input: {
       ...(shapeSimilarity ? ["shape_similarity" as const] : []),
     ].sort(compareCanonicalStrings);
     const validationRequested = indexValue < query.validationLimit;
-    if (validationRequested && !metadataEvidence)
+    if (validationRequested && !document.renderEvidenceHash)
       diagnostics.push(`Candidate ${sourceHash} lacks render-linked evidence for validation`);
     return {
       sourceContentHash: sourceHash,
@@ -682,10 +715,10 @@ export function executeCatalogSearch(input: {
       ...(metadataEvidence
         ? {
             metadataReceiptHash: metadataEvidence.metadataReceiptHash,
-            renderEvidenceHash: metadataEvidence.renderEvidenceHash,
             metadata: metadataEvidence.metadata,
           }
         : {}),
+      ...(document.renderEvidenceHash ? { renderEvidenceHash: document.renderEvidenceHash } : {}),
       channelRanks: {
         ...(basenameLexical ? { basenameLexical } : {}),
         ...(imageTextRetrieval ? { imageTextRetrieval } : {}),
@@ -697,7 +730,9 @@ export function executeCatalogSearch(input: {
       rankingChannels,
       missingEvidence: document.missingEvidence,
       validation:
-        validationRequested && metadataEvidence ? ("pending" as const) : ("not_requested" as const),
+        validationRequested && document.renderEvidenceHash
+          ? ("pending" as const)
+          : ("not_requested" as const),
       metric: document.metric,
       rights: document.rights,
     };

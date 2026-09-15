@@ -70,6 +70,9 @@ export async function runCatalogIndexCommand(
       options.get("--source-names") ?? `${CATALOG_METADATA_ROOT}/source-name-hints.json`,
     ),
   );
+  const renders = CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(
+    await context.readJson(options.get("--renders") ?? ".basalt/catalog/review/index.json"),
+  );
   const metadataRaw = await context.readOptionalJson(
     options.get("--metadata") ?? `${CATALOG_METADATA_ROOT}/set.json`,
   );
@@ -83,6 +86,7 @@ export async function runCatalogIndexCommand(
     measurements,
     ...(metadata ? { metadata } : {}),
     sourceNames,
+    renders,
     ...(imageTextMatrix ? { imageTextEmbeddings: imageTextMatrix } : {}),
     ...(shapeMatrix ? { shapeEmbeddings: shapeMatrix } : {}),
     policy,
@@ -235,6 +239,8 @@ async function generateQueryEmbedding(
     queryHash: query.hash,
     modelImplementationHash: output.modelImplementationHash,
     preprocessingImplementationHash: output.preprocessingImplementationHash,
+    workerOutputHash: output.resultHash,
+    batchGpuMilliseconds: output.gpuMilliseconds,
     vector: item.vector,
   });
 }
@@ -247,9 +253,10 @@ async function validateSearchResults(
 ) {
   const pending = result.results.filter((entry) => entry.validation === "pending");
   if (pending.length === 0) return result;
-  const metadata = CATALOG_SEARCH_METADATA_SET_SCHEMA.parse(
-    await context.readJson(options.get("--metadata") ?? `${CATALOG_METADATA_ROOT}/set.json`),
+  const metadataRaw = await context.readOptionalJson(
+    options.get("--metadata") ?? `${CATALOG_METADATA_ROOT}/set.json`,
   );
+  const metadata = metadataRaw ? CATALOG_SEARCH_METADATA_SET_SCHEMA.parse(metadataRaw) : undefined;
   const measurements = CATALOG_MEASUREMENT_SET_SCHEMA.parse(
     await context.readJson(options.get("--measurements") ?? ".basalt/catalog/measurements.json"),
   );
@@ -277,7 +284,7 @@ async function validateSearchResults(
     "workers/catalog-metadata/worker.py",
   );
   const metadataBySource = new Map(
-    metadata.receipts.map((entry) => [entry.sourceContentHash, entry] as const),
+    (metadata?.receipts ?? []).map((entry) => [entry.sourceContentHash, entry] as const),
   );
   const measurementBySource = new Map(
     measurements.assets.map((entry) => [entry.source.contentHash, entry] as const),
@@ -290,7 +297,7 @@ async function validateSearchResults(
     const measurement = measurementBySource.get(candidate.sourceContentHash);
     const render = renderBySource.get(candidate.sourceContentHash);
     const metadataReceipt = metadataBySource.get(candidate.sourceContentHash);
-    if (!measurement || !render || !metadataReceipt)
+    if (!measurement || !render)
       throw new Error(`Validation evidence is incomplete for ${candidate.sourceContentHash}`);
     const views = await Promise.all(
       render.viewArtifacts.map(async (view) => ({
@@ -305,7 +312,7 @@ async function validateSearchResults(
         query,
         candidate: {
           sourceContentHash: candidate.sourceContentHash,
-          metadataReceiptHash: metadataReceipt.hash,
+          ...(metadataReceipt ? { metadataReceiptHash: metadataReceipt.hash } : {}),
           measurementHash: measurement.hash,
           renderEvidenceHash: render.evidence.hash,
           metricSummary: sealAssetMetricPromptSummary(measurement),
@@ -314,7 +321,7 @@ async function validateSearchResults(
         promptTemplateHash,
         preprocessingImplementationHash: CATALOG_METADATA_PREPROCESSOR_IMPLEMENTATION_HASH,
       }),
-      metadataReceipt,
+      ...(metadataReceipt ? { metadataReceipt } : {}),
       measurement,
       views,
     });
