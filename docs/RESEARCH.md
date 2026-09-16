@@ -41,6 +41,8 @@ and limitations. It is inert research evidence, not a live fixture or compatibil
   context.
 - [Roblox terrain capability survey](sources/roblox-terrain.md) — dated platform evidence
   supporting terrain lowering decisions.
+- [Roblox world-presentation baseline](sources/roblox-world-presentation.md) — official
+  Lighting, Atmosphere, and post-processing primitives reused by the transactional adapter.
 
 ## Current conclusions
 

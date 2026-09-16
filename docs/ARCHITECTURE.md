@@ -124,7 +124,9 @@ primitive elements, surfaces, openings, portals, attachments, access paths, occu
 reservations, bounds, and evidence. Constructed geometry remains distinct from catalog
 instances and assembly-kit components, but both contribute complete extents to
 `MesoLayout`, `WorldBuild`, chunking, and task hashes. Unsupported operations fail with a
-typed lowering gap at an engine boundary.
+typed lowering gap at an engine boundary. Stair flights emit one riser-height prism per step
+so tall access paths remain open beneath the treads instead of accumulating a ground-filled
+wedge.
 
 ## Coordinated route and terrain construction
 
@@ -217,6 +219,14 @@ proxy for grounding. Roblox publishes newly written voxel channels before its te
 representation is ray-queryable, so a missing terrain query crosses at most four scheduler
 frames before remaining a hard observation failure. A stored route hash alone is not evidence.
 
+The compiled `WorldBuild` also carries its sealed `WorldVisualEnvironment`. Only the commit
+transaction carries that profile. The connector snapshots Roblox `Lighting`, transactionally
+replaces the `Atmosphere`, `ColorCorrectionEffect`, and `SunRaysEffect` stack with Basalt-owned
+instances, verifies their exact readback together with the global lighting properties, and
+commits or rolls the entire presentation change back with the world swap. This makes art
+direction reproducible without allowing a platform look profile to alter semantic, catalog,
+or spatial authority.
+
 The import command binds a private local bridge to `127.0.0.1`, selects one port from
 8787–8797, authenticates requests, and streams one canonical import plan. The plugin
 discovers it automatically and exposes one contextual primary action. Import runs in
@@ -246,6 +256,12 @@ moderation state, then checkpoints a receipt binding the source artifact, derive
 adaptation policy, and request. Publication never changes source disposition. Each binding record
 binds the exact measured asset hash, source-artifact hash, upload-artifact hash, eligible
 publication-receipt hash, positive Roblox asset ID, and creator-observed material expectations.
+Sealing also inspects the exact retained upload GLB and requires one material expectation for every
+render primitive; a multi-primitive model cannot be approved with only its first imported MeshPart
+described. Before placing any instance, the connector loads every distinct bound model and probes
+every declared placement's complete material coverage, uniform source-bounds fit, transform, and
+realized bounds. The first failure for every distinct asset is reported together, before a partial
+micro layer can be created.
 Missing records remain typed `asset_binding` lowering gaps; the adapter never inserts placeholder
 geometry. The catalog-first-use handoff verifies its upload packet and publication ledger before
 merging any new binding, and only Studio readback can raise the resulting realization to

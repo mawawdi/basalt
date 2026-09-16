@@ -18,6 +18,22 @@ Each level seals its constraints and references its parent direction. A beautifu
 that contradicts the world palette is not coherent; a good asset cannot repair a broken
 composition.
 
+## Sealed world presentation
+
+`WorldVisualEnvironment` carries engine-neutral presentation intent with the spatial plan
+and compiled world. It binds sun time and latitude, direct and ambient balance, shadow
+softness, atmosphere, color grading, and restrained sun rays. These settings control value
+separation, warm/cool relationships, and depth without changing asset materials or claiming
+semantic authority. Each profile is content-addressed, so a presentation change changes the
+world build instead of becoming an unrecorded Studio adjustment.
+
+The Roblox connector applies the profile only at the reversible commit boundary. It replaces
+the prior atmosphere, color-correction, and sun-ray stack with three explicitly named effects,
+reads their values back, and restores the complete prior Lighting state if the import does not
+commit. Unrelated effect classes remain creator-owned and untouched. Mesh colors and material
+expectations remain governed by their catalog bindings; global grading cannot be used to
+disguise a defective asset texture.
+
 ## Asset evidence
 
 Every source identity is measured independently of its semantic admission. Measurement

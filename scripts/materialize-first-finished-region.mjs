@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { execFile as execFileCallback } from "node:child_process";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
 import { readBoundedWorkspaceBytes, writeCanonicalWorkspaceJson } from "@basalt/artifact-store";
@@ -12,12 +12,17 @@ import {
   sealRobloxAssetBinding,
 } from "@basalt/roblox";
 import { compileBasaltWorld } from "@basalt/world-compiler";
+import { renderWorldDiagnostics } from "@basalt/world-refinement";
 import {
+  FIRST_FINISHED_REGION_OVERLOOK_ROUTE_ID,
   FIRST_FINISHED_REGION_OUTPUT_ROOT,
+  FIRST_FINISHED_REGION_RAVINE_OVERLOOK_ROUTE_ID,
+  FIRST_FINISHED_REGION_SIZE_METERS,
   FIRST_FINISHED_REGION_TOWER_ENTRY_ROUTE_ID,
   firstFinishedRegionFixture,
 } from "../dist/test/helpers/first-finished-region-fixture.js";
 import { loadSemanticRegistry } from "../dist/test/helpers/semantic-registry.js";
+import { verifyRobloxBindingCoverage } from "./verify-roblox-binding-coverage.mjs";
 import { verifyRobloxUploadEvidence } from "./verify-roblox-upload-evidence.mjs";
 
 const execFile = promisify(execFileCallback);
@@ -82,8 +87,61 @@ for (const evidence of searchEvidence)
       `Optional candidate unexpectedly entered the admitted catalog: ${evidence.selectedCandidate.sourceContentHash}`,
     );
 
-const bindings = await loadVerifiedBindings();
-const robloxImport = createRobloxImportManifest(first, bindings);
+const bindingInventory = await loadVerifiedBindingInventory();
+const robloxImport = createRobloxImportManifest(first, bindingInventory.bindings);
+const bindingReview = createBindingReviewArtifacts(first, fixture, robloxImport, bindingInventory);
+const diagnosticCameras = [
+  {
+    cameraId: "ExpandedRegionOverview",
+    purpose: "overview",
+    positionMeters: { x: 48, y: 82, z: 116 },
+    lookAtMeters: { x: 48, y: 9, z: 52 },
+    up: { x: 0, y: 1, z: 0 },
+    verticalFieldOfViewDegrees: 58,
+    widthPixels: 160,
+    heightPixels: 90,
+  },
+  {
+    cameraId: "ExpandedRegionTrailhead",
+    purpose: "approach",
+    positionMeters: { x: 8, y: 4, z: -8 },
+    lookAtMeters: { x: 52, y: 13, z: 62 },
+    up: { x: 0, y: 1, z: 0 },
+    verticalFieldOfViewDegrees: 58,
+    widthPixels: 160,
+    heightPixels: 90,
+  },
+  {
+    cameraId: "ExpandedRegionRavine",
+    purpose: "overview",
+    positionMeters: { x: 12, y: 24, z: 18 },
+    lookAtMeters: { x: 42, y: 4, z: 41 },
+    up: { x: 0, y: 1, z: 0 },
+    verticalFieldOfViewDegrees: 60,
+    widthPixels: 160,
+    heightPixels: 90,
+  },
+  {
+    cameraId: "ExpandedRegionSummits",
+    purpose: "platform",
+    positionMeters: { x: 49, y: 42, z: 108 },
+    lookAtMeters: { x: 51, y: 17, z: 75 },
+    up: { x: 0, y: 1, z: 0 },
+    verticalFieldOfViewDegrees: 55,
+    widthPixels: 160,
+    heightPixels: 90,
+  },
+];
+const diagnostics = await loadOrRenderDiagnostics(first, diagnosticCameras);
+const diagnosticBody = {
+  kind: "FirstFinishedRegionDiagnosticSet",
+  worldBuildHash: first.worldBuildHash,
+  renders: diagnostics.renders,
+};
+const diagnosticSet = {
+  ...diagnosticBody,
+  hash: contentHash(stableJson(diagnosticBody)),
+};
 const requirementsBody = {
   kind: "FirstFinishedRegionRequirements",
   scope: "representative_region_core",
@@ -91,11 +149,11 @@ const requirementsBody = {
   worldScaleClaim: "none",
   regionBrief: {
     setting:
-      "A stylized low-poly wooded ridge where two approach routes rejoin at a climbable timber observation tower.",
+      "A stylized low-poly highland preserve rising from a sheltered trailhead through a deep ravine to layered wooded summits.",
     palette:
-      "Matte olive grass, warm earth paths, weathered brown timber, and admitted natural props.",
+      "Matte olive grass, warm earth paths, dark weathered timber, muted slate roofs, and admitted natural props.",
     experience:
-      "The tower silhouette should read from the trailhead while the ridge conceals its entrance; the grounded trail and elevated boardwalk provide distinct approaches before merging at the stairs.",
+      "A gateway begins one directional ascent: a lower ravine boardwalk reaches a switchback ridge trail, a high skywalk crosses the summit saddle, and short branches terminate at a roofed tower, pavilion, and ravine overlook.",
   },
   coreRequirements: [
     {
@@ -103,32 +161,69 @@ const requirementsBody = {
       realization: "procedural_construction",
       required: true,
       acceptance:
-        "One 6.5 meter timber tower with a connected stair run and usable viewing platform.",
+        "One 13.5 meter timber lookout with a connected open stair run, usable viewing platform, structural bracing, guard rails, and slate canopy.",
     },
     {
       requirementId: "grounded_ridge_trail",
       realization: "deterministic_route",
       required: true,
-      acceptance: "A grounded winding approach from the trailhead to the tower merge.",
+      acceptance:
+        "A grounded switchback ascent connects the upper ravine landing to the summit split.",
     },
     {
       requirementId: "elevated_scenic_alternative",
       realization: "deterministic_route",
       required: true,
-      acceptance: "A supported boardwalk alternative sharing the split and merge junctions.",
+      acceptance:
+        "A supported and guarded boardwalk connects the lower and upper landings across the carved ravine.",
+    },
+    {
+      requirementId: "layered_vertical_composition",
+      realization: "authored_terrain",
+      required: true,
+      acceptance:
+        "A 96 meter region with at least 21 meters of terrain relief, a readable transverse ravine, intermediate switchback terraces, and two distinct high plateaus.",
+    },
+    {
+      requirementId: "summit_skywalk",
+      realization: "deterministic_route",
+      required: true,
+      acceptance:
+        "A second supported and guarded elevated span crosses the high saddle between the tower plateau and pavilion plateau.",
+    },
+    {
+      requirementId: "ridge_pavilion_destination",
+      realization: "procedural_construction",
+      required: true,
+      acceptance:
+        "A route-connected roofed pavilion with a deck, seating, rails, and a dedicated summit approach.",
+    },
+    {
+      requirementId: "ravine_overlook_destination",
+      realization: "procedural_construction",
+      required: true,
+      acceptance:
+        "A route-connected cantilevered overlook has deep supports, a guarded deck, seating, and a slate canopy above the ravine edge.",
+    },
+    {
+      requirementId: "trailhead_gateway",
+      realization: "procedural_construction",
+      required: true,
+      acceptance: "A timber gateway frames the beginning of the route network without blocking it.",
     },
     {
       requirementId: "outdoor_population",
       realization: "admitted_catalog",
       required: true,
-      acceptance: "Measured admitted trees, rocks, groundcover, and one fallen-log prop.",
+      acceptance:
+        "At least 220 measured admitted instances use at least ten distinct admitted asset entries, including canopy trees, tall pines, understory trees, monument trees, bushes, boulders, rounded rocks, low rocks, two groundcover scales, and eight fallen logs.",
     },
     {
       requirementId: "approach_reveal",
       realization: "authored_terrain_and_camera_intent",
       required: true,
       acceptance:
-        "Creator inspection confirms the tower silhouette is visible before its entrance and route merge are revealed.",
+        "Creator inspection confirms the tower and pavilion read as distinct highland destinations and the route hierarchy is legible from the gateway.",
     },
   ],
   optionalRequirements: [
@@ -144,8 +239,28 @@ const requirements = {
   hash: contentHash(stableJson(requirementsBody)),
 };
 
-const tower = first.meso.constructedStructures[0];
+const tower = first.meso.constructedStructures.find((entry) =>
+  entry.accessPaths.some(
+    (accessPath) => accessPath.entryRouteId === FIRST_FINISHED_REGION_TOWER_ENTRY_ROUTE_ID,
+  ),
+);
+const pavilion = first.meso.constructedStructures.find((entry) =>
+  entry.accessPaths.some(
+    (accessPath) => accessPath.entryRouteId === FIRST_FINISHED_REGION_OVERLOOK_ROUTE_ID,
+  ),
+);
+const gateway = first.meso.constructedStructures.find((entry) =>
+  entry.elements.some((element) => element.operationId === "GatewaySign"),
+);
+const ravineOverlook = first.meso.constructedStructures.find((entry) =>
+  entry.accessPaths.some(
+    (accessPath) => accessPath.entryRouteId === FIRST_FINISHED_REGION_RAVINE_OVERLOOK_ROUTE_ID,
+  ),
+);
 if (!tower) throw new Error("First-finished-region build lacks its observation tower");
+if (!pavilion) throw new Error("First-finished-region build lacks its ridge pavilion");
+if (!gateway) throw new Error("First-finished-region build lacks its trailhead gateway");
+if (!ravineOverlook) throw new Error("First-finished-region build lacks its ravine overlook");
 const routeById = new Map(
   first.foundation.routeConstructions.map((entry) => [entry.routeId, entry]),
 );
@@ -210,6 +325,11 @@ const towerPresentationComplete = [
   "BackTopRail",
   "PlatformBeamEastWest",
   "PlatformBeamNorthSouth",
+  "TowerBraceFront_1",
+  "TowerBraceBack_2",
+  "CanopyPost_West_Front",
+  "CanopyRoof",
+  "CanopyCrown",
 ].every((operationId) => towerOperationIds.has(operationId));
 const towerRouteConnected = Boolean(
   towerAccess &&
@@ -223,10 +343,54 @@ const towerRouteConnected = Boolean(
 const towerOpeningsClear = tower.openings.every((opening) => {
   const panelIds = new Set(opening.panelElementIds);
   return ![
-    ...tower.elements.filter((entry) => !panelIds.has(entry.elementId)),
+    ...first.meso.constructedStructures
+      .flatMap((entry) => entry.elements)
+      .filter((entry) => !panelIds.has(entry.elementId)),
     ...first.instances,
   ].some((entry) => overlapsStrictly(opening.clearanceBoundsMeters, entry.boundsMeters));
 });
+const pavilionRouteConnected = structureRouteConnected(
+  pavilion,
+  routeById.get(FIRST_FINISHED_REGION_OVERLOOK_ROUTE_ID),
+  FIRST_FINISHED_REGION_OVERLOOK_ROUTE_ID,
+);
+const pavilionOperationIds = new Set(pavilion.elements.map((entry) => entry.operationId));
+const pavilionComplete =
+  pavilionRouteConnected &&
+  [
+    "PavilionDeck",
+    "PavilionEntrySteps",
+    "PavilionRoof",
+    "PavilionBenchSeat",
+    "PavilionBenchBack",
+  ].every((operationId) => pavilionOperationIds.has(operationId));
+const ravineOverlookOperationIds = new Set(
+  ravineOverlook.elements.map((entry) => entry.operationId),
+);
+const ravineOverlookComplete =
+  structureRouteConnected(
+    ravineOverlook,
+    routeById.get(FIRST_FINISHED_REGION_RAVINE_OVERLOOK_ROUTE_ID),
+    FIRST_FINISHED_REGION_RAVINE_OVERLOOK_ROUTE_ID,
+  ) &&
+  [
+    "OverlookDeck",
+    "OverlookEntrySteps",
+    "OverlookViewRail",
+    "OverlookCanopyRoof",
+    "OverlookBenchSeat",
+  ].every((operationId) => ravineOverlookOperationIds.has(operationId));
+const gatewayOperationIds = new Set(gateway.elements.map((entry) => entry.operationId));
+const gatewayComplete = [
+  "GatewayPost_West",
+  "GatewayPost_East",
+  "GatewayLintel",
+  "GatewaySign",
+].every((operationId) => gatewayOperationIds.has(operationId));
+const terrainElevations = first.foundation.baseTerrainFields.flatMap((entry) =>
+  entry.samples.map((sample) => sample.elevationMeters),
+);
+const terrainReliefMeters = Math.max(...terrainElevations) - Math.min(...terrainElevations);
 const boardwalk = routeById.get("ScenicBoardwalk");
 const boardwalkComplete = Boolean(
   boardwalk?.status === "eligible" &&
@@ -235,6 +399,15 @@ const boardwalkComplete = Boolean(
   boardwalk.edgeRails.length > 0 &&
   boardwalk.edgePosts.length > 0 &&
   boardwalk.junctions.length === 2,
+);
+const skywalk = routeById.get("SummitSkywalk");
+const skywalkComplete = Boolean(
+  skywalk?.status === "eligible" &&
+  skywalk.treatmentKind === "elevated" &&
+  skywalk.supports.length >= 2 &&
+  skywalk.edgeRails.length > 0 &&
+  skywalk.edgePosts.length > 0 &&
+  skywalk.junctions.length === 2,
 );
 const junctionsComplete = first.foundation.routeJunctions.every(
   (junction) =>
@@ -274,9 +447,51 @@ const coreChecks = [
     evidenceHashes: routeById.get("ScenicBoardwalk") ? [routeById.get("ScenicBoardwalk").hash] : [],
   },
   {
+    requirementId: "summit_skywalk",
+    status: skywalkComplete && junctionsComplete ? "eligible" : "incomplete",
+    evidenceHashes: skywalk ? [skywalk.hash] : [],
+  },
+  {
+    requirementId: "layered_vertical_composition",
+    status:
+      first.foundation.boundsMeters.max.x === FIRST_FINISHED_REGION_SIZE_METERS &&
+      first.foundation.boundsMeters.max.z === FIRST_FINISHED_REGION_SIZE_METERS &&
+      terrainReliefMeters >= 21
+        ? "eligible"
+        : "incomplete",
+    evidenceHashes: first.foundation.baseTerrainFields.map((entry) => entry.hash),
+  },
+  {
+    requirementId: "ridge_pavilion_destination",
+    status: pavilionComplete ? "eligible" : "incomplete",
+    evidenceHashes: [pavilion.hash, pavilion.constructionProgramHash],
+  },
+  {
+    requirementId: "ravine_overlook_destination",
+    status: ravineOverlookComplete ? "eligible" : "incomplete",
+    evidenceHashes: [ravineOverlook.hash, ravineOverlook.constructionProgramHash],
+  },
+  {
+    requirementId: "trailhead_gateway",
+    status: gatewayComplete ? "eligible" : "incomplete",
+    evidenceHashes: [gateway.hash, gateway.constructionProgramHash],
+  },
+  {
     requirementId: "outdoor_population",
     status:
-      first.catalogResolution.gaps.length === 0 && first.instances.length > 0
+      first.catalogResolution.gaps.length === 0 &&
+      first.instances.length >= 220 &&
+      new Set(first.instances.map((entry) => entry.entryHandle)).size >= 10 &&
+      [
+        "PlaceWestLog",
+        "PlacePavilionLog",
+        "PlaceLowerLog",
+        "PlaceEastLog",
+        "PlaceTowerLog",
+        "PlaceRavineLog",
+        "PlaceMeadowLog",
+        "PlaceOverlookLog",
+      ].every((intentId) => first.instances.some((instance) => instance.intentId === intentId))
         ? "eligible"
         : "incomplete",
     evidenceHashes: [first.catalogResolution.hash, ...first.instances.map((entry) => entry.hash)],
@@ -313,7 +528,7 @@ const statusBody = {
     ...(robloxImport.loweringGaps.length > 0
       ? ["One or more catalog assets lack verified Roblox bindings"]
       : []),
-    "Creator-run Studio inspection must verify both routes, tower traversal, approach reveal, materials, and exact connector readback.",
+    "Creator-run Studio inspection must verify the complete route network, tower and pavilion traversal, gateway framing, destination hierarchy, sealed visual environment, materials, and exact connector readback.",
   ],
 };
 const status = { ...statusBody, hash: contentHash(stableJson(statusBody)) };
@@ -325,7 +540,22 @@ await Promise.all([
   writeGeneratedJson(`${outputRoot}/roblox-import.json`, robloxImport),
   writeGeneratedJson(`${outputRoot}/remaining-gaps.json`, gapReport),
   writeGeneratedJson(`${outputRoot}/status.json`, status),
+  writeGeneratedJson(`${outputRoot}/diagnostics.json`, diagnosticSet),
+  writeGeneratedJson(`${outputRoot}/roblox-binding-upload-packet.json`, bindingReview.packet),
+  writeGeneratedJson(
+    `${outputRoot}/roblox-binding-decision-template.json`,
+    bindingReview.decisionTemplate,
+  ),
 ]);
+await mkdir(resolve(repositoryRoot, `${outputRoot}/diagnostics`), { recursive: true });
+await Promise.all(
+  diagnostics.renders.map((render) =>
+    writeFile(
+      resolve(repositoryRoot, `${outputRoot}/diagnostics/${render.camera.cameraId}.ppm`),
+      diagnostics.payloads.get(render.payload.contentHash),
+    ),
+  ),
+);
 await writeFile(resolve(repositoryRoot, `${outputRoot}/README.md`), instructions(status), "utf8");
 
 process.stdout.write(
@@ -343,6 +573,7 @@ process.stdout.write(
       })),
       optionalGaps: optionalGaps.length,
       robloxLoweringGaps: robloxImport.loweringGaps.length,
+      diagnosticRenders: diagnostics.renders.length,
       outputRoot,
     },
     null,
@@ -358,6 +589,18 @@ function overlapsStrictly(left, right) {
     left.max.y > right.min.y &&
     left.min.z < right.max.z &&
     left.max.z > right.min.z
+  );
+}
+
+function structureRouteConnected(structure, route, routeId) {
+  const access = structure.accessPaths.find((entry) => entry.entryRouteId === routeId);
+  const routeFinish = route?.profile.at(-1)?.centerTopMeters;
+  return Boolean(
+    access &&
+    routeFinish &&
+    Math.hypot(routeFinish.x - access.entryMeters.x, routeFinish.z - access.entryMeters.z) <=
+      1e-9 &&
+    Math.abs(routeFinish.y - access.entryMeters.y) <= 0.1,
   );
 }
 
@@ -439,7 +682,7 @@ function searchReference(evidence) {
   };
 }
 
-async function loadVerifiedBindings() {
+async function loadVerifiedBindingInventory() {
   const bindings = ROBLOX_ASSET_BINDING_SCHEMA.array().parse(
     await readJson(".basalt/roblox/asset-bindings.json"),
   );
@@ -467,17 +710,144 @@ async function loadVerifiedBindings() {
       upload.uploadHash !== binding.publicationEvidenceHash
     )
       throw new Error(`Roblox binding lacks exact upload evidence: ${binding.assetHash}`);
+    await verifyRobloxBindingCoverage(repositoryRoot, binding, upload);
   }
-  return bindings;
+  return { bindings, uploads };
+}
+
+function createBindingReviewArtifacts(world, fixture, robloxImport, inventory) {
+  const missingAssetHashes = [
+    ...new Set(
+      robloxImport.loweringGaps
+        .filter((gap) => gap.kind === "asset_binding")
+        .map((gap) => gap.subjectHash),
+    ),
+  ].sort();
+  const measurementByHash = new Map(
+    fixture.measurements.assets.map((asset) => [asset.hash, asset]),
+  );
+  const entryHandleByAsset = new Map(
+    fixture.catalogCommit.snapshot.entries.flatMap((entry) =>
+      entry.memberAssets.map((member) => [member.assetHash, entry.handle]),
+    ),
+  );
+  const uploadBySource = new Map(
+    inventory.uploads.uploads.map((entry) => [entry.sourceArtifactHash, entry]),
+  );
+  const missingBindings = missingAssetHashes.map((assetHash) => {
+    const asset = measurementByHash.get(assetHash);
+    if (!asset)
+      throw new Error(`First-finished-region binding gap references unknown asset ${assetHash}`);
+    const upload = uploadBySource.get(asset.source.sourceArtifact.artifactHash);
+    return {
+      assetHash,
+      sourceContentHash: asset.source.contentHash,
+      sourceRelativePath: upload?.sourceRelativePath ?? null,
+      sourceArtifactHash: asset.source.sourceArtifact.artifactHash,
+      proposedEntryHandle: entryHandleByAsset.get(assetHash) ?? null,
+      sourceMaterials: asset.materials,
+      sourceParts: asset.parts.map((part) => ({
+        partId: part.partId,
+        materialHashes: part.materialHashes,
+      })),
+      uploadStatus: upload?.status ?? "missing",
+      robloxDisplayName: upload?.status === "eligible" ? upload.displayName : null,
+      robloxAssetId: upload?.status === "eligible" ? upload.robloxAssetId : null,
+      uploadArtifactHash: upload?.status === "eligible" ? upload.uploadArtifact.artifactHash : null,
+      publicationEvidenceHash: upload?.status === "eligible" ? upload.uploadHash : null,
+      materialExpectations: null,
+    };
+  });
+  const packetBody = {
+    kind: "CatalogFirstUseRobloxUploadPacket",
+    status: missingBindings.every((item) => item.uploadStatus === "eligible")
+      ? "eligible"
+      : "incomplete",
+    catalogCommitHash: fixture.catalogCommit.hash,
+    worldBuildHash: world.worldBuildHash,
+    bindingInventory: {
+      relativePath: ".basalt/roblox/asset-bindings.json",
+      status: "present",
+      bindingCount: inventory.bindings.length,
+    },
+    publicationInventory: {
+      relativePath: ".basalt/roblox/asset-uploads.json",
+      status: "present",
+      uploadCount: inventory.uploads.uploads.length,
+      eligibleCount: inventory.uploads.uploads.filter((entry) => entry.status === "eligible")
+        .length,
+    },
+    missingBindings,
+    admittedAssets: [],
+    instructions:
+      missingBindings.length === 0
+        ? []
+        : [
+            "Inspect every listed published model in a creator-owned Studio place and record exact material-bearing instance paths and appearance properties.",
+            `Seal the completed decision with npm run eval:catalog-first-use:seal-bindings -- --packet ${outputRoot}/roblox-binding-upload-packet.json --decision ${outputRoot}/roblox-binding-decision.json.`,
+            "Re-run npm run eval:first-finished-region and require zero asset_binding lowering gaps.",
+          ],
+  };
+  const packet = { ...packetBody, hash: contentHash(stableJson(packetBody)) };
+  return {
+    packet,
+    decisionTemplate: {
+      kind: "CatalogFirstUseRobloxBindingDecision",
+      uploadPacketHash: packet.hash,
+      recordedBy: null,
+      reviewerStatement: null,
+      recordedAt: null,
+      bindings: missingBindings.map((item) => ({
+        assetHash: item.assetHash,
+        sourceArtifactHash: item.sourceArtifactHash,
+        uploadArtifactHash: item.uploadArtifactHash,
+        publicationEvidenceHash: item.publicationEvidenceHash,
+        robloxAssetId: item.robloxAssetId,
+        materialExpectations: null,
+      })),
+    },
+  };
+}
+
+async function loadOrRenderDiagnostics(world, cameras) {
+  try {
+    const cached = await readJson(`${outputRoot}/diagnostics.json`);
+    const body = { ...cached };
+    delete body.hash;
+    if (
+      cached.hash !== contentHash(stableJson(body)) ||
+      cached.worldBuildHash !== world.worldBuildHash ||
+      stableJson(cached.renders.map((entry) => entry.camera)) !== stableJson(cameras)
+    )
+      throw new Error("cached diagnostics do not bind this world and camera set");
+    const payloads = new Map();
+    for (const render of cached.renders) {
+      const payload = await readFile(
+        resolve(repositoryRoot, `${outputRoot}/diagnostics/${render.camera.cameraId}.ppm`),
+      );
+      const payloadHash = createHash("sha256").update(payload).digest("hex");
+      if (payloadHash !== render.payload.contentHash)
+        throw new Error(`cached diagnostic payload drifted: ${render.camera.cameraId}`);
+      payloads.set(payloadHash, payload);
+    }
+    return { renders: cached.renders, payloads };
+  } catch (error) {
+    if (
+      error?.code !== "ENOENT" &&
+      !(error instanceof Error && error.message.startsWith("cached diagnostic"))
+    )
+      throw error;
+    return renderWorldDiagnostics({ worldBuild: world, cameras });
+  }
 }
 
 function instructions(status) {
   return (
-    `# First finished region core\n\n` +
+    `# Expanded first finished region\n\n` +
     `Offline core: **${status.offlineCoreStatus}**. Creator gate: **${status.creatorGateStatus}**. ` +
-    `This is a 48 m representative region, not evidence of the complete 40 km² world.\n\n` +
-    `The build contains one grounded ridge trail, one elevated boardwalk alternative, two shared junctions, ` +
-    `a route-connected 6.5 m procedural observation tower, and ${status.realizedInstanceCount} real admitted catalog instances. ` +
+    `This is a 96 m representative region, not evidence of the complete 40 km² world.\n\n` +
+    `The build contains seven connected route segments, a lower ravine boardwalk, a high summit skywalk, four shared junctions, ` +
+    `a route-connected 13.5 m roofed observation tower, ridge pavilion, cantilevered ravine overlook, trailhead gateway, and ${status.realizedInstanceCount} real admitted catalog instances across eleven visible asset types. ` +
     `Optional cabin, lantern, campfire, footbridge, and signpost accents remain explicit non-blocking gaps in ` +
     `\`remaining-gaps.json\`; none were silently admitted.\n\n` +
     `## One creator gate\n\n` +
@@ -485,8 +855,8 @@ function instructions(status) {
     `2. Run \`npm run plugin:build\`, then reopen the target place in Studio.\n` +
     `3. Run \`node bin/basalt.js roblox import .basalt/evals/first-finished-region/world-build.json\`.\n` +
     `4. In Roblox Studio, open the Basalt plugin and choose **Import**. A prior failed staging world is removed by the connector's bounded retry path.\n` +
-    `5. In one play session, walk the grounded trail and the elevated boardwalk from split to merge, climb the tower stairs, stand on the platform, and inspect catalog asset colors/materials. Confirm whether the tower silhouette is visible from the trailhead before its entrance is revealed.\n` +
-    `6. Stop play and preserve \`.basalt/roblox/import-report.json\`. Report the traversal/reveal result once; no optional-prop review is required for this gate.\n\n` +
+    `5. In one play session, pass through the gateway; cross the ravine boardwalk; climb the switchback ridge; visit the cantilevered ravine overlook; climb the open tower stairs; then cross the summit skywalk and follow SummitOverlook to the pavilion. Inspect route grounding, both elevated spans and their supports/rails, all three slate roofs, construction colors/materials, forest layering, ravine depth, large boulders, and all eight fallen logs. Confirm that the late-afternoon light has darker cool shadows, restrained warm highlights, richer color separation, and visible atmospheric depth without crushing asset detail; the tower, pavilion, and ravine overlook should remain distinct elevated destinations.\n` +
+    `6. Stop play and preserve \`.basalt/roblox/import-report.json\`. Report the traversal and visual result once; no optional-prop review is required for this gate.\n\n` +
     `Offline compilation and lowering never create \`engine_verified\` authority.\n`
   );
 }

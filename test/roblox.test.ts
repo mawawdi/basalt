@@ -65,6 +65,15 @@ test("Roblox is the only unit-conversion and import-protocol boundary", async ()
     manifest.transactions.map((entry) => entry.stage).join(","),
     "preflight,foundation,meso,micro,readback,commit",
   );
+  assert.deepEqual(world.visualEnvironment, fixture.plan.visualEnvironment);
+  assert.deepEqual(
+    manifest.transactions.map((entry) => entry.visualEnvironment !== undefined),
+    [false, false, false, false, false, true],
+  );
+  assert.deepEqual(
+    manifest.transactions.find((entry) => entry.stage === "commit")!.visualEnvironment,
+    world.visualEnvironment,
+  );
   assert.equal(manifest.loweringGaps.length, 0);
 });
 

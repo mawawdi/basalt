@@ -118,9 +118,21 @@ export function observationTowerProgram(input: {
   const railPostCenterY = bind(height, 1, 0.6);
   const topRailCenterY = bind(height, 1, 1.08);
   const midRailCenterY = bind(height, 1, 0.54);
+  const lowerBraceCenterY = bind(height, 0.34);
+  const upperBraceCenterY = bind(height, 0.68);
+  const canopyPostCenterY = bind(height, 1, 1.35);
+  const canopyRoofCenterY = bind(height, 1, 2.65);
   const timberAppearance = {
     materialId: "WoodPlanks",
-    baseColorSrgb: { red: 112, green: 78, blue: 45 },
+    baseColorSrgb: { red: 96, green: 62, blue: 34 },
+  };
+  const darkTimberAppearance = {
+    materialId: "WoodPlanks",
+    baseColorSrgb: { red: 58, green: 36, blue: 22 },
+  };
+  const roofAppearance = {
+    materialId: "Slate",
+    baseColorSrgb: { red: 42, green: 55, blue: 49 },
   };
   return sealConstructionProgram({
     programId: TOWER_PROGRAM_ID,
@@ -139,8 +151,8 @@ export function observationTowerProgram(input: {
       yawQuarterTurns: 0,
     },
     parameters: [
-      { parameterId: height, kind: "scalar", value: input.heightMeters, minimum: 3, maximum: 8 },
-      { parameterId: width, kind: "scalar", value: input.widthMeters, minimum: 4, maximum: 8 },
+      { parameterId: height, kind: "scalar", value: input.heightMeters, minimum: 3, maximum: 14 },
+      { parameterId: width, kind: "scalar", value: input.widthMeters, minimum: 4, maximum: 10 },
     ],
     operations: [
       {
@@ -249,6 +261,70 @@ export function observationTowerProgram(input: {
         sizeMeters: vector(literal(0.24), literal(0.24), bind(width)),
         templateOnly: false,
       },
+      ...([lowerBraceCenterY, upperBraceCenterY] as const).flatMap((centerY, levelIndex) => [
+        {
+          operationId: `TowerBraceFront_${levelIndex + 1}`,
+          kind: "box" as const,
+          centerMeters: vector(literal(0), centerY, bind(width, -0.5, towerCenterZ + 0.2)),
+          sizeMeters: vector(bind(width, 1, -0.4), literal(0.24), literal(0.28)),
+          templateOnly: false,
+          appearance: darkTimberAppearance,
+        },
+        {
+          operationId: `TowerBraceBack_${levelIndex + 1}`,
+          kind: "box" as const,
+          centerMeters: vector(literal(0), centerY, bind(width, 0.5, towerCenterZ - 0.2)),
+          sizeMeters: vector(bind(width, 1, -0.4), literal(0.24), literal(0.28)),
+          templateOnly: false,
+          appearance: darkTimberAppearance,
+        },
+        {
+          operationId: `TowerBraceWest_${levelIndex + 1}`,
+          kind: "box" as const,
+          centerMeters: vector(bind(width, -0.5, 0.2), centerY, literal(towerCenterZ)),
+          sizeMeters: vector(literal(0.28), literal(0.24), bind(width, 1, -0.4)),
+          templateOnly: false,
+          appearance: darkTimberAppearance,
+        },
+        {
+          operationId: `TowerBraceEast_${levelIndex + 1}`,
+          kind: "box" as const,
+          centerMeters: vector(bind(width, 0.5, -0.2), centerY, literal(towerCenterZ)),
+          sizeMeters: vector(literal(0.28), literal(0.24), bind(width, 1, -0.4)),
+          templateOnly: false,
+          appearance: darkTimberAppearance,
+        },
+      ]),
+      ...([-1, 1] as const).flatMap((xSign) =>
+        ([-1, 1] as const).map((zSign) => ({
+          operationId: `CanopyPost_${xSign < 0 ? "West" : "East"}_${zSign < 0 ? "Front" : "Back"}`,
+          kind: "box" as const,
+          centerMeters: vector(
+            halfInset(xSign),
+            canopyPostCenterY,
+            bind(width, zSign * 0.5, towerCenterZ + zSign * -0.2),
+          ),
+          sizeMeters: vector(literal(0.22), literal(2.7), literal(0.22)),
+          templateOnly: false,
+          appearance: darkTimberAppearance,
+        })),
+      ),
+      {
+        operationId: "CanopyRoof",
+        kind: "box",
+        centerMeters: vector(literal(0), canopyRoofCenterY, literal(towerCenterZ)),
+        sizeMeters: vector(bind(width, 1, 1), literal(0.34), bind(width, 1, 1)),
+        templateOnly: false,
+        appearance: roofAppearance,
+      },
+      {
+        operationId: "CanopyCrown",
+        kind: "box",
+        centerMeters: vector(literal(0), bind(height, 1, 2.9), literal(towerCenterZ)),
+        sizeMeters: vector(bind(width, 1, 0.35), literal(0.16), literal(0.32)),
+        templateOnly: false,
+        appearance: darkTimberAppearance,
+      },
       {
         operationId: "TowerStairs",
         kind: "stair_run",
@@ -281,7 +357,7 @@ export function towerExpectations(worldBuild: WorldBuild): WorldVerifierExpectat
       {
         structureId: structure.structureId,
         minimumMeters: { x: 6, y: 7, z: 6 },
-        maximumMeters: { x: 8, y: 9.5, z: 13 },
+        maximumMeters: { x: 8, y: 10, z: 13 },
       },
     ],
     access: [

@@ -174,6 +174,7 @@ for (const moduleName of modules.keys())
 const panel = modules.get("PluginPanel").source;
 const connector = modules.get("ConnectorRuntime").source;
 const loadedAsset = modules.get("LoadedAsset").source;
+const environmentLowering = modules.get("EnvironmentLowering").source;
 const worldLowering = modules.get("WorldLowering").source;
 const modelBounds = modules.get("ModelBounds").source;
 const terrainLowering = modules.get("TerrainLowering").source;
@@ -190,6 +191,18 @@ for (const [source, pattern, invariant] of [
   [connector, "WorldLowering.takeTraceEvents()", "failure-safe diagnostic trace transfer"],
   [connector, ".basalt/roblox/import-report.json", "a discoverable durable diagnostic report"],
   [worldLowering, "prepareAssetTemplates", "whole-transaction asset binding preflight"],
+  [
+    worldLowering,
+    "EnvironmentLowering.begin(transaction.visualEnvironment)",
+    "transactional visual-environment application",
+  ],
+  [environmentLowering, "EnvironmentLowering.verify()", "visual-environment property readback"],
+  [environmentLowering, "snapshot.effects", "reversible prior post-processing effects"],
+  [
+    worldLowering,
+    "fitAssetModelToDeclaration(probe :: Model, entry)",
+    "pre-placement fit validation for every declared catalog instance",
+  ],
   [loadedAsset, "exactly one geometric package model", "fail-closed loaded asset unwrapping"],
   [worldLowering, "route.thicknessMeters", "compiler-authored route thickness"],
   [worldLowering, "ModelBounds.worldAabb", "world-axis-aligned asset readback"],

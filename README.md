@@ -222,7 +222,12 @@ are prefilled in `roblox-binding-decision-template.json`. Record the imported Me
 fields in Studio, then run
 `npm run eval:catalog-first-use:seal-bindings -- --decision <decision.json>`; the sealer accepts only
 exact packet coverage, IDs backed by the matching source-derived upload receipt, and complete
-observed material expectations.
+observed material expectations. Other bounded fixtures may pass their own exact review packet with
+`--packet <packet.json>`; every sealed result still merges into the single canonical binding
+inventory. Sealing inspects each exact retained upload GLB and requires the decision to cover every
+render primitive with a Studio-observed material path. Import preflight loads every distinct bound
+model and validates those paths plus every declared placement's complete scale, transform, and
+bounds fit before any catalog instance is placed.
 
 Roblox operator flow:
 
@@ -250,11 +255,14 @@ node bin/basalt.js roblox import .basalt/evals/route-corridor/world-build.json
 ```
 
 The first integrated region core is materialized with `npm run eval:first-finished-region`.
-It combines the real committed outdoor catalog with a grounded ridge trail, an elevated
-boardwalk alternative, shared split/merge junctions, and a route-connected procedural
-observation tower. Its requirements and remaining optional prop gaps are explicit under
+It combines the real committed outdoor catalog with a 96-meter, vertically layered highland,
+seven connected route segments, two supported and guarded elevated crossings, four shared
+junctions, a trailhead gateway, a ridge pavilion, a cantilevered ravine overlook, and a
+13.5-meter roofed procedural observation tower. The build places 229 instances across eleven
+admitted asset types over more than 21 meters of terrain relief. Its requirements, diagnostic
+views, exact receipt-bound Roblox binding packet, and remaining optional prop gaps are explicit under
 `.basalt/evals/first-finished-region/`; no candidate becomes catalog authority merely because
-search retrieved it. The 48-meter build is an integration gate, not a claim about the full
+search retrieved it. The 96-meter build is an integration gate, not a claim about the full
 40-square-kilometer world and not a reason to run a metadata worker or neural generator.
 
 ```sh

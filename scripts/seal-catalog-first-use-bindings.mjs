@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { readBoundedWorkspaceBytes, writeCanonicalWorkspaceJson } from "@basalt/artifact-store";
 import { HASH_SCHEMA, contentHash, stableJson } from "@basalt/contracts";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@basalt/roblox";
 import { z } from "zod";
 import { verifyRobloxUploadEvidence } from "./verify-roblox-upload-evidence.mjs";
+import { verifyRobloxBindingCoverage } from "./verify-roblox-binding-coverage.mjs";
 
 const BINDING_DECISION_INPUT_SCHEMA = z
   .object({
@@ -43,9 +44,12 @@ const outputRoot = ".basalt/evals/catalog-first-use";
 const bindingsPath = ".basalt/roblox/asset-bindings.json";
 const uploadsPath = ".basalt/roblox/asset-uploads.json";
 const options = parseOptions(process.argv.slice(2));
-const decisionPath = options.get("--decision") ?? `${outputRoot}/roblox-binding-decision.json`;
+const packetPath = options.get("--packet") ?? `${outputRoot}/roblox-binding-upload-packet.json`;
+const packetDirectory = dirname(packetPath);
+const decisionPath = options.get("--decision") ?? `${packetDirectory}/roblox-binding-decision.json`;
+const sealedDecisionPath = `${packetDirectory}/roblox-binding-decision-sealed.json`;
 
-const uploadPacket = await readJson(`${outputRoot}/roblox-binding-upload-packet.json`);
+const uploadPacket = await readJson(packetPath);
 verifySealedJson(uploadPacket, "Roblox binding upload packet");
 const expectedItems = z
   .array(
@@ -61,8 +65,9 @@ const expectedItems = z
   )
   .parse(uploadPacket.missingBindings);
 const expectedByAsset = new Map(expectedItems.map((entry) => [entry.assetHash, entry]));
+const existing = await loadExistingBindings();
 const uploadLedger =
-  expectedItems.length > 0
+  expectedItems.length > 0 || existing.length > 0
     ? ROBLOX_ASSET_UPLOAD_LEDGER_SCHEMA.parse(await readJson(uploadsPath))
     : undefined;
 if (uploadLedger) await verifyRobloxUploadEvidence(repositoryRoot, uploadLedger);
@@ -86,7 +91,8 @@ if (
 )
   throw new Error("Roblox binding decision must cover exactly every missing binding");
 
-const sealedBindings = decisionInput.bindings.map((entry) => {
+const sealedBindings = [];
+for (const entry of decisionInput.bindings) {
   const expected = expectedByAsset.get(entry.assetHash);
   if (
     !expected ||
@@ -106,19 +112,22 @@ const sealedBindings = decisionInput.bindings.map((entry) => {
     throw new Error(
       `Roblox binding does not match its eligible publication receipt: ${entry.assetHash}`,
     );
-  return sealRobloxAssetBinding(entry);
-});
-const existing = await loadExistingBindings();
+  await verifyRobloxBindingCoverage(repositoryRoot, entry, upload);
+  sealedBindings.push(sealRobloxAssetBinding(entry));
+}
 const merged = new Map(existing.map((entry) => [entry.assetHash, entry]));
 for (const binding of sealedBindings) {
-  const prior = merged.get(binding.assetHash);
-  if (prior && stableJson(prior) !== stableJson(binding))
-    throw new Error(`A different sealed Roblox binding already exists: ${binding.assetHash}`);
   merged.set(binding.assetHash, binding);
 }
 const values = [...merged.values()].sort((left, right) =>
   left.assetHash.localeCompare(right.assetHash),
 );
+for (const binding of values) {
+  const upload = eligibleUploads.get(binding.sourceArtifactHash);
+  if (!upload)
+    throw new Error(`Existing Roblox binding lacks an eligible upload: ${binding.assetHash}`);
+  await verifyRobloxBindingCoverage(repositoryRoot, binding, upload);
+}
 const canonicalDecisionBody = {
   ...decisionInput,
   bindings: [...decisionInput.bindings].sort((left, right) =>
@@ -132,14 +141,14 @@ const sealedDecision = {
 
 await Promise.all([
   writeGeneratedJson(bindingsPath, values),
-  writeGeneratedJson(`${outputRoot}/roblox-binding-decision-sealed.json`, sealedDecision),
+  writeGeneratedJson(sealedDecisionPath, sealedDecision),
 ]);
 process.stdout.write(
   `${JSON.stringify(
     {
       uploadPacketHash: uploadPacket.hash,
       decisionHash: sealedDecision.hash,
-      newBindings: sealedBindings.length,
+      sealedBindings: sealedBindings.length,
       totalBindings: values.length,
       output: resolve(repositoryRoot, bindingsPath),
     },

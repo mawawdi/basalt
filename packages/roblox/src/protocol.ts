@@ -16,6 +16,7 @@ import {
   PORTAL_ARTIFACT_SCHEMA,
   PROCEDURAL_STAIR_ARTIFACT_SCHEMA,
   ROOM_ARTIFACT_SCHEMA,
+  WORLD_VISUAL_ENVIRONMENT_SCHEMA,
   WORLD_BUILD_SCHEMA,
   type WorldBuild,
 } from "@basalt/world-compiler";
@@ -495,6 +496,7 @@ export const ROBLOX_IMPORT_TRANSACTION_SCHEMA = z
     sequence: z.number().int().nonnegative(),
     stage: ROBLOX_IMPORT_STAGE_SCHEMA,
     expectedObservedWorldStateHash: HASH_SCHEMA,
+    visualEnvironment: WORLD_VISUAL_ENVIRONMENT_SCHEMA.optional(),
     foundation: z
       .object({
         worldBoundsMeters: SPATIAL_AABB_SCHEMA,
@@ -541,6 +543,12 @@ export const ROBLOX_IMPORT_TRANSACTION_SCHEMA = z
         code: "custom",
         path: ["meso"],
         message: "Only the meso transaction carries structural data",
+      });
+    if ((value.stage === "commit") !== (value.visualEnvironment !== undefined))
+      context.addIssue({
+        code: "custom",
+        path: ["visualEnvironment"],
+        message: "Only the commit transaction carries the visual environment",
       });
     if (
       new Set(value.expectedInstanceHashes.map((entry) => entry.instanceId)).size !==
@@ -845,7 +853,11 @@ export function createRobloxImportManifest(
       expectedConstructedElements: constructedElements,
       expectedConstructedOpenings: constructedOpenings,
     },
-    { stage: "commit" as const, instances: [] },
+    {
+      stage: "commit" as const,
+      instances: [],
+      visualEnvironment: worldBuild.visualEnvironment,
+    },
   ];
   const transactions = stages.map((stage, sequence) => {
     const expectedInstanceHashes = (stage.expectedInstances ?? stage.instances)
@@ -888,6 +900,7 @@ export function createRobloxImportManifest(
       expectedObservedWorldStateHash,
       ...(stage.foundation ? { foundation: stage.foundation } : {}),
       ...(stage.meso ? { meso: stage.meso } : {}),
+      ...(stage.visualEnvironment ? { visualEnvironment: stage.visualEnvironment } : {}),
       instances: stage.instances,
       expectedInstanceHashes,
       expectedArtifactHashes,

@@ -314,6 +314,7 @@ function compileBasaltWorldInternal(
       (entry) => entry.semanticDependencyClosureHash,
     ),
     catalogSnapshotHash: input.catalogSnapshot.hash,
+    visualEnvironment: input.spatialPlan.visualEnvironment,
     foundation,
     catalogResolution: resolution,
     meso,

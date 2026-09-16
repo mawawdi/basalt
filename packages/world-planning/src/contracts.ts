@@ -22,6 +22,13 @@ const nonnegative = finite.nonnegative();
 export const WORLD_ENTITY_ID_SCHEMA = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u);
 export const WORLD_VECTOR3_SCHEMA = z.object({ x: finite, y: finite, z: finite }).strict();
 export const WORLD_POINT2_SCHEMA = z.object({ x: finite, z: finite }).strict();
+export const WORLD_SRGB_COLOR_SCHEMA = z
+  .object({
+    red: z.number().int().min(0).max(255),
+    green: z.number().int().min(0).max(255),
+    blue: z.number().int().min(0).max(255),
+  })
+  .strict();
 export const WORLD_AABB_SCHEMA = z
   .object({ min: WORLD_VECTOR3_SCHEMA, max: WORLD_VECTOR3_SCHEMA })
   .strict()
@@ -789,11 +796,101 @@ export const WORLD_CAMERA_SCHEMA = z
   })
   .strict();
 
+/**
+ * Engine-neutral presentation intent. Platform adapters lower this sealed
+ * profile transactionally; it never grants semantic or spatial authority.
+ */
+export const WORLD_VISUAL_ENVIRONMENT_SCHEMA = z
+  .object({
+    kind: z.literal("WorldVisualEnvironment"),
+    clockTimeHours: finite.min(0).lt(24),
+    geographicLatitudeDegrees: finite.min(-90).max(90),
+    brightness: finite.min(0).max(10),
+    exposureCompensation: finite.min(-5).max(5),
+    shadowSoftness: finite.min(0).max(1),
+    environmentDiffuseScale: finite.min(0).max(1),
+    environmentSpecularScale: finite.min(0).max(1),
+    ambientSrgb: WORLD_SRGB_COLOR_SCHEMA,
+    outdoorAmbientSrgb: WORLD_SRGB_COLOR_SCHEMA,
+    colorShiftTopSrgb: WORLD_SRGB_COLOR_SCHEMA,
+    colorShiftBottomSrgb: WORLD_SRGB_COLOR_SCHEMA,
+    atmosphere: z
+      .object({
+        colorSrgb: WORLD_SRGB_COLOR_SCHEMA,
+        decaySrgb: WORLD_SRGB_COLOR_SCHEMA,
+        density: finite.min(0).max(1),
+        offset: finite.min(-1).max(1),
+        haze: finite.min(0).max(10),
+        glare: finite.min(0).max(10),
+      })
+      .strict(),
+    colorGrade: z
+      .object({
+        brightness: finite.min(-1).max(1),
+        contrast: finite.min(-1).max(1),
+        saturation: finite.min(-1).max(1),
+        tintSrgb: WORLD_SRGB_COLOR_SCHEMA,
+      })
+      .strict(),
+    sunRays: z
+      .object({
+        intensity: finite.min(0).max(1),
+        spread: finite.min(0).max(1),
+      })
+      .strict(),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, "hash", context));
+export type WorldVisualEnvironment = z.output<typeof WORLD_VISUAL_ENVIRONMENT_SCHEMA>;
+
+export function sealWorldVisualEnvironment(
+  input: Omit<WorldVisualEnvironment, "kind" | "hash">,
+): WorldVisualEnvironment {
+  const material = { kind: "WorldVisualEnvironment" as const, ...input };
+  return deepFreezeJson(
+    WORLD_VISUAL_ENVIRONMENT_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    }),
+  );
+}
+
+export const DEFAULT_WORLD_VISUAL_ENVIRONMENT = sealWorldVisualEnvironment({
+  clockTimeHours: 14.5,
+  geographicLatitudeDegrees: 35,
+  brightness: 2,
+  exposureCompensation: 0,
+  shadowSoftness: 0.25,
+  environmentDiffuseScale: 0.6,
+  environmentSpecularScale: 0.4,
+  ambientSrgb: { red: 38, green: 42, blue: 48 },
+  outdoorAmbientSrgb: { red: 112, green: 120, blue: 116 },
+  colorShiftTopSrgb: { red: 0, green: 0, blue: 0 },
+  colorShiftBottomSrgb: { red: 0, green: 0, blue: 0 },
+  atmosphere: {
+    colorSrgb: { red: 199, green: 216, blue: 229 },
+    decaySrgb: { red: 92, green: 111, blue: 125 },
+    density: 0.16,
+    offset: 0.1,
+    haze: 0.8,
+    glare: 0.04,
+  },
+  colorGrade: {
+    brightness: 0,
+    contrast: 0.08,
+    saturation: 0.02,
+    tintSrgb: { red: 255, green: 255, blue: 255 },
+  },
+  sunRays: { intensity: 0.02, spread: 0.8 },
+});
+
 export const SPATIAL_WORLD_PLAN_SCHEMA = z
   .object({
     kind: z.literal("SpatialWorldPlan"),
     planId: WORLD_ENTITY_ID_SCHEMA,
     coordinateSystem: z.literal("right_handed_y_up_meters"),
+    visualEnvironment: WORLD_VISUAL_ENVIRONMENT_SCHEMA,
     seed: z.number().int().min(0).max(0xffff_ffff),
     boundsMeters: WORLD_AABB_SCHEMA,
     semanticEntities: z.array(PLANNED_SEMANTIC_ENTITY_SCHEMA).max(100_000),

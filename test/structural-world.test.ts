@@ -16,7 +16,7 @@ import {
   sealSemanticAssertionBundle,
 } from "@basalt/semantic-kernel";
 import { compileBasaltWorld } from "@basalt/world-compiler";
-import { sealSpatialWorldPlan } from "@basalt/world-planning";
+import { DEFAULT_WORLD_VISUAL_ENVIRONMENT, sealSpatialWorldPlan } from "@basalt/world-planning";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 
 const evidenceHash = contentHash("structural-fixture-evidence");
@@ -191,6 +191,7 @@ test("assemblies bind exact components, sockets, surfaces, rooms, portals, and s
     required: true,
   };
   const plan = sealSpatialWorldPlan({
+    visualEnvironment: DEFAULT_WORLD_VISUAL_ENVIRONMENT,
     planId: "StructuralWorld",
     seed: 7,
     boundsMeters: { min: { x: 0, y: 0, z: 0 }, max: { x: 10, y: 10, z: 10 } },

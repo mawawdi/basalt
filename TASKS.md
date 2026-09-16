@@ -34,14 +34,19 @@ implementation checklists. Completed cards are removed; Git history is the recor
       assembly purpose and mate evidence are absent. Complete when every reviewed source has one
       disposition and the resulting catalog snapshot seals.
 
-- [ ] **ROBLOX-FIRST-REGION — Complete the integrated creator gate.** The 48-meter wooded-ridge
-      core is offline-eligible: 32 admitted catalog instances, a grounded approach, an elevated
-      boardwalk alternative, two shared junctions, and a route-connected 6.5-meter procedural
-      observation tower compile with zero catalog or Roblox lowering gaps. In one Studio session,
-      traverse both alternatives and the tower, inspect catalog colors and materials, judge the
-      intended silhouette-before-entrance reveal, and preserve the exact connector readback.
-      Complete only with creator-run engine and visual evidence; the older isolated tower and route
-      fixtures remain focused regressions, not additional creator loops.
+- [ ] **ROBLOX-FIRST-REGION — Complete the integrated creator gate.** The expanded 96-meter
+      highland core is offline-eligible: 229 admitted catalog instances across eleven asset types,
+      more than 21 meters of terrain relief, seven connected route segments, lower-ravine and
+      summit elevated crossings, four shared junctions, a trailhead gateway, a route-connected
+      ridge pavilion, a cantilevered ravine overlook, and a route-connected 13.5-meter roofed
+      observation tower with an open stepped flight compile with zero catalog or Roblox lowering
+      gaps. The
+      creator accepted the smaller baseline; this replacement needs one final Studio session to
+      traverse the directional ascent, both elevated spans, the tower, pavilion, and ravine
+      overlook, inspect the layered population and destination hierarchy, and preserve exact
+      connector readback. Complete only with that
+      creator-run engine and visual evidence; the isolated tower and route fixtures remain focused
+      regressions, not additional creator loops.
 
 ## Ready
 
@@ -66,7 +71,7 @@ implementation checklists. Completed cards are removed; Git history is the recor
       policies.
 
 - [ ] **WORLD-40KM — Compile a 40 km macro world with one finished region.** The searchable
-      first-region tranche and integrated 48-meter core now exist. Blocked by
+      first-region tranche and integrated 96-meter core now exist. Blocked by
       `ROBLOX-FIRST-REGION`; unblock when that single creator gate has exact evidence.
 
 - [ ] **REMOTE-CAS — Add remote binary durability and distributed execution.** Blocked

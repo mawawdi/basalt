@@ -4,7 +4,7 @@ import {
   sealSemanticAssertionBundle,
   type SemanticModule,
 } from "@basalt/semantic-kernel";
-import { sealSpatialWorldPlan } from "@basalt/world-planning";
+import { DEFAULT_WORLD_VISUAL_ENVIRONMENT, sealSpatialWorldPlan } from "@basalt/world-planning";
 import { catalogFixture } from "./catalog-fixture.js";
 
 export async function worldFixture(module: SemanticModule) {
@@ -32,6 +32,7 @@ export async function worldFixture(module: SemanticModule) {
   const plan = sealSpatialWorldPlan({
     planId: "FixtureWorld",
     seed: 42,
+    visualEnvironment: DEFAULT_WORLD_VISUAL_ENVIRONMENT,
     boundsMeters: { min: { x: 0, y: -2, z: 0 }, max: { x: 20, y: 12, z: 20 } },
     semanticEntities: [
       {

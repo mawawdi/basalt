@@ -152,7 +152,12 @@ source-derived publications. The sealed upload ledger is publication evidence on
 
 The binding sealer verifies the upload-packet hash, exact asset, source-artifact, and upload-artifact
 coverage, positive Roblox IDs, matching eligible publication-receipt hashes, and complete
-Studio-observed material expectations. Offline success cannot create engine evidence; only
+Studio-observed material expectations. It inspects the retained upload payload and rejects a
+binding unless those expectations cover every GLB render primitive. The connector then preflights
+every distinct model's material paths and every declared placement's complete source-bounds fit
+before placing any catalog instance, so one import reports the whole failing set instead of
+revealing assets serially.
+Offline success cannot create engine evidence; only
 creator-run Studio import and readback can. The regression pilot contains affected secondary-color
 sources plus unchanged controls; full admitted publication waits for the creator to confirm both.
 
@@ -194,22 +199,28 @@ joint route/terrain clearance, junction grounding, and local invalidation. Run
 `.basalt/evals/route-corridor/`.
 
 The integrated first-region fixture is the creator-facing composition gate. Run
-`npm run eval:first-finished-region` to compile one 48-meter wooded ridge containing 32 real
-admitted catalog instances, a grounded approach, an elevated boardwalk alternative, two shared
-junctions, and a route-connected 6.5-meter procedural observation tower. It searches the current
+`npm run eval:first-finished-region` to compile one 96-meter highland preserve containing 229 real
+admitted catalog instances across eleven asset types, more than 21 meters of terrain relief, seven
+connected route segments, lower-ravine and summit elevated crossings, four shared junctions, a
+trailhead gateway, a route-connected ridge pavilion, a cantilevered ravine overlook, and a
+route-connected 13.5-meter roofed observation tower with an open stepped flight rather than
+ground-filled stair wedges. It searches the current
 index for optional cabin, lantern, campfire, footbridge, signpost, and tower candidates, but stores
 those findings only as delegated-AI hypotheses in `remaining-gaps.json`; unreviewed candidates do
 not enter the world or catalog. `requirements.json`, `spatial-plan.json`, `world-build.json`,
-`roblox-import.json`, and `status.json` bind the exact offline handoff under
-`.basalt/evals/first-finished-region/`.
+`roblox-import.json`, the receipt-bound Roblox binding packet, `diagnostics.json`, and `status.json`
+bind the exact offline handoff under
+`.basalt/evals/first-finished-region/`; four lightweight views in `diagnostics/` expose the route
+and destination hierarchy without substituting for engine presentation.
 
 Offline eligibility requires deterministic compilation, zero required catalog gaps, eligible
 route and construction artifacts, exact verified Roblox bindings, and zero lowering gaps. The
-approach reveal and traversal remain pending until the creator imports this one integrated build,
-walks both alternatives and the tower, inspects catalog appearance, and preserves exact connector
-readback. The isolated tower and route fixtures remain focused regressions rather than separate
-creator workflows. This region does not require Modal, a metadata worker, embeddings, or neural
-generation, and it makes no 40-square-kilometer completion claim.
+destination hierarchy and traversal remain pending until the creator imports this one integrated
+build, follows the directional ascent and both elevated spans, visits the tower, pavilion, and
+ravine overlook, inspects catalog appearance, and preserves exact connector readback. The isolated
+tower and route fixtures remain focused
+regressions rather than separate creator workflows. This region does not require Modal, a metadata
+worker, embeddings, or neural generation, and it makes no 40-square-kilometer completion claim.
 
 The Studio gate additionally checks realized route parts and the junction against Roblox's
 actual smooth-terrain surface. The adapter coordinates bounded station and shared-junction

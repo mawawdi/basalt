@@ -4,6 +4,7 @@ local InsertService = game:GetService("InsertService")
 local Workspace = game:GetService("Workspace")
 local BoundedQuery = require(script.Parent.BoundedQuery)
 local Constants = require(script.Parent.Constants)
+local EnvironmentLowering = require(script.Parent.EnvironmentLowering)
 local LoadedAsset = require(script.Parent.LoadedAsset)
 local ModelBounds = require(script.Parent.ModelBounds)
 local RouteCoordination = require(script.Parent.RouteCoordination)
@@ -1539,62 +1540,11 @@ local function destroyAssetTemplates(templates: { [string]: Model }): ()
 	for _, template in pairs(templates) do template:Destroy() end
 end
 
-local function prepareAssetTemplates(entries: { any }): { [string]: Model }
-	local representatives: { [string]: any } = {}
-	local assetOrder = {}
-	for _, entry in ipairs(entries) do
-		local assetHash = requireHash(entry.assetHash, "instance.assetHash")
-		local representative = representatives[assetHash]
-		if representative == nil then
-			representatives[assetHash] = entry
-			table.insert(assetOrder, assetHash)
-		elseif representative.robloxAssetId ~= entry.robloxAssetId then
-			fail("one catalog asset resolves to multiple Roblox asset ids")
-		end
-	end
-
-	local templates: { [string]: Model } = {}
-	local diagnostics = {}
-	-- Validate every distinct binding before lowering any instance. One broken
-	-- package therefore reports alongside its peers and cannot leave a partial
-	-- layer or force the creator through asset-by-asset retries.
-	for _, assetHash in ipairs(assetOrder) do
-		local entry = representatives[assetHash]
-		local loaded: Model? = nil
-		local loadOk, loadFailure = pcall(function()
-			loaded = loadAssetModel(entry)
-			verifyMaterialExpectations(loaded :: Model, entry.materialExpectations)
-		end)
-		if loadOk and loaded ~= nil then
-			templates[assetHash] = loaded
-		else
-			if loaded ~= nil then loaded:Destroy() end
-			table.insert(diagnostics, string.format(
-				"%s (Roblox %s): %s",
-				string.sub(assetHash, 1, 12),
-				tostring(entry.robloxAssetId),
-				compactFailure(loadFailure)
-			))
-		end
-	end
-	if #diagnostics > 0 then
-		destroyAssetTemplates(templates)
-		fail("asset binding preflight failed: " .. table.concat(diagnostics, " | "))
-	end
-	return templates
-end
-
-local function lowerInstance(parent: Instance, entry: any, realizedHash: string, template: Model): any
-	local clone = template:Clone()
-	if clone == nil or not clone:IsA("Model") then fail("loaded package model could not be cloned") end
-	local model = clone :: Model
+local function fitAssetModelToDeclaration(model: Model, entry: any): ()
 	model.Name = entry.instanceId
 	local initialPivot = model:GetPivot()
 	local sourceBounds = entry.sourceBoundsMeters
-	if typeof(sourceBounds) ~= "table" then
-		model:Destroy()
-		fail("instance has no measured source bounds")
-	end
+	if typeof(sourceBounds) ~= "table" then fail("instance has no measured source bounds") end
 	local desiredSourceSize = Vector3.new(
 		meters(sourceBounds.max.x - sourceBounds.min.x),
 		meters(sourceBounds.max.y - sourceBounds.min.y),
@@ -1611,16 +1561,12 @@ local function lowerInstance(parent: Instance, entry: any, realizedHash: string,
 			table.insert(ratios, dimensions.desired / math.max(dimensions.actual, 0.000001))
 		end
 	end
-	if #ratios == 0 then
-		model:Destroy()
-		fail("asset source bounds are degenerate on every axis")
-	end
+	if #ratios == 0 then fail("asset source bounds are degenerate on every axis") end
 	local ratioTotal = 0
 	for _, ratio in ipairs(ratios) do ratioTotal += ratio end
 	local uniform = ratioTotal / #ratios
 	for _, ratio in ipairs(ratios) do
 		if math.abs(ratio - uniform) / uniform > 0.02 then
-			model:Destroy()
 			fail("asset bounds require non-uniform scaling")
 		end
 	end
@@ -1647,7 +1593,6 @@ local function lowerInstance(parent: Instance, entry: any, realizedHash: string,
 	model:TranslateBy(expectedCenter - rotatedCenter)
 	local settledCenter, settledSize = ModelBounds.worldAabb(model)
 	if (settledCenter - expectedCenter).Magnitude > Constants.BOUND_TOLERANCE_STUDS or (settledSize - expectedSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
-		model:Destroy()
 		fail(string.format(
 			"loaded asset bounds drifted for %s (Roblox %d): expected center %s size %s, observed center %s size %s",
 			entry.instanceId,
@@ -1659,6 +1604,92 @@ local function lowerInstance(parent: Instance, entry: any, realizedHash: string,
 		))
 	end
 	verifyMaterialExpectations(model, entry.materialExpectations)
+end
+
+local function prepareAssetTemplates(entries: { any }): { [string]: Model }
+	local representatives: { [string]: any } = {}
+	local assetOrder = {}
+	for _, entry in ipairs(entries) do
+		local assetHash = requireHash(entry.assetHash, "instance.assetHash")
+		local representative = representatives[assetHash]
+		if representative == nil then
+			representatives[assetHash] = entry
+			table.insert(assetOrder, assetHash)
+		elseif representative.robloxAssetId ~= entry.robloxAssetId then
+			fail("one catalog asset resolves to multiple Roblox asset ids")
+		end
+	end
+
+	local templates: { [string]: Model } = {}
+	local diagnostics = {}
+	local invalidAssets: { [string]: boolean } = {}
+	-- Validate every distinct binding before lowering any instance. One broken
+	-- package therefore reports alongside its peers and cannot leave a partial
+	-- layer or force the creator through asset-by-asset retries.
+	for _, assetHash in ipairs(assetOrder) do
+		local entry = representatives[assetHash]
+		local loaded: Model? = nil
+		local loadOk, loadFailure = pcall(function()
+			loaded = loadAssetModel(entry)
+			verifyMaterialExpectations(loaded :: Model, entry.materialExpectations)
+		end)
+		if loadOk and loaded ~= nil then
+			templates[assetHash] = loaded
+		else
+			if loaded ~= nil then loaded:Destroy() end
+			invalidAssets[assetHash] = true
+			table.insert(diagnostics, string.format(
+				"%s (Roblox %s): %s",
+				string.sub(assetHash, 1, 12),
+				tostring(entry.robloxAssetId),
+				compactFailure(loadFailure)
+			))
+		end
+	end
+	-- Probe every declared placement, not merely one representative transform.
+	-- Diagnostics remain bounded to the first failing placement per asset.
+	for _, entry in ipairs(entries) do
+		local assetHash = requireHash(entry.assetHash, "instance.assetHash")
+		if invalidAssets[assetHash] ~= true then
+			local template = templates[assetHash]
+			local probe: Model? = nil
+			local probeOk, probeFailure = pcall(function()
+				local clone = template:Clone()
+				if clone == nil or not clone:IsA("Model") then fail("loaded package model could not be cloned") end
+				probe = clone :: Model
+				fitAssetModelToDeclaration(probe :: Model, entry)
+			end)
+			if probe ~= nil then probe:Destroy() end
+			if not probeOk then
+				invalidAssets[assetHash] = true
+				table.insert(diagnostics, string.format(
+					"%s (Roblox %s, instance %s): %s",
+					string.sub(assetHash, 1, 12),
+					tostring(entry.robloxAssetId),
+					tostring(entry.instanceId),
+					compactFailure(probeFailure)
+				))
+			end
+		end
+	end
+	if #diagnostics > 0 then
+		destroyAssetTemplates(templates)
+		fail("asset binding preflight failed: " .. table.concat(diagnostics, " | "))
+	end
+	return templates
+end
+
+local function lowerInstance(parent: Instance, entry: any, realizedHash: string, template: Model): any
+	local clone = template:Clone()
+	if clone == nil or not clone:IsA("Model") then fail("loaded package model could not be cloned") end
+	local model = clone :: Model
+	local fitOk, fitFailure = pcall(function()
+		fitAssetModelToDeclaration(model, entry)
+	end)
+	if not fitOk then
+		model:Destroy()
+		fail(compactFailure(fitFailure))
+	end
 	model:SetAttribute("BasaltAssetHash", requireHash(entry.assetHash, "instance.assetHash"))
 	model:SetAttribute("BasaltRealizedHash", requireHash(realizedHash, "expected realization hash"))
 	model.Parent = parent
@@ -2228,6 +2259,7 @@ function WorldLowering.prepareCommit(transaction: any): ()
 	root:SetAttribute("BasaltWorldBuildHash", transaction.worldBuildHash)
 	root:SetAttribute("BasaltObservedWorldStateHash", transaction.expectedObservedWorldStateHash)
 	TerrainLowering.verify()
+	EnvironmentLowering.begin(transaction.visualEnvironment)
 	pendingStage = "prepared_commit"
 end
 
@@ -2247,7 +2279,9 @@ function WorldLowering.finalizeCommit(transaction: any): ()
 		fail("prepared Basalt world drifted before commit acknowledgement")
 	end
 	TerrainLowering.verify()
+	EnvironmentLowering.verify()
 	TerrainLowering.commit()
+	EnvironmentLowering.commit()
 	if commit.previous ~= nil then commit.previous:Destroy() end
 	clearPendingState()
 	local waypointOk, waypointProblem = pcall(function()
@@ -2270,6 +2304,7 @@ function WorldLowering.takeTraceEvents(): { any }
 end
 
 function WorldLowering.rollback(): ()
+	EnvironmentLowering.rollback()
 	TerrainLowering.rollback()
 	local commit = pendingCommit
 	if commit ~= nil then

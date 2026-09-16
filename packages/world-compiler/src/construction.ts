@@ -446,11 +446,13 @@ function realizeStairs(
     const direction = rotateLocalVector(directionVector(operation.direction), program);
     const center = {
       x: origin.x + direction.x * along,
-      y: origin.y + top / 2,
+      y: origin.y + top - riser / 2,
       z: origin.z + direction.z * along,
     };
     const size =
-      Math.abs(direction.x) > 0 ? { x: tread, y: top, z: width } : { x: width, y: top, z: tread };
+      Math.abs(direction.x) > 0
+        ? { x: tread, y: riser, z: width }
+        : { x: width, y: riser, z: tread };
     const geometry = { kind: "box" as const, centerMeters: center, sizeMeters: size };
     return sealConstructedElement({
       constructionProgramHash: program.programHash,

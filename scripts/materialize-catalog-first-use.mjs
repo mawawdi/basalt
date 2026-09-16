@@ -18,6 +18,7 @@ import {
 } from "../dist/test/helpers/catalog-first-use-fixture.js";
 import { loadSemanticRegistry } from "../dist/test/helpers/semantic-registry.js";
 import { verifyRobloxUploadEvidence } from "./verify-roblox-upload-evidence.mjs";
+import { verifyRobloxBindingCoverage } from "./verify-roblox-binding-coverage.mjs";
 
 const execFile = promisify(execFileCallback);
 const repositoryRoot = resolve(".");
@@ -285,6 +286,7 @@ async function loadBindings(uploads) {
       throw new Error(
         `Roblox binding lacks its exact eligible publication receipt: ${binding.assetHash}`,
       );
+    await verifyRobloxBindingCoverage(repositoryRoot, binding, publication);
   }
   return { status: "present", values };
 }

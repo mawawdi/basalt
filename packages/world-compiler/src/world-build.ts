@@ -22,6 +22,7 @@ import {
 import {
   LOT_SUBDIVISION_SCHEMA,
   PLACEMENT_SURFACE_SCHEMA,
+  WORLD_VISUAL_ENVIRONMENT_SCHEMA,
   WORLD_ENTITY_ID_SCHEMA,
   type CompiledWorldPlan,
 } from "@basalt/world-planning";
@@ -37,6 +38,8 @@ import {
   sealTerrainFieldArtifact,
   verifyTerrainConstruction,
 } from "./terrain-foundation.js";
+
+export { WORLD_VISUAL_ENVIRONMENT_SCHEMA } from "@basalt/world-planning";
 
 const quaternion = z
   .tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()])
@@ -669,6 +672,7 @@ export const WORLD_BUILD_SCHEMA = z
     semanticKernelHash: HASH_SCHEMA,
     semanticClosureHashes: z.array(HASH_SCHEMA).max(100_000),
     catalogSnapshotHash: HASH_SCHEMA,
+    visualEnvironment: WORLD_VISUAL_ENVIRONMENT_SCHEMA,
     foundation: COMPILED_WORLD_FOUNDATION_SCHEMA,
     catalogResolution: CATALOG_RESOLUTION_PLAN_SCHEMA,
     meso: MESO_LAYOUT_SCHEMA,

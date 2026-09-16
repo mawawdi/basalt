@@ -9,7 +9,11 @@ import {
   sealSemanticAssertionBundle,
   type SemanticModule,
 } from "@basalt/semantic-kernel";
-import { sealSpatialWorldPlan, type SpatialWorldPlan } from "@basalt/world-planning";
+import {
+  DEFAULT_WORLD_VISUAL_ENVIRONMENT,
+  sealSpatialWorldPlan,
+  type SpatialWorldPlan,
+} from "@basalt/world-planning";
 
 export const CATALOG_FIRST_USE_OUTPUT_ROOT = ".basalt/evals/catalog-first-use";
 export const CATALOG_FIRST_USE_STYLE = "stylized_low_poly_nature";
@@ -68,6 +72,7 @@ export async function catalogFirstUseFixture(module: SemanticModule) {
   const plan = sealSpatialWorldPlan({
     planId: "CatalogFirstUse",
     seed: 2_609_150,
+    visualEnvironment: DEFAULT_WORLD_VISUAL_ENVIRONMENT,
     boundsMeters: { min: { x: 0, y: -4, z: 0 }, max: { x: 48, y: 16, z: 48 } },
     semanticEntities: [
       {
