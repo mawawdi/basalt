@@ -1,0 +1,1151 @@
+{
+  "kind": "CatalogReviewEvidenceAudit",
+  "status": "eligible",
+  "sourceManifestHash": "f02d6e296e1f36cc73f87ad3e0f074af1e5ad8041e12d8d99931c207684b5a4c",
+  "measurementSetHash": "7bca757b53a73ee4b323ecb0bfa586e7eca3acab9326371017a94f7103ca6956",
+  "sourceNameHintSetHash": "9a0adcb4dc51ab77f36b2f7564124890b22eddd1d9a028e298433244f4a9af22",
+  "auditedSourceCount": 3441,
+  "collisionSuffixPolicy": "explicit_suffix_marks_non_renderable_companion_only",
+  "findings": [
+    {
+      "sourceContentHash": "0062deef4a9ecdb4d8a712271c75798d7b6a1bfb9756fe901ebf197635c75f9c",
+      "filenameHintHash": "1b1336c7c3fbd4130e0402a25bf236421d1b1fb4ccf520973c73e38482a71c91",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "06c5f21c43efb30a5cdda24c52604a799b88f831b9c2e51c4ab5a43345a305b1",
+      "filenameHintHash": "dd17126235ba3073d7cc7bfed3739d1ebf2e0ac018e721713148c7e8448a27fe",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "07ce663a29ae0d284795969379eb411ca0d47176f420538f7dda1dddde103ef8",
+      "filenameHintHash": "d91b0f76ef0147ec18eb717786f9c4812939ce562c8794b9a81af153867a77e2",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "14c02b7550ae7185ca5dec0536e70d6cd89589ad4d8b831e3604fc7651680c21",
+      "filenameHintHash": "34cb92c1dec32e352ad1654f97b3ee29f01edb30e203fb3cdf7199a31d3294a0",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "1adad4b2fb8473f2db6415abcb6094f8532a490c56b90c124f36b2cd81ea67ab",
+      "filenameHintHash": "fc1407197bd1b0b194cd4afc09fae89dabdc8089fc1452885e8bd6bfe2970f26",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "1fe48ad71a0f802962b6b32ad4e2cbd0fe249385135e0a11ab964eccc001d36a",
+      "filenameHintHash": "b67a3d41afa148c18d0b6fe4b2586acc32499e915eed41beb65214e624e4754a",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "2e688e3730e5cdfb98dab4949230927f5c21ec1e6795159c08899578a775cecc",
+      "filenameHintHash": "4131d0ea3a91528b566be515ccccec88654fd56b96f3045262817ca4b64f91db",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "2f433f68da4f55dfe2688121f846986e27f8f2f5ddd8a2eacef0c9a66cac069a",
+      "filenameHintHash": "6e2cc8dad545713f4dd926abbd1b8da631aeb7ebd22feeba2efa7d21fb951787",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "314a7a594f7a27285ff8a42677962f9f0a4936daa6f92ccbe635d75ba5869370",
+      "filenameHintHash": "7b81f673f79119b4097f77d79afa0d8183e3ecd1c001fa007b5a4b9bc3cdfe87",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "31f84b4fb65dd6ca7500a005470400a25a836dafb1509fdcf2e654bbd4fece92",
+      "filenameHintHash": "bd0d6dd1dfb10d9825d4b850e31e4894ff8c5e8d8d28eadf11287005a3430290",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "327cc029fe8cd5415dddb74217208b1f11b16079eebbf57f3398d127eef916ea",
+      "filenameHintHash": "54adf82641fcf466b5767a2d21b5195ebb7229d90848ec998549383325c17fad",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "338d5a235190403cadd0e92a8a8b3f4cdb42943af3922b91253a2ba2042bbdea",
+      "filenameHintHash": "a8fbacb7e5c695797633f822c5bd761b16adda85b451c3e7920026be19e52383",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "39fd0ae14b7b32f56a5186c88eefec10e99889be7c57f354736bec627bbf5066",
+      "filenameHintHash": "5adf3b97ebc6b1f0d823301c02eb1afa9159ce45ed51f31d9c26fb52026308f1",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "3ec416b0c097dd739d85d039d46b6250ccb775bba04627f48c484b725f957ec2",
+      "filenameHintHash": "4753900dccb9b88b86e7d711bd4908803ab20151dc17fa2c2a9ce55d2d515f15",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "3fca9f82e5d91cdb2a61d5fc5bdec33021859de97e11d556d180d6a13d97e6c8",
+      "filenameHintHash": "1b794fb85d97e93d1973faa315c9ae89527ba6b44fc9ad98dc4635c3cd72b321",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "40764c934fa6648a1cb804f72a97ee3cd2373a475a659774c575db244669d1ae",
+      "filenameHintHash": "fe2880b09c9dd3b7951c591869543f291f204c0c60dcc31fe1773af24e283f2b",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "47d83abfe51b7fc323d0439c837e95f90dfb5c69d0cd399e7ee57c56fe750f52",
+      "filenameHintHash": "6d27961af089700d0c840dd6f1742923bcb60cdc70247b426b7590c396eaa2a2",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "48dd3a7f10e544a56dd21691160609fc9acb1f2647722bf436ad1520940eef29",
+      "filenameHintHash": "18f754eff67abfa7d3fa885e14bc67d6c3d87d71a112c3b843ef83d681051a5b",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "4a3ebc88344760c04b1ec6f9757024ebad4f13d765fcfd91544e1d416b4f7348",
+      "filenameHintHash": "37eb99c6bb7af5ec8673e184d34f29592c369143229ee83aee818f9a82d5e8d2",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "4a684812cdaed1708216a9090d4d4241ecf1076b058cb72de348b3a86855c2e3",
+      "filenameHintHash": "96c20ea12603e77048e56a0e29e03df025b9f2beca42293c8d7b618d2d6d78a5",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "53b9fa0c798c4460189f1be962359a78392f51cf627439917a8766c62d3096fd",
+      "filenameHintHash": "796b9d09350b5f643cabec6e96ce8379b230aed3cdf6db972929dfdaa376296a",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "54468fb20a1c49d180c58d886db13082e9c9fc9e373c7468f68d99d7ccd93477",
+      "filenameHintHash": "391c9951c04f4f9444defaaf71f61f696a02daa134e07b523a421d2590f703a4",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "58710ef7c3814c9651bcbbf6c613910f39d94095d209a862cf67359973e5e6a6",
+      "filenameHintHash": "e8aea31f77e27a00d05e5e1f6caee77dd3576008244007f081691f83da105572",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "5b0553314e1adf4e059df688e8c0b7585ea6f615f03b74df82582a041df768d8",
+      "filenameHintHash": "851033153a1b2d1853a5ccc512d894b6a79891592fe4dc5ec149d7365277fd58",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "5ca37f7117dec33683a0385392a330897e5896b71b83d61bf43e2dcf2172999a",
+      "filenameHintHash": "cea9b3518895a8a6682786741de4ac07662dab2b283acffa14e67933e52fbf6e",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "632d2021414e4ab5953d7da0ce099d5496e5e932b02c43bcaa33bf415ce5bfd3",
+      "filenameHintHash": "7917157a3cdcc865ae8a0ddddcb1c9a3fc9980266822728f791923753c62e458",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "68eabd739abb74c050600b3cdb01a6b9b377fb9e3396263b476f079a114b4933",
+      "filenameHintHash": "55bf9dfb0c75c27103efc0f57ae3b245f1157f4ceeb46da56c9e28ce65a48a03",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "69a5ce84303381d83f7706734f11864da7854d460a0a27e93cd0fe1d92ad30a8",
+      "filenameHintHash": "60130c46844341199cba5e5aa271bb4506e59e6f5201113c6f362e9e76aa4f4d",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "6b4e7cdc65053e7b7ab371a126360821517a19bc301675514457366bd787d9c2",
+      "filenameHintHash": "ce2827614e4efd891570f9b7e5a34bf85e54e1e6f61023becbba88bb2e79dd32",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "6c50be352ea6b09c447a268a4c730953dc67a016225862044648c65c8745ae41",
+      "filenameHintHash": "22296df67c4e1bc9c33f76926abad9a740bbca981cafdcda79445999bfe9a606",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "79321de239df306f7ee431b5dea4e0a4e3362c8988642fd1a6693f307f0d938b",
+      "filenameHintHash": "5498813162c2bbb14c906faf5f9d2a305f692a6f3e4219a37eb8e5c479eda30d",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "7c26396d7b7b40e39a4b9a0794c968e03e1c0bff9e16a2b4721d8f08f8921f65",
+      "filenameHintHash": "b1f12e49ebf91fea4466a686f6a9b48ca44f08ce999f3227ec1374655322564c",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "7c34df6426d336e3f019e8f47f18eedc3632a35e2f1a6dcbb80b1d6f78699d5e",
+      "filenameHintHash": "7a5eefad7a71e510c8997ccd4242c6f7b098f9340830a0a2b7f26f431dabd220",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "7f91dd96e6d05d6a56b2f46ab94485fef1a9f04e7f93bdfb8140c46c12ae75a8",
+      "filenameHintHash": "3f17a1bd70f341239b5f2565383b4c9a02ee3ce4d5c11aabc3317bfd7f36a95d",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "809841405abe8fad75e08953dce952362f593ce3196ca0b77b5b78c1e495cce8",
+      "filenameHintHash": "b25c0fb158bdefc158554316e7a6d4c27109b1c37fbf7f8709ed3c35b9901708",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "80d13679c8c0ac18e29cec3531d15a41566f439043b7fce75aa0a0276feb31db",
+      "filenameHintHash": "2d2c6461cf8f209c8bee0a173941e52c23eb3a6049658fc6d5938464e4a9ba16",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "82cc570112ce76ee0382651534fac2801396f95852ddf842e09a7de3ee251a3f",
+      "filenameHintHash": "04bef0ac1015ef0a1921ba642978a5ec5e946ceacd4a04807fe3d822480de5b6",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "82d402b82c40b11f54a1a25ac379745b0a7306856f6beca9878d27a2c5b028f2",
+      "filenameHintHash": "c3ff24c598fdc6ca526477634501db7e11204609029aaea1421403d149992073",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "88ada7d7bbe55497be4d5aa150e989f85154c1ad9cdc9ce67a2c022c07f64647",
+      "filenameHintHash": "3680e94ea875f6206a3d6c214d15f9d174f458581a23229389c880b63e12274f",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "8a181b791edf774f7ea4703e2829f735ef6a81bf5df0f2e12548acb307382b7f",
+      "filenameHintHash": "337c7ffca3ead345cfabe205b0430912e29d59e7778327ffb39da5bac1675694",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "8bef24eb9ce48e3ceda3e825c97542d7fd4782a7acc84b556b1b26b8ab99dcae",
+      "filenameHintHash": "8d53bf36e513f77a7fc797cab870e601e3ea2b11da3295ad56cec446864c33e8",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "8d9f35f2354aafa5d8c4e5c7bbf3dbeca003b8eb30211d17806b11155f7fe389",
+      "filenameHintHash": "9d1a645002b11b54938f90f8d27203b560b24d8ef6ea7607879ee9af1ff3bdb8",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "9085803b15095cd7132d06e871163ed73e3304cda4c77d44be579699621f1b5e",
+      "filenameHintHash": "184c507ce81675c046c7963292780071b7f59c3e01ec13cd822dd186e1f7ca53",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "9efe8c68838fce77a8666006c0d183bc33077f5074d2ae17723b0835f6d67cd3",
+      "filenameHintHash": "9038f2ab5f2542bc191e904b7b2617b7ab34095ac7b925d0c364561004708d33",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "a3807a16336b48a0b26b541f03c792c848abc2997898668bb113e22b5c21ec50",
+      "filenameHintHash": "9b85ed381c81142908645c05dec3c8137e8e769c03caefdce6078d03bd5f5d8b",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "a6c3d978f8c33b2f5620bcd5f9301e86bb4ce9aec22157a2784bd4aa960beb95",
+      "filenameHintHash": "412bc7e96fc3ee0e79268f4fc03cb42820bec6c13f456805c1f46794ad40e7e1",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "ae4856129b8608db04f85d72642075b2c03700805603f96dafbcb9401f0dbe96",
+      "filenameHintHash": "4e6f8a4d9ce0666b49c947b59a225d25dd541ee2d9e72f22a52c98b8d5ad0805",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "b8178cc638dcd456725bf24a75965cd753a963404d23207f5b8a7c081fa457ac",
+      "filenameHintHash": "e7781eab0bcb2e89c5e6e39e91dac1121dc36aee6e04aacaa8bbbdab0474f356",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "ba2afefb602d49809af1a366b0a892dc63f04cf2c2c145d73d4bee20cd8bd1a9",
+      "filenameHintHash": "3c9d69ccb9a8fc4a495d1135d84b6a0eff6db6cdd788596a424cd9ab0d3205fb",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "c29fa92425a1d37f431ceaed89101a551f2e847ca44316e5c0a3cca5c1cf3879",
+      "filenameHintHash": "f0b0697651b7bf3d48a641806f34457a112a5976d4ae51b9a1a332c21f82b469",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "d14cf28413c5e63378a4dc7dffa761be2820e191debf378bd9cc14e763e24216",
+      "filenameHintHash": "1a9918de13a9f9a09189098844e3a401cba13aaca20869b6c54e763919295f28",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "d57c37f6b4438b70ca7d021256cb6ac85047dc3fd7a46e36e830803299a58085",
+      "filenameHintHash": "fc33ae3b1f31b78917304110d4d5b348f95f127b35065041cba36ce63dfbdee3",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "d876bfdbfc28ca2679ee43eb4487365ff68843e529a912ec0a866607e787c4a8",
+      "filenameHintHash": "2854f0d06f7e6c090011922c3b87107b7a116e695ff4c0fca4b1935eaa968f95",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "d8be72d93a699bf44331762a36302c62e83da1dba11b5fb809defac43dbc9a2b",
+      "filenameHintHash": "090399325bbf64be06fefda2b0f7693b66bcef6393b90b8f058239a252ebbd06",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "e5adb99a25d2f3f395af6e0f0856a0a92ad41d8d9344b8ff849387ee9f75aefd",
+      "filenameHintHash": "55a0a6a2c32c52d456f42e825fbb4d6f4e7f1cd76b5bd4f2b2a68943d4fa9d44",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "eae3f5e0a5aed7883f9d53c033691f44ee5808a9135ec3b266f0235360cea58a",
+      "filenameHintHash": "61d765586545f935cc0399d8c3e1f20d9815c0c2986ddadd903f801d456f4428",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "f56489e6d18de0d2f54fdb961013e875da812dce9e5a207b298deb35cd2c2427",
+      "filenameHintHash": "5424733dd45ffd49c94979b307e3dc1cbe2e8157de963fd1124aec869b37f2a8",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "f6ad292fa69802923d528f01d7afeff38c8fe5b4567590a2fa78cbacbb483f95",
+      "filenameHintHash": "d3bc462b304475bb160d55c08be1f5a208991659f1d43e12fb8b83ffa2f41357",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness",
+        "opacity"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "f717ff45e849d4412289cb3345181de089bef55ad0a01bc61660ac7ebf5f0b2c",
+      "filenameHintHash": "09f059a6342b09986102cfedd15ed725ed45beb4fc426da1a00a76cdbe98a9ca",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "f8508c2dd37f3f430e4adaea97717d76aa16c8a1a1a2711dd8ea5d64159df836",
+      "filenameHintHash": "d46247b08a35de99546be660990b24bb58d08a35fdc2b276106a06bb66303006",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "emissive",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    },
+    {
+      "sourceContentHash": "ffcc4641605222508e01b60cdaa85787cb56f79e6cde0d178f067498accaaddb",
+      "filenameHintHash": "5bb0b8423452f3fc8770d99f02d74c92df254eb44f8baa8a3d2cd9e3d22399a8",
+      "finding": "explicit_non_renderable_collision_companion",
+      "appearanceReviewDisposition": "excluded",
+      "measuredPartRoles": [
+        "collision_proxy"
+      ],
+      "materialCount": 1,
+      "pbrChannels": [
+        "base_color",
+        "metallic_roughness"
+      ],
+      "diagnostics": [
+        "Source appearance materials are retained only as diagnostic input and must not make this companion renderable.",
+        "The explicit _Collision suffix identifies a non-renderable collision companion; appearance renders cannot establish its visual material."
+      ]
+    }
+  ],
+  "appearanceAuthority": false,
+  "hash": "3b16de3aeb18da1d3748dcc00acad952be1733d76f9d6434d60306c699973514"
+}

@@ -257,7 +257,7 @@ async function generateContext(
     const output = await executeCachedCatalogWorker({
       job,
       outputSchema: CATALOG_CONTEXT_WORKER_OUTPUT_SCHEMA,
-      executor: z.enum(["local", "modal"]).parse(options.get("--executor") ?? "modal"),
+      executor: z.enum(["local", "modal"]).parse(options.get("--executor") ?? "local"),
       force: parseBoolean(options.get("--force") ?? "false"),
       context,
     });

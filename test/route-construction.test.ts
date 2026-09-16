@@ -360,6 +360,7 @@ test("smooth vertical profiles use angle-bounded pitch joins without exposed dep
       maximumSupportHeightMeters: 5,
       vegetationClearanceMeters: 0.5,
       supportAppearance: appearance,
+      edgeProtection: { kind: "none" },
     },
   };
   const foundation = sealCompiledWorldFoundation(
@@ -427,6 +428,7 @@ test("elevated routes preserve terrain and emit measured supports", async () => 
       maximumSupportHeightMeters: 5,
       vegetationClearanceMeters: 0.5,
       supportAppearance: appearance,
+      edgeProtection: { kind: "none" },
     },
   };
   const plan = reseal(base, {
@@ -493,6 +495,7 @@ test("junctions seal shared endpoint geometry instead of overlapping independent
         maximumSnapDistanceMeters: 0.1,
         radiusMeters: 1,
         appearance: routeAppearance("Asphalt", { red: 68, green: 70, blue: 74 }),
+        terrainMaterialId: "Ground",
       },
     ],
   });

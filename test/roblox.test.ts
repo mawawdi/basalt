@@ -10,7 +10,10 @@ import {
   ROBLOX_IMPORT_REPORT_SCHEMA,
   ROBLOX_READBACK_SCHEMA,
   ROBLOX_TRACE_EVENT_SCHEMA,
+  ROBLOX_TERRAIN_CONTACT_OBSERVATION_TOLERANCE_METERS,
+  ROBLOX_TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_METERS,
   ROBLOX_TERRAIN_SURFACE_SAMPLE_OFFSET_METERS,
+  ROBLOX_TERRAIN_VOXEL_STUDS,
   ROBLOX_TERRAIN_VOXEL_METERS,
   RobloxImportBridge,
   createRobloxImportManifest,
@@ -31,6 +34,9 @@ test("Roblox is the only unit-conversion and import-protocol boundary", async ()
   assert.equal(metersToRobloxReadbackMicrometers(4.958333333333334), 4_958_334);
   assert.equal(metersToRobloxReadbackMicrometers(-4.958333333333334), -4_958_334);
   assert.equal(ROBLOX_TERRAIN_VOXEL_METERS, 1.12);
+  assert.equal(ROBLOX_TERRAIN_VOXEL_STUDS, 4);
+  assert.equal(ROBLOX_TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_METERS, 0.56);
+  assert.equal(ROBLOX_TERRAIN_CONTACT_OBSERVATION_TOLERANCE_METERS, 0.028000000000000004);
   assert.equal(ROBLOX_TERRAIN_SURFACE_SAMPLE_OFFSET_METERS, 0.56);
   assert.equal(robloxTerrainSolidOccupancy(0, -1.12), 0.5);
   assert.equal(robloxTerrainSolidOccupancy(0, 0), 0);
@@ -242,6 +248,14 @@ test("Roblox terrain traces retain complete grounding evidence without becoming 
       maximumBodyGapMeters: Number.NaN,
     }),
   );
+  assert.throws(
+    () =>
+      ROBLOX_TRACE_EVENT_SCHEMA.parse({
+        ...trace,
+        maximumPermittedBodyGapMeters: 0.9,
+      }),
+    /explicit policy components/u,
+  );
 });
 
 test("local bridge drains the canonical transaction sequence and replays acknowledgements idempotently", async () => {
@@ -354,7 +368,13 @@ function terrainTrace(phase: "foundation" | "readback") {
     routeId: "PavedRoad",
     segmentId: `RouteSegment_${"a".repeat(52)}`,
     requiredSurfaceRevealMeters: 0.08,
-    maximumGroundingGapMeters: 0.12,
+    authoredGroundingToleranceMeters: 0.12,
+    terrainQuantizationAllowanceMeters: ROBLOX_TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_METERS,
+    observationToleranceMeters: ROBLOX_TERRAIN_CONTACT_OBSERVATION_TOLERANCE_METERS,
+    maximumPermittedBodyGapMeters:
+      0.12 +
+      ROBLOX_TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_METERS +
+      ROBLOX_TERRAIN_CONTACT_OBSERVATION_TOLERANCE_METERS,
     minimumSurfaceClearanceMeters: 0.081,
     maximumSurfaceClearanceMeters: 0.2371,
     maximumBodyGapMeters: 0.0771,

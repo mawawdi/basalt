@@ -7,10 +7,28 @@ local RouteGrounding = {}
 
 function RouteGrounding.withinTolerance(
 	maximumBodyClearanceStuds: number,
-	maximumGapStuds: number,
+	authoredMaximumGapStuds: number,
+	terrainQuantizationAllowanceStuds: number,
 	observationToleranceStuds: number
 ): boolean
-	return maximumBodyClearanceStuds - observationToleranceStuds <= maximumGapStuds
+	return maximumBodyClearanceStuds <= RouteGrounding.maximumPermittedGapStuds(
+		authoredMaximumGapStuds,
+		terrainQuantizationAllowanceStuds,
+		observationToleranceStuds
+	)
+end
+
+function RouteGrounding.maximumPermittedGapStuds(
+	authoredMaximumGapStuds: number,
+	terrainQuantizationAllowanceStuds: number,
+	observationToleranceStuds: number
+): number
+	assert(authoredMaximumGapStuds >= 0, "authored grounding tolerance must be nonnegative")
+	assert(terrainQuantizationAllowanceStuds >= 0, "terrain quantization allowance must be nonnegative")
+	assert(observationToleranceStuds >= 0, "terrain observation tolerance must be nonnegative")
+	return authoredMaximumGapStuds
+		+ terrainQuantizationAllowanceStuds
+		+ observationToleranceStuds
 end
 
 function RouteGrounding.initialDepthStuds(

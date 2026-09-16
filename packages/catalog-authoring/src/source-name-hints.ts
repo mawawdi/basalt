@@ -23,6 +23,19 @@ const NORMALIZER_POLICY = Object.freeze({
   ignoredSuffixes: ["glb_extension", "extraction_collision_hash"],
 });
 
+const EXPLICIT_COLLISION_SUFFIX = /(?:^|[_-])collision(?:--[a-f0-9]{12,64})?\.glb$/iu;
+
+/** The one source-name convention allowed to determine a technical role. Every
+ * observed filename must agree so content reused under a renderable name is not
+ * silently converted into collision-only geometry. */
+export function sourceFilenameObservationsIdentifyCollisionCompanion(
+  observations: readonly string[],
+): boolean {
+  return (
+    observations.length > 0 && observations.every((value) => EXPLICIT_COLLISION_SUFFIX.test(value))
+  );
+}
+
 /**
  * Name hints are weak supervision for authoring only. This hash identifies the
  * exact deterministic normalization policy; it is not semantic evidence and

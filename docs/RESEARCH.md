@@ -16,6 +16,8 @@ contracts in `ARCHITECTURE.md` and the sealed registry win if rationale ever dri
 - [Catalog support measurement](research/catalog-support-measurement.md) — root-cause audit,
   established mesh-contact baseline, bounded pilot, and full-corpus result for planar and
   lower-extrema support evidence.
+- [Catalog qualification authoring](research/catalog-qualification-authoring.md) — annotation,
+  retrieval-pooling, and heterogeneous-query baselines plus the content-bound Basalt review gate.
 - [Roblox glTF upload color adaptation](research/roblox-gltf-upload-colors.md) — importer-color
   root cause, standards baseline, deterministic payload rule, and affected/control pilot.
 - [Basalt and existing world-generation systems](research/world-generation-reuse.md) —

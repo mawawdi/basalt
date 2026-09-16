@@ -21,6 +21,10 @@ import {
 } from "@basalt/world-compiler";
 import { ROBLOX_STUD_METERS } from "./constants.js";
 import { ROBLOX_GLTF_UPLOAD_ADAPTATION_POLICY_HASH } from "./glb-upload.js";
+import {
+  ROBLOX_TERRAIN_CONTACT_OBSERVATION_TOLERANCE_METERS,
+  ROBLOX_TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_METERS,
+} from "./terrain.js";
 
 const entityId = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u);
 const diagnosticEntityId = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u);
@@ -91,6 +95,7 @@ export const ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA = z
     centerMicrometers: MICROMETER_VECTOR_SCHEMA,
     sizeMicrometers: MICROMETER_SIZE_SCHEMA,
     materialId: entityId,
+    baseColorSrgb: colorRgb,
     anchored: z.literal(true),
     canCollide: z.literal(true),
   })
@@ -123,7 +128,12 @@ export type RobloxConstructedOpeningObservation = z.output<
 const routeTerrainTraceFields = {
   phase: z.enum(["foundation", "readback"]),
   requiredSurfaceRevealMeters: z.number().finite().nonnegative(),
-  maximumGroundingGapMeters: z.number().finite().nonnegative(),
+  authoredGroundingToleranceMeters: z.number().finite().nonnegative(),
+  terrainQuantizationAllowanceMeters: z.literal(
+    ROBLOX_TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_METERS,
+  ),
+  observationToleranceMeters: z.literal(ROBLOX_TERRAIN_CONTACT_OBSERVATION_TOLERANCE_METERS),
+  maximumPermittedBodyGapMeters: z.number().finite().nonnegative(),
   minimumSurfaceClearanceMeters: z.number().finite(),
   maximumSurfaceClearanceMeters: z.number().finite(),
   maximumBodyGapMeters: z.number().finite().nonnegative(),
@@ -139,32 +149,46 @@ const routeTerrainTraceFields = {
  * in the observed-world-state hash; exact route geometry and artifact identity
  * remain the authoritative readback contract.
  */
-export const ROBLOX_TRACE_EVENT_SCHEMA = z.discriminatedUnion("kind", [
-  z
-    .object({
-      kind: z.literal("route_terrain"),
-      routeId: diagnosticEntityId,
-      segmentId: diagnosticEntityId,
-      ...routeTerrainTraceFields,
-      startAdjustmentMeters: z.number().finite().nonnegative(),
-      finishAdjustmentMeters: z.number().finite().nonnegative(),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal("route_junction_terrain"),
-      junctionId: diagnosticEntityId,
-      ...routeTerrainTraceFields,
-      adjustmentMeters: z.number().finite().nonnegative(),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal("trace_truncated"),
-      droppedEventCount: z.number().int().positive(),
-    })
-    .strict(),
-]);
+export const ROBLOX_TRACE_EVENT_SCHEMA = z
+  .discriminatedUnion("kind", [
+    z
+      .object({
+        kind: z.literal("route_terrain"),
+        routeId: diagnosticEntityId,
+        segmentId: diagnosticEntityId,
+        ...routeTerrainTraceFields,
+        startAdjustmentMeters: z.number().finite().nonnegative(),
+        finishAdjustmentMeters: z.number().finite().nonnegative(),
+      })
+      .strict(),
+    z
+      .object({
+        kind: z.literal("route_junction_terrain"),
+        junctionId: diagnosticEntityId,
+        ...routeTerrainTraceFields,
+        adjustmentMeters: z.number().finite().nonnegative(),
+      })
+      .strict(),
+    z
+      .object({
+        kind: z.literal("trace_truncated"),
+        droppedEventCount: z.number().int().positive(),
+      })
+      .strict(),
+  ])
+  .superRefine((value, context) => {
+    if (value.kind === "trace_truncated") return;
+    const expectedMaximum =
+      value.authoredGroundingToleranceMeters +
+      value.terrainQuantizationAllowanceMeters +
+      value.observationToleranceMeters;
+    if (Math.abs(value.maximumPermittedBodyGapMeters - expectedMaximum) > 1e-12)
+      context.addIssue({
+        code: "custom",
+        path: ["maximumPermittedBodyGapMeters"],
+        message: "Maximum permitted body gap does not match its explicit policy components",
+      });
+  });
 export type RobloxTraceEvent = z.output<typeof ROBLOX_TRACE_EVENT_SCHEMA>;
 
 export const ROBLOX_IMPORT_STAGE_SCHEMA = z.enum([
@@ -1090,7 +1114,8 @@ function constructedElementObservations(
                 z: element.geometry.radiusMeters * 2,
               },
         ),
-        materialId: element.materialId,
+        materialId: element.appearance.materialId,
+        baseColorSrgb: element.appearance.baseColorSrgb,
         anchored: true as const,
         canCollide: true as const,
       })),
@@ -1192,6 +1217,11 @@ function describeConstructedElementDrift(
         );
   if (expected.materialId !== actual.materialId)
     changes.push(`materialId expected ${expected.materialId}, observed ${actual.materialId}`);
+  for (const channel of ["red", "green", "blue"] as const)
+    if (expected.baseColorSrgb[channel] !== actual.baseColorSrgb[channel])
+      changes.push(
+        `baseColorSrgb.${channel} expected ${expected.baseColorSrgb[channel]}, observed ${actual.baseColorSrgb[channel]}`,
+      );
   if (expected.anchored !== actual.anchored)
     changes.push(`anchored expected ${expected.anchored}, observed ${actual.anchored}`);
   if (expected.canCollide !== actual.canCollide)

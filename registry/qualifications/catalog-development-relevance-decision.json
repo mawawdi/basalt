@@ -1,0 +1,1792 @@
+{
+  "kind": "CatalogQualificationDevelopmentRelevanceDecision",
+  "stage": "independent_query_asset_review",
+  "status": "reviewed",
+  "candidatePoolHash": "7ff7bec54ae393a05358dc1541dc2ed4b62e9d9f8f277d7057c50c2a881bef9b",
+  "querySetHash": "37a33c4ef03963fffaa10e70f2e5ac2414f9984174f7649442bc010b72662953",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex:user-delegated-ai-review"
+  },
+  "reviewMethod": "independent_query_asset_relevance_review",
+  "reviewerStatement": "Codex performed this review at the creator's explicit request: Do it for me. The delegated_ai authority value and reviewer ID identify Codex as the actual AI judge. This is not personal human inspection or independent human ground truth. I evaluated all 20 displayed requests and all 230 pooled pairs against the visible RGB evidence and exact metric summaries. I inspected every overview candidate and all twelve views for 44 distinct candidates, plus two enlarged individual views. I had prior conversation exposure to descriptions of some development assets; this is not a blind or held-out review. I did not use filenames, retrieval ranks or generated noun-match judgments as the answer key. Known contradictions were marked irrelevant; plausible matches with unestablished required facts were marked unknown. Measurements were used at supplied scale without assuming resizing. All requests were judged usable as written. This artifact covers relevance only; validator verdicts, creator-run engine verification, benchmark qualification and corpus execution are not approved.",
+  "reviewedAt": "2026-09-15T23:56:24.740Z",
+  "coverage": "complete",
+  "queries": [
+    {
+      "queryId": "bent_tropical_palm",
+      "requestHash": "8d70b897aa73b8c75ddfe8388e162548fab64f7e5026737e274b2131d3aa3574",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1c457be14614b013d7687d66d3c82646f61568e0d5b460c48b69b91b1146bf18",
+          "measurementHash": "453e69f866e443a29fc4b046292a8ba423faf6067f97a2c11b54180bb8b7c42d",
+          "renderEvidenceHash": "1a7e13f2a881591631b1d366e5d77278946b2167e3139236485396c150a51c04",
+          "verdict": "irrelevant",
+          "note": "Upright broad-leaf plant; it lacks the requested long bent palm trunk."
+        },
+        {
+          "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+          "measurementHash": "1509545a1c3ef9e3a12a6479a0889799fe8dc0610dedc31bb2577b7cc76fd72b",
+          "renderEvidenceHash": "bfa8e03b4f86d149570df6d7acdd5583fa8b4515cd3f32ba859ed35a4cb15946",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b",
+          "measurementHash": "89093f863fc8e11fa1be605b189044466e614c000833f343947688cc915f139f",
+          "renderEvidenceHash": "567d9f499b39c8095cf5dcb13433878544ce67f78886983e09665973c4eb7de9",
+          "verdict": "relevant",
+          "note": "Bent brown palm trunk and bright-green fronds are visible; measured 7.726 x 4.521 x 4.294 m fits the stated limits."
+        },
+        {
+          "sourceContentHash": "3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356",
+          "measurementHash": "521fbfb8b107055182ce044071e035584c05d403aaabd04963e26d95b34d4216",
+          "renderEvidenceHash": "b0b3d56febed0f10e8bbbde6bba83da24f8dac73df9bcb528bade6161a3738a7",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+          "measurementHash": "cb84d312519bc05dc1d57c4a4de4f5a700258abd457d44846820d2a65f806d44",
+          "renderEvidenceHash": "f5ddcc2e9a9aa09f1502aa864d1e221f9b1144a65186c67443cdcf8aa3096005",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166",
+          "measurementHash": "ed18da9a3095c63afb1db1d304627018929c170ac1005f39384f4d27771b9d43",
+          "renderEvidenceHash": "3d17adc32927136e8ed1af67341e9af3597ce36c6222341bb9dcdea9ffc85168",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "906d6ccf54b706a45d4928ac3a8a7d396336cd73c936f6b94f4d3b4cb4e22ade",
+          "measurementHash": "4fe0c783d66565914ff4902bb15b0461c8aaa0a274b6900fface1cd33ad56e24",
+          "renderEvidenceHash": "eb07f105dd63f7d7375361a178be941d429158736480091880bb71e6d34f8512",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "b4489ab04cc1c4da5158707fb7a67c3a412026f06d63f69ef8f398866727393a",
+          "measurementHash": "1d03fb4999d6a7a2dbe4f06ae245125cf5f39f40d72943cf91da53b583a64db6",
+          "renderEvidenceHash": "d0c2d4e61aaf58d7b77dd325e3335df2e0eb6c5f3d59636a8e95dc0e537f3510",
+          "verdict": "irrelevant",
+          "note": "Upright conifer form, not a bent tropical palm."
+        },
+        {
+          "sourceContentHash": "daf7a4765a5a48bd5ea9f7db534936c377820719fb886ac27f0870f2f8d6c9f4",
+          "measurementHash": "922dafdbcdc3a90faf3a773879bf276a6f1ad0f1d22e7d9a411f76096d6b79f0",
+          "renderEvidenceHash": "05c333edc423d3c20028b5607236ac90b1b2ca7dbb37cbee074403b37ae7c8a9",
+          "verdict": "irrelevant",
+          "note": "Upright broad-leaf plant, not the requested bent palm."
+        },
+        {
+          "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+          "measurementHash": "58c294715d30d51e40557ce0baf42bc5cbb5ffa56ff9ef0ec832dadddd2ebf56",
+          "renderEvidenceHash": "d5be623f45e0bbf200486a5cbfdf0bda7a0de3d6fc2c05ffccdba47898a6a159",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "bones_ground_scatter",
+      "requestHash": "e07864c9ee5fdd4a449e66be172998208fcdff78d1f1a3676c2801d0eaaf6f6e",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "0701866cbf089e9f3e76920938e7b7792cba7af90a3b473cf560bbceb2c4af81",
+          "measurementHash": "9792071f0fd99095ad5587ba3a5c68bc196116e250b26c79683c00a83b5e4281",
+          "renderEvidenceHash": "e147df7d91de3a0a78edce09103dd47838942e1d74d9a155fbeee603b4e8bb80",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "08c6d103421391d943327f4551a47a5fc599864a555e01a6e5a0bcacc2c5e181",
+          "measurementHash": "8011b7f20b6b83d53ac88b7cf52000c6d61886b74d645d141d096ca91e953fa0",
+          "renderEvidenceHash": "0f780a6eb277dbe888d3d0e1f19a742ffa945b7e7bc320975fd37387857f0bf0",
+          "verdict": "irrelevant",
+          "note": "Bare pale mound without the requested scattered bones."
+        },
+        {
+          "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+          "measurementHash": "441244edebb1badb00016ed0ad6e45d87ae805ea4dbec450f248b58d9266420a",
+          "renderEvidenceHash": "d0d272d3c604c305a510db2a6529f8a0ae6496250e54ad47ea86da8ffbe769ce",
+          "verdict": "relevant",
+          "note": "Many pale bones lie across a low gray mound, measuring 2.605 x 0.771 x 2.402 m."
+        },
+        {
+          "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+          "measurementHash": "1509545a1c3ef9e3a12a6479a0889799fe8dc0610dedc31bb2577b7cc76fd72b",
+          "renderEvidenceHash": "bfa8e03b4f86d149570df6d7acdd5583fa8b4515cd3f32ba859ed35a4cb15946",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c810d6b7577ff49130b2a9b30509c857b33b91bd4ea0fceea92fb48d83129ca",
+          "measurementHash": "fde79f7e0117746b604cba006413de6dbd32febef1d264f43b2066532a2488b9",
+          "renderEvidenceHash": "b8583b8279419b31243a78940fa668493660361964303be30ad29a6126c0e9c6",
+          "verdict": "irrelevant",
+          "note": "Green ground patch without bones."
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "74a63185a7187ba85e227fd061430948b233d723a139eeca261753c7a9b473ea",
+          "measurementHash": "653925a3829919054972231b587b34c84bed94e1ac84dd9ed88bd39e83fbc4f4",
+          "renderEvidenceHash": "d10b3f3555e3858f487f365d1ab485b5761f0ed36ece17be430b7018067a947a",
+          "verdict": "irrelevant",
+          "note": "Bare irregular pale mound without bones."
+        },
+        {
+          "sourceContentHash": "dd408725018bdc762266122febd29822e66b390f1c3ce771359b46646cb9570b",
+          "measurementHash": "333d3f68c19a75a00cda37ba0785c1e437b5110fc0eebc170b402a24c55f70d2",
+          "renderEvidenceHash": "704ce99fe1d7dec8f5c2987c26cb5d72906baa4a61abf91e1c476e7bf55514a7",
+          "verdict": "irrelevant",
+          "note": "Small crossed blade-like prop; no ground mound or scatter of bones."
+        },
+        {
+          "sourceContentHash": "fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5",
+          "measurementHash": "aa97ad338360730a31b7fb7d36a8450f2a862a75fa859d3756dd0b09a9070b48",
+          "renderEvidenceHash": "dcdb34ba71d8f324f9b7f82b21bdfe22359a34fd90026cf47069281d2be44f53",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "complete_treasure_chest",
+      "requestHash": "d9dfc9f2c25b81b4365810a49af6926c8b5c9277ffdf4b43fb8f8b1c3192187c",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "relevant",
+          "note": "Closed chest with visible wood slats, gray bands, arched lid and complete base; width is 1.234 m."
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "0f092df18920eff7f1b22115ef1cd2d6e2abe031627a538e362ae7fdef8612a2",
+          "measurementHash": "ff7e91b50ce122d2d4d687c073941dee3aba599cc2698a9568650fb28c8d1f31",
+          "renderEvidenceHash": "0b027d157ca3f630defb6e949270b8813891561df42dfc1f8f954dbfd8721308",
+          "verdict": "unknown",
+          "note": "Closed arched chest geometry and size are plausible, but every supplied view is uniformly white/gray. Wooden material and distinct gray metal bands cannot be established from this evidence."
+        },
+        {
+          "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+          "measurementHash": "3b6977e06cb64decb561e62e18fccc8a0355d275b9a556b630b613ff5a41a3db",
+          "renderEvidenceHash": "175fdbf384e694a741b8d568bee379f823f094600148af6ef250112da4f2a62e",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "46cb90b25c43ab19f9714bdeb1839d38e4d1fd0bebcd8f41c1280317e4772fd3",
+          "measurementHash": "e6f773901c856a771d1ef58b64b03681db337421bc60a05730eaa69b5b097d11",
+          "renderEvidenceHash": "2cca76888a9592132bdd3a5681a9171d50753642b89453ca7f58cb747bf66832",
+          "verdict": "unknown",
+          "note": "Closed arched chest geometry and size are plausible, but the monochrome renders do not establish the requested wood and gray metal material distinction."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "7c6fcf2af6e7a61821dd3c102f8ae0a4c6dec936ea9569f2bb6445936d7b75e1",
+          "measurementHash": "35893d846d6dec12e0c3131fdf5ad82cc5a8071b9558ddb2bec26a309458a94e",
+          "renderEvidenceHash": "84e3707147d33d83a9d5941c48d7b62d28576e8aec01c6b9198864d1a0e7aacd",
+          "verdict": "irrelevant",
+          "note": "Open, lidless treasure container with visible contents; it lacks the required closed arched lid."
+        },
+        {
+          "sourceContentHash": "e8edfe0733c29ca62e86ddbf752e9114f50bf14ac4b1ac8e11f8e0153c6c03db",
+          "measurementHash": "88db7e85415949a5ac31460f74215a835132e177fb49b99fafb682e5dd51e542",
+          "renderEvidenceHash": "8f9266af0005f707c6d1bc029fd36ce3c40dcf437f7b3cde04342271a4f3aaa9",
+          "verdict": "irrelevant",
+          "note": "Open, lidless container with visible contents, not a complete closed chest."
+        },
+        {
+          "sourceContentHash": "e9cb011a992b059d501403503fb0c6af9d0a5c36c899c1ba562b1b16d4a38d91",
+          "measurementHash": "1f9e93cb2b739ad9ebcac631154dd46caaa66ecee95b6d534b6abc2256e1bd47",
+          "renderEvidenceHash": "22bfe9dd535fc041a1b5994c902cdf4226f7c56865ebb497941114f33679c69c",
+          "verdict": "irrelevant",
+          "note": "Open, lidless container with visible contents, not a complete closed chest."
+        }
+      ]
+    },
+    {
+      "queryId": "curved_dirt_road_module",
+      "requestHash": "91d1c740f2bfc488f70ddc6625078c20ec15e31d3d9072e201ca03a9d8f24418",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136",
+          "measurementHash": "3fc782f1af0093681bb85066bdb914e09f02b34648ded61caee7e386172538d2",
+          "renderEvidenceHash": "37c5d2bbe101b060b812d1c31b59b171b1dd63514185fe1d1528f54db459be24",
+          "verdict": "relevant",
+          "note": "Curved dirt roadway with grassy edges, stones and open segment ends; 6.386 x 0.518 x 6.406 m fits. This is visual retrieval relevance, not certification of compatibility with a particular kit."
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "105c0be4402586ae8632c7e24a9c80f4712b65910c9f14e1c1c99988a2e8ac20",
+          "measurementHash": "229b5df5f9d20f8aa6ba27357973877a9f7cac352984b3a6128707c8a6f62f42",
+          "renderEvidenceHash": "398a59818892483e3ffb23efa3d683f496827df1c1acdfd031a0abd10b69e5d4",
+          "verdict": "irrelevant",
+          "note": "Plain rectangular soil tile; no curved road, grassy banks or separate stones."
+        },
+        {
+          "sourceContentHash": "105f880866a3310556c60ed02473a97cf7fb51c4f955693c2cfd09230b0c9bd6",
+          "measurementHash": "f1d8242d0983ff027055090774e55c421148a8b41b91b7ab912fcf57caa38284",
+          "renderEvidenceHash": "046992cd2840b981d36ff276f98e614672018a85986a1efb9e29a34d80a81679",
+          "verdict": "irrelevant",
+          "note": "Plain round soil patch without a curved roadway or grassy edges."
+        },
+        {
+          "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+          "measurementHash": "441244edebb1badb00016ed0ad6e45d87ae805ea4dbec450f248b58d9266420a",
+          "renderEvidenceHash": "d0d272d3c604c305a510db2a6529f8a0ae6496250e54ad47ea86da8ffbe769ce",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+          "measurementHash": "1509545a1c3ef9e3a12a6479a0889799fe8dc0610dedc31bb2577b7cc76fd72b",
+          "renderEvidenceHash": "bfa8e03b4f86d149570df6d7acdd5583fa8b4515cd3f32ba859ed35a4cb15946",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+          "measurementHash": "3b6977e06cb64decb561e62e18fccc8a0355d275b9a556b630b613ff5a41a3db",
+          "renderEvidenceHash": "175fdbf384e694a741b8d568bee379f823f094600148af6ef250112da4f2a62e",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "3b996a1604ab4b0a74fe0e0771fa7da6f074484ee348c29a020b542be732b1fb",
+          "measurementHash": "c4d578bdb99f87752ed269f2cb6c26b249e142d1de086c7e81e70bdc5323b0e5",
+          "renderEvidenceHash": "6582baf0a4be68ca2e31d3216ec56b8439b5e934e256afa8ce93ebb0516cc633",
+          "verdict": "irrelevant",
+          "note": "Plain soil tile without the required curved roadway and grassy edges."
+        },
+        {
+          "sourceContentHash": "44de16bbac25d52acd14ed4aec586890f3ac5e1670db50e71a9079ab93125bd7",
+          "measurementHash": "4b54922b160c37ee017b878e839326e60fab38696b9d723db4cb3579660ebda2",
+          "renderEvidenceHash": "4d27285027d3e606c3d70a247560b098971abe74ddb26f70537a3b78e6f88033",
+          "verdict": "irrelevant",
+          "note": "Straight ridged brown tile without the required curved roadway and grassy edges."
+        },
+        {
+          "sourceContentHash": "461870d63649a006d7d45cc3de1801690aa4b086514fd44892580047da952b7a",
+          "measurementHash": "1a1690cac9e81d7e37f1c7a736fa63b179a1679cb93b1786b7667f5973fed632",
+          "renderEvidenceHash": "174e04801193f89c1682ddb28a70b6c4d900aa26c91066cd4d377a60651cb6b8",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+          "measurementHash": "58c294715d30d51e40557ce0baf42bc5cbb5ffa56ff9ef0ec832dadddd2ebf56",
+          "renderEvidenceHash": "d5be623f45e0bbf200486a5cbfdf0bda7a0de3d6fc2c05ffccdba47898a6a159",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "curved_triple_monitor_rig",
+      "requestHash": "c420fec92dfe98c5c8ff5007bea8fc6fa57a7612680ebec91cac9bd763ca8032",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+          "measurementHash": "3b6977e06cb64decb561e62e18fccc8a0355d275b9a556b630b613ff5a41a3db",
+          "renderEvidenceHash": "175fdbf384e694a741b8d568bee379f823f094600148af6ef250112da4f2a62e",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "461870d63649a006d7d45cc3de1801690aa4b086514fd44892580047da952b7a",
+          "measurementHash": "1a1690cac9e81d7e37f1c7a736fa63b179a1679cb93b1786b7667f5973fed632",
+          "renderEvidenceHash": "174e04801193f89c1682ddb28a70b6c4d900aa26c91066cd4d377a60651cb6b8",
+          "verdict": "irrelevant",
+          "note": "Only one curved monitor is present; the request requires three."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "928de6277b0b6617d9bdd45798877af20c61e33353c5d21c4115f8837094f90d",
+          "measurementHash": "9816e04e9209d4231dd3e5d02eae7484f4abfe9b30d0893b1713efcde1644074",
+          "renderEvidenceHash": "c2bdbe18493223df2b39f17c64705ac30de17f4bb499d686e329eee51d826b9e",
+          "verdict": "irrelevant",
+          "note": "Small separate stand or bracket, not a complete triple-monitor rig."
+        },
+        {
+          "sourceContentHash": "b48b1bd725e68b1ee088414916562314b85ab487ba4136b46582b729b32c5d02",
+          "measurementHash": "f72b8d072b5fa3277ad35eb8ac745dfdf14f61ea58cc1fcaa7e395e21a76fdde",
+          "renderEvidenceHash": "92a1708db16f8f4c1e6362dee5ad1690ed26b8939fc335618272be6b61d062a2",
+          "verdict": "irrelevant",
+          "note": "Separate bracket/frame without three screens."
+        },
+        {
+          "sourceContentHash": "d3b880152b25bd75b909c478099190f463fe05126d19a86f44c271da34d76031",
+          "measurementHash": "d5ea854b869cc125b986e9a1d767b48c77b8580dd08986d33758b5a2127eeba8",
+          "renderEvidenceHash": "0b496437855a703b40e8371051abccaea10eca94663492fb6bc98e0fc869565d",
+          "verdict": "irrelevant",
+          "note": "Computer case-like unit without three screens."
+        },
+        {
+          "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+          "measurementHash": "58c294715d30d51e40557ce0baf42bc5cbb5ffa56ff9ef0ec832dadddd2ebf56",
+          "renderEvidenceHash": "d5be623f45e0bbf200486a5cbfdf0bda7a0de3d6fc2c05ffccdba47898a6a159",
+          "verdict": "unknown",
+          "note": "Three monitors and a central articulated-looking stand are visible, and width is 1.928 m. Static RGB views and bounds do not establish whether the stand is actually adjustable; the whole request remains uncertain."
+        },
+        {
+          "sourceContentHash": "fd11cae15e6717ea56b9849097f4784c15ab8226184c47abc8a285b074b6466b",
+          "measurementHash": "5c24118a97c9702030f5a6bbad626d3a01a1106638bff380c4bcbb1146b8d89e",
+          "renderEvidenceHash": "9639bb295887fa79e8d773505ad20c7b757bed1086d537fda4f6c2cf993f9f58",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "dry_earthen_channel",
+      "requestHash": "f66a71ad606011ad5803cb8bbd1a58d394cf427574e93a8520324da8f63574e3",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+          "measurementHash": "441244edebb1badb00016ed0ad6e45d87ae805ea4dbec450f248b58d9266420a",
+          "renderEvidenceHash": "d0d272d3c604c305a510db2a6529f8a0ae6496250e54ad47ea86da8ffbe769ce",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+          "measurementHash": "1509545a1c3ef9e3a12a6479a0889799fe8dc0610dedc31bb2577b7cc76fd72b",
+          "renderEvidenceHash": "bfa8e03b4f86d149570df6d7acdd5583fa8b4515cd3f32ba859ed35a4cb15946",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a",
+          "measurementHash": "9c7e82d78cd47503f702ebbd1dc676d64f9a3cec1898b37e5fa012fcc0d7e2c0",
+          "renderEvidenceHash": "31e4cc10a5a6500b651ee64cad39dcc4024ab491f39c97d87fe73e4924b67db4",
+          "verdict": "relevant",
+          "note": "Curved hollow earthen channel with grassy banks, stones and no water; 5.489 x 1.310 x 5.626 m fits."
+        },
+        {
+          "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+          "measurementHash": "cb84d312519bc05dc1d57c4a4de4f5a700258abd457d44846820d2a65f806d44",
+          "renderEvidenceHash": "f5ddcc2e9a9aa09f1502aa864d1e221f9b1144a65186c67443cdcf8aa3096005",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "44a812ddb4628af8a136a088863d311a7674dedbe9f01c7b3f1dfd1ca1b54462",
+          "measurementHash": "d4c43d3011f9262e0b8e5456ebc5768ad7e88bd0da747cfb2d1c1f390bc78026",
+          "renderEvidenceHash": "e769b0ebff998dececbe26ad431d21b5c13ce6f28d4dbe2748fab539623f3c0a",
+          "verdict": "irrelevant",
+          "note": "Flat gray plane, with no channel depression or grassy banks."
+        },
+        {
+          "sourceContentHash": "461870d63649a006d7d45cc3de1801690aa4b086514fd44892580047da952b7a",
+          "measurementHash": "1a1690cac9e81d7e37f1c7a736fa63b179a1679cb93b1786b7667f5973fed632",
+          "renderEvidenceHash": "174e04801193f89c1682ddb28a70b6c4d900aa26c91066cd4d377a60651cb6b8",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "59e7113e967b627a28f15d9392fffefce5a4953ac714f39822383551da44cbd3",
+          "measurementHash": "75c5e5dd7a588482c805558926927305ac595eaf5976539dcda83801d442aa38",
+          "renderEvidenceHash": "fabea381f43262d11b2de05a44c84665131fcae7b01b0993caccee10d8414cac",
+          "verdict": "irrelevant",
+          "note": "Flat gray plane, with no channel depression or grassy banks."
+        },
+        {
+          "sourceContentHash": "61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166",
+          "measurementHash": "ed18da9a3095c63afb1db1d304627018929c170ac1005f39384f4d27771b9d43",
+          "renderEvidenceHash": "3d17adc32927136e8ed1af67341e9af3597ce36c6222341bb9dcdea9ffc85168",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "80f1eb5b655f5812618d75b8460d3688db491a9d3d131ea7419810594a00da80",
+          "measurementHash": "9aaf231c7149ac04cf91c096200b64ecdeb702590df7b0f7aa0dd2ef1c90bf7d",
+          "renderEvidenceHash": "7ee3e613e88febf57eb0b003b20fc1e94b97211eae34f08f6ce13790b3c30f8d",
+          "verdict": "irrelevant",
+          "note": "Flat gray plane, with no channel depression or grassy banks."
+        },
+        {
+          "sourceContentHash": "9ab55c1e750d091c4781bfe1e31266c22204cbfaae60bb33273328c56a7d1f6f",
+          "measurementHash": "d4cb7fdc4966755ba78195605f9a7e4a79af6ce72ff9468aa8aff3d3452bbda1",
+          "renderEvidenceHash": "692f9657f4202b2d41f656c644ca225d7c2bba556e10408ec0c3958b6b29593d",
+          "verdict": "irrelevant",
+          "note": "Raised faceted gray tile, not an open earthen channel with grassy banks and stones."
+        },
+        {
+          "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+          "measurementHash": "58c294715d30d51e40557ce0baf42bc5cbb5ffa56ff9ef0ec832dadddd2ebf56",
+          "renderEvidenceHash": "d5be623f45e0bbf200486a5cbfdf0bda7a0de3d6fc2c05ffccdba47898a6a159",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "faceted_pillar_component",
+      "requestHash": "41fca56a2b233f6bf8169396fb0d9798d6788aa4e2a5555b8577df7a124acca8",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc",
+          "measurementHash": "96960adb0de24d7bb72ca7ea6ae5bae37a51c554d9c441f39c3fa04a7a147819",
+          "renderEvidenceHash": "997384d217cc85b8f002dc59fab41332b0abd60dca14003782e7136ae195dcf6",
+          "verdict": "relevant",
+          "note": "Single beige pillar-shaped piece with a faceted cap, 1.214 m tall; it is visibly not a complete wall. No particular kit membership or mating interface is inferred."
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2f688a51abe5ceeca18a6218e77600ac726d9bdddf686ee4c1af21e9ab1d1627",
+          "measurementHash": "49ff0dd544ecc382ab361c12d225ca15841237a361dcfb8ae02505d1981cd832",
+          "renderEvidenceHash": "221d9eb1f7f1ceb03073918f0efd8abab99384953087e4f4c134704d4a70d0ea",
+          "verdict": "irrelevant",
+          "note": "Thin gray post, 1.409 m tall, lacks the requested beige pillar appearance."
+        },
+        {
+          "sourceContentHash": "42449cbf9e49ad12c9aec3f67ea00d88347b23f23b4f9c14d3e7c4bd144b49f5",
+          "measurementHash": "2afeb796f768ef19458ecf3df85570f1401d530dd0d604c56b42f7a1a1fc1472",
+          "renderEvidenceHash": "b5f370d3ae353ca84ff32502b031a33348c54bac664a0a5442d1925480d095ea",
+          "verdict": "irrelevant",
+          "note": "Flat dark circular disc, not a capped pillar."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "5570bedf98de9e4ff9177724a6e5eae55d8c41a9a758e251e2c91a75f0cd856d",
+          "measurementHash": "4437d58058ba2ccb08edc8009cedb2dbc0943babe9fb0b06a492e31b20feee35",
+          "renderEvidenceHash": "54e1bc4328c04ed8c452b104d396e910fc22fe7ec48f62292d9e6416f7ef2a29",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "853b8fef0ae65f6a823c088124fbaf5387ce08114ac6bd4db5c6fe86ae237368",
+          "measurementHash": "7da39ec6427d3c9d64b8e4b008e7b21dfe8028ad9f510b803dfecc4226fe3b6b",
+          "renderEvidenceHash": "7c954bf4c73b74ac77e67d5f9af718a035421e380b8d7f145afa9dd30bc8e68a",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "fd11cae15e6717ea56b9849097f4784c15ab8226184c47abc8a285b074b6466b",
+          "measurementHash": "5c24118a97c9702030f5a6bbad626d3a01a1106638bff380c4bcbb1146b8d89e",
+          "renderEvidenceHash": "9639bb295887fa79e8d773505ad20c7b757bed1086d537fda4f6c2cf993f9f58",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "load_bearing_player_bridge",
+      "requestHash": "afe9a16fa766b32eb5b3927d4d611e87284cb7c1679b52597f58ef4b8bedfea4",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc",
+          "measurementHash": "96960adb0de24d7bb72ca7ea6ae5bae37a51c554d9c441f39c3fa04a7a147819",
+          "renderEvidenceHash": "997384d217cc85b8f002dc59fab41332b0abd60dca14003782e7136ae195dcf6",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+          "measurementHash": "819746cd2670942344ceb1a73eda00cba1fa66b1074ecf68562062e22346f4af",
+          "renderEvidenceHash": "7a3e46ac1c85f3b232e3e0d14cf936f87dd3e731ff8e5992282883aab53207b7",
+          "verdict": "irrelevant",
+          "note": "The complete bridge measures only 5.942 m along its longitudinal axis, shorter than the specified 6 m gap at the supplied scale. No resizing is authorized. Player collision/load-bearing verification is also absent, but the measured span already contradicts the request."
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a",
+          "measurementHash": "13e33dcf818b84b5e9885ee235ea148a115e44de150fd9617f3849d0322616f0",
+          "renderEvidenceHash": "95b0c21dbed971705412137d3c14298c163f3b3dc8267ee048fe55f5f7278798",
+          "verdict": "irrelevant",
+          "note": "Disconnected fence rails, not a complete wooden footbridge."
+        },
+        {
+          "sourceContentHash": "2cf8bfaada1aa2df7b8cf3309cd7db303493b352aac5bcd74f5a2911d46fa075",
+          "measurementHash": "2ae4674f8d7a0d06b22d6ae09900d5ffd44c84b666b0bfbd0de0988f30696384",
+          "renderEvidenceHash": "babe1b5bf2a6fd778e54b8dee4208a29007ea25c0d32ee21ddc367993da75134",
+          "verdict": "irrelevant",
+          "note": "The entire measured object fits within 0.635 x 2.504 x 0.571 m, so it cannot span a 6 m gap at supplied scale; renders also show tiny separated fragments rather than a bridge."
+        },
+        {
+          "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+          "measurementHash": "4f708c3240f5f74baa2266427e6b226f0e3a35ea62aa526005bb77bccbc593ab",
+          "renderEvidenceHash": "b478c96fa4c93ef3790b0d0d7b32c7e83be23d119cf1f025d6722d8d5c40ff67",
+          "verdict": "irrelevant",
+          "note": "Single gray beam, not a complete wooden footbridge with a deck."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "4a532fdad998f5b6dfce03e47c55186029d556662b542a2c3cf37447bda01b2d",
+          "measurementHash": "8346b59cde5cdc8882aca589d9cad5e11c15f3776b8771f48b6a720621ff6623",
+          "renderEvidenceHash": "c57880849e3d92816a09ae00adc89c74a417df0ab637ef182aac39e02bc4d4df",
+          "verdict": "irrelevant",
+          "note": "Masonry wall with an opening, not a wooden footbridge."
+        },
+        {
+          "sourceContentHash": "760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461",
+          "measurementHash": "c0005f13194911aaf2a02c52dbbb70f67446614bbff445f248d84eba5fa345c6",
+          "renderEvidenceHash": "b97824519d3786e7a02defa666b9bc274305ae7d56f77d60779559d2aa286ece",
+          "verdict": "irrelevant",
+          "note": "Red wheeled frame/implement without a bridge deck."
+        },
+        {
+          "sourceContentHash": "ce0518f72bd9957619df8f0e81e49f24eac43467eb4372b5323674c75102293b",
+          "measurementHash": "16e253872a6554d933546edcfe6a761fe65bad5969a12dce1b5eb1e71c4ca55b",
+          "renderEvidenceHash": "76efcccbc0497012578dbfc5f2a474af195bff8bec5019d2494d68661ef3fdb3",
+          "verdict": "irrelevant",
+          "note": "The entire measured object fits within 0.771 x 1.689 x 0.553 m, so it cannot span 6 m at supplied scale; the render is fragmented and very poorly framed."
+        },
+        {
+          "sourceContentHash": "d6c6d5a5b41c0b451b59104e1db5be46699f7b1268f9c15bbab910b39b9ac5e9",
+          "measurementHash": "9e7d9102ff0078f9bd08e0a51792ef6f93aeb5e32dcf664341621280636381b7",
+          "renderEvidenceHash": "0eb61c1766803f0e33ae583b989d4513a3ca0419a1d93fbb11753c2582e86fc7",
+          "verdict": "irrelevant",
+          "note": "Decorated humanoid or skeletal prop rather than a footbridge; the recorded dimensions are also anomalously large."
+        },
+        {
+          "sourceContentHash": "e7c75ed33b1802cfb65d66451be80846ea1d46ad3ffe58fc882ed544f7a62dcb",
+          "measurementHash": "f6accdd49a1b83050536ce506141d3511e4d3e5b85d5a2d4164b789cf7e24f42",
+          "renderEvidenceHash": "305c20ddb1622bcd951eaaf8024a6c0b0a04f18325d34e89db8ff608d82a158c",
+          "verdict": "irrelevant",
+          "note": "Small wooden sword-shaped prop, not a footbridge."
+        }
+      ]
+    },
+    {
+      "queryId": "mixed_fruit_bowl",
+      "requestHash": "fcb8260ce772facd70df32c80fb1d1f74734d8c58cb36aa65c9f401fc040dd48",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "0d904a56d94fc5d0f0e3d9f57eb2a7ec40f2acefecafa90d07ae9ccbef4c224c",
+          "measurementHash": "343b0916174dff13b60c702c79541425cd6f525e96d7622ae24cfbf62da9ded9",
+          "renderEvidenceHash": "7b77967d11a0313b0ec9ae8d86e1bfdc2d4e06693052c76c70c3d4220037dd58",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "539ab0973ee48e41e29b112e0455be8cc735bee7344aa166cefc6b51d6c8cf5d",
+          "measurementHash": "62ce2f93dbeb22408a3c6c343d289abf2d80d59af183310619fd9ebc7a51499c",
+          "renderEvidenceHash": "572ef4c9c995478d8de866f9bb5471ac33388f051534b75e0c5424befddb98a1",
+          "verdict": "irrelevant",
+          "note": "Separate orange fruits without a bowl, bananas or mixed fruit colors."
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "relevant",
+          "note": "Shallow bowl holds bananas plus red, green and orange fruit; 0.430 x 0.230 x 0.401 m fits."
+        },
+        {
+          "sourceContentHash": "7b7a0703f77d8ae0cfb6361a586594d9bdc157e4dea323e1c251812094fa69cc",
+          "measurementHash": "4015212e08411611e27674395537ab683c41ed3a19b0778c2d04f44f8312a5f6",
+          "renderEvidenceHash": "78b19cc353b7c9bef4cdb22cdf296b521ce3ed27cf4ec4c5191f5f2c44778dd3",
+          "verdict": "irrelevant",
+          "note": "One orange fruit, not the requested mixed fruit bowl."
+        },
+        {
+          "sourceContentHash": "d69777d5fa24b01ae122462f849709b2af88c988a5be717a101b1599f245189e",
+          "measurementHash": "fea1000ca91ad3dacae9263896b28864eb1bdaf1ea3c9ceac5ab5bcc87f55b53",
+          "renderEvidenceHash": "1f2c1fd68eaebf2d7f84825c306ceae6f612705830d4c8c91aaa85213ffa93f7",
+          "verdict": "irrelevant",
+          "note": "One red fruit, not the requested mixed fruit bowl."
+        }
+      ]
+    },
+    {
+      "queryId": "mustard_beanbag_chair",
+      "requestHash": "58ef3e8a341d7845119dc7743f27fac0e96906ca683e30b8ca5ac58a2f95639a",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "10fb85cd7c6cb37e74df42a222eb2590d50029ce6eb6feff6fad84d349eacadc",
+          "measurementHash": "b31bdeaa84d4dd140243b9883d57a858101f13cf070b6a15883a1e63b4a7cc98",
+          "renderEvidenceHash": "e3b7c01f96df2321290d4ebb1fb0e2f5c5e9045473bb225773c9b32d970488a2",
+          "verdict": "irrelevant",
+          "note": "Office chair with arms and a wheeled pedestal, not a mustard beanbag."
+        },
+        {
+          "sourceContentHash": "1c846e51b8784eb7a7c5e4ebba7e510c80d2dbbe7bb2a0a0544033f142be7745",
+          "measurementHash": "2171e3c54c37ae677c8184989c069f8832c81b64942a5409d4bebca26cb16d93",
+          "renderEvidenceHash": "a45d166a31033b43907444b93c31482d35ea2ac1918b16e0fa5a808af2d03781",
+          "verdict": "irrelevant",
+          "note": "Blue office chair with a pedestal base, not a mustard beanbag."
+        },
+        {
+          "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+          "measurementHash": "1509545a1c3ef9e3a12a6479a0889799fe8dc0610dedc31bb2577b7cc76fd72b",
+          "renderEvidenceHash": "bfa8e03b4f86d149570df6d7acdd5583fa8b4515cd3f32ba859ed35a4cb15946",
+          "verdict": "relevant",
+          "note": "Mustard-yellow faceted beanbag with a visible seat hollow and raised back; 1.134 m wide."
+        },
+        {
+          "sourceContentHash": "44eae2299a96dd0e03f3984e2314831df4852147a397eeeb586cfcffa576f977",
+          "measurementHash": "88602c6626e77aafe1d8e2939b7c547b017a072703d42e7cfae64690b5a4410a",
+          "renderEvidenceHash": "3363ebcb120c70f26fefbbbcedeb11ec0b6f3b3de79f13913d3d89f5422300f7",
+          "verdict": "irrelevant",
+          "note": "Office chair with a pedestal base, not a beanbag."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "4808754ddf6297761eeecbfa19be7fe514e5085c8e254ff6b43b9d8ed0496554",
+          "measurementHash": "c9e190e959f52e9a5741081273bbbab87ad9ced50f3082a5a6657462f770230d",
+          "renderEvidenceHash": "6b4e94545eb56ed661c6cb1e28e8526316da3be946f0472a6dd4cd7bc95870df",
+          "verdict": "irrelevant",
+          "note": "Upholstered office chair with arms and wheels, not a beanbag."
+        },
+        {
+          "sourceContentHash": "5e0cb8b69067a7eaef8baa4178674d51147bc5055e7f89525b061e44e83924e6",
+          "measurementHash": "ca75f36d3eab548cd1209cba1971140705d9cd706ba2fbe5b42da197a17536cd",
+          "renderEvidenceHash": "8fe0b56f1d88d9572b157fb4f5a16e617a5d49bf632406318d2bcecac60854d0",
+          "verdict": "irrelevant",
+          "note": "Office chair with arms and a wheeled pedestal, not a beanbag."
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5",
+          "measurementHash": "aa97ad338360730a31b7fb7d36a8450f2a862a75fa859d3756dd0b09a9070b48",
+          "renderEvidenceHash": "dcdb34ba71d8f324f9b7f82b21bdfe22359a34fd90026cf47069281d2be44f53",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "paved_intersection_probe",
+      "requestHash": "68ca5043655723c0841e6352209f69f8b19d07d3879d3952a0044cdcc30db9fe",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136",
+          "measurementHash": "3fc782f1af0093681bb85066bdb914e09f02b34648ded61caee7e386172538d2",
+          "renderEvidenceHash": "37c5d2bbe101b060b812d1c31b59b171b1dd63514185fe1d1528f54db459be24",
+          "verdict": "irrelevant",
+          "note": "Curved dirt-road segment; it lacks asphalt, a four-way crossing, lane arrows, zebra crossings and traffic lights."
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a",
+          "measurementHash": "13e33dcf818b84b5e9885ee235ea148a115e44de150fd9617f3849d0322616f0",
+          "renderEvidenceHash": "95b0c21dbed971705412137d3c14298c163f3b3dc8267ee048fe55f5f7278798",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+          "measurementHash": "3b6977e06cb64decb561e62e18fccc8a0355d275b9a556b630b613ff5a41a3db",
+          "renderEvidenceHash": "175fdbf384e694a741b8d568bee379f823f094600148af6ef250112da4f2a62e",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "3d9f820018aacf3385b94cc7a286e0178a23ab513b239095ceef7196463b21db",
+          "measurementHash": "e7690ecfa0945c1fa6cada8032f3ff9ec79c1bd52acc3fcabd4ffac7cc9fbeb5",
+          "renderEvidenceHash": "eac37cb4761b5dfc0768985295c7191c2045966b1bccaf1cf878afd93f028c82",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "562896c11bd0ae2b4feef1c1e3e9d13a6e024084f26784f1b6e2da4693a61e80",
+          "measurementHash": "e37326269a49d1614c7916aa9b98a79fc4e3d75e90fd07a6e57f072db506643a",
+          "renderEvidenceHash": "89f4d65a0a6c009d848c6ec92757eb7f40236ba068eb9abb1de8b69fdfb01952",
+          "verdict": "irrelevant",
+          "note": "A separate traffic-light-like fixture cannot satisfy the requested complete intersection."
+        },
+        {
+          "sourceContentHash": "587bc1c99d727f89e583f45945d6ec26d2f13be1de02e7166327b5068604300a",
+          "measurementHash": "fcfb08177f194c635d15b44f0ed05983c881b2450fd76b2c13c7bdf815ec8be2",
+          "renderEvidenceHash": "c1455d6ea369388e36bf255d96eb82087ef94db2dda003d4361b76ee214bf350",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "9c91ff6cfcc96ee454685e3f2673ddbff70a9c3fc24fe077d968c4e90576676f",
+          "measurementHash": "c4235d20a1162cb809604fa0614d799770cb733e7bd6ecdb443858350449fa29",
+          "renderEvidenceHash": "d9dbdb6c6fbb4c54f507b9323052f3c84cd42e505e5d49f265b37aba6a3d4f68",
+          "verdict": "irrelevant",
+          "note": "Bare pale ground patch; no asphalt, arrows, crossings, sidewalks or traffic lights."
+        },
+        {
+          "sourceContentHash": "a1ac3471e4ff2edc65ee4a2217594fd365f44f46a4509d4c5d379c7d462648eb",
+          "measurementHash": "d4f89b4a5714a56b652dda22bf187b88e21b7d0209f7ba953ee779fd8e51980d",
+          "renderEvidenceHash": "57c2038d9b49f33332259b937b002d945c778a4ba2e66e20458300f6f7493e81",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+          "measurementHash": "58c294715d30d51e40557ce0baf42bc5cbb5ffa56ff9ef0ec832dadddd2ebf56",
+          "renderEvidenceHash": "d5be623f45e0bbf200486a5cbfdf0bda7a0de3d6fc2c05ffccdba47898a6a159",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "powered_dual_wall_outlet",
+      "requestHash": "f222122db6f3f4f232431ceade99d7dc1c4b26aa1d8bdf9e50f14c3df4a7c436",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "0739d105b44a5aed55c743c48325af9a47410c8ea268313428ece155d1dbe112",
+          "measurementHash": "fe2e0c43b9ad40bba500cedd90b188830cff884940b17f9437ab3fde6738adc6",
+          "renderEvidenceHash": "6b45bfbb092cc26dfdc182966b859d3d9e272bd39fc1f13c00915b03135325c1",
+          "verdict": "irrelevant",
+          "note": "Wall switch with a projecting rocker; no pair of electrical receptacles."
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1f47de8b5a554af9c55f8499acdf8b9e4f79b3215ab55f3ed5ed1a96591a7c12",
+          "measurementHash": "d68e39e0d48b3eab1ad2ad9278cabd45e38bc2ace8a785a2d9db0880e0f79fac",
+          "renderEvidenceHash": "274935eab08b67ddb1a26e677300139d5bb11f382e06f098f797502ea3b5ccb9",
+          "verdict": "irrelevant",
+          "note": "One two-prong receptacle, not a two-socket outlet."
+        },
+        {
+          "sourceContentHash": "2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b",
+          "measurementHash": "31a43b33ba61286d2c856930728840fc7a06bc7499caf237e22c4cf5b848bb73",
+          "renderEvidenceHash": "046dd4bd9b1290e95038a4c9c64626f0de3d19e1b276c20a94bd0cb6f012f9a8",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a",
+          "measurementHash": "9c7e82d78cd47503f702ebbd1dc676d64f9a3cec1898b37e5fa012fcc0d7e2c0",
+          "renderEvidenceHash": "31e4cc10a5a6500b651ee64cad39dcc4024ab491f39c97d87fe73e4924b67db4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+          "measurementHash": "3b6977e06cb64decb561e62e18fccc8a0355d275b9a556b630b613ff5a41a3db",
+          "renderEvidenceHash": "175fdbf384e694a741b8d568bee379f823f094600148af6ef250112da4f2a62e",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+          "measurementHash": "4f708c3240f5f74baa2266427e6b226f0e3a35ea62aa526005bb77bccbc593ab",
+          "renderEvidenceHash": "b478c96fa4c93ef3790b0d0d7b32c7e83be23d119cf1f025d6722d8d5c40ff67",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "unknown",
+          "note": "Two receptacles are visibly present, but electrical function or a gameplay power system cannot be established by static renders and metric bounds."
+        },
+        {
+          "sourceContentHash": "760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461",
+          "measurementHash": "c0005f13194911aaf2a02c52dbbb70f67446614bbff445f248d84eba5fa345c6",
+          "renderEvidenceHash": "b97824519d3786e7a02defa666b9bc274305ae7d56f77d60779559d2aa286ece",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "7e38298a0e330cef62ed7dc7d0d4b334e47bdd9d769eef218614c06024bd30f2",
+          "measurementHash": "025a84d46829bdf2fa6f59308dcf9614d81deab39cf054decd5cbecd49eb3b8c",
+          "renderEvidenceHash": "67fbc07b326e14723eabd253e73a818b66cdb3d182d40665a569e9c28ba463b8",
+          "verdict": "irrelevant",
+          "note": "Cylindrical battery/can-like object, not a wall outlet."
+        },
+        {
+          "sourceContentHash": "8cf9bc88b239e67b6a0687c3d57b182d9e3c47cb640c49f536a97ccd0ad857d9",
+          "measurementHash": "dde1daeac37d30cb2ce5425b0012011b6d06eab53207e73e484f222d8a69df36",
+          "renderEvidenceHash": "2966a129448bb9ef98c9da398bd66565f35ce9098c4f3b66425a87ad8ea0aa6b",
+          "verdict": "irrelevant",
+          "note": "Crushed cylindrical container, not a wall outlet."
+        },
+        {
+          "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+          "measurementHash": "58c294715d30d51e40557ce0baf42bc5cbb5ffa56ff9ef0ec832dadddd2ebf56",
+          "renderEvidenceHash": "d5be623f45e0bbf200486a5cbfdf0bda7a0de3d6fc2c05ffccdba47898a6a159",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "round_stone_fountain_probe",
+      "requestHash": "d950f6bd36307922545fd5971d23835030701b15428e0efe284b06dd003409f9",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc",
+          "measurementHash": "96960adb0de24d7bb72ca7ea6ae5bae37a51c554d9c441f39c3fa04a7a147819",
+          "renderEvidenceHash": "997384d217cc85b8f002dc59fab41332b0abd60dca14003782e7136ae195dcf6",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "01c7bcef859da45c17b587f61f3a5ae69f53571474eb82c56c0869919aec3dc3",
+          "measurementHash": "5244a542c926352b1569133cc59f6a1701502accff4b4dad775c0a5fd5e87988",
+          "renderEvidenceHash": "63ec7be01cd4693f618062179b16fe4573943ff699e9872f4745532a2eb9b9dd",
+          "verdict": "irrelevant",
+          "note": "Small wall-backed fountain with two basins, approximately 1.041 m wide; no round three-tier layout, winged statue or visible water jets."
+        },
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+          "measurementHash": "1509545a1c3ef9e3a12a6479a0889799fe8dc0610dedc31bb2577b7cc76fd72b",
+          "renderEvidenceHash": "bfa8e03b4f86d149570df6d7acdd5583fa8b4515cd3f32ba859ed35a4cb15946",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a",
+          "measurementHash": "13e33dcf818b84b5e9885ee235ea148a115e44de150fd9617f3849d0322616f0",
+          "renderEvidenceHash": "95b0c21dbed971705412137d3c14298c163f3b3dc8267ee048fe55f5f7278798",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+          "measurementHash": "3b6977e06cb64decb561e62e18fccc8a0355d275b9a556b630b613ff5a41a3db",
+          "renderEvidenceHash": "175fdbf384e694a741b8d568bee379f823f094600148af6ef250112da4f2a62e",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c60f5b964174b277d5a24c949c583ec755e19c184aff0b1b70399e85cb7e799",
+          "measurementHash": "4454f9f1b827fb78c4d67822cda0e8642db746d4e0627176669acf7393f6b761",
+          "renderEvidenceHash": "c2ce32338f7748378f2501d2b86fd30cc66239a267bcd01e42ad601bd79b7725",
+          "verdict": "irrelevant",
+          "note": "Rectangular two-panel structure, not a round tiered fountain."
+        },
+        {
+          "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+          "measurementHash": "cb84d312519bc05dc1d57c4a4de4f5a700258abd457d44846820d2a65f806d44",
+          "renderEvidenceHash": "f5ddcc2e9a9aa09f1502aa864d1e221f9b1144a65186c67443cdcf8aa3096005",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "71477a35880449b2d1b413ba1afb3f91fafa27e930a3fc12cf9edf78e769559b",
+          "measurementHash": "1178a7849bdb467ddf6f24bb2a582e7254fe69d0052eabcd9b857ddfb76c4d60",
+          "renderEvidenceHash": "e940d9143b65137b5d38b16e956b26cacc3b2c4870aa892224ab0fb263c8e145",
+          "verdict": "irrelevant",
+          "note": "Box-like appliance, not a round tiered fountain."
+        },
+        {
+          "sourceContentHash": "d81059db1ee1d1f898da6131683d6d274485fdfc498552aaeb1126084035cb26",
+          "measurementHash": "99d0e3f7f5dbbb85a2e27dc6563bd3f57e4fb06f9e48d2f66efd0e2f6b6dfa9f",
+          "renderEvidenceHash": "1c184c799e46ad075e69b1be3a7716639b72dc961d63d776e68b9316ec0a6ff7",
+          "verdict": "irrelevant",
+          "note": "Water cooler/dispenser form, not the requested ornamental fountain."
+        },
+        {
+          "sourceContentHash": "e853bda93c8348b4b9231b3fdc4b05092f3bcc81c5e04760b848c40058180237",
+          "measurementHash": "3ffaf47a4e97458acd950c0a7c8e86c76aa6769689151720828625947fd2140c",
+          "renderEvidenceHash": "902090338f4cb6550c4fe38f13a652b03cf2d8253dce90c1f864f2d1767d63d4",
+          "verdict": "irrelevant",
+          "note": "Tall box-like cabinet/appliance, not a round tiered fountain."
+        },
+        {
+          "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+          "measurementHash": "58c294715d30d51e40557ce0baf42bc5cbb5ffa56ff9ef0ec832dadddd2ebf56",
+          "renderEvidenceHash": "d5be623f45e0bbf200486a5cbfdf0bda7a0de3d6fc2c05ffccdba47898a6a159",
+          "verdict": "irrelevant",
+          "note": null
+        }
+      ]
+    },
+    {
+      "queryId": "small_mushroom_cluster",
+      "requestHash": "9323daf8984c6de24f046255e1f00f4311ddfd2108cb63ab3b7b1e5caf428caf",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "41c00cbbb68844f34ed5a20f41f3b126a83467dab26cfe769b6e6ac571ca3669",
+          "measurementHash": "8a9f1d308c4e152938b48e0c9a48676421acee17b5f3249dd0a05c7359aaa8bc",
+          "renderEvidenceHash": "54767bbc1a3d2a856b24e2444a8b81f57230eb326369b00d6a79aeabfcc5cbc8",
+          "verdict": "unknown",
+          "note": "Three brown cap-like forms are visible, but they are separated vertically and show no clear stems or ground attachment. The evidence does not establish a complete mushroom cluster suitable for groundcover rather than shelf-like attachments or detached caps."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "4d1918eef9d007721a03bf9465a84f4b4e43bc548122fed4e5e8c155d9362a0f",
+          "measurementHash": "9ac5d1e982ad9faaed5869118437373b894f61b4b6eeaf1ad84b309902297ed7",
+          "renderEvidenceHash": "5ae7c473b034bd987a74494aed946dd10b26735359c084f5b65b161aef7ec058",
+          "verdict": "relevant",
+          "note": "Three brown faceted mushrooms with visible pale bent stems; the 0.454 m height is below the textual half-metre limit."
+        },
+        {
+          "sourceContentHash": "585aca899caa76ff6eccf698781212341296bbe958428e1f7456e9268a6ae94b",
+          "measurementHash": "da84dfb9c764def6310e6eb35165dda2215dacf2eeb061c905e7150960df7c73",
+          "renderEvidenceHash": "cc171c27b2a14fb00421bd494ab9639605a542159959e36c0227819bc2352fbb",
+          "verdict": "irrelevant",
+          "note": "Measured height is 0.543 m, exceeding the request's explicit under-0.5 m limit even though the displayed broad filter allows 0.6 m."
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+          "verdict": "relevant",
+          "note": "Three brown faceted mushrooms with pale stems; measured height is 0.477 m, below half a metre."
+        },
+        {
+          "sourceContentHash": "83c6bb77ac83163ce37335ecd7d034393c2c2e16c6ce5417edf3718f10b34da4",
+          "measurementHash": "4a1514cb3fe16c390fc23cdb91bb496267aec736e5ecb3222c0a66f0302e7c35",
+          "renderEvidenceHash": "ff07bc75f7112288283e67431ca4763c35bd12cd6cc794437739dd502b38d355",
+          "verdict": "irrelevant",
+          "note": "Single pale rock-like object, not three brown mushrooms."
+        }
+      ]
+    },
+    {
+      "queryId": "small_two_tone_party_hat",
+      "requestHash": "2642f2f93fff75663fa7f53d1251bf47bcff73d6a6192ca7cf3cda341fc9d03b",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "0d904a56d94fc5d0f0e3d9f57eb2a7ec40f2acefecafa90d07ae9ccbef4c224c",
+          "measurementHash": "343b0916174dff13b60c702c79541425cd6f525e96d7622ae24cfbf62da9ded9",
+          "renderEvidenceHash": "7b77967d11a0313b0ec9ae8d86e1bfdc2d4e06693052c76c70c3d4220037dd58",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "relevant",
+          "note": "Small conical party-hat form with red-orange upper cone and purple lower band; height is 0.256 m."
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "7b7a0703f77d8ae0cfb6361a586594d9bdc157e4dea323e1c251812094fa69cc",
+          "measurementHash": "4015212e08411611e27674395537ab683c41ed3a19b0778c2d04f44f8312a5f6",
+          "renderEvidenceHash": "78b19cc353b7c9bef4cdb22cdf296b521ce3ed27cf4ec4c5191f5f2c44778dd3",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "8c60c202982bd7bd838fa977f3fc270e3ccc5e69fa1134ef4adaf064eaf1422e",
+          "measurementHash": "7f50e7491905bc4a21ccb7310ffb9e204a12d966d6215ecbe1e838f554e8c453",
+          "renderEvidenceHash": "c2eabeca9ddd55e12d619aa780890dd6f5abd9540efc050676d117ff4b31ce14",
+          "verdict": "irrelevant",
+          "note": "Blue/red striped cone, not the requested red-orange cone with purple lower band."
+        },
+        {
+          "sourceContentHash": "cf512ea450bdf172ec8664e51509edabe4714b2bb712a85e61e1b5d6a58911e6",
+          "measurementHash": "5ac18bec28801a0598dec65ba5847d18b5856865d449d0dab4b0f8e09a83255a",
+          "renderEvidenceHash": "f2cb5ca7985e752618e3037af6134ba3a4ca201499cfbe3782daa72fad582c62",
+          "verdict": "irrelevant",
+          "note": "Yellow/red striped cone, not the requested purple-banded color scheme."
+        }
+      ]
+    },
+    {
+      "queryId": "small_wooden_footbridge",
+      "requestHash": "6f092ff3b038f47f088f041c815ffc1e90efd7720e37e6184a9c3cb4532998e8",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+          "measurementHash": "819746cd2670942344ceb1a73eda00cba1fa66b1074ecf68562062e22346f4af",
+          "renderEvidenceHash": "7a3e46ac1c85f3b232e3e0d14cf936f87dd3e731ff8e5992282883aab53207b7",
+          "verdict": "relevant",
+          "note": "Arched wooden deck and railings on both sides are visible; 3.063 x 2.128 x 5.942 m fits all limits. This judgment does not establish gameplay collision or load-bearing behavior."
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "0e4d5fb23d259dbae0b3f959cab1972d0a3fcc2b6ff818c23694fd271f80acb0",
+          "measurementHash": "8468e5dac6b121d82e4471ad9009cf57c9b0161b3787dbaa30d142dc9e7694d2",
+          "renderEvidenceHash": "2ff0e5f99762254887eb38b3670c2353f92cc46815d079c3660daf43eb9aef8d",
+          "verdict": "irrelevant",
+          "note": "Small plain gray block, not a bridge."
+        },
+        {
+          "sourceContentHash": "1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a",
+          "measurementHash": "13e33dcf818b84b5e9885ee235ea148a115e44de150fd9617f3849d0322616f0",
+          "renderEvidenceHash": "95b0c21dbed971705412137d3c14298c163f3b3dc8267ee048fe55f5f7278798",
+          "verdict": "irrelevant",
+          "note": "Fence rails only; no bridge deck or complete footbridge."
+        },
+        {
+          "sourceContentHash": "2405bd25dad5d3301e37efc6de9cb78eeea02254f2cd73f04dd328fa8323dc34",
+          "measurementHash": "f3b09d9ce63df2727b2e3326437fc1579e375a8d844ecf52decedeba586b4214",
+          "renderEvidenceHash": "24970c63504f566d22cbeffe6d3152cc8009d3d82c49ff78f7b5656d118dc94e",
+          "verdict": "irrelevant",
+          "note": "Flat rectangular slab without an arch or railings."
+        },
+        {
+          "sourceContentHash": "2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b",
+          "measurementHash": "31a43b33ba61286d2c856930728840fc7a06bc7499caf237e22c4cf5b848bb73",
+          "renderEvidenceHash": "046dd4bd9b1290e95038a4c9c64626f0de3d19e1b276c20a94bd0cb6f012f9a8",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+          "measurementHash": "3b6977e06cb64decb561e62e18fccc8a0355d275b9a556b630b613ff5a41a3db",
+          "renderEvidenceHash": "175fdbf384e694a741b8d568bee379f823f094600148af6ef250112da4f2a62e",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "2c60f5b964174b277d5a24c949c583ec755e19c184aff0b1b70399e85cb7e799",
+          "measurementHash": "4454f9f1b827fb78c4d67822cda0e8642db746d4e0627176669acf7393f6b761",
+          "renderEvidenceHash": "c2ce32338f7748378f2501d2b86fd30cc66239a267bcd01e42ad601bd79b7725",
+          "verdict": "irrelevant",
+          "note": "Two gray rectangular panels in a frame, not an arched wooden footbridge."
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "ac5834c2e95ae1a33e6aaa14c76dc90df6db0226c004efcd2d884eb05c5b7024",
+          "measurementHash": "3f9e07e97eee111f058aca2fa34072dba8e183715cc990f157732c1807d336cb",
+          "renderEvidenceHash": "c385867d78dfba3947da1312e88084a5b478ed453ec8e8ae8289b3da679a7f69",
+          "verdict": "irrelevant",
+          "note": "Short segmented gray beam, not a complete bridge."
+        },
+        {
+          "sourceContentHash": "e7c75ed33b1802cfb65d66451be80846ea1d46ad3ffe58fc882ed544f7a62dcb",
+          "measurementHash": "f6accdd49a1b83050536ce506141d3511e4d3e5b85d5a2d4164b789cf7e24f42",
+          "renderEvidenceHash": "305c20ddb1622bcd951eaaf8024a6c0b0a04f18325d34e89db8ff608d82a158c",
+          "verdict": "irrelevant",
+          "note": "Small wooden sword-shaped prop, not a bridge."
+        }
+      ]
+    },
+    {
+      "queryId": "snowy_low_poly_tree",
+      "requestHash": "3bc0f422ceb3b9d2600cf33e34660907d2bfa626dad29fc2c947eadcdcc578e5",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "00612f1f3979ca0d8766d2de3c2ca05f52f212859e23bef034d33fa2269855d5",
+          "measurementHash": "035c95f64ac5dc5a4c120d7cc935d4d9281f4285b698c1bc8ed39c2640b5e4ae",
+          "renderEvidenceHash": "c99da67b12fe21431e06792191a9e3d6a1702bdbb131243af10ad8f70d02b4f7",
+          "verdict": "irrelevant",
+          "note": "Green conifer with no visible white snow."
+        },
+        {
+          "sourceContentHash": "052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0",
+          "measurementHash": "4a8cf01492e980067002460a78c1ef8aa46a3c856af06c865709092ab6feef37",
+          "renderEvidenceHash": "225a2bad6aba324d24fdb1e507419dee738d146d3bc63ee35bd5e67919fe5c82",
+          "verdict": "relevant",
+          "note": "Low-poly green canopy with white snow patches and brown trunk; 2.849 x 5.845 x 3.055 m fits."
+        },
+        {
+          "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+          "measurementHash": "1509545a1c3ef9e3a12a6479a0889799fe8dc0610dedc31bb2577b7cc76fd72b",
+          "renderEvidenceHash": "bfa8e03b4f86d149570df6d7acdd5583fa8b4515cd3f32ba859ed35a4cb15946",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+          "measurementHash": "cb84d312519bc05dc1d57c4a4de4f5a700258abd457d44846820d2a65f806d44",
+          "renderEvidenceHash": "f5ddcc2e9a9aa09f1502aa864d1e221f9b1144a65186c67443cdcf8aa3096005",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166",
+          "measurementHash": "ed18da9a3095c63afb1db1d304627018929c170ac1005f39384f4d27771b9d43",
+          "renderEvidenceHash": "3d17adc32927136e8ed1af67341e9af3597ce36c6222341bb9dcdea9ffc85168",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "ad85fababaa36be4c4675f1842efb6ce40ad1b7a82a1838e958f4f4282577337",
+          "measurementHash": "19c24f5958fd782b98fb82441a9585100926c29c31bbe0de7fe3ef6f9038a147",
+          "renderEvidenceHash": "65de97c32d89860c3e088010d70cc3f75e948c6fe5aba4221d2381280a385fa4",
+          "verdict": "irrelevant",
+          "note": "Green conifer without snow on its crown."
+        },
+        {
+          "sourceContentHash": "b4489ab04cc1c4da5158707fb7a67c3a412026f06d63f69ef8f398866727393a",
+          "measurementHash": "1d03fb4999d6a7a2dbe4f06ae245125cf5f39f40d72943cf91da53b583a64db6",
+          "renderEvidenceHash": "d0c2d4e61aaf58d7b77dd325e3335df2e0eb6c5f3d59636a8e95dc0e537f3510",
+          "verdict": "irrelevant",
+          "note": "Green conifer without snow on its crown."
+        },
+        {
+          "sourceContentHash": "ce912c10e0f299930dfc0beb286602f1c8c96b6cdfca5efa8064a994cab9f4cc",
+          "measurementHash": "4309c0b9769a1dafde9e20fa176c0d12e077a954a1aeabcf89960e3bf7d9a791",
+          "renderEvidenceHash": "53855742c2576908de5ec2a566edd4b10e080dedada7499c801c91c09e4ea31b",
+          "verdict": "irrelevant",
+          "note": "Green conifer without snow on its crown."
+        }
+      ]
+    },
+    {
+      "queryId": "tabletop_paper_trimmer",
+      "requestHash": "6870172c1b0c314aa826a075c5d65e42036131aa535358c3c83a8dab0dd8a375",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "relevant",
+          "note": "Blue cutting bed, straight guide rail and black sliding-cutter form are clearly visible; length is 0.547 m."
+        },
+        {
+          "sourceContentHash": "127988581037ca11a62ad7b87004eb5a12d5c63dc0c3cd94c620e3d634e88c89",
+          "measurementHash": "0ea0a45d7ed999eca7494447697be2cb295ef242fa0fb07b951023646b0b58ba",
+          "renderEvidenceHash": "1a8505c30fadfd39e5256858def9e12f0f7408aeb5f07ce8bee23dde8f107e4e",
+          "verdict": "irrelevant",
+          "note": "Flat printed sheet, without a cutting bed, rail or cutter."
+        },
+        {
+          "sourceContentHash": "37a2a149b238de16c888d32dff6e96d046b0860ff9f106bed473368e769685ac",
+          "measurementHash": "0842a0575d2ed5ac9a978e8316dd78454f9640d3b2c22f10c41d034e9815d718",
+          "renderEvidenceHash": "3903d32e2e70be3506ffb9bf0df3690c391e768b87214e8a2eba7cd69a46843e",
+          "verdict": "irrelevant",
+          "note": "Flat printed sheet, without a cutting bed, rail or cutter."
+        },
+        {
+          "sourceContentHash": "421d0d1690bfaa1b27e38456cd31df6a37fc5abdc82c3e89261960cae75d0929",
+          "measurementHash": "c68cc2d76907dfac0e3ea6c961925bfe9c33424066c0479c09db89c5e855f3fc",
+          "renderEvidenceHash": "864d5203f0d751b463fe23134608a461cb98c41f2b27df5c9f77e8f60f4795a8",
+          "verdict": "irrelevant",
+          "note": "Folded or crumpled printed sheet, not a cutting device."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "60b57fa8a9abf407e01577a69981c787e0d1cbdd4ad69bac063878fe41ddd2f5",
+          "measurementHash": "e9184b8fc4276c97713652d0392d9a1ebcdf623d8e890a63478e2ec92f82e046",
+          "renderEvidenceHash": "dbadb2a66c7c1a55ae546b946ffdffb6cda32e4cd9d7df6839010c994bedc89b",
+          "verdict": "irrelevant",
+          "note": "Flat paper-like rectangle, not a cutting device."
+        },
+        {
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "79fbfa422959820eee3ffc481274fd1d0500d0c99afcc23e4d9d165b381d25ff",
+          "measurementHash": "e1d3fabe7b3e37d9f036ee1c1ee9f6480fa185770e5b95b769c0813e6be4f342",
+          "renderEvidenceHash": "b6ed700389cc59f8004306a1128bea90b0bd78ef04cd9ee130941852eb07ffd0",
+          "verdict": "irrelevant",
+          "note": "Stacked printed/flat objects without a guide rail or cutter."
+        }
+      ]
+    },
+    {
+      "queryId": "upright_gray_boulder",
+      "requestHash": "04526b1f6907ef7bd308faf52e6920632d4ca4b8addb98b81cdc8d56519220e3",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc",
+          "measurementHash": "96960adb0de24d7bb72ca7ea6ae5bae37a51c554d9c441f39c3fa04a7a147819",
+          "renderEvidenceHash": "997384d217cc85b8f002dc59fab41332b0abd60dca14003782e7136ae195dcf6",
+          "verdict": "irrelevant",
+          "note": "Uniform beige manufactured pillar form, not an irregular gray boulder."
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+          "measurementHash": "cb84d312519bc05dc1d57c4a4de4f5a700258abd457d44846820d2a65f806d44",
+          "renderEvidenceHash": "f5ddcc2e9a9aa09f1502aa864d1e221f9b1144a65186c67443cdcf8aa3096005",
+          "verdict": "relevant",
+          "note": "Single irregular gray faceted upright rock with a flattened top; 0.719 x 1.298 x 0.629 m satisfies the size request."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "64515171e1b67bac55631a149bdd3772e7f7593643e21d4c3dbdc32a2354fe84",
+          "measurementHash": "798d0728ba6ba2dba9c07d13d018f2a43ad31337d0fab6fdd31cca4417fe6256",
+          "renderEvidenceHash": "4b3e4292fc590508c77aef2e2a105af27f9579fcbf5dedf91d2618af85caa31d",
+          "verdict": "irrelevant",
+          "note": "Small gold cup/trophy-like object, not a boulder."
+        },
+        {
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "71477a35880449b2d1b413ba1afb3f91fafa27e930a3fc12cf9edf78e769559b",
+          "measurementHash": "1178a7849bdb467ddf6f24bb2a582e7254fe69d0052eabcd9b857ddfb76c4d60",
+          "renderEvidenceHash": "e940d9143b65137b5d38b16e956b26cacc3b2c4870aa892224ab0fb263c8e145",
+          "verdict": "irrelevant",
+          "note": "Box-like appliance, not a rock."
+        },
+        {
+          "sourceContentHash": "8fa8f203302ac12cc630cb9dee85e829755a0975d21e1e51e8dddcd2ec8a9a2c",
+          "measurementHash": "a385d7d0918ece598de115fbc350489f383c53c47759e4a7862cf36ed23ed480",
+          "renderEvidenceHash": "b388094641ff8dceaf2f7667c521803cd8cd0ec93464dfa64ae277302a065f4b",
+          "verdict": "irrelevant",
+          "note": "Thin green rod, not a boulder."
+        },
+        {
+          "sourceContentHash": "c0f8d8ddc539c50dce12462c5f6f7ac98de769495806d1c279ec8f32c6cbb3d2",
+          "measurementHash": "17df7e93fbf5a7e239a137578578946e323e327b3603019ab1c87b4d1ee4960b",
+          "renderEvidenceHash": "f26ddf0ebc6f3efe732ce27cc9286886dab411da42e8b48862f293411b00d851",
+          "verdict": "irrelevant",
+          "note": "Ornate manufactured pedestal with recessed faces, not a natural boulder."
+        },
+        {
+          "sourceContentHash": "dd1c1c5981b6617fd5ea01aa68714405651b4e95a45a7d3b5411b410cef1c4d6",
+          "measurementHash": "1503ccc43b18fb90e949ca1b11c65b69d8592ad2922957c697a672dc6a8342db",
+          "renderEvidenceHash": "c2e58871e577bbbe1857fa0088b4f3729668353e28b34f70a82900b2f8cf4716",
+          "verdict": "irrelevant",
+          "note": "Small box-like prop, not an approximately 1.3 m upright boulder."
+        }
+      ]
+    },
+    {
+      "queryId": "weatherproof_openable_chest",
+      "requestHash": "600d350ee5520faf9bdb90f9fb2561aff8f901e8ab5a200fc09519e9dc7afb93",
+      "requestDisposition": "accepted",
+      "requestIssue": null,
+      "judgments": [
+        {
+          "sourceContentHash": "0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc",
+          "measurementHash": "96960adb0de24d7bb72ca7ea6ae5bae37a51c554d9c441f39c3fa04a7a147819",
+          "renderEvidenceHash": "997384d217cc85b8f002dc59fab41332b0abd60dca14003782e7136ae195dcf6",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+          "verdict": "unknown",
+          "note": "A closed wooden treasure chest is visible, but these renders do not establish weatherproofing or a working hinged lid that opens during gameplay."
+        },
+        {
+          "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+          "measurementHash": "819746cd2670942344ceb1a73eda00cba1fa66b1074ecf68562062e22346f4af",
+          "renderEvidenceHash": "7a3e46ac1c85f3b232e3e0d14cf936f87dd3e731ff8e5992282883aab53207b7",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "0f092df18920eff7f1b22115ef1cd2d6e2abe031627a538e362ae7fdef8612a2",
+          "measurementHash": "ff7e91b50ce122d2d4d687c073941dee3aba599cc2698a9568650fb28c8d1f31",
+          "renderEvidenceHash": "0b027d157ca3f630defb6e949270b8813891561df42dfc1f8f954dbfd8721308",
+          "verdict": "unknown",
+          "note": "Closed chest geometry is visible, but weatherproofing, material identity and an operable gameplay hinge are not established by the monochrome static evidence."
+        },
+        {
+          "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+          "measurementHash": "441244edebb1badb00016ed0ad6e45d87ae805ea4dbec450f248b58d9266420a",
+          "renderEvidenceHash": "d0d272d3c604c305a510db2a6529f8a0ae6496250e54ad47ea86da8ffbe769ce",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a",
+          "measurementHash": "9c7e82d78cd47503f702ebbd1dc676d64f9a3cec1898b37e5fa012fcc0d7e2c0",
+          "renderEvidenceHash": "31e4cc10a5a6500b651ee64cad39dcc4024ab491f39c97d87fe73e4924b67db4",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+          "measurementHash": "4f708c3240f5f74baa2266427e6b226f0e3a35ea62aa526005bb77bccbc593ab",
+          "renderEvidenceHash": "b478c96fa4c93ef3790b0d0d7b32c7e83be23d119cf1f025d6722d8d5c40ff67",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+          "measurementHash": "cb84d312519bc05dc1d57c4a4de4f5a700258abd457d44846820d2a65f806d44",
+          "renderEvidenceHash": "f5ddcc2e9a9aa09f1502aa864d1e221f9b1144a65186c67443cdcf8aa3096005",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "46cb90b25c43ab19f9714bdeb1839d38e4d1fd0bebcd8f41c1280317e4772fd3",
+          "measurementHash": "e6f773901c856a771d1ef58b64b03681db337421bc60a05730eaa69b5b097d11",
+          "renderEvidenceHash": "2cca76888a9592132bdd3a5681a9171d50753642b89453ca7f58cb747bf66832",
+          "verdict": "unknown",
+          "note": "Closed chest geometry is visible, but weatherproofing and an operable gameplay hinge are not established by the supplied static evidence."
+        },
+        {
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+          "verdict": "irrelevant",
+          "note": null
+        },
+        {
+          "sourceContentHash": "61b32f6bd406f3b74f04600bc3805e3a54668282b487e4ee019ccde6770c235f",
+          "measurementHash": "a2b0640289c7b0fa126d1b8e7e84b306f3a5bb36a7415b2bb27784f47f3a7a02",
+          "renderEvidenceHash": "d1147d852bed00b9329e8422fc58bc049021648cbc2225fe341d9a423b26e935",
+          "verdict": "irrelevant",
+          "note": "Separate round handled lid, not a complete treasure chest."
+        },
+        {
+          "sourceContentHash": "7c6fcf2af6e7a61821dd3c102f8ae0a4c6dec936ea9569f2bb6445936d7b75e1",
+          "measurementHash": "35893d846d6dec12e0c3131fdf5ad82cc5a8071b9558ddb2bec26a309458a94e",
+          "renderEvidenceHash": "84e3707147d33d83a9d5941c48d7b62d28576e8aec01c6b9198864d1a0e7aacd",
+          "verdict": "irrelevant",
+          "note": "Lidless open container; the required working hinged lid is absent from the displayed asset."
+        },
+        {
+          "sourceContentHash": "f06aa68232223d1d295c5ee4cfcdcfa56076f495819c3ef6db788554c279dc05",
+          "measurementHash": "b65bf65af4c456761c1c32008cf68d5e6840e321b6c5d10eeb5dc76ca2a722e1",
+          "renderEvidenceHash": "ffde02ea119342b9ef44e3cc1ab889c1628b594c33980edf8276ce051716b383",
+          "verdict": "unknown",
+          "note": "Closed arched chest geometry is visible, but weatherproofing and a working in-game lid require evidence beyond these static views and measurements."
+        }
+      ]
+    }
+  ],
+  "relevanceJudgmentAuthority": "delegated_ai",
+  "validatorVerdictsReviewed": false,
+  "nextStage": "validator_execution_and_review",
+  "qualificationExecutionAuthorized": false,
+  "hash": "8e5f1239c9171bd51dd24aed237b48801938e98d33e3015e0499adeef216ff9a"
+}

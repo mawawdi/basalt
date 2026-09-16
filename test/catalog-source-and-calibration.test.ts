@@ -20,10 +20,12 @@ import {
   sealCatalogEvidenceChannelReceipt,
   sealCatalogLeakageAnalysis,
   sealCatalogNearDuplicateSearch,
+  sourceFilenameObservationsIdentifyCollisionCompanion,
   validateCatalogCalibrationSplit,
   type CatalogCalibrationAssignment,
 } from "@basalt/catalog-authoring";
 import {
+  SOURCE_PROVENANCE_LEDGER_SCHEMA,
   TRUSTED_SOURCE_MANIFEST_SCHEMA,
   sealCatalogAssetArtifact,
   sealCatalogMeasurementSet,
@@ -107,6 +109,26 @@ test("original filenames become source-neutral weak hints without pack authority
   assert.equal(JSON.stringify(first).includes("archivePaths"), false);
   assert.equal(JSON.stringify(first).includes("originalPath"), false);
   assert.deepEqual(normalizeSourceFilename("WallCorner12.glb").tokens, ["wall", "corner", "12"]);
+});
+
+test("only unanimous explicit collision suffixes classify a source as a collision companion", () => {
+  assert.equal(
+    sourceFilenameObservationsIdentifyCollisionCompanion([
+      "SM_Building_House_01_Collision.glb",
+      "SM_Building_House_01_Collision--abcdef123456.glb",
+    ]),
+    true,
+  );
+  assert.equal(
+    sourceFilenameObservationsIdentifyCollisionCompanion([
+      "SM_Building_House_01_Collision.glb",
+      "SM_Building_House_01.glb",
+    ]),
+    false,
+    "a renderable alias must prevent collision-only classification",
+  );
+  assert.equal(sourceFilenameObservationsIdentifyCollisionCompanion([]), false);
+  assert.equal(sourceFilenameObservationsIdentifyCollisionCompanion(["CollisionHouse.glb"]), false);
 });
 
 test("source authority rejects non-canonical pool paths and mismatched rights evidence", () => {
@@ -302,11 +324,13 @@ test("physical leakage analysis groups identity evidence while retaining materia
   const sharedGeometry = contentHash("shared-geometry");
   const sharedMaterial = contentHash("shared-material");
   const assets = authority.manifest.assets.map((source, index) =>
-    measuredAsset(
-      source,
-      index < 2 ? sharedGeometry : contentHash(`geometry-${index}`),
-      index === 1 || index === 2 ? sharedMaterial : contentHash(`material-${index}`),
-    ),
+    index === 3
+      ? measuredCollisionAsset(source, contentHash(`geometry-${index}`))
+      : measuredAsset(
+          source,
+          index < 2 ? sharedGeometry : contentHash(`geometry-${index}`),
+          index === 1 || index === 2 ? sharedMaterial : contentHash(`material-${index}`),
+        ),
   );
   const measurements = sealCatalogMeasurementSet({
     sourceManifestHash: contentHash(stableJson(authority.manifest)),
@@ -350,13 +374,16 @@ test("physical leakage analysis groups identity evidence while retaining materia
       implementationHash: contentHash("fixture-near-duplicate-search"),
       descriptorSetHash: contentHash("fixture-complete-descriptors"),
       similarityThreshold: policy.nearDuplicateSimilarity,
-      searchedSourceContentHashes: authority.manifest.assets.map((asset) => asset.contentHash),
-      comparedPairCount: 6,
+      searchedSourceContentHashes: authority.manifest.assets
+        .slice(0, 3)
+        .map((asset) => asset.contentHash),
+      comparedPairCount: 3,
       relations: [],
       diagnostics: [],
     }),
   });
   assert.equal(complete.status, "eligible");
+  assert.equal(complete.coverage.nearDuplicateShape, true);
   const groups = buildCatalogLeakageGroups(authority.manifest, complete, policy);
   assert.deepEqual(
     groups.map((group) => group.sourceContentHashes.length).sort((left, right) => right - left),
@@ -372,6 +399,9 @@ test("physical leakage analysis groups identity evidence while retaining materia
 test("tracked admission authority is source-neutral and bound to the current corpus", async () => {
   const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
     JSON.parse(await readFile("registry/source-manifest.json", "utf8")),
+  );
+  const provenance = SOURCE_PROVENANCE_LEDGER_SCHEMA.parse(
+    JSON.parse(await readFile("registry/source-provenance.json", "utf8")),
   );
   const rubric = CATALOG_ADMISSION_RUBRIC_SCHEMA.parse(
     JSON.parse(await readFile("registry/admission-rubric.json", "utf8")),
@@ -394,12 +424,26 @@ test("tracked admission authority is source-neutral and bound to the current cor
     groupingPolicy: policy,
     leakageAnalysis: analysis,
   });
+  const filenamesBySource = new Map<string, string[]>();
+  for (const record of provenance.records) {
+    const filename = record.originalPath.split("/").at(-1)!;
+    filenamesBySource.set(record.sourceContentHash, [
+      ...(filenamesBySource.get(record.sourceContentHash) ?? []),
+      filename,
+    ]);
+  }
+  const appearanceSourceCount = manifest.assets.filter(
+    (asset) =>
+      !sourceFilenameObservationsIdentifyCollisionCompanion(
+        filenamesBySource.get(asset.contentHash) ?? [],
+      ),
+  ).length;
   assert.equal(rubric.evidenceChannels.length, 7);
   assert.equal(result.status, "eligible");
-  assert.equal(nearDuplicateSearch.searchedSourceContentHashes.length, manifest.assets.length);
+  assert.equal(nearDuplicateSearch.searchedSourceContentHashes.length, appearanceSourceCount);
   assert.equal(
     nearDuplicateSearch.comparedPairCount,
-    (manifest.assets.length * (manifest.assets.length - 1)) / 2,
+    (appearanceSourceCount * (appearanceSourceCount - 1)) / 2,
   );
   assert.equal(
     split.groups.reduce((sum, group) => sum + group.sourceContentHashes.length, 0),
@@ -525,5 +569,34 @@ function measuredAsset(
     sockets: [],
     socketMeasurementRefusal: "Synthetic fixture has no measured interface",
     measurementEvidenceHashes: [contentHash(`measurement:${source.contentHash}`)],
+  });
+}
+
+function measuredCollisionAsset(
+  source: TrustedSourceManifest["assets"][number],
+  geometryHash: string,
+) {
+  const base = measuredAsset(
+    source,
+    geometryHash,
+    contentHash(`collision-material:${geometryHash}`),
+  );
+  const { kind: _kind, assetId: _assetId, hash: _hash, ...material } = base;
+  const q = quantizeQ32_32;
+  return sealCatalogAssetArtifact({
+    ...material,
+    parts: base.parts.map((part) => ({ ...part, role: "collision_proxy" as const })),
+    collision: {
+      mode: "part_obbs",
+      companionAssetHashes: [],
+      orientedBounds: [
+        {
+          center: { x: q(0.5), y: q(0.5), z: q(0.5) },
+          halfSize: { x: q(0.5), y: q(0.5), z: q(0.5) },
+          rotation: [0, 0, 0, 1],
+        },
+      ],
+      evidenceHash: contentHash(`collision-evidence:${source.contentHash}`),
+    },
   });
 }

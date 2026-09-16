@@ -2,6 +2,8 @@ import { z } from "zod";
 import { ImmutableBinaryArtifactStore } from "@basalt/artifact-store";
 import {
   CATALOG_CANDIDATE_DECISION_POLICY_SCHEMA,
+  CATALOG_AUTHORED_SEARCH_METADATA_SET_SCHEMA,
+  CATALOG_AUTHORED_METADATA_SET_MANIFEST_SCHEMA,
   CATALOG_EMBEDDING_MATRIX_SCHEMA,
   CATALOG_MODEL_DECLARATIONS_SCHEMA,
   CATALOG_MODEL_ROLE_POLICY_SCHEMA,
@@ -77,6 +79,27 @@ export async function runCatalogIndexCommand(
     options.get("--metadata") ?? `${CATALOG_METADATA_ROOT}/set.json`,
   );
   const metadata = metadataRaw ? CATALOG_SEARCH_METADATA_SET_SCHEMA.parse(metadataRaw) : undefined;
+  if (options.has("--authored-metadata") && options.has("--authored-metadata-manifest"))
+    throw new Error("Choose explicit authored metadata sets or a manifest, not both");
+  const authoredManifest = options.has("--authored-metadata")
+    ? undefined
+    : await readAuthoredMetadataManifest(options, context);
+  const authoredMetadataPaths = options.has("--authored-metadata")
+    ? splitList(options.get("--authored-metadata"))
+    : (authoredManifest?.sets.map((entry) => entry.relativePath) ?? []);
+  const expectedAuthoredHashByPath = new Map(
+    (authoredManifest?.sets ?? []).map((entry) => [entry.relativePath, entry.setHash] as const),
+  );
+  const authoredMetadata: z.output<typeof CATALOG_AUTHORED_SEARCH_METADATA_SET_SCHEMA>[] = [];
+  for (const path of authoredMetadataPaths) {
+    const raw = await context.readOptionalJson(path);
+    if (raw === undefined) throw new Error(`Authored metadata set does not exist: ${path}`);
+    const set = CATALOG_AUTHORED_SEARCH_METADATA_SET_SCHEMA.parse(raw);
+    const expectedHash = expectedAuthoredHashByPath.get(path);
+    if (expectedHash !== undefined && expectedHash !== set.hash)
+      throw new Error(`Authored metadata set manifest hash mismatch: ${path}`);
+    authoredMetadata.push(set);
+  }
   const imageTextMatrix = await readOptionalMatrix(options.get("--image-text-matrix"), context);
   const shapeMatrix = await readOptionalMatrix(options.get("--shape-matrix"), context);
   const policy = CATALOG_SEARCH_POLICY_SCHEMA.parse(
@@ -85,6 +108,7 @@ export async function runCatalogIndexCommand(
   const index = buildCatalogSearchIndex({
     measurements,
     ...(metadata ? { metadata } : {}),
+    authoredMetadata,
     sourceNames,
     renders,
     ...(imageTextMatrix ? { imageTextEmbeddings: imageTextMatrix } : {}),
@@ -101,6 +125,16 @@ export async function runCatalogIndexCommand(
     diagnostics: index.diagnostics,
     hash: index.hash,
   });
+}
+
+async function readAuthoredMetadataManifest(
+  options: ReadonlyMap<string, string>,
+  context: CatalogCommandContext,
+) {
+  const path =
+    options.get("--authored-metadata-manifest") ?? `${CATALOG_METADATA_ROOT}/authored-sets.json`;
+  const raw = await context.readOptionalJson(path);
+  return raw === undefined ? undefined : CATALOG_AUTHORED_METADATA_SET_MANIFEST_SCHEMA.parse(raw);
 }
 
 export async function runCatalogSearchCommand(
@@ -227,7 +261,7 @@ async function generateQueryEmbedding(
   const output = await executeCachedCatalogWorker({
     job,
     outputSchema: CATALOG_QUERY_EMBEDDING_WORKER_OUTPUT_SCHEMA,
-    executor: z.enum(["local", "modal"]).parse(options.get("--executor") ?? "modal"),
+    executor: z.enum(["local", "modal"]).parse(options.get("--executor") ?? "local"),
     force: false,
     context,
   });
@@ -352,7 +386,7 @@ async function validateSearchResults(
     const output = await executeCachedCatalogWorker({
       job,
       outputSchema: CATALOG_VALIDATION_WORKER_OUTPUT_SCHEMA,
-      executor: z.enum(["local", "modal"]).parse(options.get("--executor") ?? "modal"),
+      executor: z.enum(["local", "modal"]).parse(options.get("--executor") ?? "local"),
       force: false,
       context,
     });

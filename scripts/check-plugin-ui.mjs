@@ -206,6 +206,14 @@ for (const [source, pattern, invariant] of [
     "realized-terrain route conformance",
   ],
   [worldLowering, "stationAdjustments", "continuous bounded route conformance"],
+  [worldLowering, "RouteCoordination.resolve", "quantized route-junction coordination"],
+  [worldLowering, "recordTerrainTrace", "final-only route terrain tracing"],
+  [
+    worldLowering,
+    "routeAdjustmentAtStation",
+    "route supports and edge protection following realized route corrections",
+  ],
+  [worldLowering, "adjustedVerticalCylinder", "ground-extended supports and translated edge posts"],
   [worldLowering, "junctionTerrainCorrection", "shared route-junction conformance"],
   [
     worldLowering,

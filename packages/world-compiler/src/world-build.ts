@@ -371,7 +371,18 @@ export const CONSTRUCTED_ELEMENT_SCHEMA = z
     elementRole: z.enum(["opening_panel", "solid", "stair_step"]),
     geometry: constructedGeometry,
     boundsMeters: SPATIAL_AABB_SCHEMA,
-    materialId: WORLD_ENTITY_ID_SCHEMA,
+    appearance: z
+      .object({
+        materialId: WORLD_ENTITY_ID_SCHEMA,
+        baseColorSrgb: z
+          .object({
+            red: z.number().int().min(0).max(255),
+            green: z.number().int().min(0).max(255),
+            blue: z.number().int().min(0).max(255),
+          })
+          .strict(),
+      })
+      .strict(),
     styleProfileHash: HASH_SCHEMA,
     evidenceHashes: z.array(HASH_SCHEMA).min(1).max(64),
     hash: HASH_SCHEMA,

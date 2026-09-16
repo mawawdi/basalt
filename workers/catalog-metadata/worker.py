@@ -17,6 +17,7 @@ import json
 import math
 import os
 import resource
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -33,12 +34,47 @@ MAX_EVIDENCE_FILES = 192
 MAX_EVIDENCE_TOTAL_BYTES = 64 * 1024 * 1024
 MAX_PREPROCESSED_PIXELS = MAX_EVIDENCE_FILES * IMAGE_LONG_EDGE * IMAGE_LONG_EDGE
 VLM_MAX_MODEL_TOKENS = 8_192
-VLM_MAX_OUTPUT_TOKENS = 2_048
+VLM_MAX_OUTPUT_TOKENS = 4_096
 VLM_GPU_MEMORY_UTILIZATION = 0.96
+
+TYPESCRIPT_ARTIFACT_HASH_PROGRAM = r"""
+const crypto = require("node:crypto");
+const fs = require("node:fs");
+const [path, excludedKey] = process.argv.slice(1);
+const value = JSON.parse(fs.readFileSync(path, "utf8"));
+delete value[excludedKey];
+const normalize = (entry) => {
+  if (Array.isArray(entry)) return entry.map(normalize);
+  if (entry !== null && typeof entry === "object") {
+    return Object.fromEntries(
+      Object.keys(entry).sort().filter((key) => entry[key] !== undefined)
+        .map((key) => [key, normalize(entry[key])]),
+    );
+  }
+  return entry;
+};
+process.stdout.write(
+  crypto.createHash("sha256").update(JSON.stringify(normalize(value))).digest("hex"),
+);
+"""
 
 
 def canonical_json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+
+
+def typescript_artifact_hash(path: Path, excluded_key: str = "hash") -> str:
+    result = subprocess.run(
+        ["node", "-e", TYPESCRIPT_ARTIFACT_HASH_PROGRAM, str(path), excluded_key],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    value = result.stdout.strip()
+    if len(value) != 64 or any(character not in "0123456789abcdef" for character in value):
+        raise ValueError("TypeScript artifact hash helper returned an invalid digest")
+    return value
 
 
 def digest(value: bytes | str) -> str:
@@ -55,6 +91,13 @@ def bounded_json(path: Path) -> Any:
     if path.is_symlink() or not path.is_file() or status.st_size <= 0 or status.st_size > MAX_JOB_BYTES:
         raise ValueError(f"Refusing unsafe or oversized input: {path}")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_structured_output(raw: str) -> dict[str, Any]:
+    value = json.loads(raw, strict=False)
+    if not isinstance(value, dict):
+        raise ValueError("Structured model output must be a JSON object")
+    return value
 
 
 def bounded_evidence(root: Path, raw: str, expected_hash: str, expected_size: int) -> Path:
@@ -247,6 +290,7 @@ def load_vllm(model: dict[str, Any], output_schema: dict[str, Any]):
     sampling = SamplingParams(
         temperature=0.0,
         top_p=1.0,
+        repetition_penalty=1.05,
         max_tokens=VLM_MAX_OUTPUT_TOKENS,
         seed=0,
         structured_outputs=StructuredOutputsParams(json=output_schema),
@@ -391,7 +435,7 @@ def process_metadata(root: Path, job: dict[str, Any], output_path: Path, worker_
                 raise ValueError(
                     f"Structured output exhausted its {VLM_MAX_OUTPUT_TOKENS}-token budget"
                 )
-            metadata = json.loads(raw)
+            metadata = parse_structured_output(raw)
             receipt = {
                 "requestHash": request["hash"],
                 "status": "eligible",
@@ -465,7 +509,7 @@ def process_validation(root: Path, job: dict[str, Any], output_path: Path, worke
                 raise ValueError(
                     f"Structured output exhausted its {VLM_MAX_OUTPUT_TOKENS}-token budget"
                 )
-            validation = json.loads(raw)
+            validation = parse_structured_output(raw)
             receipt = {
                 "requestHash": request["hash"],
                 "status": "eligible",
@@ -554,7 +598,7 @@ def process_context(root: Path, job: dict[str, Any], output_path: Path, worker_h
             "status": "eligible",
             "promptHash": digest(prompt),
             "rawOutputHash": digest(raw),
-            "hypothesis": json.loads(raw),
+            "hypothesis": parse_structured_output(raw),
             "diagnostics": [],
             "resourceUsage": {
                 "inputImageCount": len(images),
@@ -936,6 +980,9 @@ def main() -> None:
             },
         }
         validate_worker_input_budget(job)
+        normalized = parse_structured_output('{"text":"line\u0001break"}')
+        if normalized != {"text": "line\u0001break"}:
+            raise ValueError("Structured output control-character normalization failed")
         print(canonical_json({"status": "eligible", "tested": "bounded_worker_contract"}))
         return
     if not arguments.job or (not arguments.validate_job and not arguments.output):
@@ -950,7 +997,7 @@ def main() -> None:
     ):
         raise ValueError("Worker job and output must remain inside the workspace")
     job = bounded_json(job_path)
-    if artifact_hash(job) != job.get("hash"):
+    if typescript_artifact_hash(job_path) != job.get("hash"):
         raise ValueError("Worker job hash mismatch")
     validate_worker_input_budget(job)
     worker_hash = digest(Path(__file__).read_bytes())

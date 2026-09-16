@@ -125,7 +125,11 @@ test("worker result hashes verify the raw envelope before schema normalization",
   );
 });
 
-test("metadata shards bind exact count, file, byte, and pixel budgets", () => {
+test("metadata shards bind exact budgets and preserve TypeScript numeric hashing", async () => {
+  const workerPath = "workers/catalog-metadata/worker.py";
+  const workerImplementationHash = createHash("sha256")
+    .update(await readFile(workerPath))
+    .digest("hex");
   const sourceContentHash = contentHash("worker-source");
   const measurementHash = contentHash("worker-measurement");
   const metricMaterial = {
@@ -134,10 +138,10 @@ test("metadata shards bind exact count, file, byte, and pixel budgets", () => {
     measurementHash,
     coordinateSystem: "right_handed_y_up_meters" as const,
     boundsMeters: {
-      min: { x: -0.5, y: 0, z: -0.5 },
-      max: { x: 0.5, y: 2, z: 0.5 },
+      min: { x: -7.636845111846924e-8, y: 0, z: -0.5 },
+      max: { x: 6.405995922163129, y: 2, z: 0.00000981776975095272 },
     },
-    sizeMeters: { x: 1, y: 2, z: 1 },
+    sizeMeters: { x: 6.40599599853158, y: 2, z: 0.500009817769751 },
     sourceFrame: {
       handedness: "right_handed" as const,
       up: "+Y" as const,
@@ -156,6 +160,7 @@ test("metadata shards bind exact count, file, byte, and pixel budgets", () => {
     ...metricMaterial,
     hash: contentHash(stableJson(metricMaterial)),
   };
+  const promptTemplate = "Describe visible evidence.";
   const request = sealAssetSearchMetadataRequest({
     sourceContentHash,
     measurementHash,
@@ -163,7 +168,7 @@ test("metadata shards bind exact count, file, byte, and pixel budgets", () => {
     evidenceMode: "visual_only",
     metricSummary,
     viewSet: "canonical_twelve",
-    promptTemplateHash: contentHash("worker-prompt"),
+    promptTemplateHash: contentHash(promptTemplate),
     preprocessingImplementationHash: contentHash("worker-preprocessor"),
     selectedRgbViews: CATALOG_REVIEW_VIEWPOINTS.map((view) => ({
       viewId: view.viewId,
@@ -183,11 +188,11 @@ test("metadata shards bind exact count, file, byte, and pixel budgets", () => {
   const material = {
     kind: "CatalogMetadataWorkerJob" as const,
     requestSetHash: contentHash("worker-request-set"),
-    promptTemplate: "Describe visible evidence.",
+    promptTemplate,
     promptTemplateHash: request.promptTemplateHash,
     outputSchema: CATALOG_SEARCH_METADATA_JSON_SCHEMA,
     outputSchemaHash: CATALOG_SEARCH_METADATA_JSON_SCHEMA_HASH,
-    workerImplementationHash: contentHash("worker-implementation"),
+    workerImplementationHash,
     model: {
       modelId: "metadata_baseline",
       source: "huggingface" as const,
@@ -222,6 +227,30 @@ test("metadata shards bind exact count, file, byte, and pixel budgets", () => {
   assert.equal(CATALOG_WORKER_MAX_ASSETS_PER_SHARD, 8);
   assert.equal(CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD, 192);
   assert.equal(CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD, 64 * 1024 * 1024);
+
+  const temporaryRoot = `.basalt/test-metadata-worker-hash-${process.pid}`;
+  await mkdir(temporaryRoot, { recursive: false });
+  try {
+    const path = `${temporaryRoot}/job.json`;
+    await writeFile(path, `${stableJson(job)}\n`, { flag: "wx" });
+    const { stdout } = await executeFile("python3", [workerPath, "--job", path, "--validate-job"], {
+      cwd: process.cwd(),
+    });
+    const result = JSON.parse(stdout) as {
+      readonly status: string;
+      readonly kind: string;
+      readonly jobHash: string;
+      readonly purposes: readonly string[];
+    };
+    assert.deepEqual(result, {
+      status: "eligible",
+      kind: "CatalogMetadataWorkerJob",
+      jobHash: job.hash,
+      purposes: [],
+    });
+  } finally {
+    await rm(temporaryRoot, { recursive: true, force: false });
+  }
 });
 
 test("TypeScript embedding jobs dispatch independently through the Python boundary", async () => {

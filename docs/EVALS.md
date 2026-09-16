@@ -40,57 +40,57 @@ evidence only.
 
 ## Production catalog qualification
 
-Production qualification uses a separately sealed 192-asset cohort, with 64 cohort assets,
-48 queries, and 48 independent validator cases in each of development, model-selection, and
-holdout. Leakage groups cannot cross splits. The draft fixture's filename-derived labels are
-proposals, not gold data. A creator must independently review the asset descriptions, every
-query expectation and query–asset relevance judgment, and every validator verdict. The final
-fixture is derived from that decision and binds the exact proposal, review packet, and decision
-artifact hashes; editing status or provenance fields cannot authorize execution.
+Production qualification is currently an authoring sequence, not an executable benchmark. The
+filename-derived 192-asset fixture and its thresholds were retired rather than treated as gold
+data. Leakage groups still cannot cross development, model-selection, and holdout splits.
 
-Before holdout execution, the fixture pins the search policy, qualification thresholds,
-candidate-decision policy, prompt/schema/model choices, and adjudication protocol. It
-assigns assets across four enrichment profiles: basename only, basename plus metadata,
-basename plus image/text evidence, and fully enriched. The run records:
+The bounded first stage contains 24 development assets. Internal multi-valued tags select varied
+visual-composition, source-role, completeness, semantic-boundary, source-name, style, and
+vegetation cases. Those tags are unscored proposal metadata and never enter the creator decision.
+The reviewer answers one question per asset—whether the proposed text accurately describes what is
+visible—using `accurate`, `edited`, `unsure`, or `image_problem`. That decision does not approve
+contextual use, assembly purpose, completeness, query text, relevance, or validator behavior.
 
-- basename-only, metadata-only, SigLIP-only, and hybrid rankings for every query under
-  uniform coverage;
-- hybrid rankings under mixed enrichment coverage;
-- both four- and twelve-view writer evidence;
-- metadata-writer and requirement-validator runs as independent model roles;
-- validator verdicts for positive, uncertain, and hard-negative cases; and
-- final `suitable_match`, `no_suitable_match`, or `evidence_insufficient` decisions.
+Only after the description pilot is independently reviewed and judged useful may the next stages
+author distinct realistic requests, form union pools from every retrieval method being compared,
+and independently judge query–asset relevance. The development query set contains no answer key:
+its coverage tags select appearance, metric, whole/component, close-alternative, aggregate,
+no-match-probe, style, and unobservable-property cases without asserting their outcomes. Mixed
+pools keep background results judgeable; unresolved judgments remain unknown. Validator cases are
+then authored from those exact reviewed queries and candidates and receive a separate independent
+verdict review.
 
-The current frozen thresholds are:
+The current development pool binds 20 requests to 230 query–asset pairs contributed by basename,
+hybrid, image-text, and metadata retrieval. It contains 24 reviewed-cohort candidates and 82
+distinct background candidates. The search index explicitly excludes 61 measured sources whose
+parts are all non-renderable collision proxies; those exclusions are sealed coverage, not missing
+search evidence. The relevance ledger shows all pairs on one page while withholding filenames,
+generated captions, retrieval channels, and ranks. Rejecting a defective request clears its stale
+pair judgments and requires reauthoring and repooling. The completed development relevance decision
+records its actual authority as delegated AI, not creator or human ground truth: 15 relevant, 206
+irrelevant, and 9 unknown judgments bind all 230 exact pairs while still authorizing no execution.
 
-| Gate                                                    | Minimum |
-| ------------------------------------------------------- | ------: |
-| uniform hybrid Hit@5                                    |    0.90 |
-| uniform hybrid mean reciprocal rank                     |    0.75 |
-| mixed-coverage hybrid Hit@5                             |    0.85 |
-| mixed-coverage hybrid mean reciprocal rank              |    0.70 |
-| final decision accuracy                                 |    0.90 |
-| selected validator exact verdict                        |    0.90 |
-| hard-negative false matches                             |       0 |
-| no-match false acceptances                              |       0 |
-| evidence-insufficient cases incorrectly called no-match |       0 |
+The development validator pilot includes every reviewed relevant pair, every reviewed unknown pair,
+and exactly one hard negative per accepted request. Hard negatives are selected deterministically by
+best retrieval rank, channel coverage, rank sum, then source hash. This produces 44 cases—15 proposed
+matches, 20 proposed mismatches, and 9 proposed uncertain verdicts. Those proposals are derived
+hypotheses only. The one-page verdict desk starts every case blank, withholds the proposal, exposes
+all twelve RGB views and decimal measurements, and records confirmations, revisions, or rejected
+cases in a separately sealed decision. A delegated-AI reviewer has now judged all 44 cases with the
+same 15/20/9 distribution and every verdict carries a reason. Because the same agent performed the
+relevance review, this is development evidence with explicitly non-independent provenance—not a
+second independent review and not holdout evidence.
 
-Hit@5 is the fraction of known-positive queries with at least one relevant top-five result.
-Pooled Recall@5 is reported separately over all relevant judgments. Ranking metrics exclude
-no-match and evidence-insufficient queries; those cases are scored by final-decision metrics,
-with false-acceptance rates divided by no-match cases and false-no-match rates divided by
-evidence-insufficient cases. The evaluator requires exact per-configuration ablation and
-mixed-coverage evidence, both view counts, independent role runs, and verified referenced
-artifacts. One writer's or validator's rows cannot fill another configuration's coverage.
-An eligible model-selection report freezes writer, view count, and validator independently.
-Holdout evidence must bind that exact selection. Failure remains `incomplete`; it cannot launch
-or commit a corpus metadata run and never revives the removed closed-set classifier.
+An executable fixture and thresholds may be frozen only after the development evidence supports
+them. The final fixture must bind and verify every exact creator decision artifact and compare its
+contents with the reviewed description, relevance, and validator answer surfaces. Editing status or
+provenance fields cannot authorize execution. Until those artifacts exist and agree, `catalog
+qualify run` remains blocked and no corpus metadata run may launch.
 
-Live model execution is separate from offline tests. `catalog qualify prepare` materializes the
-split request inputs, `catalog qualify run --split …` orchestrates real content-addressed worker
-and search evidence, and `catalog qualify evaluate --split …` verifies that evidence and applies
-the frozen policy. No qualification model execution is allowed while the creator decision is
-absent or inconsistent with the reviewed answer key.
+This qualification gate governs promotion of an automated bulk writer and validator. It does not
+block the separate starting-catalog lane: agent-authored metadata may enter search when it binds
+current measurements and renders and honestly records its producer, uncertainty, and review scope.
+Such records remain authoring evidence with no compiler or qualification authority.
 
 ## Retrieval and acceptance claims
 
@@ -193,11 +193,32 @@ joint route/terrain clearance, junction grounding, and local invalidation. Run
 `npm run eval:routes` to materialize its world build and Roblox import manifest beneath
 `.basalt/evals/route-corridor/`.
 
+The integrated first-region fixture is the creator-facing composition gate. Run
+`npm run eval:first-finished-region` to compile one 48-meter wooded ridge containing 32 real
+admitted catalog instances, a grounded approach, an elevated boardwalk alternative, two shared
+junctions, and a route-connected 6.5-meter procedural observation tower. It searches the current
+index for optional cabin, lantern, campfire, footbridge, signpost, and tower candidates, but stores
+those findings only as delegated-AI hypotheses in `remaining-gaps.json`; unreviewed candidates do
+not enter the world or catalog. `requirements.json`, `spatial-plan.json`, `world-build.json`,
+`roblox-import.json`, and `status.json` bind the exact offline handoff under
+`.basalt/evals/first-finished-region/`.
+
+Offline eligibility requires deterministic compilation, zero required catalog gaps, eligible
+route and construction artifacts, exact verified Roblox bindings, and zero lowering gaps. The
+approach reveal and traversal remain pending until the creator imports this one integrated build,
+walks both alternatives and the tower, inspects catalog appearance, and preserves exact connector
+readback. The isolated tower and route fixtures remain focused regressions rather than separate
+creator workflows. This region does not require Modal, a metadata worker, embeddings, or neural
+generation, and it makes no 40-square-kilometer completion claim.
+
 The Studio gate additionally checks realized route parts and the junction against Roblox's
 actual smooth-terrain surface. The adapter coordinates bounded station and shared-junction
 residuals before creation, then raycasts the entire realized footprint for intrusion and
 unintended voids. An allowed voxel residual is closed by explicit grounding geometry whose
-bottom contact is also raycast and whose transform and properties are read back exactly.
+bottom contact is also raycast and whose transform and properties are read back exactly. Trace
+events report the authored grounding tolerance, half-voxel realization allowance, observation
+tolerance, and effective maximum independently so engine quantization cannot silently weaken
+the compiler's exact-terrain requirement.
 Retaining a route marker or expected hash is insufficient.
 
 Every observation carries approach, platform, and overview render descriptors tied to the

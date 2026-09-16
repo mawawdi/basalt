@@ -15,8 +15,13 @@ import {
   requireLocalCatalogWorkerCount,
   sealCatalogRenderEvidence,
   sealCatalogVisualReviewIndex,
+  sourceFilenameObservationsIdentifyCollisionCompanion,
 } from "@basalt/catalog-authoring";
-import { TRUSTED_SOURCE_MANIFEST_SCHEMA } from "@basalt/catalog-model";
+import {
+  SOURCE_PROVENANCE_LEDGER_SCHEMA,
+  TRUSTED_SOURCE_MANIFEST_SCHEMA,
+  validateSourceAuthority,
+} from "@basalt/catalog-model";
 import { contentHash, stableJson } from "@basalt/contracts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -245,6 +250,19 @@ async function resetGeneratedDirectory(path) {
   await mkdir(path, { recursive: true, mode: 0o700 });
 }
 
+async function removeGeneratedPreviewDirectory(path) {
+  if (dirname(path) !== previewRoot)
+    throw new Error(`Refusing to remove a directory outside the generated preview root: ${path}`);
+  const information = await lstat(path).catch((error) => {
+    if (error?.code === "ENOENT") return undefined;
+    throw error;
+  });
+  if (!information) return;
+  if (!information.isDirectory() || information.isSymbolicLink())
+    throw new Error(`Refusing to remove unsafe generated preview directory: ${path}`);
+  await rm(path, { recursive: true });
+}
+
 async function main() {
   const blenderIdentity = String(await run(blender, ["--version"], true))
     .split("\n")[0]
@@ -260,10 +278,39 @@ async function main() {
   const source = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(
     JSON.parse(await readFile(resolve(root, "registry/source-manifest.json"), "utf8")),
   );
-  const sourceManifestHash = contentHash(stableJson(source));
-  const items = source.assets.map(reviewItem).sort((left, right) =>
-    compare(left.sourceContentHash, right.sourceContentHash),
+  const provenance = SOURCE_PROVENANCE_LEDGER_SCHEMA.parse(
+    JSON.parse(await readFile(resolve(root, "registry/source-provenance.json"), "utf8")),
   );
+  const sourceAuthority = validateSourceAuthority({ manifest: source, provenance });
+  if (sourceAuthority.status !== "eligible")
+    throw new Error(
+      `Cannot classify collision companions from invalid provenance: ${stableJson(sourceAuthority.diagnostics)}`,
+    );
+  const filenamesBySource = new Map();
+  for (const record of provenance.records)
+    filenamesBySource.set(record.sourceContentHash, [
+      ...(filenamesBySource.get(record.sourceContentHash) ?? []),
+      basename(record.originalPath),
+    ]);
+  const collisionCompanions = new Set(
+    source.assets
+      .filter((asset) =>
+        sourceFilenameObservationsIdentifyCollisionCompanion(
+          filenamesBySource.get(asset.contentHash) ?? [],
+        ),
+      )
+      .map((asset) => asset.contentHash),
+  );
+  await Promise.all(
+    [...collisionCompanions].map((hash) =>
+      removeGeneratedPreviewDirectory(resolve(previewRoot, hash)),
+    ),
+  );
+  const sourceManifestHash = contentHash(stableJson(source));
+  const items = source.assets
+    .filter((asset) => !collisionCompanions.has(asset.contentHash))
+    .map(reviewItem)
+    .sort((left, right) => compare(left.sourceContentHash, right.sourceContentHash));
   const indexPath = resolve(reviewRoot, "index.json");
   const previous = await readFile(indexPath, "utf8")
     .then((value) => CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(JSON.parse(value)))
@@ -413,7 +460,7 @@ async function main() {
   });
   await writeJsonAtomic(indexPath, index);
   process.stdout.write(
-    `${JSON.stringify({ status: index.status, assets: indexedItems.length, refused: failedItems.length, rendered: pending.length, index: indexPath }, null, 2)}\n`,
+    `${JSON.stringify({ status: index.status, assets: indexedItems.length, collisionCompanionsExcluded: collisionCompanions.size, refused: failedItems.length, rendered: pending.length, index: indexPath }, null, 2)}\n`,
   );
 }
 

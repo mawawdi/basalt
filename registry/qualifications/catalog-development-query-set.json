@@ -1,0 +1,609 @@
+{
+  "kind": "CatalogQualificationDevelopmentQuerySet",
+  "stage": "query_authoring",
+  "split": "development",
+  "status": "authored_pending_candidate_pooling",
+  "descriptionSetHash": "68a8c5548efaa2bfae66fc42a7d09a68f2d7eaf40bd4b67685ee35f8060f8b46",
+  "descriptionDecisionArtifactHash": "e3e997dd72f2711adab518ec402e9309b710fcb7d1e22534862ba69dbe89f262",
+  "measurementSetHash": "7bca757b53a73ee4b323ecb0bfa586e7eca3acab9326371017a94f7103ca6956",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "author": {
+    "authority": "none",
+    "authorId": "codex_agent"
+  },
+  "authoringMethod": "explicit_realistic_requests",
+  "answerKeyAuthority": "none",
+  "poolingPlan": {
+    "retrievalChannels": [
+      "basename_only",
+      "hybrid",
+      "image_text_only",
+      "metadata_only"
+    ],
+    "resultDepthPerChannel": 5,
+    "backgroundPopulation": "full_measured_basename_searchable_corpus",
+    "poolConstruction": "canonical_union_with_unscored_manual_recall_seeds",
+    "unjudgedPolicy": "unknown_not_negative"
+  },
+  "queries": [
+    {
+      "queryId": "bent_tropical_palm",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Stylized bent palm tree with sparse bright-green fronds for a tropical shoreline; no more than 8 m across and 5 m tall.",
+        "styleTerms": [
+          "stylized",
+          "tropical"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "34359738368",
+            "y": "21474836480",
+            "z": "21474836480"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "8d70b897aa73b8c75ddfe8388e162548fab64f7e5026737e274b2131d3aa3574"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "style"
+      ],
+      "authoringNote": "Tests a distinctive silhouette and broad placement context under an executable size cap."
+    },
+    {
+      "queryId": "bones_ground_scatter",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Low ground dressing made of scattered pale bones on an irregular gray mound, under 3 m across.",
+        "styleTerms": [
+          "stylized"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "12884901888",
+            "y": "4294967296",
+            "z": "12884901888"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "e07864c9ee5fdd4a449e66be172998208fcdff78d1f1a3676c2801d0eaaf6f6e"
+      },
+      "coverageTags": [
+        "aggregate_request",
+        "appearance",
+        "metric_limit"
+      ],
+      "authoringNote": "Tests a multi-piece ground scatter whose composition matters more than a generic object noun."
+    },
+    {
+      "queryId": "complete_treasure_chest",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Complete closed wooden treasure chest with gray metal bands and an arched slatted lid, suitable as a standalone prop and under 1.5 m wide.",
+        "styleTerms": [
+          "wooden"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "6442450944",
+            "y": "4294967296",
+            "z": "4294967296"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "d9dfc9f2c25b81b4365810a49af6926c8b5c9277ffdf4b43fb8f8b1c3192187c"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Requires a complete standalone prop rather than a chest component or generic container."
+    },
+    {
+      "queryId": "curved_dirt_road_module",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Curved dirt-road segment for extending a modular route, with grass along the edges and visible stones; fit within a 7 m by 1 m by 7 m box.",
+        "styleTerms": [
+          "stylized"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "30064771072",
+            "y": "4294967296",
+            "z": "30064771072"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "91d1c740f2bfc488f70ddc6625078c20ec15e31d3d9072e201ca03a9d8f24418"
+      },
+      "coverageTags": [
+        "appearance",
+        "close_alternative",
+        "metric_limit",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Tests a route-surface component against visually similar terrain-edged channel pieces."
+    },
+    {
+      "queryId": "curved_triple_monitor_rig",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Complete desktop rig with three curved monitors on one central adjustable stand, under 2 m wide.",
+        "styleTerms": [
+          "modern"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "8589934592",
+            "y": "4294967296",
+            "z": "4294967296"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "c420fec92dfe98c5c8ff5007bea8fc6fa57a7612680ebec91cac9bd763ca8032"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Requires the visible three-screen assembly rather than an individual monitor component."
+    },
+    {
+      "queryId": "dry_earthen_channel",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Shallow curved dry earthen channel or ditch with grassy banks and stones, not a drivable road; fit within 6 m by 1.5 m by 6 m.",
+        "styleTerms": [
+          "stylized"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "25769803776",
+            "y": "6442450944",
+            "z": "25769803776"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "f66a71ad606011ad5803cb8bbd1a58d394cf427574e93a8520324da8f63574e3"
+      },
+      "coverageTags": [
+        "appearance",
+        "close_alternative",
+        "metric_limit",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Makes the road-versus-channel distinction explicit while retaining a practical size bound."
+    },
+    {
+      "queryId": "faceted_pillar_component",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "One beige pillar-shaped construction piece with a faceted cap, around 1.2 m tall; a component rather than a complete wall.",
+        "styleTerms": [
+          "faceted"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "3006477107",
+            "y": "6442450944",
+            "z": "3006477107"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "41fca56a2b233f6bf8169396fb0d9798d6788aa4e2a5555b8577df7a124acca8"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Tests visible form without inventing the piece's unresolved assembly connections."
+    },
+    {
+      "queryId": "load_bearing_player_bridge",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Wooden footbridge verified to safely carry player characters across a six-metre gap.",
+        "styleTerms": [
+          "wooden"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "afe9a16fa766b32eb5b3927d4d611e87284cb7c1679b52597f58ef4b8bedfea4"
+      },
+      "coverageTags": [
+        "appearance",
+        "unobservable_property",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Separates visible bridge relevance from unsupported load-bearing and gameplay-safety claims."
+    },
+    {
+      "queryId": "mixed_fruit_bowl",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Small tabletop bowl containing bananas and mixed red, green, and orange fruit, under half a metre across.",
+        "styleTerms": [
+          "stylized"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "2147483648",
+            "y": "1503238554",
+            "z": "2147483648"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "fcb8260ce772facd70df32c80fb1d1f74734d8c58cb36aa65c9f401fc040dd48"
+      },
+      "coverageTags": [
+        "aggregate_request",
+        "appearance",
+        "metric_limit"
+      ],
+      "authoringNote": "Exercises a composed multi-object prop with specific visible contents instead of an aggregate label."
+    },
+    {
+      "queryId": "mustard_beanbag_chair",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Complete faceted beanbag chair in mustard yellow, with a visible seat hollow and raised back, around 1 m wide.",
+        "styleTerms": [
+          "faceted",
+          "stylized"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "5583457485",
+            "y": "5153960755",
+            "z": "5583457485"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "58ef3e8a341d7845119dc7743f27fac0e96906ca683e30b8ca5ac58a2f95639a"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "style",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Uses the visible seating form while tolerating simplified stylized construction details."
+    },
+    {
+      "queryId": "paved_intersection_probe",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Four-way asphalt intersection with white lane arrows, zebra crossings, curb sidewalks, and traffic lights, fitting within a 12 m square.",
+        "styleTerms": [
+          "paved"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "51539607552",
+            "y": "8589934592",
+            "z": "51539607552"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "68ca5043655723c0841e6352209f69f8b19d07d3879d3952a0044cdcc30db9fe"
+      },
+      "coverageTags": [
+        "appearance",
+        "close_alternative",
+        "metric_limit",
+        "no_match_probe",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Probes a route component that should not be satisfied by a curved dirt-road segment alone."
+    },
+    {
+      "queryId": "powered_dual_wall_outlet",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Electrically functional two-socket wall outlet that can supply power to connected devices.",
+        "styleTerms": [
+          "wall mounted"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "f222122db6f3f4f232431ceade99d7dc1c4b26aa1d8bdf9e50f14c3df4a7c436"
+      },
+      "coverageTags": [
+        "appearance",
+        "unobservable_property",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Tests whether visual validation abstains when function cannot be established from renders and measurements."
+    },
+    {
+      "queryId": "round_stone_fountain_probe",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Round marble fountain with three stacked basins, a winged statue, and visible water jets, about 3 m wide.",
+        "styleTerms": [
+          "stone"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "17179869184",
+            "y": "12884901888",
+            "z": "17179869184"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "d950f6bd36307922545fd5971d23835030701b15428e0efe284b06dd003409f9"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "no_match_probe"
+      ],
+      "authoringNote": "Demands a specific multi-tier fountain composition; pooling and review will determine whether it is truly absent."
+    },
+    {
+      "queryId": "small_mushroom_cluster",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Small cluster of three brown mushrooms with rounded caps for low-poly forest groundcover, under half a metre tall.",
+        "styleTerms": [
+          "low poly"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "2576980378",
+            "y": "2576980378",
+            "z": "2576980378"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "9323daf8984c6de24f046255e1f00f4311ddfd2108cb63ab3b7b1e5caf428caf"
+      },
+      "coverageTags": [
+        "aggregate_request",
+        "appearance",
+        "metric_limit",
+        "style"
+      ],
+      "authoringNote": "Combines count, visible form, ground-cover role, style, and measured height."
+    },
+    {
+      "queryId": "small_two_tone_party_hat",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Small two-tone conical party hat with a red-orange upper cone and purple lower band, under 30 cm tall.",
+        "styleTerms": [
+          "stylized"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "1073741824",
+            "y": "1288490189",
+            "z": "1073741824"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "2642f2f93fff75663fa7f53d1251bf47bcff73d6a6192ca7cf3cda341fc9d03b"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Covers a small wearable-style attachment without asserting an unobserved brim or fastening method."
+    },
+    {
+      "queryId": "small_wooden_footbridge",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Small arched wooden footbridge for a garden path, with railings on both sides; fit within 3.5 m wide, 2.5 m tall, and 6.5 m long.",
+        "styleTerms": [
+          "stylized",
+          "wooden"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "15032385536",
+            "y": "10737418240",
+            "z": "27917287424"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "6f092ff3b038f47f088f041c815ffc1e90efd7720e37e6184a9c3cb4532998e8"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "style",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "Combines visible construction, a standalone-object requirement, and measured fit limits."
+    },
+    {
+      "queryId": "snowy_low_poly_tree",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Low-poly green tree with visible snow on the crown and a brown trunk, no more than 6 m tall and roughly 3.5 m across.",
+        "styleTerms": [
+          "low poly",
+          "snow covered"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "15032385536",
+            "y": "25769803776",
+            "z": "15032385536"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "3bc0f422ceb3b9d2600cf33e34660907d2bfa626dad29fc2c947eadcdcc578e5"
+      },
+      "coverageTags": [
+        "appearance",
+        "metric_limit",
+        "style"
+      ],
+      "authoringNote": "Uses only visible tree features and measured scale, without asserting species or season."
+    },
+    {
+      "queryId": "tabletop_paper_trimmer",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Compact tabletop paper trimmer with a blue cutting bed, straight guide rail, and black sliding cutter, under 60 cm long.",
+        "styleTerms": [
+          "stylized"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "2147483648",
+            "y": "1288490189",
+            "z": "2576980378"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "6870172c1b0c314aa826a075c5d65e42036131aa535358c3c83a8dab0dd8a375"
+      },
+      "coverageTags": [
+        "appearance",
+        "close_alternative",
+        "metric_limit"
+      ],
+      "authoringNote": "Distinguishes a rail-and-slider trimmer from a guillotine cutter with a raised pivoting arm."
+    },
+    {
+      "queryId": "upright_gray_boulder",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Single upright faceted gray boulder, about 1.3 m tall with a flattened top, fitting inside a 0.8 m by 1.5 m by 0.8 m box.",
+        "styleTerms": [
+          "faceted"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "maximumSizeMeters": {
+            "x": "3435973837",
+            "y": "6442450944",
+            "z": "3435973837"
+          },
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "04526b1f6907ef7bd308faf52e6920632d4ca4b8addb98b81cdc8d56519220e3"
+      },
+      "coverageTags": [
+        "appearance",
+        "close_alternative",
+        "metric_limit"
+      ],
+      "authoringNote": "Separates a compact upright rock silhouette from beige pillars and broader boulders."
+    },
+    {
+      "queryId": "weatherproof_openable_chest",
+      "request": {
+        "kind": "CatalogSearchQuery",
+        "text": "Weatherproof treasure chest with a working hinged lid that can be opened during gameplay.",
+        "styleTerms": [
+          "wooden"
+        ],
+        "rankingMode": "automatic",
+        "constraints": {
+          "commercialUseRequired": true,
+          "redistributionRequired": true
+        },
+        "limit": 20,
+        "validationLimit": 5,
+        "hash": "600d350ee5520faf9bdb90f9fb2561aff8f901e8ab5a200fc09519e9dc7afb93"
+      },
+      "coverageTags": [
+        "appearance",
+        "unobservable_property",
+        "whole_component_boundary"
+      ],
+      "authoringNote": "The visible shape may match a chest while weather resistance and functional articulation require unavailable evidence."
+    }
+  ],
+  "nextStage": "candidate_pooling",
+  "qualificationExecutionAuthorized": false,
+  "hash": "37a33c4ef03963fffaa10e70f2e5ac2414f9984174f7649442bc010b72662953"
+}

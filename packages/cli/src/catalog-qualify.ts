@@ -7,18 +7,30 @@ import {
   CATALOG_MODEL_ROLE_POLICY_SCHEMA,
   CATALOG_QUALIFICATION_EVIDENCE_SCHEMA,
   CATALOG_QUALIFICATION_ADJUDICATION_DECISION_SCHEMA,
+  CATALOG_QUALIFICATION_DEVELOPMENT_CANDIDATE_POOL_SCHEMA,
+  CATALOG_QUALIFICATION_DEVELOPMENT_QUERY_SET_SCHEMA,
+  CATALOG_QUALIFICATION_DEVELOPMENT_RELEVANCE_DECISION_SCHEMA,
+  CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_CASE_SET_SCHEMA,
+  CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_DECISION_SCHEMA,
+  CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_VERDICT_SET_SCHEMA,
+  CATALOG_QUALIFICATION_DESCRIPTION_DECISION_SCHEMA,
+  CATALOG_QUALIFICATION_DESCRIPTION_PROPOSAL_SCHEMA,
+  CATALOG_QUALIFICATION_DESCRIPTION_SET_SCHEMA,
   CATALOG_QUALIFICATION_FIXTURE_SCHEMA,
   CATALOG_QUALIFICATION_POLICY_SCHEMA,
   CATALOG_QUALIFICATION_REPORT_SCHEMA,
   CATALOG_QUALIFICATION_SELECTION_SCHEMA,
   CATALOG_QUALIFICATION_SPLIT_SCHEMA,
   CATALOG_QUALIFICATION_REVIEW_PACKET_SCHEMA,
+  CATALOG_SEARCH_METADATA_REQUEST_SET_SCHEMA,
+  CATALOG_SEARCH_METADATA_SET_SCHEMA,
   CATALOG_SEARCH_METADATA_JSON_SCHEMA_HASH,
   CATALOG_SEARCH_POLICY_SCHEMA,
   CATALOG_VISUAL_REVIEW_INDEX_SCHEMA,
   CATALOG_VISUAL_VALIDATION_JSON_SCHEMA_HASH,
   evaluateCatalogQualification,
   requireCreatorReviewedQualificationFixture,
+  requireCatalogQualificationDevelopmentQueryPrerequisites,
   sealCatalogModelRolePolicy,
   sealCatalogQualificationSelection,
   validateCatalogModelRolePolicy,
@@ -30,6 +42,10 @@ import {
 } from "@basalt/catalog-model";
 import { contentHash, stableJson } from "@basalt/contracts";
 import { runCatalogMetadataCommand } from "./catalog-metadata.js";
+import {
+  executeDevelopmentCandidatePooling,
+  executeDevelopmentValidatorComparison,
+} from "./catalog-qualification-development.js";
 import {
   executeQualificationSplit,
   loadQualificationArtifacts,
@@ -54,12 +70,148 @@ export async function runCatalogQualifyCommand(
   context: CatalogCommandContext,
 ): Promise<void> {
   const [stage, ...tail] = values;
-  if (!stage || !["prepare", "run", "evaluate"].includes(stage))
-    throw new Error("catalog qualify stage must be prepare, run, or evaluate");
+  if (!stage || !["prepare", "pool", "validate", "run", "evaluate"].includes(stage))
+    throw new Error("catalog qualify stage must be prepare, pool, validate, run, or evaluate");
   const options = parseOptions(tail);
   if (stage === "prepare") return prepareQualification(options, context);
+  if (stage === "pool") return poolDevelopmentQualification(options, context);
+  if (stage === "validate") return validateDevelopmentQualification(options, context);
   if (stage === "run") return runQualification(options, context);
   return evaluateQualification(options, context);
+}
+
+async function poolDevelopmentQualification(
+  options: ReadonlyMap<string, string>,
+  context: CatalogCommandContext,
+): Promise<void> {
+  const split = z.literal("development").parse(options.get("--split") ?? "development");
+  const executor = z.enum(["local", "modal"]).parse(options.get("--executor") ?? "local");
+  const proposal = CATALOG_QUALIFICATION_DESCRIPTION_PROPOSAL_SCHEMA.parse(
+    await context.readJson(
+      options.get("--description-proposal") ??
+        "registry/qualifications/catalog-description-proposal.json",
+    ),
+  );
+  const decision = CATALOG_QUALIFICATION_DESCRIPTION_DECISION_SCHEMA.parse(
+    await context.readJson(
+      options.get("--description-decision") ??
+        "registry/qualifications/catalog-description-decision.json",
+    ),
+  );
+  const descriptions = CATALOG_QUALIFICATION_DESCRIPTION_SET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--descriptions") ?? "registry/qualifications/catalog-description-set.json",
+    ),
+  );
+  const queries = CATALOG_QUALIFICATION_DEVELOPMENT_QUERY_SET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--queries") ?? "registry/qualifications/catalog-development-query-set.json",
+    ),
+  );
+  requireCatalogQualificationDevelopmentQueryPrerequisites({
+    proposal,
+    decision,
+    descriptions,
+    queries,
+  });
+  const metadataRequestSet = CATALOG_SEARCH_METADATA_REQUEST_SET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--metadata-requests") ??
+        `${CATALOG_QUALIFICATION_ROOT}/${split}/metadata-requests.json`,
+    ),
+  );
+  const metadata = CATALOG_SEARCH_METADATA_SET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--metadata") ??
+        `${CATALOG_QUALIFICATION_ROOT}/${split}/metadata/qwen3_vl_8b-canonical_twelve.json`,
+    ),
+  );
+  const pool = await executeDevelopmentCandidatePooling({
+    queries,
+    descriptions,
+    metadataRequestSet,
+    metadata,
+    executor,
+    context,
+  });
+  context.print({
+    status: pool.status,
+    split,
+    queries: pool.queryPools.length,
+    reviewPairs: pool.pooledPairCount,
+    reviewedCohortCandidates: pool.reviewedCohortCandidateCount,
+    backgroundCandidates: pool.backgroundCandidateCount,
+    output: absolute(context.root, `${CATALOG_QUALIFICATION_ROOT}/${split}/candidate-pool.json`),
+    hash: pool.hash,
+    qualificationExecutionAuthorized: false,
+  });
+}
+
+async function validateDevelopmentQualification(
+  options: ReadonlyMap<string, string>,
+  context: CatalogCommandContext,
+): Promise<void> {
+  const split = z.literal("development").parse(options.get("--split") ?? "development");
+  const executor = z.enum(["local", "modal"]).parse(options.get("--executor") ?? "local");
+  const queries = CATALOG_QUALIFICATION_DEVELOPMENT_QUERY_SET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--queries") ?? "registry/qualifications/catalog-development-query-set.json",
+    ),
+  );
+  const pool = CATALOG_QUALIFICATION_DEVELOPMENT_CANDIDATE_POOL_SCHEMA.parse(
+    await context.readJson(
+      options.get("--candidate-pool") ??
+        `${CATALOG_QUALIFICATION_ROOT}/${split}/candidate-pool.json`,
+    ),
+  );
+  const relevanceDecision = CATALOG_QUALIFICATION_DEVELOPMENT_RELEVANCE_DECISION_SCHEMA.parse(
+    await context.readJson(
+      options.get("--relevance-decision") ??
+        "registry/qualifications/catalog-development-relevance-decision.json",
+    ),
+  );
+  const caseSet = CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_CASE_SET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--validator-cases") ??
+        "registry/qualifications/catalog-development-validator-case-set.json",
+    ),
+  );
+  const validatorDecision = CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_DECISION_SCHEMA.parse(
+    await context.readJson(
+      options.get("--validator-decision") ??
+        "registry/qualifications/catalog-development-validator-decision.json",
+    ),
+  );
+  const verdictSet = CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_VERDICT_SET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--validator-verdicts") ??
+        "registry/qualifications/catalog-development-validator-verdict-set.json",
+    ),
+  );
+  const comparison = await executeDevelopmentValidatorComparison({
+    queries,
+    pool,
+    relevanceDecision,
+    caseSet,
+    validatorDecision,
+    verdictSet,
+    executor,
+    context,
+  });
+  context.print({
+    status: comparison.status,
+    split,
+    verdictAuthority: comparison.verdictAuthority,
+    reviewIndependence: comparison.reviewIndependence,
+    metrics: comparison.metrics,
+    promotionAuthorized: comparison.promotionAuthorized,
+    qualificationExecutionAuthorized: comparison.qualificationExecutionAuthorized,
+    output: absolute(
+      context.root,
+      `${CATALOG_QUALIFICATION_ROOT}/${split}/validator-comparison.json`,
+    ),
+    hash: comparison.hash,
+  });
 }
 
 async function prepareQualification(
@@ -110,7 +262,7 @@ async function runQualification(
   context: CatalogCommandContext,
 ): Promise<void> {
   const split = requiredSplit(options);
-  const executor = z.enum(["local", "modal"]).parse(options.get("--executor") ?? "modal");
+  const executor = z.enum(["local", "modal"]).parse(options.get("--executor") ?? "local");
   const fixture = CATALOG_QUALIFICATION_FIXTURE_SCHEMA.parse(
     await context.readJson(
       options.get("--fixture") ?? `${CATALOG_QUALIFICATION_ROOT}/fixture.json`,

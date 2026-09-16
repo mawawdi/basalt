@@ -2,12 +2,18 @@ import { lstat, readdir, unlink } from "node:fs/promises";
 import { z } from "zod";
 import {
   CATALOG_CANDIDATE_DECISION_POLICY_SCHEMA,
+  CATALOG_AUTHORED_METADATA_BATCH_SCHEMA,
+  CATALOG_AUTHORED_METADATA_REVIEW_SCHEMA,
+  CATALOG_AUTHORED_METADATA_SET_MANIFEST_SCHEMA,
   CATALOG_METADATA_WORKER_JOB_SCHEMA,
   CATALOG_METADATA_WORKER_OUTPUT_SCHEMA,
   CATALOG_MODEL_DECLARATIONS_SCHEMA,
   CATALOG_MODEL_ROLE_POLICY_SCHEMA,
   CATALOG_QUALIFICATION_FIXTURE_SCHEMA,
   CATALOG_QUALIFICATION_ADJUDICATION_DECISION_SCHEMA,
+  CATALOG_QUALIFICATION_DESCRIPTION_DECISION_SCHEMA,
+  CATALOG_QUALIFICATION_DESCRIPTION_PROPOSAL_SCHEMA,
+  CATALOG_QUALIFICATION_DESCRIPTION_SET_SCHEMA,
   CATALOG_QUALIFICATION_POLICY_SCHEMA,
   CATALOG_QUALIFICATION_REPORT_SCHEMA,
   CATALOG_QUALIFICATION_SELECTION_SCHEMA,
@@ -31,15 +37,23 @@ import {
   buildCatalogSourceNameHintSet,
   metadataViewIds,
   qualificationAuthorizesCorpus,
+  requireCreatorReviewedCatalogQualificationDescriptions,
+  requireCurrentCatalogAuthoredMetadataEvidence,
   requireCreatorReviewedQualificationFixture,
   sealAssetMetricPromptSummary,
   sealAssetSearchMetadataReceipt,
   sealAssetSearchMetadataRequest,
+  sealCatalogAuthoredMetadataBatch,
+  sealCatalogAuthoredMetadataSetManifest,
+  sealCatalogAuthoredMetadataReview,
+  sealCatalogAuthoredSearchMetadataSet,
+  sealCatalogSearchMetadata,
   sealCatalogSearchMetadataRequestSet,
   sealCatalogSearchMetadataSet,
   sealCatalogSearchRegistry,
   validateCatalogModelRolePolicy,
   type AssetSearchMetadataRequest,
+  type CatalogAuthoredSearchMetadataSet,
   type CatalogMetadataWorkerJob,
 } from "@basalt/catalog-authoring";
 import {
@@ -81,12 +95,215 @@ export async function runCatalogMetadataCommand(
   context: CatalogCommandContext,
 ): Promise<void> {
   const [stage, ...tail] = values;
-  if (!stage || !["prepare", "generate", "commit"].includes(stage))
-    throw new Error("catalog metadata stage must be prepare, generate, or commit");
+  if (!stage || !["prepare", "generate", "import-descriptions", "ingest", "commit"].includes(stage))
+    throw new Error(
+      "catalog metadata stage must be prepare, generate, import-descriptions, ingest, or commit",
+    );
   const options = parseOptions(tail);
   if (stage === "prepare") return prepareMetadata(options, context);
   if (stage === "generate") return generateMetadata(options, context);
+  if (stage === "import-descriptions") return importReviewedDescriptions(options, context);
+  if (stage === "ingest") return ingestAuthoredMetadata(options, context);
   return commitMetadata(options, context);
+}
+
+async function importReviewedDescriptions(
+  options: ReadonlyMap<string, string>,
+  context: CatalogCommandContext,
+): Promise<void> {
+  const producerId = options.get("--producer-id");
+  if (!producerId) throw new Error("import-descriptions requires --producer-id");
+  const producerAuthority = z
+    .enum(["creator", "delegated_ai"])
+    .parse(options.get("--producer-authority") ?? "delegated_ai");
+  const proposal = CATALOG_QUALIFICATION_DESCRIPTION_PROPOSAL_SCHEMA.parse(
+    await context.readJson(
+      options.get("--description-proposal") ??
+        "registry/qualifications/catalog-description-proposal.json",
+    ),
+  );
+  const decision = CATALOG_QUALIFICATION_DESCRIPTION_DECISION_SCHEMA.parse(
+    await context.readJson(
+      options.get("--description-decision") ??
+        "registry/qualifications/catalog-description-decision.json",
+    ),
+  );
+  const descriptions = CATALOG_QUALIFICATION_DESCRIPTION_SET_SCHEMA.parse(
+    await context.readJson(
+      options.get("--description-set") ?? "registry/qualifications/catalog-description-set.json",
+    ),
+  );
+  requireCreatorReviewedCatalogQualificationDescriptions({ proposal, decision, descriptions });
+  const measurements = CATALOG_MEASUREMENT_SET_SCHEMA.parse(
+    await context.readJson(options.get("--measurements") ?? ".basalt/catalog/measurements.json"),
+  );
+  const renders = CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(
+    await context.readJson(options.get("--renders") ?? ".basalt/catalog/review/index.json"),
+  );
+  const proposalBySource = new Map(
+    proposal.assets.map((entry) => [entry.sourceContentHash, entry] as const),
+  );
+  const entries = descriptions.assets.flatMap((entry) => {
+    const description = entry.visibleDescription;
+    if (
+      entry.evidenceUsability.status !== "usable" ||
+      description.status === "unreviewable" ||
+      description.text === null
+    )
+      return [];
+    const proposed = proposalBySource.get(entry.sourceContentHash);
+    if (!proposed)
+      throw new Error(
+        `Reviewed description lacks bound proposal evidence: ${entry.sourceContentHash}`,
+      );
+    const notEstablished = "Not established by the reviewed visible description.";
+    const abstained = { status: "abstained" as const, reason: notEstablished };
+    return [
+      {
+        sourceContentHash: entry.sourceContentHash,
+        measurementHash: proposed.evidence.metricSummary.measurementHash,
+        renderEvidenceHash: proposed.evidence.renderEvidenceHash,
+        authoringCertainty:
+          description.status === "uncertain"
+            ? {
+                status: "uncertain" as const,
+                reason: description.uncertaintyReason!,
+              }
+            : { status: "concrete" as const },
+        metadata: sealCatalogSearchMetadata({
+          caption: { status: "observed", value: description.text },
+          primaryNoun: abstained,
+          alternateNouns: abstained,
+          materials: abstained,
+          colors: abstained,
+          visibleText: abstained,
+          useCases: abstained,
+          environments: abstained,
+          styleTerms: abstained,
+          visualComposition: abstained,
+          sourceRoleHint: abstained,
+          completeness: abstained,
+          visibleDamage: abstained,
+          issueNotes:
+            description.status === "uncertain"
+              ? { status: "observed", value: ["visible identity uncertain"] }
+              : { status: "observed", value: [] },
+        }),
+      },
+    ];
+  });
+  const producer = { authority: producerAuthority, actorId: producerId } as const;
+  const batch = sealCatalogAuthoredMetadataBatch({
+    batchId: options.get("--batch-id") ?? "reviewed-description-pilot",
+    sourceManifestHash: proposal.sourceManifestHash,
+    measurementSetHash: proposal.measurementSetHash,
+    visualReviewIndexHash: proposal.visualReviewIndexHash,
+    producer,
+    sourceArtifactHashes: [proposal.hash, decision.hash, descriptions.hash],
+    entries,
+  });
+  requireCurrentCatalogAuthoredMetadataEvidence({ batch, measurements, renders });
+  const sameActor =
+    producer.authority === decision.reviewer.authority &&
+    producer.actorId === decision.reviewer.reviewerId;
+  const review = sealCatalogAuthoredMetadataReview({
+    batchHash: batch.hash,
+    reviewer: {
+      authority: decision.reviewer.authority,
+      actorId: decision.reviewer.reviewerId,
+    },
+    reviewCoverage: "complete",
+    reviewMethod: "imported_visible_description_review",
+    reviewScope: "visible_description_only",
+    reviewIndependence: sameActor ? "same_actor" : "independent",
+    basisArtifactHash: decision.hash,
+    reviewerStatement: decision.reviewerStatement,
+    reviewedAt: decision.reviewedAt,
+    decisions: entries.map((entry) => ({
+      sourceContentHash: entry.sourceContentHash,
+      action: "accept" as const,
+      note: "Creator accepted the exact visible description and its recorded uncertainty.",
+    })),
+  });
+  const set = sealCatalogAuthoredSearchMetadataSet({ batch, review });
+  const batchOutput =
+    options.get("--batch-output") ?? `${CATALOG_METADATA_ROOT}/authored-batch.json`;
+  const reviewOutput =
+    options.get("--review-output") ?? `${CATALOG_METADATA_ROOT}/authored-review.json`;
+  const output = options.get("--output") ?? `${CATALOG_METADATA_ROOT}/authored-set.json`;
+  await context.writeJson(batchOutput, batch);
+  await context.writeJson(reviewOutput, review);
+  await context.writeJson(output, set);
+  const manifest = await registerAuthoredMetadataSet(output, set, options, context);
+  context.print({
+    status: set.status,
+    records: set.records.length,
+    producer: set.producer,
+    reviewCoverage: set.reviewCoverage,
+    batchOutput: absolute(context.root, batchOutput),
+    reviewOutput: absolute(context.root, reviewOutput),
+    output: absolute(context.root, output),
+    manifestHash: manifest.hash,
+    hash: set.hash,
+    qualificationExecutionAuthorized: false,
+  });
+}
+
+async function ingestAuthoredMetadata(
+  options: ReadonlyMap<string, string>,
+  context: CatalogCommandContext,
+): Promise<void> {
+  const batchPath = options.get("--batch");
+  if (!batchPath) throw new Error("catalog metadata ingest requires --batch");
+  const batch = CATALOG_AUTHORED_METADATA_BATCH_SCHEMA.parse(await context.readJson(batchPath));
+  const reviewPath = options.get("--review");
+  const review = reviewPath
+    ? CATALOG_AUTHORED_METADATA_REVIEW_SCHEMA.parse(await context.readJson(reviewPath))
+    : undefined;
+  const measurements = CATALOG_MEASUREMENT_SET_SCHEMA.parse(
+    await context.readJson(options.get("--measurements") ?? ".basalt/catalog/measurements.json"),
+  );
+  const renders = CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(
+    await context.readJson(options.get("--renders") ?? ".basalt/catalog/review/index.json"),
+  );
+  requireCurrentCatalogAuthoredMetadataEvidence({ batch, measurements, renders });
+  const set = sealCatalogAuthoredSearchMetadataSet({ batch, ...(review ? { review } : {}) });
+  const output = options.get("--output") ?? `${CATALOG_METADATA_ROOT}/authored-set.json`;
+  await context.writeJson(output, set);
+  const manifest = await registerAuthoredMetadataSet(output, set, options, context);
+  context.print({
+    status: set.status,
+    records: set.records.length,
+    rejected: set.rejectedSourceContentHashes.length,
+    reviewCoverage: set.reviewCoverage,
+    output: absolute(context.root, output),
+    manifestHash: manifest.hash,
+    hash: set.hash,
+    qualificationExecutionAuthorized: false,
+  });
+}
+
+async function registerAuthoredMetadataSet(
+  relativePath: string,
+  set: CatalogAuthoredSearchMetadataSet,
+  options: ReadonlyMap<string, string>,
+  context: CatalogCommandContext,
+) {
+  const manifestPath = options.get("--manifest") ?? `${CATALOG_METADATA_ROOT}/authored-sets.json`;
+  if (relativePath === manifestPath)
+    throw new Error("Authored metadata set output cannot replace its set manifest");
+  const existingRaw = await context.readOptionalJson(manifestPath);
+  const existing = existingRaw
+    ? CATALOG_AUTHORED_METADATA_SET_MANIFEST_SCHEMA.parse(existingRaw)
+    : sealCatalogAuthoredMetadataSetManifest({ sets: [] });
+  const manifest = sealCatalogAuthoredMetadataSetManifest({
+    sets: [
+      ...existing.sets.filter((entry) => entry.relativePath !== relativePath),
+      { relativePath, setHash: set.hash },
+    ],
+  });
+  await context.writeJson(manifestPath, manifest);
+  return manifest;
 }
 
 async function prepareMetadata(
@@ -302,7 +519,7 @@ async function generateMetadata(
       ),
     });
   }
-  const executor = z.enum(["local", "modal"]).parse(options.get("--executor") ?? "modal");
+  const executor = z.enum(["local", "modal"]).parse(options.get("--executor") ?? "local");
   const force = parseBoolean(options.get("--force") ?? "false");
   const outputs = [];
   for (const items of boundedMetadataShards(workerItems)) {
@@ -479,8 +696,38 @@ async function metadataScopeSources(
     );
     return fixture.assets.map((entry) => entry.sourceContentHash);
   }
+  if (!options.has("--fixture")) {
+    const split = CATALOG_QUALIFICATION_SPLIT_SCHEMA.parse(options.get("--split") ?? "development");
+    if (split !== "development")
+      throw new Error(
+        "Pre-fixture qualification metadata preparation is available only for development authoring",
+      );
+    const proposal = CATALOG_QUALIFICATION_DESCRIPTION_PROPOSAL_SCHEMA.parse(
+      await context.readJson(
+        options.get("--description-proposal") ??
+          "registry/qualifications/catalog-description-proposal.json",
+      ),
+    );
+    const decision = CATALOG_QUALIFICATION_DESCRIPTION_DECISION_SCHEMA.parse(
+      await context.readJson(
+        options.get("--description-decision") ??
+          "registry/qualifications/catalog-description-decision.json",
+      ),
+    );
+    const descriptions = CATALOG_QUALIFICATION_DESCRIPTION_SET_SCHEMA.parse(
+      await context.readJson(
+        options.get("--description-set") ?? "registry/qualifications/catalog-description-set.json",
+      ),
+    );
+    requireCreatorReviewedCatalogQualificationDescriptions({
+      proposal,
+      decision,
+      descriptions,
+    });
+    return descriptions.assets.map((entry) => entry.sourceContentHash);
+  }
   const fixture = CATALOG_QUALIFICATION_FIXTURE_SCHEMA.parse(
-    await context.readJson(options.get("--fixture") ?? "registry/catalog-qualification.json"),
+    await context.readJson(options.get("--fixture")!),
   );
   const split = CATALOG_QUALIFICATION_SPLIT_SCHEMA.parse(options.get("--split") ?? "development");
   return fixture.assets

@@ -7,10 +7,26 @@ implementation checklists. Completed cards are removed; Git history is the recor
 
 - [ ] **CAT-QUALIFY — Qualify catalog retrieval at realistic scale.** Author and run the
       leakage-isolated pooled benchmark, then freeze retrieval channels, view count, metadata
-      writer, and requirement validator. The 192-asset proposal and complete visual adjudication
-      packet are prepared; execution awaits independent creator review of descriptions,
-      query–asset relevance, and validator verdicts. Complete when the untouched holdout produces
-      an eligible qualification report.
+      writer, and requirement validator. The filename-derived 192-asset answer key is retired. A
+      development-only 24-asset description pilot and one-page evidence desk are prepared; the
+      repaired corpus path measures 61 explicit collision companions as geometry-only and excludes
+      them from appearance rendering and shape-descriptor coverage. The creator review is restricted
+      to visible descriptions; internal sampling tags and contextual-purpose hypotheses are outside
+      that decision, and all 24 visible descriptions are now creator-reviewed and sealed after a
+      targeted independent visual audit corrected four overclaims without reopening the other 20.
+      Twenty distinct development requests are authored with 17 executable metric limits, two
+      absence probes, three unobservable-property boundaries, and no expected relevance labels.
+      The four compared retrieval channels now form a sealed union pool of 230 pairs spanning all
+      24 cohort assets and 82 distinct background assets; the index separately records all 61
+      collision-only sources as non-searchable. A delegated-AI development review, explicitly
+      distinguished from creator or holdout evidence, judged all 230 pairs as 15 relevant, 206
+      irrelevant, and 9 unknown. The validator pilot now contains all 15 positives, all 9 unknown
+      boundaries, and one deterministic hard negative per request: 44 cases. The same delegated-AI
+      reviewer judged them as 15 match, 20 mismatch, and 9 uncertain, so this is useful development
+      evidence but not an independent second review or holdout. No interrupted provider run is an
+      accepted comparison result. Next obtain independent review before any promotion, then run the
+      untouched holdout using an explicitly selected executor rather than a provider default.
+      Complete when the untouched holdout produces an eligible qualification report.
 
 - [ ] **KIT-ADMIT — Admit the first contextual modular kits.** Inspect the Dungeon and
       Office context packets and author evidence-backed assembly, attachment, route, and
@@ -18,15 +34,14 @@ implementation checklists. Completed cards are removed; Git history is the recor
       assembly purpose and mate evidence are absent. Complete when every reviewed source has one
       disposition and the resulting catalog snapshot seals.
 
-- [ ] **ROBLOX-TOWER — Complete the creator tower gate.** Import the baseline and refined
-      observation towers in Studio, play-test access and view corridors, and capture exact
-      readback. Complete only with creator-run engine evidence for both builds.
-
-- [ ] **ROBLOX-ROUTES — Complete the creator route-corridor gate.** Import the focused
-      route build in Studio and traverse the trail, paved road, boardwalk, bends, junction,
-      hillside, crest, stream, and terrain-boundary crossings. Complete only when exact
-      readback proves route geometry, terrain intrusion, exposed-gap, material, support, and
-      junction claims against the imported world.
+- [ ] **ROBLOX-FIRST-REGION — Complete the integrated creator gate.** The 48-meter wooded-ridge
+      core is offline-eligible: 32 admitted catalog instances, a grounded approach, an elevated
+      boardwalk alternative, two shared junctions, and a route-connected 6.5-meter procedural
+      observation tower compile with zero catalog or Roblox lowering gaps. In one Studio session,
+      traverse both alternatives and the tower, inspect catalog colors and materials, judge the
+      intended silhouette-before-entrance reveal, and preserve the exact connector readback.
+      Complete only with creator-run engine and visual evidence; the older isolated tower and route
+      fixtures remain focused regressions, not additional creator loops.
 
 ## Ready
 
@@ -50,9 +65,9 @@ implementation checklists. Completed cards are removed; Git history is the recor
       when an eligible qualification report pins the retrieval, view, writer, and validator
       policies.
 
-- [ ] **WORLD-40KM — Compile a 40 km macro world with one finished region.** Blocked by
-      `ROBLOX-TOWER`, `ROBLOX-ROUTES`, and a usable first catalog tranche. Unblock when all
-      three gates have exact evidence.
+- [ ] **WORLD-40KM — Compile a 40 km macro world with one finished region.** The searchable
+      first-region tranche and integrated 48-meter core now exist. Blocked by
+      `ROBLOX-FIRST-REGION`; unblock when that single creator gate has exact evidence.
 
 - [ ] **REMOTE-CAS — Add remote binary durability and distributed execution.** Blocked
       until local corpus size, rebuild behavior, and access economics are measured. Unblock

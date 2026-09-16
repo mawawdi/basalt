@@ -6,6 +6,7 @@ local BoundedQuery = require(script.Parent.BoundedQuery)
 local Constants = require(script.Parent.Constants)
 local LoadedAsset = require(script.Parent.LoadedAsset)
 local ModelBounds = require(script.Parent.ModelBounds)
+local RouteCoordination = require(script.Parent.RouteCoordination)
 local RouteGeometry = require(script.Parent.RouteGeometry)
 local RouteGrounding = require(script.Parent.RouteGrounding)
 local TerrainLowering = require(script.Parent.TerrainLowering)
@@ -15,6 +16,7 @@ local pendingFoundation: any = nil
 local pendingMeso: any = nil
 local pendingInstances: { [string]: any } = {}
 local pendingRouteFrames: { [string]: any } = {}
+local pendingRouteStationAdjustments: { [string]: { number } } = {}
 local pendingJunctionResolutions: { [string]: any } = {}
 local pendingTraceEvents: { any } = {}
 local pendingDroppedTraceEvents = 0
@@ -49,6 +51,7 @@ local function clearPendingState(): ()
 	pendingMeso = nil
 	pendingInstances = {}
 	pendingRouteFrames = {}
+	pendingRouteStationAdjustments = {}
 	pendingJunctionResolutions = {}
 	pendingTraceEvents = {}
 	pendingDroppedTraceEvents = 0
@@ -461,6 +464,35 @@ local function resolveGroundingDepth(resolved: any, bodyBottom: any, context: an
 	))
 end
 
+local function groundingPolicy(terrainTreatment: any, label: string): any
+	local authoredMaximumGapStuds = meters(finite(
+		terrainTreatment.groundingToleranceMeters,
+		label .. " authored grounding tolerance"
+	))
+	local terrainQuantizationAllowanceStuds = Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS
+	local observationToleranceStuds = Constants.TERRAIN_CONTACT_TOLERANCE_STUDS
+	return {
+		authoredMaximumGapStuds = authoredMaximumGapStuds,
+		terrainQuantizationAllowanceStuds = terrainQuantizationAllowanceStuds,
+		observationToleranceStuds = observationToleranceStuds,
+		maximumPermittedGapStuds = RouteGrounding.maximumPermittedGapStuds(
+			authoredMaximumGapStuds,
+			terrainQuantizationAllowanceStuds,
+			observationToleranceStuds
+		),
+	}
+end
+
+local function groundingTracePolicy(terrainTreatment: any, label: string): any
+	local policy = groundingPolicy(terrainTreatment, label)
+	return {
+		authoredGroundingToleranceMeters = policy.authoredMaximumGapStuds * Constants.STUD_METERS,
+		terrainQuantizationAllowanceMeters = policy.terrainQuantizationAllowanceStuds * Constants.STUD_METERS,
+		observationToleranceMeters = policy.observationToleranceStuds * Constants.STUD_METERS,
+		maximumPermittedBodyGapMeters = policy.maximumPermittedGapStuds * Constants.STUD_METERS,
+	}
+end
+
 local function traceRouteTerrain(
 	phase: "foundation" | "readback",
 	route: any,
@@ -470,13 +502,17 @@ local function traceRouteTerrain(
 	bodyBottom: any,
 	groundingBottom: any
 ): ()
+	local policy = groundingTracePolicy(route.terrainTreatment, "route")
 	recordTraceEvent({
 		kind = "route_terrain",
 		phase = phase,
 		routeId = route.routeId,
 		segmentId = segment.segmentId,
 		requiredSurfaceRevealMeters = route.terrainTreatment.surfaceRevealMeters,
-		maximumGroundingGapMeters = route.terrainTreatment.groundingToleranceMeters,
+		authoredGroundingToleranceMeters = policy.authoredGroundingToleranceMeters,
+		terrainQuantizationAllowanceMeters = policy.terrainQuantizationAllowanceMeters,
+		observationToleranceMeters = policy.observationToleranceMeters,
+		maximumPermittedBodyGapMeters = policy.maximumPermittedBodyGapMeters,
 		minimumSurfaceClearanceMeters = top.minimumStuds * Constants.STUD_METERS,
 		maximumSurfaceClearanceMeters = top.maximumStuds * Constants.STUD_METERS,
 		maximumBodyGapMeters = math.max(0, bodyBottom.maximumStuds * Constants.STUD_METERS),
@@ -528,7 +564,7 @@ end
 -- The generic compiler already constructs the route and final terrain together.
 -- Roblox may only correct the small residual introduced by its voxel surface;
 -- it must reject a discrepancy large enough to change the authored profile.
-local function resolveRouteFrames(route: any, endpointOverrides: any): any
+local function resolveRouteFrames(route: any, endpointOverrides: any, recordTerrainTrace: boolean): any
 	local result: { [string]: any } = {}
 	if route.terrainTreatment.kind ~= "grade" or not routeUsesTerrain(route) then
 		local stationAdjustments: { number } = table.create(#route.travelSegments + 1, 0)
@@ -592,12 +628,12 @@ local function resolveRouteFrames(route: any, endpointOverrides: any): any
 	end
 	for index = 1, #stationAdjustments do
 		stationAdjustments[index] = math.max(0, stationAdjustments[index] or 0)
-		if stationAdjustments[index] > Constants.MAX_TERRAIN_CONFORMANCE_STUDS then
+		if stationAdjustments[index] > Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS then
 			fail(string.format(
 				"route %s requires %.4fm of Roblox residual correction, exceeding %.4fm",
 				route.routeId,
 				stationAdjustments[index] * Constants.STUD_METERS,
-				Constants.MAX_TERRAIN_CONFORMANCE_STUDS * Constants.STUD_METERS
+				Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS * Constants.STUD_METERS
 			))
 		end
 	end
@@ -626,8 +662,8 @@ local function resolveRouteFrames(route: any, endpointOverrides: any): any
 			if deficit > 0.00001 then
 				stationAdjustments[index] += deficit
 				stationAdjustments[index + 1] += deficit
-				if stationAdjustments[index] > Constants.MAX_TERRAIN_CONFORMANCE_STUDS
-					or stationAdjustments[index + 1] > Constants.MAX_TERRAIN_CONFORMANCE_STUDS then
+				if stationAdjustments[index] > Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS
+					or stationAdjustments[index + 1] > Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS then
 					fail("route " .. route.routeId .. " cannot conform to Roblox terrain within the bounded residual")
 				end
 				changed = true
@@ -640,10 +676,7 @@ local function resolveRouteFrames(route: any, endpointOverrides: any): any
 		if iteration == Constants.MAX_TERRAIN_CONFORMANCE_ITERATIONS then break end
 	end
 	if not converged then fail("route " .. route.routeId .. " residual conformance did not converge") end
-	local maximumGroundingGap = meters(finite(
-		route.terrainTreatment.groundingToleranceMeters,
-		"route maximum grounding gap"
-	))
+	local policy = groundingPolicy(route.terrainTreatment, "route")
 	for index, segment in ipairs(route.travelSegments) do
 		local resolved = routeFrame(
 			segment,
@@ -669,16 +702,20 @@ local function resolveRouteFrames(route: any, endpointOverrides: any): any
 		)
 		if not RouteGrounding.withinTolerance(
 			bodyBottom.maximumStuds,
-			maximumGroundingGap,
-			Constants.TERRAIN_CONTACT_TOLERANCE_STUDS
+			policy.authoredMaximumGapStuds,
+			policy.terrainQuantizationAllowanceStuds,
+			policy.observationToleranceStuds
 		) then
 			resolved.groundingDepthStuds = 0
 			traceRouteTerrain("foundation", route, segment, resolved, top, bodyBottom, bodyBottom)
 			fail(string.format(
-				"route %s needs %.4fm of grounding beneath its authored body, exceeding %.4fm at (%.3fm, %.3fm); see .basalt/roblox/import-report.json",
+				"route %s needs %.4fm of grounding beneath its authored body, exceeding the bounded Roblox maximum %.4fm (authored %.4fm + voxel %.4fm + observation %.4fm) at (%.3fm, %.3fm); see .basalt/roblox/import-report.json",
 				segment.segmentId,
 				bodyBottom.maximumStuds * Constants.STUD_METERS,
+				policy.maximumPermittedGapStuds * Constants.STUD_METERS,
 				route.terrainTreatment.groundingToleranceMeters,
+				policy.terrainQuantizationAllowanceStuds * Constants.STUD_METERS,
+				policy.observationToleranceStuds * Constants.STUD_METERS,
 				bodyBottom.maximumPoint.X * Constants.STUD_METERS,
 				bodyBottom.maximumPoint.Z * Constants.STUD_METERS
 			))
@@ -690,7 +727,9 @@ local function resolveRouteFrames(route: any, endpointOverrides: any): any
 			segment.segmentId
 		)
 		resolved.groundingDepthStuds = groundingDepth
-		traceRouteTerrain("foundation", route, segment, resolved, top, bodyBottom, groundingBottom)
+		if recordTerrainTrace then
+			traceRouteTerrain("foundation", route, segment, resolved, top, bodyBottom, groundingBottom)
+		end
 		result[segment.segmentId] = resolved
 	end
 	return { frames = result, stationAdjustments = stationAdjustments }
@@ -721,12 +760,12 @@ local function junctionTerrainCorrection(junction: any): number
 			)
 		end
 	end
-	if correction > Constants.MAX_TERRAIN_CONFORMANCE_STUDS then
+	if correction > Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS then
 		fail(string.format(
 			"route junction %s requires %.4fm of Roblox residual correction, exceeding %.4fm",
 			junction.junctionId,
 			correction * Constants.STUD_METERS,
-			Constants.MAX_TERRAIN_CONFORMANCE_STUDS * Constants.STUD_METERS
+			Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS * Constants.STUD_METERS
 		))
 	end
 	return correction
@@ -782,10 +821,8 @@ local function resolveJunctionGeometry(junction: any, adjustmentStuds: number): 
 	local thickness = meters(finite(junction.thicknessMeters, "junction thickness"))
 	local top = observeJunctionPlane(junction, topY, context)
 	local bodyBottom = observeJunctionPlane(junction, topY - thickness, context)
-	local maximumGroundingGap = meters(finite(
-		junction.terrainTreatment.groundingToleranceMeters,
-		"junction maximum grounding gap"
-	))
+	local policy = groundingPolicy(junction.terrainTreatment, "junction")
+	local tracePolicy = groundingTracePolicy(junction.terrainTreatment, "junction")
 	local resolution = {
 		adjustmentStuds = adjustmentStuds,
 		groundingDepthStuds = 0,
@@ -796,7 +833,10 @@ local function resolveJunctionGeometry(junction: any, adjustmentStuds: number): 
 			phase = "foundation",
 			junctionId = junction.junctionId,
 			requiredSurfaceRevealMeters = junction.terrainTreatment.surfaceRevealMeters,
-			maximumGroundingGapMeters = junction.terrainTreatment.groundingToleranceMeters,
+			authoredGroundingToleranceMeters = tracePolicy.authoredGroundingToleranceMeters,
+			terrainQuantizationAllowanceMeters = tracePolicy.terrainQuantizationAllowanceMeters,
+			observationToleranceMeters = tracePolicy.observationToleranceMeters,
+			maximumPermittedBodyGapMeters = tracePolicy.maximumPermittedBodyGapMeters,
 			minimumSurfaceClearanceMeters = top.minimumStuds * Constants.STUD_METERS,
 			maximumSurfaceClearanceMeters = top.maximumStuds * Constants.STUD_METERS,
 			maximumBodyGapMeters = math.max(0, bodyBottom.maximumStuds * Constants.STUD_METERS),
@@ -810,15 +850,19 @@ local function resolveJunctionGeometry(junction: any, adjustmentStuds: number): 
 	end
 	if not RouteGrounding.withinTolerance(
 		bodyBottom.maximumStuds,
-		maximumGroundingGap,
-		Constants.TERRAIN_CONTACT_TOLERANCE_STUDS
+		policy.authoredMaximumGapStuds,
+		policy.terrainQuantizationAllowanceStuds,
+		policy.observationToleranceStuds
 	) then
 		trace(bodyBottom)
 		fail(string.format(
-			"route junction %s needs %.4fm of grounding beneath its authored body, exceeding %.4fm; see .basalt/roblox/import-report.json",
+			"route junction %s needs %.4fm of grounding beneath its authored body, exceeding the bounded Roblox maximum %.4fm (authored %.4fm + voxel %.4fm + observation %.4fm); see .basalt/roblox/import-report.json",
 			junction.junctionId,
 			bodyBottom.maximumStuds * Constants.STUD_METERS,
-			junction.terrainTreatment.groundingToleranceMeters
+			policy.maximumPermittedGapStuds * Constants.STUD_METERS,
+			junction.terrainTreatment.groundingToleranceMeters,
+			policy.terrainQuantizationAllowanceStuds * Constants.STUD_METERS,
+			policy.observationToleranceStuds * Constants.STUD_METERS
 		))
 	end
 	local groundingDepth = RouteGrounding.initialDepthStuds(
@@ -835,55 +879,40 @@ local function resolveJunctionGeometry(junction: any, adjustmentStuds: number): 
 end
 
 local function resolveFoundationRouteGeometry(foundation: any): (any, any)
-	local overrides: { [string]: any } = {}
 	local junctionAdjustments: { [string]: number } = {}
 	for _, junction in ipairs(foundation.routeJunctions) do
 		junctionAdjustments[junction.junctionId] = junctionTerrainCorrection(junction)
 	end
-	local resolutions = {}
-	for iteration = 1, 4 do
-		resolutions = {}
-		for _, route in ipairs(foundation.routeConstructions) do
+	local coordination = RouteCoordination.resolve(
+		foundation.routeConstructions,
+		foundation.routeJunctions,
+		junctionAdjustments,
+		function(route: any, endpointOverrides: any): any
 			if route.status ~= "eligible" then fail("route construction is not eligible: " .. route.routeId) end
-			resolutions[route.routeId] = resolveRouteFrames(route, overrides[route.routeId])
-		end
-		local changed = false
-		for _, junction in ipairs(foundation.routeJunctions) do
-			local shared = junctionAdjustments[junction.junctionId] or 0
-			for _, participant in ipairs(junction.participants) do
-				local resolution = resolutions[participant.routeId]
-				if resolution == nil then fail("route junction has no participant geometry: " .. participant.routeId) end
-				local adjustments = resolution.stationAdjustments
-				local endpoint = if participant.endpoint == "start" then adjustments[1] else adjustments[#adjustments]
-				shared = math.max(shared, endpoint)
-			end
-			if shared > (junctionAdjustments[junction.junctionId] or 0) + 0.000000001 then
-				junctionAdjustments[junction.junctionId] = shared
-				changed = true
-			end
-			for _, participant in ipairs(junction.participants) do
-				local override = overrides[participant.routeId] or { start = 0, finish = 0 }
-				local key = if participant.endpoint == "start" then "start" else "finish"
-				if shared > override[key] + 0.000000001 then
-					override[key] = shared
-					overrides[participant.routeId] = override
-					changed = true
-				end
-			end
-		end
-		if not changed then
-			local junctionResolutions = {}
-			for _, junction in ipairs(foundation.routeJunctions) do
-				junctionResolutions[junction.junctionId] = resolveJunctionGeometry(
-					junction,
-					junctionAdjustments[junction.junctionId] or 0
-				)
-			end
-			return resolutions, junctionResolutions
-		end
-		if iteration == 4 then fail("route junction residual coordination did not converge") end
+			return resolveRouteFrames(route, endpointOverrides, false)
+		end,
+		Constants.MAX_ROUTE_JUNCTION_COORDINATION_ITERATIONS,
+		Constants.ROUTE_JUNCTION_COORDINATION_QUANTUM_STUDS
+	)
+	-- Tentative fixed-point passes must not consume the durable trace budget.
+	-- Re-resolve the accepted state once so diagnostics describe only geometry
+	-- that can actually be committed to the world.
+	local finalRouteResolutions = {}
+	for _, route in ipairs(foundation.routeConstructions) do
+		finalRouteResolutions[route.routeId] = resolveRouteFrames(
+			route,
+			coordination.routeOverrides[route.routeId],
+			true
+		)
 	end
-	fail("route junction residual coordination failed")
+	local junctionResolutions = {}
+	for _, junction in ipairs(foundation.routeJunctions) do
+		junctionResolutions[junction.junctionId] = resolveJunctionGeometry(
+			junction,
+			coordination.junctionAdjustments[junction.junctionId] or 0
+		)
+	end
+	return finalRouteResolutions, junctionResolutions
 end
 
 local function verifyJunctionTerrainContact(
@@ -895,10 +924,8 @@ local function verifyJunctionTerrainContact(
 	if junction.terrainTreatment.kind ~= "grade" then return end
 	local context = terrainRaycastContext()
 	local required = meters(finite(junction.terrainTreatment.surfaceRevealMeters, "junction surface reveal"))
-	local maximumGroundingGap = meters(finite(
-		junction.terrainTreatment.groundingToleranceMeters,
-		"junction maximum grounding gap"
-	))
+	local policy = groundingPolicy(junction.terrainTreatment, "junction")
+	local tracePolicy = groundingTracePolicy(junction.terrainTreatment, "junction")
 	local topY = part.Position.Y + part.Size.X / 2
 	local top = observeJunctionPlane(junction, topY, context)
 	local bodyBottom = observeJunctionPlane(junction, topY - part.Size.X, context)
@@ -915,7 +942,10 @@ local function verifyJunctionTerrainContact(
 		phase = "readback",
 		junctionId = junction.junctionId,
 		requiredSurfaceRevealMeters = junction.terrainTreatment.surfaceRevealMeters,
-		maximumGroundingGapMeters = junction.terrainTreatment.groundingToleranceMeters,
+		authoredGroundingToleranceMeters = tracePolicy.authoredGroundingToleranceMeters,
+		terrainQuantizationAllowanceMeters = tracePolicy.terrainQuantizationAllowanceMeters,
+		observationToleranceMeters = tracePolicy.observationToleranceMeters,
+		maximumPermittedBodyGapMeters = tracePolicy.maximumPermittedBodyGapMeters,
 		minimumSurfaceClearanceMeters = top.minimumStuds * Constants.STUD_METERS,
 		maximumSurfaceClearanceMeters = top.maximumStuds * Constants.STUD_METERS,
 		maximumBodyGapMeters = math.max(0, bodyBottom.maximumStuds * Constants.STUD_METERS),
@@ -937,15 +967,16 @@ local function verifyJunctionTerrainContact(
 	end
 	if not RouteGrounding.withinTolerance(
 		bodyBottom.maximumStuds,
-		maximumGroundingGap,
-		Constants.TERRAIN_CONTACT_TOLERANCE_STUDS
+		policy.authoredMaximumGapStuds,
+		policy.terrainQuantizationAllowanceStuds,
+		policy.observationToleranceStuds
 	) then
 		fail(string.format(
-			"route junction %s has %.4fm of unfilled space beneath its body at %s, exceeding %.4fm; see .basalt/roblox/import-report.json",
+			"route junction %s has %.4fm of unfilled space beneath its body at %s, exceeding the bounded Roblox maximum %.4fm; see .basalt/roblox/import-report.json",
 			junction.junctionId,
 			bodyBottom.maximumStuds * Constants.STUD_METERS,
 			formatVectorMeters(bodyBottom.maximumPoint),
-			junction.terrainTreatment.groundingToleranceMeters
+			policy.maximumPermittedGapStuds * Constants.STUD_METERS
 		))
 	end
 	if groundingPart ~= nil
@@ -969,10 +1000,7 @@ local function verifyRouteTerrainContact(
 	if route.terrainTreatment.kind ~= "grade" or not routeUsesTerrain(route) then return end
 	local context = terrainRaycastContext()
 	local required = meters(finite(route.terrainTreatment.surfaceRevealMeters, "route surface reveal"))
-	local maximumGroundingGap = meters(finite(
-		route.terrainTreatment.groundingToleranceMeters,
-		"route maximum grounding gap"
-	))
+	local policy = groundingPolicy(route.terrainTreatment, "route")
 	local top = observeFramePlane(part.CFrame, part.Size, part.Size.Y / 2, context, segment.segmentId)
 	local bodyBottom = observeFramePlane(
 		part.CFrame,
@@ -1003,15 +1031,16 @@ local function verifyRouteTerrainContact(
 	end
 	if not RouteGrounding.withinTolerance(
 		bodyBottom.maximumStuds,
-		maximumGroundingGap,
-		Constants.TERRAIN_CONTACT_TOLERANCE_STUDS
+		policy.authoredMaximumGapStuds,
+		policy.terrainQuantizationAllowanceStuds,
+		policy.observationToleranceStuds
 	) then
 		fail(string.format(
-			"route %s has %.4fm of unfilled space beneath its body at %s, exceeding %.4fm; see .basalt/roblox/import-report.json",
+			"route %s has %.4fm of unfilled space beneath its body at %s, exceeding the bounded Roblox maximum %.4fm; see .basalt/roblox/import-report.json",
 			segment.segmentId,
 			bodyBottom.maximumStuds * Constants.STUD_METERS,
 			formatVectorMeters(bodyBottom.maximumPoint),
-			route.terrainTreatment.groundingToleranceMeters
+			policy.maximumPermittedGapStuds * Constants.STUD_METERS
 		))
 	end
 	if groundingPart ~= nil
@@ -1197,22 +1226,146 @@ local function verifyVerticalCylinder(parent: Instance, name: string, centerMete
 	if part:GetAttribute("BasaltArtifactHash") ~= artifactHash then fail("route cylinder identity drifted for " .. name) end
 end
 
-local function lowerRouteAncillaries(routeFolder: Folder, routeConstruction: any): ()
+local function routeAdjustmentAtStation(
+	routeConstruction: any,
+	stationAdjustments: { number },
+	stationMeters: number
+): number
+	for index, segment in ipairs(routeConstruction.travelSegments) do
+		local startMeters = finite(segment.startStationMeters, "route ancillary start station")
+		local finishMeters = finite(segment.endStationMeters, "route ancillary finish station")
+		if stationMeters <= finishMeters + 0.000000001 then
+			local fraction = math.clamp((stationMeters - startMeters) / (finishMeters - startMeters), 0, 1)
+			local startAdjustment = stationAdjustments[index]
+			local finishAdjustment = stationAdjustments[index + 1]
+			if startAdjustment == nil or finishAdjustment == nil then
+				fail("route ancillary station adjustment is incomplete for " .. routeConstruction.routeId)
+			end
+			return startAdjustment + (finishAdjustment - startAdjustment) * fraction
+		end
+	end
+	fail("route ancillary station lies outside the sealed route profile for " .. routeConstruction.routeId)
+end
+
+local function adjustedVerticalCylinder(
+	item: any,
+	adjustmentStuds: number,
+	extendToGround: boolean
+): (any, number)
+	local adjustmentMeters = adjustmentStuds * Constants.STUD_METERS
+	return {
+		x = item.centerMeters.x,
+		y = item.centerMeters.y + (if extendToGround then adjustmentMeters / 2 else adjustmentMeters),
+		z = item.centerMeters.z,
+	}, item.heightMeters + (if extendToGround then adjustmentMeters else 0)
+end
+
+local function lowerRouteAncillaries(
+	routeFolder: Folder,
+	routeConstruction: any,
+	stationAdjustments: { number }
+): ()
 	local supports = Instance.new("Folder")
 	supports.Name = "Supports"
 	supports.Parent = routeFolder
 	for _, support in ipairs(routeConstruction.supports) do
-		lowerVerticalCylinder(supports, support.supportId, support.centerMeters, support.radiusMeters, support.heightMeters, support.appearance, support.hash)
+		local adjustment = routeAdjustmentAtStation(
+			routeConstruction,
+			stationAdjustments,
+			finite(support.stationMeters, "route support station")
+		)
+		local centerMeters, heightMeters = adjustedVerticalCylinder(support, adjustment, true)
+		lowerVerticalCylinder(supports, support.supportId, centerMeters, support.radiusMeters, heightMeters, support.appearance, support.hash)
+	end
+	local edgeRails = Instance.new("Folder")
+	edgeRails.Name = "EdgeRails"
+	edgeRails.Parent = routeFolder
+	for _, rail in ipairs(routeConstruction.edgeRails) do
+		local startAdjustment = routeAdjustmentAtStation(
+			routeConstruction,
+			stationAdjustments,
+			finite(rail.startStationMeters, "route edge-rail start station")
+		)
+		local finishAdjustment = routeAdjustmentAtStation(
+			routeConstruction,
+			stationAdjustments,
+			finite(rail.endStationMeters, "route edge-rail finish station")
+		)
+		local resolved = routeFrame(rail, rail.thicknessMeters, startAdjustment, finishAdjustment)
+		local part = createRouteBlock(edgeRails, rail.railId, resolved.size, resolved.frame, rail.appearance)
+		part:SetAttribute("BasaltArtifactHash", requireHash(rail.hash, "route edge-rail hash"))
+	end
+	local edgePosts = Instance.new("Folder")
+	edgePosts.Name = "EdgePosts"
+	edgePosts.Parent = routeFolder
+	for _, post in ipairs(routeConstruction.edgePosts) do
+		local adjustment = routeAdjustmentAtStation(
+			routeConstruction,
+			stationAdjustments,
+			finite(post.stationMeters, "route edge-post station")
+		)
+		local centerMeters, heightMeters = adjustedVerticalCylinder(post, adjustment, false)
+		lowerVerticalCylinder(edgePosts, post.postId, centerMeters, post.radiusMeters, heightMeters, post.appearance, post.hash)
 	end
 end
 
-local function verifyRouteAncillaries(routeFolder: Folder, routeConstruction: any): ()
+local function verifyRouteAncillaries(
+	routeFolder: Folder,
+	routeConstruction: any,
+	stationAdjustments: { number }
+): ()
 	local supports = routeFolder:FindFirstChild("Supports")
 	if supports == nil or not supports:IsA("Folder") or #supports:GetChildren() ~= #routeConstruction.supports then
 		fail("route support count drifted for " .. routeConstruction.routeId)
 	end
 	for _, support in ipairs(routeConstruction.supports) do
-		verifyVerticalCylinder(supports, support.supportId, support.centerMeters, support.radiusMeters, support.heightMeters, support.appearance, support.hash)
+		local adjustment = routeAdjustmentAtStation(
+			routeConstruction,
+			stationAdjustments,
+			finite(support.stationMeters, "route support station")
+		)
+		local centerMeters, heightMeters = adjustedVerticalCylinder(support, adjustment, true)
+		verifyVerticalCylinder(supports, support.supportId, centerMeters, support.radiusMeters, heightMeters, support.appearance, support.hash)
+	end
+	local edgeRails = routeFolder:FindFirstChild("EdgeRails")
+	if edgeRails == nil or not edgeRails:IsA("Folder") or #edgeRails:GetChildren() ~= #routeConstruction.edgeRails then
+		fail("route edge-rail count drifted for " .. routeConstruction.routeId)
+	end
+	for _, rail in ipairs(routeConstruction.edgeRails) do
+		local startAdjustment = routeAdjustmentAtStation(
+			routeConstruction,
+			stationAdjustments,
+			finite(rail.startStationMeters, "route edge-rail start station")
+		)
+		local finishAdjustment = routeAdjustmentAtStation(
+			routeConstruction,
+			stationAdjustments,
+			finite(rail.endStationMeters, "route edge-rail finish station")
+		)
+		local resolved = routeFrame(rail, rail.thicknessMeters, startAdjustment, finishAdjustment)
+		local part = verifyRouteBlock(
+			edgeRails:FindFirstChild(rail.railId),
+			resolved.size,
+			resolved.frame,
+			rail.appearance,
+			"route edge rail " .. rail.railId
+		)
+		if part:GetAttribute("BasaltArtifactHash") ~= rail.hash then
+			fail("route edge-rail identity drifted for " .. rail.railId)
+		end
+	end
+	local edgePosts = routeFolder:FindFirstChild("EdgePosts")
+	if edgePosts == nil or not edgePosts:IsA("Folder") or #edgePosts:GetChildren() ~= #routeConstruction.edgePosts then
+		fail("route edge-post count drifted for " .. routeConstruction.routeId)
+	end
+	for _, post in ipairs(routeConstruction.edgePosts) do
+		local adjustment = routeAdjustmentAtStation(
+			routeConstruction,
+			stationAdjustments,
+			finite(post.stationMeters, "route edge-post station")
+		)
+		local centerMeters, heightMeters = adjustedVerticalCylinder(post, adjustment, false)
+		verifyVerticalCylinder(edgePosts, post.postId, centerMeters, post.radiusMeters, heightMeters, post.appearance, post.hash)
 	end
 end
 
@@ -1305,7 +1458,8 @@ function WorldLowering.foundation(transaction: any): any
 			pendingRouteFrames[routeFrameKey(routeConstruction.routeId, segment.segmentId)] = resolved
 			spanRoute(surfaces, groundings, segment, resolved, routeConstruction.appearance)
 		end
-		lowerRouteAncillaries(route, routeConstruction)
+		pendingRouteStationAdjustments[routeConstruction.routeId] = resolution.stationAdjustments
+		lowerRouteAncillaries(route, routeConstruction, resolution.stationAdjustments)
 		table.insert(observations, {
 			artifactKind = "route_construction",
 			artifactId = routeConstruction.routeId,
@@ -1630,7 +1784,8 @@ local function lowerConstructedStructures(root: Instance, structures: { any }, o
 			part.Name = "ConstructedElement_" .. element.elementId
 			part.Anchored = true
 			part.CanCollide = true
-			part.Material = constructedMaterial(element.materialId)
+			part.Material = constructedMaterial(element.appearance.materialId)
+			part.Color = routeColor(element.appearance)
 			part.Size, part.CFrame, part.Shape = constructedGeometry(geometry)
 			if part.Size.X <= 0 or part.Size.Y <= 0 or part.Size.Z <= 0 then
 				part:Destroy()
@@ -1813,7 +1968,11 @@ function WorldLowering.readback(transaction: any): any
 			if routeFolder == nil or not routeFolder:IsA("Folder") then
 				fail("route geometry is missing for " .. routeConstruction.routeId)
 			end
-			verifyRouteAncillaries(routeFolder, routeConstruction)
+			local stationAdjustments = pendingRouteStationAdjustments[routeConstruction.routeId]
+			if stationAdjustments == nil then
+				fail("route ancillary lowering evidence is missing for " .. routeConstruction.routeId)
+			end
+			verifyRouteAncillaries(routeFolder, routeConstruction, stationAdjustments)
 			table.insert(artifacts, artifactObservation("route_construction", routeConstruction.routeId, routeConstruction.hash))
 		end
 		local junctionRoot = root:FindFirstChild("RouteJunctions")
@@ -1948,12 +2107,23 @@ function WorldLowering.readback(transaction: any): any
 					or (actualSize - expectedSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
 					fail("constructed element geometry drifted for " .. expected.artifactId)
 				end
+				if record.Material ~= constructedMaterial(declaration.appearance.materialId) then
+					fail("constructed element material drifted for " .. expected.artifactId)
+				end
+				if not routeColorMatches(record, declaration.appearance) then
+					fail("constructed element color drifted for " .. expected.artifactId)
+				end
 				table.insert(constructedElements, {
 					elementId = declaration.elementId,
 					geometryKind = declaration.geometry.kind,
 					centerMicrometers = vectorMicrometers(actualCenter),
 					sizeMicrometers = vectorMicrometers(actualSize),
 					materialId = record.Material.Name,
+					baseColorSrgb = {
+						red = roundedChannel(record.Color.R),
+						green = roundedChannel(record.Color.G),
+						blue = roundedChannel(record.Color.B),
+					},
 					anchored = record.Anchored,
 					canCollide = record.CanCollide,
 				})

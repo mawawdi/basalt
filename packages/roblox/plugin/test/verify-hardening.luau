@@ -1,8 +1,10 @@
 --!strict
 local ImportSequence = require("../src/Basalt/ImportSequence")
 local BoundedQuery = require("../src/Basalt/BoundedQuery")
+local Constants = require("../src/Basalt/Constants")
 local LoadedAsset = require("../src/Basalt/LoadedAsset")
 local ModelBounds = require("../src/Basalt/ModelBounds")
+local RouteCoordination = require("../src/Basalt/RouteCoordination")
 local RouteGeometry = require("../src/Basalt/RouteGeometry")
 local RouteGrounding = require("../src/Basalt/RouteGrounding")
 local TerrainReadback = require("../src/Basalt/TerrainReadback")
@@ -195,7 +197,7 @@ check("skewed route quads lower through an orthonormal frame", function()
 	assert(part.CFrame.LookVector:Dot(frame.LookVector) > 0.99999)
 end)
 
-check("grounding measures exposed space beneath the road body, not its travel top", function()
+check("grounding separates authored tolerance from Roblox voxel residuals", function()
 	-- Exact failure reported by Studio: the top was 0.2371m above terrain,
 	-- but the 0.16m road body left only 0.0771m exposed underneath it.
 	local studMeters = 0.28
@@ -207,10 +209,129 @@ check("grounding measures exposed space beneath the road body, not its travel to
 	assert(RouteGrounding.withinTolerance(
 		bodyClearanceStuds,
 		maximumGapStuds,
+		Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS,
 		observationToleranceStuds
 	))
 	local depth = RouteGrounding.initialDepthStuds(bodyClearanceStuds, 1, 0.02)
 	assert(depth > bodyClearanceStuds)
+
+	-- A later real Studio readback exposed 0.1679m under an authored 0.12m
+	-- route. That difference is voxel realization, so it receives the explicit
+	-- half-voxel engine allowance while the authored budget remains unchanged.
+	assert(Constants.TERRAIN_VOXEL_STUDS == 4)
+	assert(Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS == 2)
+	local reportedBodyGapStuds = 0.16793348312377931 / studMeters
+	assert(RouteGrounding.withinTolerance(
+		reportedBodyGapStuds,
+		maximumGapStuds,
+		Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS,
+		observationToleranceStuds
+	))
+	local maximumPermitted = RouteGrounding.maximumPermittedGapStuds(
+		maximumGapStuds,
+		Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS,
+		observationToleranceStuds
+	)
+	assert(math.abs(maximumPermitted * studMeters - 0.708) < 0.0000001)
+	assert(not RouteGrounding.withinTolerance(
+		maximumPermitted + 0.0001,
+		maximumGapStuds,
+		Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS,
+		observationToleranceStuds
+	))
+end)
+
+check("route junction coordination reaches a quantized monotone fixed point", function()
+	local routes = { { routeId = "Slow" }, { routeId = "Floor" } }
+	local junctions = {
+		{
+			junctionId = "Shared",
+			participants = {
+				{ routeId = "Slow", endpoint = "start" },
+				{ routeId = "Floor", endpoint = "start" },
+			},
+		},
+	}
+	local result = RouteCoordination.resolve(
+		routes,
+		junctions,
+		{ Shared = 0 },
+		function(route: any, overrides: any): any
+			local current = if overrides == nil then 0 else overrides.start
+			local endpoint = if route.routeId == "Slow"
+				then math.max(current, 0.01 + current * 0.25)
+				else math.max(current, 0.005)
+			return { stationAdjustments = { endpoint, 0 } }
+		end,
+		16,
+		0.0001
+	)
+	assert(result.iterations > 4 and result.iterations <= 16)
+	assert(result.junctionAdjustments.Shared >= 0.0133)
+	assert(result.junctionAdjustments.Shared < 0.0135)
+	assert(result.routeOverrides.Slow.start == result.junctionAdjustments.Shared)
+	assert(result.routeOverrides.Floor.start == result.junctionAdjustments.Shared)
+end)
+
+check("route junction coordination propagates corrections across a route graph", function()
+	local routes = { { routeId = "Source" }, { routeId = "Link" }, { routeId = "Sink" } }
+	local junctions = {
+		{
+			junctionId = "Start",
+			participants = {
+				{ routeId = "Source", endpoint = "start" },
+				{ routeId = "Link", endpoint = "start" },
+			},
+		},
+		{
+			junctionId = "Finish",
+			participants = {
+				{ routeId = "Link", endpoint = "end" },
+				{ routeId = "Sink", endpoint = "start" },
+			},
+		},
+	}
+	local result = RouteCoordination.resolve(
+		routes,
+		junctions,
+		{ Start = 0, Finish = 0 },
+		function(route: any, overrides: any): any
+			local start = if overrides == nil then 0 else overrides.start
+			local finish = if overrides == nil then 0 else overrides.finish
+			if route.routeId == "Source" then start = math.max(start, 0.02) end
+			if route.routeId == "Link" then finish = math.max(finish, start) end
+			return { stationAdjustments = { start, finish } }
+		end,
+		16,
+		0.0001
+	)
+	assert(result.junctionAdjustments.Start == 0.02)
+	assert(result.junctionAdjustments.Finish == 0.02)
+	assert(result.routeOverrides.Link.start == 0.02)
+	assert(result.routeOverrides.Link.finish == 0.02)
+end)
+
+check("route junction coordination retains a hard divergence bound", function()
+	local ok, message = pcall(function()
+		RouteCoordination.resolve(
+			{ { routeId = "Diverging" } },
+			{
+				{
+					junctionId = "Unstable",
+					participants = { { routeId = "Diverging", endpoint = "start" } },
+				},
+			},
+			{ Unstable = 0 },
+			function(_route: any, overrides: any): any
+				local current = if overrides == nil then 0 else overrides.start
+				return { stationAdjustments = { current + 0.001, 0 } }
+			end,
+			4,
+			0.0001
+		)
+	end)
+	assert(not ok)
+	assert(string.find(tostring(message), "after 4 monotone passes", 1, true) ~= nil)
 end)
 
 check("profile miters preserve their sealed sloped extension", function()

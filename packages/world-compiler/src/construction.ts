@@ -77,7 +77,7 @@ export function realizeConstructionProgram(
             operationId: operation.operationId,
             repetitionIndex: index,
             offset: scale(step, index),
-            ...(operation.materialId ? { materialId: operation.materialId } : {}),
+            ...(operation.appearance ? { appearance: operation.appearance } : {}),
           }),
         );
       continue;
@@ -223,7 +223,7 @@ function realizePrimitive(
     readonly operationId?: string;
     readonly repetitionIndex?: number;
     readonly offset?: Point;
-    readonly materialId?: string;
+    readonly appearance?: ConstructionProgram["defaultAppearance"];
   } = {},
 ): ConstructedElement {
   const offset = override.offset ?? { x: 0, y: 0, z: 0 };
@@ -235,7 +235,7 @@ function realizePrimitive(
     ),
     offset,
   );
-  const materialId = override.materialId ?? primitive.materialId ?? program.defaultMaterialId;
+  const appearance = override.appearance ?? primitive.appearance ?? program.defaultAppearance;
   const operationId = override.operationId ?? primitive.operationId;
   if (primitive.kind === "box") {
     const size = rotateLocalSize(resolveVector(primitive.sizeMeters, program), program);
@@ -250,7 +250,7 @@ function realizePrimitive(
       elementRole: "solid",
       geometry,
       boundsMeters: boxBounds(center, size),
-      materialId,
+      appearance,
       styleProfileHash: program.styleProfileHash,
       evidenceHashes: [program.programHash, contentHash(stableJson(primitive))],
     });
@@ -281,7 +281,7 @@ function realizePrimitive(
     elementRole: "solid",
     geometry,
     boundsMeters: boxBounds(center, { x: radiusMeters * 2, y: heightMeters, z: radiusMeters * 2 }),
-    materialId,
+    appearance,
     styleProfileHash: program.styleProfileHash,
     evidenceHashes: [program.programHash, contentHash(stableJson(primitive))],
   });
@@ -369,7 +369,7 @@ function realizeOpening(
             size: { x: localHostSize.x, y: top, z: width },
           },
         ];
-  const materialId = operation.materialId ?? host.materialId ?? program.defaultMaterialId;
+  const appearance = operation.appearance ?? host.appearance ?? program.defaultAppearance;
   const elements = panelSpecs.map((panel, repetitionIndex) => {
     const center = add(hostCenter, rotateLocalVector(panel.center, program));
     const panelSize = rotateLocalSize(panel.size, program);
@@ -381,7 +381,7 @@ function realizeOpening(
       elementRole: "opening_panel",
       geometry,
       boundsMeters: boxBounds(center, panelSize),
-      materialId,
+      appearance,
       styleProfileHash: program.styleProfileHash,
       evidenceHashes: [
         program.programHash,
@@ -459,7 +459,7 @@ function realizeStairs(
       elementRole: "stair_step",
       geometry,
       boundsMeters: boxBounds(center, size),
-      materialId: operation.materialId ?? program.defaultMaterialId,
+      appearance: operation.appearance ?? program.defaultAppearance,
       styleProfileHash: program.styleProfileHash,
       evidenceHashes: [program.programHash, contentHash(stableJson(operation))],
     });

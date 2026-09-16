@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
-  CATALOG_QUALIFICATION_FIXTURE_SCHEMA,
   CATALOG_QUALIFICATION_POLICY_SCHEMA,
   CATALOG_QUALIFICATION_SELECTION_RULE,
   CATALOG_QUALIFICATION_SELECTION_SCHEMA,
@@ -286,9 +285,74 @@ test("qualification artifact verification rejects missing and contradictory refe
 });
 
 async function loadFixture(): Promise<CatalogQualificationFixture> {
-  return CATALOG_QUALIFICATION_FIXTURE_SCHEMA.parse(
-    JSON.parse(await readFile("registry/catalog-qualification.json", "utf8")),
+  const policy = CATALOG_QUALIFICATION_POLICY_SCHEMA.parse(
+    JSON.parse(await readFile("registry/qualification-policy.json", "utf8")),
   );
+  const query = sealCatalogSearchQuery({
+    text: "synthetic independently reviewed bench",
+    styleTerms: ["stylized"],
+    rankingMode: "automatic",
+    constraints: { commercialUseRequired: true, redistributionRequired: true },
+    limit: 5,
+    validationLimit: 2,
+  });
+  const queries = [
+    { queryId: "development_match", split: "development" },
+    { queryId: "holdout_match", split: "holdout" },
+    { queryId: "model_selection_match", split: "model_selection" },
+  ].map((entry) => ({
+    ...entry,
+    query,
+    expectation: "match",
+    judgmentBasis: "independent_visual_review",
+    judgments: [{ sourceContentHash: HASH_A, relevance: "relevant" }],
+    adjudicationEvidenceHashes: [HASH_A],
+  }));
+  const validationCases = queries.map((entry) => ({
+    caseId: `${entry.split}_validator`,
+    split: entry.split,
+    request: { hash: HASH_A, candidate: { sourceContentHash: HASH_A } },
+    expectedVerdict: "match",
+    verdictBasis: "independent_visual_review",
+    adjudicationEvidenceHashes: [HASH_A],
+  }));
+  return {
+    kind: "CatalogQualificationFixture",
+    hash: HASH_C,
+    adjudication: {
+      status: "creator_reviewed",
+      reviewerAuthority: "creator",
+      reviewerId: "synthetic-test-creator",
+      reviewMethod: "independent_visual_review",
+      proposalFixtureHash: HASH_A,
+      reviewPacketHash: HASH_B,
+      decisionArtifactHash: HASH_C,
+    },
+    sourceManifestHash: HASH_A,
+    measurementSetHash: HASH_A,
+    visualReviewIndexHash: HASH_A,
+    leakageAnalysisHash: HASH_A,
+    assets: [],
+    candidatePools: [],
+    queries,
+    validationCases,
+    writerConfigurations: [
+      { modelId: "writer_model", modelCommitHash: "d".repeat(40), viewSet: "cardinal_four" },
+      { modelId: "writer_model", modelCommitHash: "d".repeat(40), viewSet: "canonical_twelve" },
+    ],
+    validatorConfigurations: [{ modelId: "validator_model", modelCommitHash: "e".repeat(40) }],
+    adjudicationProtocolHash: HASH_A,
+    qualificationPolicyHash: policy.hash,
+    searchPolicyHash: HASH_A,
+    candidateDecisionPolicyHash: HASH_A,
+    modelDeclarationsHash: HASH_A,
+    modelRolePolicyHash: HASH_A,
+    metadataPromptTemplateHash: HASH_A,
+    validationPromptTemplateHash: HASH_A,
+    metadataSchemaHash: HASH_A,
+    validationSchemaHash: HASH_A,
+    selectionRule: CATALOG_QUALIFICATION_SELECTION_RULE,
+  } as unknown as CatalogQualificationFixture;
 }
 
 function emptyEvidence(

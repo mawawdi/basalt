@@ -46,7 +46,7 @@ misclassifying the asset.
 
 ## Open-vocabulary metadata
 
-The metadata adapter receives a measured decimal summary plus either four cardinal RGB
+The optional bulk metadata adapter receives a measured decimal summary plus either four cardinal RGB
 views or the canonical twelve, resized by a hashed preprocessor to a maximum 384-pixel
 long edge. Twelve is the safe default until production qualification demonstrates that
 four is non-inferior. Qualification compares:
@@ -70,10 +70,20 @@ a material role-specific gain. Receipts bind the source,
 measurement, render, prompt, schema, preprocessor, adapter, worker, model commit, raw
 output, and resource use. They have `compilerAuthority: false`.
 
+A useful starting catalog does not wait for bulk-worker qualification. Bounded agent-authored
+metadata batches bind the same measurement and render evidence while recording the actual producer,
+certainty, reviewer, review coverage, and exact decision artifact. Unreviewed concrete hypotheses
+may improve search, but remain visibly unreviewed; uncertain items and audit samples can be reviewed
+without pretending the whole batch received creator authority. Agent-authored records have no
+compiler authority and cannot authorize qualification or admission. Worker receipts and authored
+records are distinct evidence kinds and cannot silently replace one another for the same source.
+
 Qualification answer keys are a separate authority surface. Filename-derived nouns, confusers,
 query expectations, relevance judgments, and validator verdicts remain proposals until a creator
-independently reviews their bound visual pages. The finalized key is derived from the complete
-creator decision; a status label or provenance hash by itself cannot promote proposed labels.
+or explicitly identified delegated reviewer independently reviews their bound visual pages. A
+delegated-AI decision remains development evidence and must never masquerade as personal creator or
+human holdout review. The finalized key is derived from the complete bound decision; a status label
+or provenance hash by itself cannot promote proposed labels.
 
 Platform upload adaptation is also separate from visual authority. Catalog source GLBs remain
 immutable; the Roblox boundary may derive an exact retained payload for importer compatibility.
@@ -149,7 +159,8 @@ Route appearance is independent of route construction. A woodland trail, paved r
 boardwalk may share a destination while using different materials, colors, terrain
 treatments, and support behavior. Every grounded route emits a material mask and
 vegetation-clearance mask from its resolved footprint; an elevated route clears vegetation
-but preserves terrain. Radius-constrained bends and authored junctions are composition
+but preserves terrain and must explicitly choose no edge protection or sealed guardrails
+with posts and rails. Radius-constrained bends and authored junctions are composition
 evidence, not catalog assets. Smooth ordinary bends use deterministic five-degree-or-finer
 sampling and mitered native spans. Designed elevation profiles use one-degree-or-finer pitch
 sampling and full-depth profile miters, so a changing grade does not expose each native
@@ -162,7 +173,9 @@ At the Roblox boundary, the visible route top must clear reconstructed smooth te
 the route body's underside determines whether a void is exposed. Small voxel-only residuals
 are covered by deterministic grounding geometry in the same appearance; they are not hidden
 by widening a tolerance. Both the residual and the added depth remain available in the import
-diagnostic report for visual review.
+diagnostic report for visual review. Any bounded vertical correction applied to a deck also
+moves its rails and posts and extends its supports back to ground, preserving the compiled
+assembly rather than correcting only the travel surface.
 
 ## Neural asset production
 
@@ -183,7 +196,8 @@ Each shard is bounded by all of the following:
 - a fixed preprocessed-pixel ceiling derived from a 384-pixel long edge.
 
 The asset count is a checkpoint ceiling, not a GPU batch size. Actual inference may be
-sequential. One Modal GPU container and at most four local CPU tasks are allowed. The
+sequential. Remote model execution is optional, has no default provider, and must be selected
+explicitly; at most one remote GPU worker and four local CPU tasks are allowed. The
 tracked 32-asset fixture is a smoke test only. Corpus execution remains locked until the
 larger pooled, leakage-isolated qualification covers mixed enrichment, independent writer
 and validator roles, four versus twelve views, confusers, no-match cases, and

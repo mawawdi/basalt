@@ -106,6 +106,42 @@ export const ROUTE_SUPPORT_SCHEMA = z
   .strict()
   .superRefine((value, context) => verifyHash(value, "hash", context));
 
+export const ROUTE_EDGE_RAIL_SCHEMA = z
+  .object({
+    railId: WORLD_ENTITY_ID_SCHEMA,
+    side: z.enum(["left", "right"]),
+    level: z.enum(["mid", "top"]),
+    startStationMeters: nonnegative,
+    endStationMeters: nonnegative,
+    thicknessMeters: finite.positive(),
+    vertices: z.array(routeVertex).length(4),
+    boundsMeters: SPATIAL_AABB_SCHEMA,
+    appearance: ROUTE_APPEARANCE_SCHEMA,
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    verifyHash(value, "hash", context);
+    if (value.endStationMeters <= value.startStationMeters)
+      context.addIssue({ code: "custom", message: "Route edge rails require positive extent" });
+  });
+export type RouteEdgeRail = z.output<typeof ROUTE_EDGE_RAIL_SCHEMA>;
+
+export const ROUTE_EDGE_POST_SCHEMA = z
+  .object({
+    postId: WORLD_ENTITY_ID_SCHEMA,
+    side: z.enum(["left", "right"]),
+    stationMeters: nonnegative,
+    centerMeters: SPATIAL_VECTOR3_SCHEMA,
+    radiusMeters: finite.positive(),
+    heightMeters: finite.positive(),
+    appearance: ROUTE_APPEARANCE_SCHEMA,
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => verifyHash(value, "hash", context));
+export type RouteEdgePost = z.output<typeof ROUTE_EDGE_POST_SCHEMA>;
+
 export const ROUTE_MATERIAL_MASK_SCHEMA = z
   .object({
     maskId: WORLD_ENTITY_ID_SCHEMA,
@@ -205,6 +241,8 @@ export const ROUTE_CONSTRUCTION_ARTIFACT_SCHEMA = z
     travelSegments: z.array(ROUTE_SURFACE_SEGMENT_SCHEMA).max(1_000_000),
     bends: z.array(ROUTE_BEND_SCHEMA).max(65_536),
     supports: z.array(ROUTE_SUPPORT_SCHEMA).max(1_000_000),
+    edgeRails: z.array(ROUTE_EDGE_RAIL_SCHEMA).max(1_000_000),
+    edgePosts: z.array(ROUTE_EDGE_POST_SCHEMA).max(1_000_000),
     terrainTreatment: ROUTE_TERRAIN_TREATMENT_SCHEMA,
     materialMask: ROUTE_MATERIAL_MASK_SCHEMA.optional(),
     vegetationMask: ROUTE_VEGETATION_MASK_SCHEMA,
@@ -300,6 +338,18 @@ export const ROUTE_CONSTRUCTION_ARTIFACT_SCHEMA = z
       context.addIssue({ code: "custom", message: "Route bend IDs must be unique" });
     if (new Set(value.supports.map((entry) => entry.supportId)).size !== value.supports.length)
       context.addIssue({ code: "custom", message: "Route support IDs must be unique" });
+    if (new Set(value.edgeRails.map((entry) => entry.railId)).size !== value.edgeRails.length)
+      context.addIssue({ code: "custom", message: "Route edge-rail IDs must be unique" });
+    if (new Set(value.edgePosts.map((entry) => entry.postId)).size !== value.edgePosts.length)
+      context.addIssue({ code: "custom", message: "Route edge-post IDs must be unique" });
+    if (
+      value.treatmentKind !== "elevated" &&
+      (value.edgeRails.length > 0 || value.edgePosts.length > 0)
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Only elevated routes can emit edge protection",
+      });
     if (
       value.terrainTreatment.kind === "grade" &&
       value.terrainTreatment.routeProfileHash !== value.profileHash
@@ -411,7 +461,7 @@ function junctionTerrainTreatment(
     groundingToleranceMeters: Math.min(
       ...treatments.map((entry) => entry.groundingToleranceMeters),
     ),
-    terrainMaterialId: junction.appearance.materialId,
+    terrainMaterialId: junction.terrainMaterialId,
     priority: Math.max(...routes.map((route) => route.terrainPriority)),
   };
 }
@@ -499,7 +549,12 @@ export function resolveRouteConstruction(
   const eligible = diagnostics.length === 0;
   const travelSegments = eligible ? buildTravelSegments(route, profile, spans) : [];
   const bends = eligible ? buildBends(route, resolvedAlignment.bends) : [];
-  const supports = eligible ? buildSupports(route, profile, baseTerrain) : [];
+  const supports = eligible
+    ? buildSupports(resolvedRoute, profile, baseTerrain, routeJunctions)
+    : [];
+  const edgeProtection = eligible
+    ? buildEdgeProtection(resolvedRoute, profile, routeJunctions)
+    : { edgeRails: [], edgePosts: [] };
   const resolvedTerrainTreatment = eligible
     ? buildTerrainTreatment(route, profileHash)
     : ({ kind: "preserve" } as const);
@@ -539,6 +594,8 @@ export function resolveRouteConstruction(
     travelSegments,
     bends,
     supports,
+    edgeRails: edgeProtection.edgeRails,
+    edgePosts: edgeProtection.edgePosts,
     terrainTreatment: resolvedTerrainTreatment,
     ...(materialMask ? { materialMask } : {}),
     vegetationMask,
@@ -1124,42 +1181,213 @@ function buildSupports(
   route: WorldRoute,
   profile: readonly RouteProfileStation[],
   baseTerrain: BaseTerrainFieldArtifact,
+  junctions: readonly RouteJunctionArtifact[],
 ) {
   if (route.construction.kind !== "elevated") return [];
   const construction = route.construction;
   const total = profile.at(-1)!.stationMeters;
-  const count = Math.max(1, Math.ceil(total / construction.supportSpacingMeters));
-  return Array.from({ length: count + 1 }, (_, index) => {
-    const stationMeters = (total * index) / count;
+  const { startInsetMeters, finishInsetMeters } = junctionEndpointInsets(
+    route.routeId,
+    total,
+    junctions,
+  );
+  const usableLengthMeters = total - startInsetMeters - finishInsetMeters;
+  if (usableLengthMeters <= 1e-9) return [];
+  const intervalCount = Math.max(
+    1,
+    Math.ceil(usableLengthMeters / construction.supportSpacingMeters),
+  );
+  const lateralOffsetMeters = Math.max(
+    0,
+    route.widthMeters / 2 - construction.supportRadiusMeters * 1.5,
+  );
+  return Array.from({ length: intervalCount + 1 }, (_, index) => {
+    const stationMeters = startInsetMeters + (usableLengthMeters * index) / intervalCount;
     const station = interpolateProfileStation(profile, stationMeters);
-    const ground = sampleBaseTerrainFieldElevation(
-      baseTerrain,
-      station.centerTopMeters.x,
-      station.centerTopMeters.z,
-    );
-    const supportTop = station.centerTopMeters.y - route.thicknessMeters;
-    const heightMeters = supportTop - ground;
-    const input = {
-      stationMeters,
-      centerMeters: {
-        x: station.centerTopMeters.x,
-        y: ground + heightMeters / 2,
-        z: station.centerTopMeters.z,
-      },
-      radiusMeters: construction.supportRadiusMeters,
-      heightMeters,
-      appearance: construction.supportAppearance,
-    };
-    const supportId = contentAddressedEntityId("RouteSupport", {
-      routeId: route.routeId,
-      index,
-      ...input,
+    const sample = sampleRouteAlignment(route, stationMeters / total);
+    const lateral = { x: -sample.tangent.z, z: sample.tangent.x };
+    return (["left", "right"] as const).map((side) => {
+      const sign = side === "left" ? -1 : 1;
+      const x = station.centerTopMeters.x + lateral.x * lateralOffsetMeters * sign;
+      const z = station.centerTopMeters.z + lateral.z * lateralOffsetMeters * sign;
+      const ground = sampleBaseTerrainFieldElevation(baseTerrain, x, z);
+      const supportTop = station.centerTopMeters.y - route.thicknessMeters;
+      const heightMeters = supportTop - ground;
+      if (heightMeters <= 1e-9)
+        throw new Error(
+          `Elevated route ${route.routeId} has no positive support height at ${stationMeters.toFixed(6)}m`,
+        );
+      const input = {
+        stationMeters,
+        centerMeters: { x, y: ground + heightMeters / 2, z },
+        radiusMeters: construction.supportRadiusMeters,
+        heightMeters,
+        appearance: construction.supportAppearance,
+      };
+      const supportId = contentAddressedEntityId("RouteSupport", {
+        routeId: route.routeId,
+        side,
+        index,
+        ...input,
+      });
+      const material = { supportId, ...input };
+      return deepFreezeJson(
+        ROUTE_SUPPORT_SCHEMA.parse({ ...material, hash: contentHash(stableJson(material)) }),
+      );
     });
-    const material = { supportId, ...input };
-    return deepFreezeJson(
-      ROUTE_SUPPORT_SCHEMA.parse({ ...material, hash: contentHash(stableJson(material)) }),
+  }).flat();
+}
+
+function buildEdgeProtection(
+  route: WorldRoute,
+  profile: readonly RouteProfileStation[],
+  junctions: readonly RouteJunctionArtifact[],
+): { readonly edgeRails: readonly RouteEdgeRail[]; readonly edgePosts: readonly RouteEdgePost[] } {
+  if (route.construction.kind !== "elevated" || route.construction.edgeProtection.kind === "none")
+    return { edgeRails: [], edgePosts: [] };
+  const protection = route.construction.edgeProtection;
+  const total = profile.at(-1)!.stationMeters;
+  const { startInsetMeters, finishInsetMeters } = junctionEndpointInsets(
+    route.routeId,
+    total,
+    junctions,
+  );
+  const usableLengthMeters = total - startInsetMeters - finishInsetMeters;
+  if (usableLengthMeters <= 1e-9) return { edgeRails: [], edgePosts: [] };
+  const intervalCount = Math.max(1, Math.ceil(usableLengthMeters / protection.postSpacingMeters));
+  const stations = Array.from(
+    { length: intervalCount + 1 },
+    (_, index) => startInsetMeters + (usableLengthMeters * index) / intervalCount,
+  );
+  const samples = stations.map((stationMeters) => {
+    const station = interpolateProfileStation(profile, stationMeters);
+    const alignment = sampleRouteAlignment(route, stationMeters / total);
+    const lateral = { x: -alignment.tangent.z, z: alignment.tangent.x };
+    return { stationMeters, station, lateral };
+  });
+  const edgePosts = samples.flatMap((sample, index) =>
+    (["left", "right"] as const).map((side) => {
+      const sign = side === "left" ? -1 : 1;
+      const input = {
+        side,
+        stationMeters: sample.stationMeters,
+        centerMeters: {
+          x: sample.station.centerTopMeters.x + sample.lateral.x * route.widthMeters * 0.5 * sign,
+          y: sample.station.centerTopMeters.y + protection.heightMeters / 2,
+          z: sample.station.centerTopMeters.z + sample.lateral.z * route.widthMeters * 0.5 * sign,
+        },
+        radiusMeters: protection.postRadiusMeters,
+        heightMeters: protection.heightMeters,
+        appearance: protection.appearance,
+      };
+      const postId = contentAddressedEntityId("RouteEdgePost", {
+        routeId: route.routeId,
+        index,
+        ...input,
+      });
+      const material = { postId, ...input };
+      return deepFreezeJson(
+        ROUTE_EDGE_POST_SCHEMA.parse({ ...material, hash: contentHash(stableJson(material)) }),
+      );
+    }),
+  );
+  const edgeRails = samples.slice(1).flatMap((finish, index) => {
+    const start = samples[index]!;
+    return (["left", "right"] as const).flatMap((side) =>
+      (["mid", "top"] as const).map((level) => {
+        const heightMeters = protection.heightMeters * (level === "mid" ? 0.5 : 1);
+        return sealEdgeRail(route, protection, side, level, heightMeters, start, finish, index);
+      }),
     );
   });
+  return { edgeRails, edgePosts };
+}
+
+function sealEdgeRail(
+  route: WorldRoute,
+  protection: Extract<WorldRoute["construction"], { kind: "elevated" }>["edgeProtection"] & {
+    readonly kind: "guardrail";
+  },
+  side: "left" | "right",
+  level: "mid" | "top",
+  heightMeters: number,
+  start: {
+    readonly stationMeters: number;
+    readonly station: RouteProfileStation;
+    readonly lateral: WorldPoint2;
+  },
+  finish: {
+    readonly stationMeters: number;
+    readonly station: RouteProfileStation;
+    readonly lateral: WorldPoint2;
+  },
+  index: number,
+): RouteEdgeRail {
+  const sign = side === "left" ? -1 : 1;
+  const startCenter = {
+    x: start.station.centerTopMeters.x + start.lateral.x * route.widthMeters * 0.5 * sign,
+    y: start.station.centerTopMeters.y + heightMeters,
+    z: start.station.centerTopMeters.z + start.lateral.z * route.widthMeters * 0.5 * sign,
+  };
+  const finishCenter = {
+    x: finish.station.centerTopMeters.x + finish.lateral.x * route.widthMeters * 0.5 * sign,
+    y: finish.station.centerTopMeters.y + heightMeters,
+    z: finish.station.centerTopMeters.z + finish.lateral.z * route.widthMeters * 0.5 * sign,
+  };
+  const tangent = normalize3(subtract3(finishCenter, startCenter));
+  const horizontalLateral = normalize3({ x: -tangent.z, y: 0, z: tangent.x });
+  let normal = normalize3(cross3(horizontalLateral, tangent));
+  if (normal.y < 0) normal = scale3(normal, -1);
+  const halfThickness = protection.railThicknessMeters / 2;
+  const vertices = [
+    subtract3(startCenter, scale3(horizontalLateral, halfThickness)),
+    add3(startCenter, scale3(horizontalLateral, halfThickness)),
+    subtract3(finishCenter, scale3(horizontalLateral, halfThickness)),
+    add3(finishCenter, scale3(horizontalLateral, halfThickness)),
+  ].map((positionMeters) => ({ positionMeters, normal }));
+  const input = {
+    side,
+    level,
+    startStationMeters: start.stationMeters,
+    endStationMeters: finish.stationMeters,
+    thicknessMeters: protection.railThicknessMeters,
+    vertices,
+    boundsMeters: boundsForRouteSurface(
+      vertices.map((entry) => entry.positionMeters),
+      normal,
+      protection.railThicknessMeters,
+    ),
+    appearance: protection.appearance,
+  };
+  const railId = contentAddressedEntityId("RouteEdgeRail", {
+    routeId: route.routeId,
+    index,
+    ...input,
+  });
+  const material = { railId, ...input };
+  return deepFreezeJson(
+    ROUTE_EDGE_RAIL_SCHEMA.parse({ ...material, hash: contentHash(stableJson(material)) }),
+  );
+}
+
+function junctionEndpointInsets(
+  routeId: string,
+  totalLengthMeters: number,
+  junctions: readonly RouteJunctionArtifact[],
+): { readonly startInsetMeters: number; readonly finishInsetMeters: number } {
+  let startInsetMeters = 0;
+  let finishInsetMeters = 0;
+  for (const junction of junctions) {
+    const participant = junction.participants.find((entry) => entry.routeId === routeId);
+    if (!participant) continue;
+    if (participant.endpoint === "start")
+      startInsetMeters = Math.max(startInsetMeters, junction.radiusMeters);
+    else finishInsetMeters = Math.max(finishInsetMeters, junction.radiusMeters);
+  }
+  return {
+    startInsetMeters: Math.min(startInsetMeters, totalLengthMeters / 2),
+    finishInsetMeters: Math.min(finishInsetMeters, totalLengthMeters / 2),
+  };
 }
 
 function buildTerrainTreatment(route: WorldRoute, routeProfileHash: string): RouteTerrainTreatment {
@@ -1425,6 +1653,10 @@ function interpolate2(start: WorldPoint2, end: WorldPoint2, amount: number): Wor
 
 function midpoint3(start: WorldVector3, end: WorldVector3): WorldVector3 {
   return { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2, z: (start.z + end.z) / 2 };
+}
+
+function add3(start: WorldVector3, end: WorldVector3): WorldVector3 {
+  return { x: start.x + end.x, y: start.y + end.y, z: start.z + end.z };
 }
 
 function subtract3(start: WorldVector3, end: WorldVector3): WorldVector3 {

@@ -1,4 +1,5 @@
 export * from "./artifact.js";
+export * from "./authored-metadata.js";
 export * from "./admission-review.js";
 export * from "./audit.js";
 export * from "./calibration.js";
@@ -12,6 +13,7 @@ export * from "./metadata.js";
 export * from "./model-policy.js";
 export * from "./policy.js";
 export * from "./qualification.js";
+export * from "./qualification-authoring.js";
 export * from "./render.js";
 export * from "./rubric.js";
 export * from "./search.js";

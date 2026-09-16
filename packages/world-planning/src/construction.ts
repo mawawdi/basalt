@@ -10,6 +10,20 @@ import { SPATIAL_VECTOR3_SCHEMA, entityId } from "@basalt/spatial-core";
 
 const finite = z.number().finite();
 
+export const CONSTRUCTION_APPEARANCE_SCHEMA = z
+  .object({
+    materialId: entityId,
+    baseColorSrgb: z
+      .object({
+        red: z.number().int().min(0).max(255),
+        green: z.number().int().min(0).max(255),
+        blue: z.number().int().min(0).max(255),
+      })
+      .strict(),
+  })
+  .strict();
+export type ConstructionAppearance = z.output<typeof CONSTRUCTION_APPEARANCE_SCHEMA>;
+
 export const CONSTRUCTION_PARAMETER_SCHEMA = z
   .object({
     parameterId: entityId,
@@ -61,7 +75,7 @@ const constructionVector = z
 
 const operationBase = {
   operationId: entityId,
-  materialId: entityId.optional(),
+  appearance: CONSTRUCTION_APPEARANCE_SCHEMA.optional(),
 };
 
 const BOX_OPERATION_SCHEMA = z
@@ -174,7 +188,7 @@ export const CONSTRUCTION_PROGRAM_SCHEMA = z
     regionId: entityId,
     semanticDependencyClosureHash: HASH_SCHEMA,
     styleProfileHash: HASH_SCHEMA,
-    defaultMaterialId: entityId,
+    defaultAppearance: CONSTRUCTION_APPEARANCE_SCHEMA,
     anchor: z.discriminatedUnion("kind", [
       z
         .object({

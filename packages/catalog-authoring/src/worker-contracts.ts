@@ -69,6 +69,11 @@ export const CATALOG_MODEL_DECLARATIONS_SCHEMA = z
 export type CatalogModelDeclarations = z.output<typeof CATALOG_MODEL_DECLARATIONS_SCHEMA>;
 
 const JSON_SCHEMA_VALUE = z.record(z.string(), z.unknown());
+const PROMPT_TEMPLATE_SCHEMA = z
+  .string()
+  .min(1)
+  .max(32_768)
+  .refine((value) => value.trim().length > 0, "Prompt template must contain non-whitespace text");
 export const CATALOG_WORKER_MAX_ASSETS_PER_SHARD = 8;
 export const CATALOG_CONTEXT_MAX_CANDIDATES = 32;
 export const CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD = 192;
@@ -169,7 +174,7 @@ export const CATALOG_METADATA_WORKER_JOB_SCHEMA = z
   .object({
     kind: z.literal("CatalogMetadataWorkerJob"),
     requestSetHash: HASH_SCHEMA,
-    promptTemplate: z.string().trim().min(1).max(32_768),
+    promptTemplate: PROMPT_TEMPLATE_SCHEMA,
     promptTemplateHash: HASH_SCHEMA,
     outputSchema: JSON_SCHEMA_VALUE,
     outputSchemaHash: HASH_SCHEMA,
@@ -182,6 +187,12 @@ export const CATALOG_METADATA_WORKER_JOB_SCHEMA = z
   .strict()
   .superRefine((value, context) => {
     verifyArtifactHash(value, context);
+    if (contentHash(value.promptTemplate) !== value.promptTemplateHash)
+      context.addIssue({
+        code: "custom",
+        path: ["promptTemplateHash"],
+        message: "Metadata worker prompt hash does not match its exact template",
+      });
     requireCanonicalValues(
       value.items,
       (entry) => entry.request.hash,
@@ -205,7 +216,7 @@ const CONTEXT_WORKER_CANDIDATE_EVIDENCE_SCHEMA = z
 export const CATALOG_CONTEXT_WORKER_JOB_SCHEMA = z
   .object({
     kind: z.literal("CatalogContextWorkerJob"),
-    promptTemplate: z.string().trim().min(1).max(32_768),
+    promptTemplate: PROMPT_TEMPLATE_SCHEMA,
     promptTemplateHash: HASH_SCHEMA,
     outputSchema: JSON_SCHEMA_VALUE,
     outputSchemaHash: HASH_SCHEMA,
@@ -222,6 +233,12 @@ export const CATALOG_CONTEXT_WORKER_JOB_SCHEMA = z
   .strict()
   .superRefine((value, context) => {
     verifyArtifactHash(value, context);
+    if (contentHash(value.promptTemplate) !== value.promptTemplateHash)
+      context.addIssue({
+        code: "custom",
+        path: ["promptTemplateHash"],
+        message: "Context worker prompt hash does not match its exact template",
+      });
     requireCanonicalValues(
       value.candidateEvidence,
       (entry) => entry.sourceContentHash,
@@ -567,7 +584,7 @@ export const CATALOG_QUERY_EMBEDDING_WORKER_OUTPUT_SCHEMA = z
 export const CATALOG_VALIDATION_WORKER_JOB_SCHEMA = z
   .object({
     kind: z.literal("CatalogValidationWorkerJob"),
-    promptTemplate: z.string().trim().min(1).max(32_768),
+    promptTemplate: PROMPT_TEMPLATE_SCHEMA,
     promptTemplateHash: HASH_SCHEMA,
     outputSchema: JSON_SCHEMA_VALUE,
     outputSchemaHash: HASH_SCHEMA,
@@ -616,6 +633,12 @@ export const CATALOG_VALIDATION_WORKER_JOB_SCHEMA = z
   .strict()
   .superRefine((value, context) => {
     verifyArtifactHash(value, context);
+    if (contentHash(value.promptTemplate) !== value.promptTemplateHash)
+      context.addIssue({
+        code: "custom",
+        path: ["promptTemplateHash"],
+        message: "Validation worker prompt hash does not match its exact template",
+      });
     requireCanonicalValues(
       value.items,
       (entry) => entry.request.hash,

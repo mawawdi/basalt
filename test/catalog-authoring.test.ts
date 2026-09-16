@@ -29,6 +29,10 @@ import {
   sealAssetContextHypothesisReceipt,
   sealAssetContextHypothesisRequest,
   sealCatalogAdmissionPolicy,
+  sealCatalogAuthoredMetadataBatch,
+  sealCatalogAuthoredMetadataSetManifest,
+  sealCatalogAuthoredMetadataReview,
+  sealCatalogAuthoredSearchMetadataSet,
   sealCatalogAcceptanceAudit,
   sealCatalogAuthorityCommit,
   sealCatalogCandidateDecisionPolicy,
@@ -191,6 +195,150 @@ test("metadata requests isolate names and bind every selected render", () => {
       }),
     /Only visual-and-name|hash mismatch/iu,
   );
+});
+
+test("agent-authored metadata stays provenance-distinct while enriching search", async () => {
+  const semantic = await loadSemanticRegistry();
+  const fixture = await catalogFixture(semantic);
+  const measurements = sealCatalogMeasurementSet({
+    sourceManifestHash: hash("authored-source-manifest"),
+    assets: [fixture.asset],
+    diagnostics: [],
+  });
+  const batch = sealCatalogAuthoredMetadataBatch({
+    batchId: "authored_search_test",
+    sourceManifestHash: measurements.sourceManifestHash,
+    measurementSetHash: measurements.hash,
+    visualReviewIndexHash: hash("authored-review-index"),
+    producer: { authority: "delegated_ai", actorId: "test-producer" },
+    sourceArtifactHashes: [],
+    entries: [
+      {
+        sourceContentHash: fixture.asset.source.contentHash,
+        measurementHash: fixture.asset.hash,
+        renderEvidenceHash: hash("authored-render"),
+        authoringCertainty: { status: "concrete" },
+        metadata: treeMetadata(),
+      },
+    ],
+  });
+  const review = sealCatalogAuthoredMetadataReview({
+    batchHash: batch.hash,
+    reviewer: { authority: "creator", actorId: "test-creator" },
+    reviewCoverage: "complete",
+    reviewMethod: "direct_metadata_review",
+    reviewScope: "complete_metadata",
+    reviewIndependence: "independent",
+    reviewerStatement: "I independently reviewed the bound render and metadata evidence.",
+    reviewedAt: "2026-09-16T00:00:00.000Z",
+    decisions: [
+      {
+        sourceContentHash: fixture.asset.source.contentHash,
+        action: "accept",
+        note: "The description accurately matches the visible asset.",
+      },
+    ],
+  });
+  const authored = sealCatalogAuthoredSearchMetadataSet({ batch, review });
+  assert.equal(authored.qualificationExecutionAuthorized, false);
+  assert.equal(authored.records[0]?.review.status, "accepted");
+
+  const normalizerImplementationHash = hash("authored-name-normalizer");
+  const sourceName = seal({
+    kind: "CatalogSourceNameHint" as const,
+    sourceContentHash: fixture.asset.source.contentHash,
+    normalizerImplementationHash,
+    interpretation: "single_normalized_name" as const,
+    observations: [
+      {
+        originalFilename: "Ambiguous.glb",
+        normalizedStem: "ambiguous",
+        tokens: ["ambiguous"],
+      },
+    ],
+    diagnostics: [],
+    compilerAuthority: false as const,
+  });
+  const sourceNames = CATALOG_SOURCE_NAME_HINT_SET_SCHEMA.parse(
+    seal({
+      kind: "CatalogSourceNameHintSet" as const,
+      status: "eligible" as const,
+      sourceManifestHash: measurements.sourceManifestHash,
+      normalizerImplementationHash,
+      items: [sourceName],
+      diagnostics: [],
+      compilerAuthority: false as const,
+    }),
+  );
+  const policy = searchPolicy();
+  const index = buildCatalogSearchIndex({
+    measurements,
+    authoredMetadata: [authored],
+    sourceNames,
+    policy,
+    buildImplementationHash: hash("authored-search-builder"),
+  });
+  assert.equal(index.coverage.metadata, 1);
+  assert.equal(index.coverage.workerMetadata, 0);
+  assert.equal(index.coverage.authoredMetadata, 1);
+  assert.equal(index.documents[0]?.metadataEvidence?.kind, "authored");
+  const result = executeCatalogSearch({
+    index,
+    policy,
+    query: sealCatalogSearchQuery({
+      text: "broad leafy tree",
+      rankingMode: "metadata_only",
+      styleTerms: [],
+      constraints: { commercialUseRequired: false, redistributionRequired: false },
+      limit: 1,
+      validationLimit: 0,
+    }),
+  });
+  assert.equal(result.results[0]?.sourceContentHash, fixture.asset.source.contentHash);
+  assert.equal(result.results[0]?.metadataEvidenceKind, "authored");
+  assert.equal(result.results[0]?.metadataEvidenceHash, authored.records[0]?.hash);
+});
+
+test("authored metadata set manifests canonically bind additive bounded batches", () => {
+  const manifest = sealCatalogAuthoredMetadataSetManifest({
+    sets: [
+      {
+        relativePath: ".basalt/catalog/metadata/second-set.json",
+        setHash: hash("second-authored-set"),
+      },
+      {
+        relativePath: ".basalt/catalog/metadata/first-set.json",
+        setHash: hash("first-authored-set"),
+      },
+    ],
+  });
+  assert.deepEqual(
+    manifest.sets.map((entry) => entry.relativePath),
+    [".basalt/catalog/metadata/first-set.json", ".basalt/catalog/metadata/second-set.json"],
+  );
+});
+
+test("direct authored review can approve visible descriptions without approving all metadata", () => {
+  const review = sealCatalogAuthoredMetadataReview({
+    batchHash: hash("visible-description-batch"),
+    reviewer: { authority: "creator", actorId: "creator" },
+    reviewCoverage: "complete",
+    reviewMethod: "direct_metadata_review",
+    reviewScope: "visible_description_only",
+    reviewIndependence: "independent",
+    reviewerStatement:
+      "I directly reviewed every visible description and approve only those captions.",
+    reviewedAt: "2026-09-16T00:00:00.000Z",
+    decisions: [
+      {
+        sourceContentHash: hash("visible-description-source"),
+        action: "accept",
+        note: "The visible description is accurate.",
+      },
+    ],
+  });
+  assert.equal(review.reviewScope, "visible_description_only");
+  assert.equal(review.basisArtifactHash, undefined);
 });
 
 test("open-vocabulary metadata normalizes set-like terms and remains non-authoritative", () => {
@@ -378,6 +526,35 @@ test("retrieval embeddings are deterministic int16 little-endian evidence", () =
 test("hybrid search keeps deterministic rank and annotates uncertain validation", async () => {
   const module = await loadSemanticRegistry();
   const fixture = await catalogFixture(module);
+  const collisionSourceHash = hash("catalog-collision-only-source");
+  const collisionAsset = sealCatalogAssetArtifact({
+    source: {
+      ...fixture.asset.source,
+      contentHash: collisionSourceHash,
+      sourceArtifact: {
+        artifactHash: hash("catalog-collision-only-bytes"),
+        bytes: fixture.asset.source.sourceArtifact!.bytes,
+        mediaType: fixture.asset.source.sourceArtifact!.mediaType,
+      },
+    },
+    geometryHash: hash("catalog-collision-only-geometry"),
+    deformation: fixture.asset.deformation,
+    coordinateFrame: fixture.asset.coordinateFrame,
+    bounds: fixture.asset.bounds,
+    parts: fixture.asset.parts.map((part) => ({
+      ...part,
+      partId: "collision_proxy",
+      geometryHash: hash("catalog-collision-only-part"),
+      role: "collision_proxy" as const,
+      materialHashes: [],
+    })),
+    materials: [],
+    support: fixture.asset.support,
+    collision: fixture.asset.collision,
+    sockets: fixture.asset.sockets,
+    socketMeasurementRefusal: fixture.asset.socketMeasurementRefusal,
+    measurementEvidenceHashes: fixture.asset.measurementEvidenceHashes,
+  });
   const request = metadataRequest(
     "visual_and_name",
     fixture.asset.source.contentHash,
@@ -391,31 +568,48 @@ test("hybrid search keeps deterministic rank and annotates uncertain validation"
   });
   const measurements = sealCatalogMeasurementSet({
     sourceManifestHash: hash("source-manifest"),
-    assets: [fixture.asset],
+    assets: [fixture.asset, collisionAsset],
     diagnostics: [],
+  });
+  const sourceNameNormalizerHash = hash("source-name-normalizer");
+  const treeSourceName = seal({
+    kind: "CatalogSourceNameHint" as const,
+    sourceContentHash: fixture.asset.source.contentHash,
+    normalizerImplementationHash: sourceNameNormalizerHash,
+    interpretation: "single_normalized_name" as const,
+    observations: [
+      {
+        originalFilename: "StylizedTree.glb",
+        normalizedStem: "stylized tree",
+        tokens: ["stylized", "tree"],
+      },
+    ],
+    diagnostics: [],
+    compilerAuthority: false as const,
+  });
+  const collisionSourceName = seal({
+    kind: "CatalogSourceNameHint" as const,
+    sourceContentHash: collisionSourceHash,
+    normalizerImplementationHash: sourceNameNormalizerHash,
+    interpretation: "single_normalized_name" as const,
+    observations: [
+      {
+        originalFilename: "StylizedTree_Collision.glb",
+        normalizedStem: "stylized tree collision",
+        tokens: ["stylized", "tree", "collision"],
+      },
+    ],
+    diagnostics: [],
+    compilerAuthority: false as const,
   });
   const sourceNames = seal({
     kind: "CatalogSourceNameHintSet" as const,
     status: "eligible" as const,
     sourceManifestHash: measurements.sourceManifestHash,
-    normalizerImplementationHash: hash("source-name-normalizer"),
-    items: [
-      seal({
-        kind: "CatalogSourceNameHint" as const,
-        sourceContentHash: fixture.asset.source.contentHash,
-        normalizerImplementationHash: hash("source-name-normalizer"),
-        interpretation: "single_normalized_name" as const,
-        observations: [
-          {
-            originalFilename: "StylizedTree.glb",
-            normalizedStem: "stylized tree",
-            tokens: ["stylized", "tree"],
-          },
-        ],
-        diagnostics: [],
-        compilerAuthority: false as const,
-      }),
-    ],
+    normalizerImplementationHash: sourceNameNormalizerHash,
+    items: [treeSourceName, collisionSourceName].sort((left, right) =>
+      left.sourceContentHash < right.sourceContentHash ? -1 : 1,
+    ),
     diagnostics: [],
     compilerAuthority: false as const,
   });
@@ -474,6 +668,19 @@ test("hybrid search keeps deterministic rank and annotates uncertain validation"
     policy,
     buildImplementationHash: hash("search-builder"),
   });
+  assert.equal(index.coverage.searchableSources, 1);
+  assert.equal(index.coverage.excludedNonRenderableCollisionCompanions, 1);
+  assert.deepEqual(index.excludedSources, [
+    {
+      sourceContentHash: collisionSourceHash,
+      measurementHash: collisionAsset.hash,
+      reason: "non_renderable_collision_companion",
+    },
+  ]);
+  assert.equal(
+    index.documents.some((entry) => entry.sourceContentHash === collisionSourceHash),
+    false,
+  );
   const query = sealCatalogSearchQuery({
     text: "stylized forest tree",
     rankingMode: "automatic",
@@ -1035,7 +1242,8 @@ function manualSearchDocument(
     ...(metadata
       ? {
           metadataEvidence: {
-            metadataReceiptHash: hash(`metadata:${sourceContentHash}`),
+            kind: "worker" as const,
+            evidenceHash: hash(`metadata:${sourceContentHash}`),
             renderEvidenceHash: hash(`render:${sourceContentHash}`),
             metadata,
           },
@@ -1077,16 +1285,22 @@ function manualSearchIndex(
       sourceManifestHash: hash("manual-search-source-manifest"),
       measurementSetHash: hash("manual-search-measurements"),
       sourceNameHintSetHash: hash("manual-search-source-names"),
+      authoredMetadataSetHashes: [],
       searchPolicyHash: policy.hash,
       tokenizerImplementationHash: CATALOG_SEARCH_TOKENIZER_IMPLEMENTATION_HASH,
       buildImplementationHash: hash("manual-search-builder"),
       coverage: {
-        measuredAndNamed: documents.length,
+        searchableSources: documents.length,
+        excludedNonRenderableCollisionCompanions: 0,
         metadata: documents.filter((entry) => entry.metadataEvidence !== undefined).length,
+        workerMetadata: documents.filter((entry) => entry.metadataEvidence?.kind === "worker")
+          .length,
+        authoredMetadata: 0,
         imageTextEmbedding: 0,
         shapeEmbedding: 0,
       },
       documents,
+      excludedSources: [],
       diagnostics: [],
       compilerAuthority: false as const,
     }),

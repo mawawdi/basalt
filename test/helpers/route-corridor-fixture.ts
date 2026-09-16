@@ -77,6 +77,7 @@ export async function routeCorridorFixture(module: SemanticModule) {
       maximumSupportHeightMeters: 5,
       vegetationClearanceMeters: 0.5,
       supportAppearance: boardwalkAppearance,
+      edgeProtection: { kind: "none" },
     },
     closed: false,
   };
@@ -115,6 +116,7 @@ export async function routeCorridorFixture(module: SemanticModule) {
         maximumSnapDistanceMeters: 0.01,
         radiusMeters: 0.7,
         appearance: appearance("Ground", { red: 94, green: 79, blue: 58 }),
+        terrainMaterialId: "Ground",
       },
     ],
     lotPolicies: [],

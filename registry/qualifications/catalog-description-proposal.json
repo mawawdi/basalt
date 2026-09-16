@@ -1,0 +1,3275 @@
+{
+  "kind": "CatalogQualificationDescriptionProposal",
+  "stage": "description_review",
+  "split": "development",
+  "sourceManifestHash": "f02d6e296e1f36cc73f87ad3e0f074af1e5ad8041e12d8d99931c207684b5a4c",
+  "measurementSetHash": "7bca757b53a73ee4b323ecb0bfa586e7eca3acab9326371017a94f7103ca6956",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "reviewEvidenceAuditHash": "3b16de3aeb18da1d3748dcc00acad952be1733d76f9d6434d60306c699973514",
+  "leakageAnalysisHash": "5b4282e54bc50e5d272b156dee1df1ea2d5c06c652fcc24cac31324b8e50c2b5",
+  "calibrationSplitHash": "736f5ff264c9b43c37fb3f10d02b0aed1231520d3a62ba2cb8eebf6051e2456f",
+  "selectionMethod": "explicit_varied_development_pilot",
+  "proposalMethod": "unscored_visual_evidence_assist",
+  "proposalAuthority": "none",
+  "evaluationUse": "review_assistance_only",
+  "queryAuthoringStatus": "blocked_pending_description_review",
+  "qualificationExecutionAuthorized": false,
+  "assets": [
+    {
+      "sourceContentHash": "0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc",
+      "sourceRelativePath": "registry/source-assets/sha256/00/34/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc.glb",
+      "leakageGroupHash": "bb390f59d909dfbe2f5bb44d3a217d9b4e0a63506a74bd94ede4b862ab7b4f70",
+      "split": "development",
+      "selectionTags": [
+        "assembly_component",
+        "component_like",
+        "intentionally_partial"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Beige pillar-shaped piece with a faceted cap",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "997384d217cc85b8f002dc59fab41332b0abd60dca14003782e7136ae195dcf6",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "9534b1b362ac4e969c6fe47a72a5caf3a92fbab61ea0266d52185d1832502840",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "fa9ba5727eb8f44475daca467b9f65592af86d9a7e660d6f6642e635ff19ca7e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "0b8976f7213f9f842441480146f71ae5e62fa9a85ffa1b2c71f66f53592a7caa",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "864e3c810f2248f6f383dd8773afcf1741a57caabcf62bcfd326269660cc5141",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "3a27114d5ffdcda9099b7a00ec3676779edc1bc8f62dd2845b43872824ca0076",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "8acf3c8b0b15c3be4ff4675d8db28acd18be5a9fccd10a15553f5160e4e34bfd",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "272f86641448f0c7fa275c42fa0801df11be4eadeb5002e79258ec9575ec626a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "ff24380d207654248650b19012dc457dd46cb401f46637c4f68f652abc26566a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "b9a7ab0c33155c8fa2820094ec6ab444de8f048604d50021e76e1dd8bd9ea905",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "a4ec945b5014bf49266f162770bd7116f0f1751d4b2cd349c44e67230c6353ed",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "b8bf3c257faa33b45f40cf6683580cb39711677fb799d2e7eec78aad44517323",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "4002538162f42c04d052efd9271b4b81a831ed40d7f0166261d4333ebabd92bd",
+            "rgbRelativePath": ".basalt/catalog/review/previews/0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc",
+          "measurementHash": "96960adb0de24d7bb72ca7ea6ae5bae37a51c554d9c441f39c3fa04a7a147819",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.2712804973125458,
+              "y": 0,
+              "z": -0.2655346691608429
+            },
+            "max": {
+              "x": 0.2712804973125458,
+              "y": 1.214384913444519,
+              "z": 0.2655346691608429
+            }
+          },
+          "sizeMeters": {
+            "x": 0.5425609946250916,
+            "y": 1.214384913444519,
+            "z": 0.5310693383216858
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 46,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "8dcbfcd229c4c119af7b1ba21ee92d395672a0fa60850a25e899a4a634015caa"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "d4151fe1aac99384a9772614f59601a2d969c5bde04aaea04e875c0f2573c8ff",
+        "authority": "none",
+        "observations": [
+          "SM_Bld_Wall_02.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+      "sourceRelativePath": "registry/source-assets/sha256/02/0e/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d.glb",
+      "leakageGroupHash": "1f402e3dfaca2e3e9909462ef319b0c37c006fe5bedb69a31d98b34691784d3a",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "single_object",
+        "standalone"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Closed wooden treasure chest with an arched slatted lid and gray metal bands",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "dcb29b8d1d1469a9857d944da1680664592289022ed5bbcdd25641ac2a6c4ce4",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "c5cf16695afeca53a8258fef1c90c3f2b2d3ef280f8651c173a8c6ab08a84f24",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "c2feff6c311c8fa037ceabbf381990322d312dae1408baba6ee816e6272dd780",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "4a1d484b1023e6aa428835f7864f9629be9f5fed0b29945423114c5b39ce491c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "b9a91dfc82d227315f87a35292a2a84aee4d4f46b2acb364bf7ad6d663c3cba9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "e750e8169bf0d87d2d691a5ce3e153defcd04cf138b1da578df9687d8b72267a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "3556667ebb982ee33ecece6ed52943f2b9ee235cfe6b84a0f8dc63e15a32c776",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "640c6190bf5e2230bf475f90134c01afc1bb26c367f1897ed7428ec22274ce6a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "a3accaddc95401b3a3c33df5ea66b97ac4940708e675172dde12ddac1ca3e2b0",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "f130e55daa0ea20ad9ff1360212d7809fd228374b0bac8584a6275e1bace19d5",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "47f7b8980e395689bf1e722b1a4c506398f49ebcd6165bf49509edc7784ede54",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "e1bc8c027cca71526e26bdff9e23b4aa9fd0a119617b9d84d19eb909a1881f0b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "f75be4d8b790128b63d2ee4bfd7dd43f43678a1aebf070804ec0160def90f680",
+            "rgbRelativePath": ".basalt/catalog/review/previews/020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+          "measurementHash": "9ea003255d77ac0a0555aff4509104407bec91c905a3c9c3870b6966f4dd719f",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.6170063614845276,
+              "y": 0,
+              "z": -0.34555724263191223
+            },
+            "max": {
+              "x": 0.6170063614845276,
+              "y": 0.689697265625,
+              "z": 0.3858282268047333
+            }
+          },
+          "sizeMeters": {
+            "x": 1.2340127229690552,
+            "y": 0.689697265625,
+            "z": 0.7313854694366455
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 2,
+            "renderable": 2,
+            "collision": 0
+          },
+          "triangleCount": 678,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.3210220516193658,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "687377be658be61abcbf7ca6cf4ccf46bdc5819550eaecd9cc851e004e2057f2"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "bc9cc4b071edca12b32b0d10d191ca2f45e73ba706f30ad3f02afe44f66ece0d",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Chest_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136",
+      "sourceRelativePath": "registry/source-assets/sha256/04/db/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136.glb",
+      "leakageGroupHash": "94e28c5cede327164458eca6573866a5877021636b3b2a2539192f136cc6caa0",
+      "split": "development",
+      "selectionTags": [
+        "component_like",
+        "intentionally_partial",
+        "route_component"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Curved dirt-road segment with grassy banks and scattered stones",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "37c5d2bbe101b060b812d1c31b59b171b1dd63514185fe1d1528f54db459be24",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "28bed17d0b86313efb537c440bc760b71917d9aba73ffb7f19151a2a5590dd88",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "6292f92347a206a956e1176fd3720aef74a67b7b12f552c207cf7e3397d19359",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "2a1e8397af747c0022c1531ee28b4f341c8134d7cb80675f9fea81a324c3152d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "52434a3b2e0f84f7f39d30e33ebc93688c5b4a01dfcd3cc882da824465abea28",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "31fef1e6f17772cef4d0b6a016feb3ef7dbe112dddfff71679621b70e75ac470",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "6eb8307487575624dee330b74d3673ab4e3a70c4f5c6acec88ea4397d34179e4",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "f863510f4ec27c4c73128c0f35aea8a8398885f25c3b64daa5a4f98297c39b79",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "9119d37389e895a1c21c07c90d2a3a7a128a9d2df9a4561b9400f60ec8f151c7",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "8a01a86037885e0047a7f98d3295c4aba7faa798a1ab050edda9f80d16b82d30",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "bf48ca0fb27288ee476c3a78ec068837e13b661323e9d3d8418ff4793bc63025",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "fb425a7f31b1609e13f32644c62b7c44c95a4864136c0d038c3910a59db15629",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "bbfbac93875ff2212f29e1e1ca43d4924a12cc462059ffe2d9eb7c6bb227d558",
+            "rgbRelativePath": ".basalt/catalog/review/previews/04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136",
+          "measurementHash": "3fc782f1af0093681bb85066bdb914e09f02b34648ded61caee7e386172538d2",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.38597410917282104,
+              "y": -0.05960693210363388,
+              "z": -7.636845111846924e-8
+            },
+            "max": {
+              "x": 6,
+              "y": 0.45858001708984375,
+              "z": 6.405995845794678
+            }
+          },
+          "sizeMeters": {
+            "x": 6.385974109172821,
+            "y": 0.5181869491934776,
+            "z": 6.405995922163129
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 905,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "f2f62b035d207b9fc29398981d0c5d760901930204408b19236eb78111147c64"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "88390dc363ef39a3b7dbb0717c941a264371af97c98437d7a64f1f5cc3d9c96c",
+        "authority": "none",
+        "observations": [
+          "SM_Env_Road_Corner_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+      "sourceRelativePath": "registry/source-assets/sha256/05/20/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9.glb",
+      "leakageGroupHash": "21f53aa33dcab7859fa5930fa7f0b76d6bda2c134616b1546dadb8ad1bd67bff",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "single_object",
+        "standalone"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Small arched wooden footbridge with railings on both sides",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "7a3e46ac1c85f3b232e3e0d14cf936f87dd3e731ff8e5992282883aab53207b7",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "10cf61dc837c3fe03e8b873e41602f4df29de03e4b4589b1096c11768c33304e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "d37d35cd012cffd79510130d2ab80eedfcce52614fc53585ff5a1b723267add7",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "68c609bbc3662b3e239d8746799f0d5db0736675caf968859a7ba36cf30900de",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "34ccf92b5809e554d717ad9e9e8c1d44b3eafc7cffd0c814c30fe5d7bcafda0b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "5b0fecaa115a1bff9b85233fb4db506cbf831628f4b6c7f58ddb9278c625080d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "c02250cd86250d9f9740150ce18135d67761b9279becb604ef3cc2dc77f1f7fc",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "1ae044ae24283465669330b4b7425602d49de662bc4f473f3903c586a3b406c2",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "79d58108017edaf513c4982291d0a194ab0c87ea5242c11807cbdd5020ddbede",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "4e6abddf9e6e950f789381fec228491308324c42b2e06448d87324fad98859e3",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "d7c710f969c3ace46856e64435b98ad15380982ee047b83ae69e8ae08ac006bc",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "67e209cab01bd0ea68a3789be75cf14a45600fc4eed2a83640fa6db3f79abcca",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "7d343e8e28529aaf7f8a47da734864e69690f4c35eb4bdbca514fd765560d909",
+            "rgbRelativePath": ".basalt/catalog/review/previews/05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+          "measurementHash": "819746cd2670942344ceb1a73eda00cba1fa66b1074ecf68562062e22346f4af",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -1.5314061641693115,
+              "y": -0.18170970678329468,
+              "z": -2.9709837436676025
+            },
+            "max": {
+              "x": 1.531408667564392,
+              "y": 1.9464216232299805,
+              "z": 2.9709863662719727
+            }
+          },
+          "sizeMeters": {
+            "x": 3.0628148317337036,
+            "y": 2.128131330013275,
+            "z": 5.941970109939575
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 1330,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "f745778fd14b2b978f9c0045d0c3a130366d2d5a4ca7590b3fe452c65c8998dc"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "f0f6684be27714364fef472be805d2e8fcaf953a630148d03e3a43077cd7b825",
+        "authority": "none",
+        "observations": [
+          "SM_Env_Bridge_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0",
+      "sourceRelativePath": "registry/source-assets/sha256/05/29/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0.glb",
+      "leakageGroupHash": "cdafa6a5f12646e658dfdc38ea871a1e494ab109694e747a4321534c1fc7b7b5",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "environment_realizer",
+        "single_object",
+        "vegetation"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Low-poly tree with a brown trunk and snow-covered green crown",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "225a2bad6aba324d24fdb1e507419dee738d146d3bc63ee35bd5e67919fe5c82",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "9837d64faa9a6f8c522f3f5cc47b76ad8be2d5caf6395b7e8bb08231dd078da0",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "0ba0b16f822f10c986b64a6a4639ed9e252e1cea84d45645bf34352bacaf1389",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "ac9aef8333e3389b0b2ccbfd5c87a869b77ee72eb43b2b85381ca26abfdba833",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "6ca183e001ab19fbf6880c28f338ffd8c2de63fc00996a4fdc619d13650aae40",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "3ebe18279ab3846efb262d5c5a6830c3e875763ab596afd6637217e0c0c6b952",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "a0287c31cfa1733fca0748e7ab66d9060fc85bbf3b6ba38b198d76be962b6e3e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "de555ecdf97aad853e67882e6a3cb1e6e5d183b4cd0f7a248caacc4805f1525a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "4d07c368d13550a9dc4befe749710a2f01ca12d3d5707dd49379ef0efe3cb1da",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "06ec620bbe46434ad30311bb500c849cc9a30e45cb14882263f9ff0b2e5a67ba",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "e274465151592d65e97bfa89b2adcebb4672d91a7b8f619e761d680346f2c2d7",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "61cac101067b614b476c1b5f03af45887607627bd548f151f61359687a9faad8",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "82550b1e171b0b76c1caaad6f41ff4c41116684805076714ec82ffb6b7e1107d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0",
+          "measurementHash": "4a8cf01492e980067002460a78c1ef8aa46a3c856af06c865709092ab6feef37",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -1.4153393507003784,
+              "y": 0,
+              "z": -1.5066747665405273
+            },
+            "max": {
+              "x": 1.4332250356674194,
+              "y": 5.84487771987915,
+              "z": 1.5487722158432007
+            }
+          },
+          "sizeMeters": {
+            "x": 2.848564386367798,
+            "y": 5.84487771987915,
+            "z": 3.055446982383728
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 542,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.3548917795997113,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "2e1fbe6869af0c8419b79fde6b8aea0e7bd236e1ab52671aa35d64b2023099da"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "b0b60d647384c5f8808e9dd37600c9a5a922522b7435bcfd093ca87d5b92134b",
+        "authority": "none",
+        "observations": [
+          "SM_Env_Tree_016_Snow.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+      "sourceRelativePath": "registry/source-assets/sha256/09/8e/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f.glb",
+      "leakageGroupHash": "a423ebc334325f192fbfdb2b694cabbbdf6dcb1f8aa19ea403d45a624f4c8365",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "single_object",
+        "source_name_mismatch",
+        "standalone"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Tabletop paper trimmer with a blue rectangular bed, straight guide rail, and black slider",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "b1ed125c73d9be08aa6635774a93d8920b6c16c30c567f1542844821b77c55ee",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "9ad1692b9976208c9cbfdda0ae40bdb4a03bbd76438f8718a9e15a241b56aa24",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "0270babcc02d4a65c50f3ef3b4cdcc48636f2d1212c4fd610929b5d37fabd839",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "e95b1caa34105a2f3f7e282afa87a15982c0e26b3713bc77bb823d42f66391d6",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "444ad802827d09e437d3018fca10c1dfde175694f97a58e9e3b860012e201256",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "1f11d0499b56276d62183075259b941dad7c0380c82cf2b5ce3eaa5fdd5b5c7f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "7fdc91d73496c5bc00c6cdc1dba0479d36a4524ee374f7e9e20cf303a7687dff",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "9845bd65181a6d9b04fc84e46c5e35cfb50d9a40339e75758baaaf50760cd063",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "c0936ee333e80b1e1dd7f9b285d50d1942bb2a8d86a660985e34f7dd305cf27c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "e0bac31e3b577f69484880266748f2087e0590308e08ec14765046d319e5422b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "5ec482a0391c4ac84c6828b7d59fc1a709858d7bbec2250ac0615510f4eb94d2",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "2fee6b43493b632c984d3ba7d03ee15b1728bec7cfe7c5a883bdba4207063baf",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "753dffd82d5f9c4522a72d630952109508a55a4635cf966ca39073495d0aa1a8",
+            "rgbRelativePath": ".basalt/catalog/review/previews/098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+          "measurementHash": "6127c801ceb4951c92da4890843a563cc0aaa0f05c9faf454c6809a235577924",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.17522713541984558,
+              "y": 0,
+              "z": -0.27329424023628235
+            },
+            "max": {
+              "x": 0.18073320388793945,
+              "y": 0.13679645955562592,
+              "z": 0.27329424023628235
+            }
+          },
+          "sizeMeters": {
+            "x": 0.35596033930778503,
+            "y": 0.13679645955562592,
+            "z": 0.5465884804725647
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 2,
+            "renderable": 2,
+            "collision": 0
+          },
+          "triangleCount": 192,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.0625198376365006,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "7063ab91a55f56007a805bed665ea2f1db0091f7eaa091012d12b84666f4570b"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "c3352eb3157b9f80252f3b66e8ccd57186c0a9ca91e616054639c845e5f89e14",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Guillotine_02.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+      "sourceRelativePath": "registry/source-assets/sha256/1d/e7/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de.glb",
+      "leakageGroupHash": "106836fecc9eb98ad68b56f9d90b06a9e52bf09c736fa8e9613b64a3952f6692",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "environment_realizer",
+        "multi_object_aggregate"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Scattered pale bones across a low irregular gray ground mound",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "d0d272d3c604c305a510db2a6529f8a0ae6496250e54ad47ea86da8ffbe769ce",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "82740e1feb5648382f464c16b41d10059643df8785f5efcd0523bfdbfef7a669",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "60f8fadd8bd3020e0e614f47fef7a2eaad4e76bd58551cdb5c117f281d72285a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "1819b67866216aac3853552957b3800a7c46ee1595277868dc8a0d0503a05d38",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "2def8fd2c84415a4c8727bee72a3282acd5283c13d847ce807459a22b5686a27",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "ec25b9eb0368e2031df34fe7dde5a7d4d03ae1bd1e088cf2ce620118a33a5de2",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "26b8425a1f3828d9051d5234d0ce9d1446142a3a4f63241f4a106d53005855c9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "2e62d85a53dd8f0c44a594d444d3ebe22b852869107f061b4fd9942ad784a87d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "f100f4c2066e90aed37e820a98e8298f4f16fd877af866dfec0f7bdae33e3312",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "fd547d2b8237f0ac3280cd78c62a8a23aa7164f2af1fac995888b6cbf36ef946",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "994d12f6a2ec34e7d194efb266e7c7559e348d3044906c598cdc4dc020a04803",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "0212fdaafbcf7c042eb6197c1e550e4a91a4a73f85a90fb1c894358cf5c6977c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "688e23a71f2dfe53954be5289f8fb238203f2d9b505ad13608859f91371d8b2b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+          "measurementHash": "441244edebb1badb00016ed0ad6e45d87ae805ea4dbec450f248b58d9266420a",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -1.302697777748108,
+              "y": -0.14332012832164764,
+              "z": -1.2008938789367676
+            },
+            "max": {
+              "x": 1.302697777748108,
+              "y": 0.6281254887580872,
+              "z": 1.2008938789367676
+            }
+          },
+          "sizeMeters": {
+            "x": 2.605395555496216,
+            "y": 0.7714456170797348,
+            "z": 2.401787757873535
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 1162,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 3.5630317905452102,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "1f05296d11663dad252cd5543e828456e5a38035e8c4929bcc5e610436688aaf"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "eb7eb7ee6fe98b1de8bda283e607cc4664c1f1792346063eba21e2578963726b",
+        "authority": "none",
+        "observations": [
+          "SM_Env_BonePile_03.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+      "sourceRelativePath": "registry/source-assets/sha256/1e/e7/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855.glb",
+      "leakageGroupHash": "a3934e23e55c045c8faf805f37dcebec8e6bdf0c2f46b85ac19741f5d7a52644",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "single_object",
+        "standalone",
+        "style_contrast"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Faceted mustard-yellow beanbag chair with a deep slouched seat",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "bfa8e03b4f86d149570df6d7acdd5583fa8b4515cd3f32ba859ed35a4cb15946",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "d123d87ad74dff30034375c71d432296c46959dfa0b72ea166588f746a4b5ab9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "4809ab0b96306b546d6c44629afa26d9bc1f7a5aff636db88d7732ef05d91c69",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "e5c8fe49510b74b555ee76776afd538de2f1c5fe797542a9cf8cebfeebc6602c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "01c5cfcefca2c4716de0dffcbe8ea0bdfc4cf6b6308d945cb97c2e53c72f61f7",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "8c2cf608abc4a282b3961f54ef3ee0f7f1a5ae31f2178de8873c161aaf17d526",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "181f76ffbb5276d321016c85d37542dae718ae0324b3a372db80159d170062cb",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "a5d3625282aa70977b60bd78ef30b0a1ac9a187ba8c65048b6d89e12f7c376bb",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "01fdfeb68ab4a8de4504e96455672ecc83071deecaffcb8a44a0f4491c521133",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "d9aa36456a410c91a9cb249efd3726cfc6eb074b697652abc73c39dd8517a5ca",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "bf75e2461c06e8c75d9b801cbad096ba9fe75894f73a3a040d539b88f31a6d4e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "aca7fa7e28d9bbeb08d8ecc0db264a05215c5357b6a075ee1092a3bcc409226a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "c8dfe3eaaf9bb605846691610b6d26751d4db3a970ef60b41e051f0317debae5",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+          "measurementHash": "1509545a1c3ef9e3a12a6479a0889799fe8dc0610dedc31bb2577b7cc76fd72b",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.5671731233596802,
+              "y": -0.06094929948449135,
+              "z": -0.5288429260253906
+            },
+            "max": {
+              "x": 0.5671731233596802,
+              "y": 0.8339570164680481,
+              "z": 0.5288429260253906
+            }
+          },
+          "sizeMeters": {
+            "x": 1.1343462467193604,
+            "y": 0.8949063159525394,
+            "z": 1.0576858520507812
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 200,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "e3974f9f396d8ef5b4a2a0e6ed8b08ed5ee745da4b284d7ec6162e84a852088f"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "d151fdf427dbf74957f9191238ee3cafac53e16506a8b948c81e6d68d9162aff",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Chair_BeanBag_04.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a",
+      "sourceRelativePath": "registry/source-assets/sha256/1f/3c/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a.glb",
+      "leakageGroupHash": "02b745dfa71314d07288ad58532d6592de097146fb8bc1397eb3e4ee1f2ce738",
+      "split": "development",
+      "selectionTags": [
+        "assembly_component",
+        "component_like",
+        "intentionally_partial"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Simple wooden fence panel made of three slightly uneven horizontal rails",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "95b0c21dbed971705412137d3c14298c163f3b3dc8267ee048fe55f5f7278798",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "82391f90a1668e7fcaf9cf629d5b6d134ccdc6d0db37e8ec11a6cc7bedbb0c80",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "a2d311240508b2464b4ba1bdf8580318e8eefcedc55a1a90e76d33484f022f7b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "a249d0ae4d9ec5e21cd28a8d149d51eb0052be209847543866c41d76b9b61df1",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "8947754decb968a99ad9982a0900ea1311be15551aa9aa198d8a76a525f59bc9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "2e8deba0817c4b8c82d8aa4d4eaeac3772b8c52599036b76ec22cb958e38bbb6",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "7882ace46d2efdada4d2fc9f8945f1d162092461ec94d00f6b66d52dfac602d7",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "bcae208152100fa369e432de53d3d5002de54795dba4d7385e2488deb06c2ba9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "217c232d95a2729835a85f10fc896d3dec00138908f508a41957382ece1e526a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "39728476f89ad3404cbafefa9509dd038dfdbbd9fa1e414f87a9ad3acd8f41c4",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "4fd421160ec7d28ed8c61b4072ee0bcafa7dbe0d998754bd2a410614d3f649d0",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "5a44a2a4e88e55a962828534696ac56f74ca2d148e8c79be2c4dbc80f7ffade5",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "7fbf11e9ca33607ebb1c849f43b1c381398439be5a43e2e3bd15440d20300bc1",
+            "rgbRelativePath": ".basalt/catalog/review/previews/1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a",
+          "measurementHash": "13e33dcf818b84b5e9885ee235ea148a115e44de150fd9617f3849d0322616f0",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": 0.0003202916122972965,
+              "y": 0.16251333057880402,
+              "z": -0.02456359751522541
+            },
+            "max": {
+              "x": 2.4996135234832764,
+              "y": 1.1979948282241821,
+              "z": 0.02456359751522541
+            }
+          },
+          "sizeMeters": {
+            "x": 2.499293231870979,
+            "y": 1.0354814976453781,
+            "z": 0.04912719503045082
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 76,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.0018955438863486052,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "6e310534af2ebadab7b630145d32a6f05bc5f7265f112a073ca86047bcc08946"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "93ce4ffe57bcfc712a7d4cb8bc4edfda39bc1b28b1204d2fe5d15d3596f395d4",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Fence_Wood_02.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b",
+      "sourceRelativePath": "registry/source-assets/sha256/25/19/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b.glb",
+      "leakageGroupHash": "c4be0543a23dc56ea873aa30ba8b190ca33013485f074522a167baec04de3d53",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "environment_realizer",
+        "single_object",
+        "vegetation"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Slender bent palm tree with a small crown of bright-green fronds",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "567d9f499b39c8095cf5dcb13433878544ce67f78886983e09665973c4eb7de9",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "4753c86c5bff3cf9dcad77f6fd07f88776345c5ef9f4556c7a671790f8f452cb",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "cb22c6534638b2f17c83d84a5bc2726f88d82cfc81098ed001ed5f31b34f92d5",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "065125e0f71ddb61c2ce708f4758e80c72dbcab08e42f725b2d0df19ad87fe0c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "b1333fce81c181d7b3cea8f13100150e86ddd600000d6f15d12dbeb2894f0e45",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "c30fd338e0a56a67c1a7d45357dd45d5181560e0a7f81a1fc4c21b1ae35b2f35",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "ad724c7cd8b08b0101fac12fa942063901ecdfd4602c421ea1f0a897774d89e1",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "83296a7216ede27d2c5f4b3aa5190c0bf014f0958107b270b3631062ad32f67f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "0bf460e610f1b2e1dcb8c4914fab172214889428b14e3d99053c29aaac7d7b19",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "d9a3b4844fcb640a724de74180c3b573dc8e0888e2ab39d6a13c3d3cb39b3162",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "d14f3224e5a053c8e7c1497f3cbc379ab511acb8bec71ed14a31fc6d4ec53e23",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "15c020d7e8278306d21ec97bd766f0cefa8474c11cc5cefe00196645103bb681",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "a6957cbc723c790c6342d8a920009c64d7aff5cef17caf7b6fa7b853a6d7da88",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b",
+          "measurementHash": "89093f863fc8e11fa1be605b189044466e614c000833f343947688cc915f139f",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.2958259582519531,
+              "y": -0.8068835735321045,
+              "z": -1.9469280242919922
+            },
+            "max": {
+              "x": 7.430105209350586,
+              "y": 3.7136569023132324,
+              "z": 2.3468055725097656
+            }
+          },
+          "sizeMeters": {
+            "x": 7.725931167602539,
+            "y": 4.520540475845337,
+            "z": 4.293733596801758
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 826,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "316154e28a13dd738657424c9c7db86569e7386854df0b4a39d2959ddb37ed68"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "b18cda660371be838189ae9723a13bdb6d3069dfa5e4e6c54073a7f3ade59f29",
+        "authority": "none",
+        "observations": [
+          "SM_Env_PalmTree_04.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b",
+      "sourceRelativePath": "registry/source-assets/sha256/25/53/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b.glb",
+      "leakageGroupHash": "07f75b895a56c459fc24221b1c08f308590e2d6b88398894478e4a4a5511b849",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "semantic_boundary",
+        "single_object",
+        "standalone"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Black cannon mounted on a brown four-wheeled wooden carriage",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "046dd4bd9b1290e95038a4c9c64626f0de3d19e1b276c20a94bd0cb6f012f9a8",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "babcfaca4bd95e50dd121325c5948883f0ef6cf9bd1bf01313f39994de446620",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "73dde7ab4db0058620551e1126b86eaacfe40c25ad965c463975898e345d5be1",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "3024f1fe0180cc9b0d77582c01fc07944c109f4711d842dcd40a58d250e75a70",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "07aeb85b7b7856f001b09cee69057912217805bb30404928963ffe13084e7db3",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "01bd21371ac85c2859f5856c78d58e6b59c7f52e84f39be3e32754915246c7d3",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "767f17d2f536a9f77bdac473380ef9e32014cb5c5189f62d80d03a5d55db0dd8",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "cfb5577cfbbc56e1072a2378186cc158108aee35e303d5dfdf7eaea8f721afbc",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "0b2e74d8c92b2075a38dedbdf0c1126002a225b1090a57475d3aad547479ba29",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "4196822469fdf92f98b845a2bc7b1c4c6a1eabf719f671789aef09ad88d12619",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "e77f2842e1c9c24f29e78eb6f7c05249e44f76aece58801889873ae45a710d77",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "3e76ace57e3f5e55d3a66c07860002d7f9e82741700ad57c261ef9b4e6584d49",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "a1b6ebb8fb264c22d3b2918ae7715bde6634928faf66d8222f9afeb0f1249b7c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b",
+          "measurementHash": "31a43b33ba61286d2c856930728840fc7a06bc7499caf237e22c4cf5b848bb73",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.49527740478515625,
+              "y": -0.0020089000463485718,
+              "z": -0.7283649444580078
+            },
+            "max": {
+              "x": 0.49527740478515625,
+              "y": 1.0294189453125,
+              "z": 1.709625244140625
+            }
+          },
+          "sizeMeters": {
+            "x": 0.9905548095703125,
+            "y": 1.0314278453588486,
+            "z": 2.437990188598633
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 4,
+            "renderable": 4,
+            "collision": 0
+          },
+          "triangleCount": 2424,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "68a9d0d076871e45a9ef08960d4e99a72841eccae945327530584c3ac15e59b7"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "b1051135611ba57f34c335c1545116abd92aec04bf59697aced24c1e70271927",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Cannon_01_Separate.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a",
+      "sourceRelativePath": "registry/source-assets/sha256/25/c1/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a.glb",
+      "leakageGroupHash": "0026e0e1fdfa54734134e68a557c572749c89bb6c4aa8274a99b29a05f4e6e9a",
+      "split": "development",
+      "selectionTags": [
+        "component_like",
+        "intentionally_partial",
+        "route_component",
+        "semantic_boundary",
+        "source_name_mismatch"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Curved shallow tan earthen channel with grassy banks and stones",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "31e4cc10a5a6500b651ee64cad39dcc4024ab491f39c97d87fe73e4924b67db4",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "51f99f361d281bf0d53ccc29fcf882eb584e8981bc14b21dd10b3406fe9a2321",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "8a900bc847ac8169d78fb2d00596919001dc0c3dfc593a7b2bddde4302b3d308",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "cf205e5ebe6a3f156d8c7d30accdbd380768df30e3983fb4cf23eac664232f4e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "f88709a2f58a93a90041417c9899dc7e5101b38e3663f648c3ca83906f3ccb1d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "dc24a73af2e1638c940e393a4c8252ac0a495db8acafbda13878f80817edd863",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "962a8a627ab25054b1a3abac6d21ee7c3aedf7a7df3a862946ddf952f7e68d3e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "5ecb1509d86a6d5e8c984a5e10839e4fea8da581fac7364a75522afb136bd502",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "6fa891d53aa435dd0164d6c9dd1b50e72376619eb73f5b76c0e717b8182978af",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "9ee105b413dd2f5328cfc4ab6a13d71e266e15572b796933690cadb624bfbd99",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "8e864f23e334d08dd30f83e13bd8120fc9812d9d1aa7c9519304b32baa317ee2",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "dd9d16576db8209f479287c63ef6c33a86993e42932efcce806a86e8086113ad",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "7bdb306c41e75a3a52ab06eea698d0230738fe1c4543bf6d5e8aa2bcb37cf599",
+            "rgbRelativePath": ".basalt/catalog/review/previews/25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a",
+          "measurementHash": "9c7e82d78cd47503f702ebbd1dc676d64f9a3cec1898b37e5fa012fcc0d7e2c0",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.48854613304138184,
+              "y": -0.8727749586105347,
+              "z": -0.0000036621931940317154
+            },
+            "max": {
+              "x": 5,
+              "y": 0.43705564737319946,
+              "z": 5.626242637634277
+            }
+          },
+          "sizeMeters": {
+            "x": 5.488546133041382,
+            "y": 1.3098306059837341,
+            "z": 5.626246299827471
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 445,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "b27e63df9327fe6a063d3220fb814fe62be075218a8ee294ed7f814ca8ccc6fc"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "94ede429a0b54fe89c04eaadb8e83e38c00a3cff309109dfa2234fcb82f4395c",
+        "authority": "none",
+        "observations": [
+          "SM_Env_Stream_Corner_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+      "sourceRelativePath": "registry/source-assets/sha256/2c/0f/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34.glb",
+      "leakageGroupHash": "b86f42e000540d9979a8efeb36ddd19278e297a09d28345c36c3856fd4269602",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "single_object",
+        "standalone",
+        "style_contrast"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Boxy gray outdoor air-conditioning unit with a circular fan grille",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "175fdbf384e694a741b8d568bee379f823f094600148af6ef250112da4f2a62e",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "0983106351af03c4f180721324120f9223fce20e12f1ef58091fb5faf4f8867f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "a76249badafb0c712ce609c172165560c04d82f5385a210895a1ae98fe8a4f01",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "bad88fa9d8f509fd24151a8e532fd17fe60cd0ec501cd7c00289f3038fe3426d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "dc0217ea917406de998763ae00e7ab1fb4349b6cec98fdcecaa7aea14b974784",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "aa77a3a4075b500cfed471b182313c80965b793db296f790f508fde225648f6a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "1517753426875c0a071ed5ff3d2d444fdbd97d8ae2f401c2c069d4113d01ed96",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "9f707f03b09d1a000829296355e03e26671c3903f489f604cb62522247c7badb",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "d44df51cfc62af76a345e0d6a38a95bef57aa5aa184a33418910ad61d9c63520",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "f55353ae5883d5bf478e0ab3d0de6838ce417aa75fee5aaf57afd2c5054f41f9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "96db5f5243f04eb531ff1646eb6017e9f449ace31827eabc09cf5e0a71c3b751",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "f6cfcceb68e9fe371a53b8cb33d89dbc142ce2fdd6e83e02a0c7185327c7b439",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "3a9aeefa9bc3ce2ba09f374fde45877de91a0344ace42c918eb328106edcf732",
+            "rgbRelativePath": ".basalt/catalog/review/previews/2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+          "measurementHash": "3b6977e06cb64decb561e62e18fccc8a0355d275b9a556b630b613ff5a41a3db",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.41143515706062317,
+              "y": -2.682209014892578e-7,
+              "z": -2.086162567138672e-7
+            },
+            "max": {
+              "x": 0.41143521666526794,
+              "y": 0.9951595067977905,
+              "z": 0.6513993740081787
+            }
+          },
+          "sizeMeters": {
+            "x": 0.8228703737258911,
+            "y": 0.995159775018692,
+            "z": 0.6513995826244354
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 224,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.004300703527405858,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "a251f14a5980cee5e5a9887c7f3d7a6e9e99979429d15e585c655f8ab93cefae"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "ec3bc945f672e96fce9e80cafe216bf42d2c64bcb370f97a5e67acfed781224d",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Aircon_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356",
+      "sourceRelativePath": "registry/source-assets/sha256/30/00/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356.glb",
+      "leakageGroupHash": "b3c28f1e6f69492b70204597e955f8e9f7d8cc0974c5905bbb5589e6ca3b6a66",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "environment_realizer",
+        "multi_object_aggregate",
+        "semantic_boundary"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "uncertain",
+        "text": "Thin elongated white cloud-like form with a small detached fragment",
+        "uncertaintyReason": "The isolated geometry supports a cloud-like reading, but scale and scene context are absent."
+      },
+      "evidence": {
+        "renderEvidenceHash": "b0b3d56febed0f10e8bbbde6bba83da24f8dac73df9bcb528bade6161a3738a7",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "cb5d722d3428da431a788877653072124e31211fe090c66a2e9b7c23059918a1",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "07b6a62d81680246345dd97599aed32fae9a698f5d7ed98377a71e559212a89e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "b7be4a7fc0ede59ea4434dae66ce6802ef3fd91ae31da9b994d89ab4c6c76a00",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "edd9edddb059297e7db71ebbcdccad9381f37e5e97bc9627972016624005ddde",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "a2dfa217d8bb9dc22c3531e3af6fb953a5e585a34ab7afec06635d83f2bd366b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "3a8f56693333b7480f47e97f5d1048bf7bc50afb25b4b228ae45dfb8fd9edd72",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "515c37af63ea1f250eb9dfe5389e3c542af69cbd95deb25ae106b6dcf9dd5835",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "60360aa674a53da327e7959af04435247803a6d24f1570edea507da6ffdfcf35",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "4191e52731e6bbd9ceb4f2655ba3cb26ad52aa304b8137694d06d236eabe2eb4",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "f71f2d43dff9a8773385367f9b5ff90dc0690e20dda5ebd1d19692effbc3df92",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "78a0fbf1ec21d04beee3de85e19b0029d526130de9c601f9f3bec4295b93bd53",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "f868d67a4fd8b615b8f61b004f8b482dc4d0aa45c9da32e5900152dd7df5363e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356",
+          "measurementHash": "521fbfb8b107055182ce044071e035584c05d403aaabd04963e26d95b34d4216",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -3.70243501663208,
+              "y": 0,
+              "z": -0.508276641368866
+            },
+            "max": {
+              "x": 3.737699270248413,
+              "y": 1.2431907653808594,
+              "z": 1.3781274557113647
+            }
+          },
+          "sizeMeters": {
+            "x": 7.440134286880493,
+            "y": 1.2431907653808594,
+            "z": 1.8864040970802307
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 280,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "a038f0e16fd34684309c649bfdb305b6f6a453dfbb4a3831cda52d64c3d6fc4a"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "e42a9ef6156eeb8747e682553e85eb7e07dde0bbde2de982f34db0892762c1a3",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Cloud_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+      "sourceRelativePath": "registry/source-assets/sha256/33/62/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d.glb",
+      "leakageGroupHash": "dd0889cbee870a24296148cd591958d6d09f042ce7262740ce6fa159e9fd8be9",
+      "split": "development",
+      "selectionTags": [
+        "assembly_component",
+        "component_like",
+        "intentionally_partial",
+        "semantic_boundary"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Long narrow gray rectangular beam with beveled ends",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "b478c96fa4c93ef3790b0d0d7b32c7e83be23d119cf1f025d6722d8d5c40ff67",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "67d762e88614ccec2c02b29fc8a49cbad302018c11f6ac3bbaf9115d6a517d8b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "69fb36ef040f4a731e644c13ca396d4c5a639a6bcd77f69664f92d7849ec2217",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "32e5da7f0839a0e32818f0fb3fbfe9b142541de7213fd5e4d7baf0abd67af56c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "f081a1b4a87bdd7f932dc074403c10cd22cf288f694952ed3c1393aa86524214",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "14ebafa57411522ba0bfc68bc307bf7d7c114bde5b4cb5d4218bdb03f9b4e75f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "e1e14a016b7aa6083ae5d3059b6c5a9103b85b1a8f1e30baa129953b6bc98623",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "81bc4f1cd3d89324fc22d1d535ca91557602e8eb65217278e8cab05669bf4ea4",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "974b693fc45ead46edcc23d20b1ec628112c91d04152e34fb625d5147f6f50c7",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "593fccaf745ad4e27bfdd5ecc65fc8f9dc4bcf53f5fe339b25629a8d40b6aaef",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "4b88423b79bd94d9746b63602b9c9f646ceee562bc9072e2763eec2ad00a28e8",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "11db223d8d30efbf1c6ce2740063e597361d83fa2f96d26f22bbfdf0daaab9fa",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "2240c96cf02fa59cbe588140c1867f5eb8d7e84e13a7d83710d53adcc15b8f8e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+          "measurementHash": "4f708c3240f5f74baa2266427e6b226f0e3a35ea62aa526005bb77bccbc593ab",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -11.69206428527832,
+              "y": -1.799018383026123,
+              "z": -1.6743583679199219
+            },
+            "max": {
+              "x": 11.692065238952637,
+              "y": 1.799018144607544,
+              "z": 1.6743507385253906
+            }
+          },
+          "sizeMeters": {
+            "x": 23.384129524230957,
+            "y": 3.598036527633667,
+            "z": 3.3487091064453125
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 172,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 6.73558260477148,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "91ec3432670c985343e673c06da7713acf9024eb8131749d1fd97742b86ffca4"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "69b79e86e40caa534be32b76af173fe4cfa2005edf1bb1bc3aa35e4e25633efb",
+        "authority": "none",
+        "observations": [
+          "SM_Env_Bridge_Support_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+      "sourceRelativePath": "registry/source-assets/sha256/42/1e/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593.glb",
+      "leakageGroupHash": "e0638f4163111e2cd7fba6890c6ba2f3e1576b0ad35e7cda34c27fc63564f489",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "environment_realizer",
+        "single_object"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Tall upright gray faceted boulder with a flattened top",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "f5ddcc2e9a9aa09f1502aa864d1e221f9b1144a65186c67443cdcf8aa3096005",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "d6dfa51da9a1e88220b4e2ff4dc83612f7c2614a230440cddd13355b29da6116",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "78d55f523d627e4a898dda43dbaa2b76a52f86a69bb006953163bdad4fa9909e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "b0af285f6d6c6dee9c478e7f659cbd0ffcf6a726aa1d641fbb158b93853645a1",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "00128f642b7b52aba90b3ee64c269ef30bca4040832b8e53b838dccb7cf9136d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "6cab80500692a011ae865def0714379d60687197ad6355448939a6c8d6af8a9e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "b674d3e2930c6e2fada262da4dcfb6a0c07d495207a3bf4e3c00d700d015b756",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "1ed8e896be459038b56b97785313b4f3855560120b39967f28eaa820e490d480",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "2c74c6582d4c79e204a76a18551d0e2d7b2091f8394386a982b409a19f4a6d7b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "6597017144937cabdd944dae83281aaa6708a6403f8e641e181fddd9eaedab1a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "d768e0e819ec1cf7a61d16f6d3c28dc65336a1a7990a864a5edba7d416f84204",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "0fb82bf02ddf811239635dd195f800942db0e04261e3174d491ba1792ee48a28",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "86a1b93caaa879a41f42676cb8f1b6215ab162c9a19ee65aa7f8ffc8ad6040f0",
+            "rgbRelativePath": ".basalt/catalog/review/previews/421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+          "measurementHash": "cb84d312519bc05dc1d57c4a4de4f5a700258abd457d44846820d2a65f806d44",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.3593864440917969,
+              "y": -0.3665904998779297,
+              "z": -0.314361572265625
+            },
+            "max": {
+              "x": 0.35942840576171875,
+              "y": 0.9309425354003906,
+              "z": 0.3143634796142578
+            }
+          },
+          "sizeMeters": {
+            "x": 0.7188148498535156,
+            "y": 1.2975330352783203,
+            "z": 0.6287250518798828
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 100,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "6d8102d109703c241bcbeff07d325ce21b119badf918a6de063aa1b95fb5bc3c"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "35208bf7773c7f5787307ada1dc170ddcdb909d804125290b3d4f6ad50db55fa",
+        "authority": "none",
+        "observations": [
+          "SM_Env_Rock_Pillar_010.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+      "sourceRelativePath": "registry/source-assets/sha256/47/ce/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225.glb",
+      "leakageGroupHash": "ede8356a14ed4f2cf21a66806314798007958aea50872e8c4f950e8738f27698",
+      "split": "development",
+      "selectionTags": [
+        "attachment",
+        "complete",
+        "single_object"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Two-tone conical party hat with a red-orange top and purple lower band",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "143b4bb3d77a0e08f8d627aa940e4e5aeaa1d0d798caec93a47d066be65bf2b0",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "e31fc2a3d1e325f18627a4b188c71eaad1ee1b790790556f9b0e116cc922569f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "f0b0b26e757c0791d99b3649861e544c4a8d28667766a3ee5664cd950334755a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "fe6a8eea7fb5b9669246709e2e61d45155a5fc29724f3a93d12af6556635737a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "e9431e38be62f8b6864536f9887e22a982028d3110d50ddf61931429e352375a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "e55dad9193ce531b68b9465a7d773595a76fda9132aca5347454df24ee27237f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "27a4eb99c372accaf3e66e54e0a8f1d1f6e0143a52fc0c484ec219d226bc3dfa",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "fa826b7569f6885258561814518fdde3d22e0bb79a449e77a0fb1c6a49acdf08",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "7fb544977b970a04b109ceabddb9a0b3618ff0ba1a9674b876562faefc73785b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "8ad8735b06cfe57d1e962ef81045269db017183c5d1a70558ced21ff2b1ba472",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "89a1e2ed5f004649e5059194aa5905ee2c685d56fb0061104b64e1ec76a7b5b9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "acc86984c1d4baef1edd5e1f3e0d180e12100ecb776fdb7a4f63090a0b336c46",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "9c83a99882cff736c16822488b84318428271be9e467f30e349695afc344999c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+          "measurementHash": "543b36b724e18bf08690691b36b2d970f78552349305a1c03eb47fe4e1a6e5f9",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.08491834253072739,
+              "y": 0,
+              "z": -0.08491834253072739
+            },
+            "max": {
+              "x": 0.08491834253072739,
+              "y": 0.256005197763443,
+              "z": 0.08491834253072739
+            }
+          },
+          "sizeMeters": {
+            "x": 0.16983668506145477,
+            "y": 0.256005197763443,
+            "z": 0.16983668506145477
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 64,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.000053407857194542885,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "b4e1ae94e8225ae3e920c83d9a16d52fb946b3ff71560e9e5583b09c953046ff"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "ed97a58d5053257398fbd80622ef013e565008db40524878ecdf0a671ec3ccd6",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Party_Hat_03.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+      "sourceRelativePath": "registry/source-assets/sha256/60/5c/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b.glb",
+      "leakageGroupHash": "ecd0a77eeb888f4c3944be1f60f742b3fc7f3e757b176476fa4b2ec519ecbbbd",
+      "split": "development",
+      "selectionTags": [
+        "attachment",
+        "complete",
+        "single_object"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "White rectangular wall plate with two stacked electrical receptacles",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "52be1a015345c9caee749a7b813941230c62dc5e74a1d4c7ee9364bf22733937",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "8a237bd03319443c119d568c84cd0fcfabb87b6782797e1db7731a2d3f23955f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "cc73a92fea095a897362da1cf19494dc34a03403e318164d4c9b1bda80657f10",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "73c9e2cb6d03d3fa9a5db805a02f6171c4fab7c8cecf75e7e699db797b927294",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "eb4a85e7e243512db3679088bf35e2a25cde8fbe503ffd1aca9419c316959a74",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "2a44921c1f2af2c44d8e4d56919892a49d73cde6c60dec52127c9f5add4670d9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "97f71ac2c76ef8f21a779082cb235c0f3e322e1b824376a2218fa6103f5e50b9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "07d074aed6771ef9a727f130d69f5e5c027c509af193873dbaf7bfdcb764a394",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "de44638b97d5cd7f571708dcf24edcd5f185912f148dd73683dbf19f2b40c4e3",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "a1a3d7c4915b2972a9e3acd402de5e257f426b6fe7462ad7605ac24d72a10a46",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "34b8357c3d661d0969d9cff975f62e0e690809e200e053f1815b3b9abe090f93",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "d36c6181471548b96f5fde6d78ee08ae759d8d86a9a35866e086e15d31040184",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "611165bd6da94a3c4fd0cf996b96a6ef901d50e8a148647dce8aee0cb670b714",
+            "rgbRelativePath": ".basalt/catalog/review/previews/605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+          "measurementHash": "b7c0aadcd3dc6774eaa89e6f2e6cf33df7b8b8e0061a4983f70d83cc4637b7c6",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.060863036662340164,
+              "y": -0.10139241814613342,
+              "z": -0.02589721605181694
+            },
+            "max": {
+              "x": 0.06086425483226776,
+              "y": 0.10139241814613342,
+              "z": 0.025898436084389687
+            }
+          },
+          "sizeMeters": {
+            "x": 0.12172729149460793,
+            "y": 0.20278483629226685,
+            "z": 0.05179565213620663
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 44,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.0011687970254570246,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "e7825438b63c64a1c083b9b58dcb1696e42b3adb41533a79f3b48bf147a92f21"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "388c62d8c9d84917e8745f896dbf1e4fc94ee73636e45bc4725b122b43c425d2",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Socket_Wall_02.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166",
+      "sourceRelativePath": "registry/source-assets/sha256/61/12/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166.glb",
+      "leakageGroupHash": "857343816799263746e2e2548554b0e845bf851093733b147ba23fef03804ff8",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "environment_realizer",
+        "semantic_boundary",
+        "single_object",
+        "source_name_mismatch"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "uncertain",
+        "text": "Irregular low olive-green faceted ground clump",
+        "uncertaintyReason": "The views do not distinguish moss, rock, or another low ground-cover form with confidence."
+      },
+      "evidence": {
+        "renderEvidenceHash": "3d17adc32927136e8ed1af67341e9af3597ce36c6222341bb9dcdea9ffc85168",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "0547d42c9e38c1f294214ba2b58b4450efb29bf2012dc059b78b6ad4cda305cc",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "daf8ee2cd3a74c1345c9d35e203eccf77a40d9d739b046aae6ad2e7ff840b193",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "027f3b3d457eb58aee0531859a8c510ad6aaa4be40f184cc02ab5b867528f209",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "8769e547b3b4c448f2c51b1be8d9c10ca4a9af19cb1299d9b08d05b03e31aede",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "4525d2417f7374f6c5266cf1b7537106d3d93e625fd9ac051502bc9704b4096d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "3f51ed309fa1c85d000655ab875028791e836ef6100ad336dc68f4675d4cb3cb",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "0ed46202cac0b0bfd154238323d2751b9693da3541a2397496d0ea3783e62636",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "cd115a1078629a0432e7a183c89a86698b4b4944ff5ba755c1c29fcf96dc6fc0",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "7a66867ecffefaabc78ce8bc3bb24b7d0c1a62ae39972ed06803fd23d8d0b8af",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "03d8928246401b8839d36cdc5f1410ccbdb295eca63f57b7545e02031dbd063c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "35502f3fb3783084a6ba19346feac04b890ab73db99f4fd5a33cbaacf5ed6422",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "7f5a7cc58fabb0b57b3acf48d590c7b7f0269b21d397658b63a2ab42fe3c4c71",
+            "rgbRelativePath": ".basalt/catalog/review/previews/61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166",
+          "measurementHash": "ed18da9a3095c63afb1db1d304627018929c170ac1005f39384f4d27771b9d43",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.8124213814735413,
+              "y": -0.8000640869140625,
+              "z": -0.5522162914276123
+            },
+            "max": {
+              "x": 0.7558168172836304,
+              "y": 0.3958868980407715,
+              "z": 0.2883126437664032
+            }
+          },
+          "sizeMeters": {
+            "x": 1.5682381987571716,
+            "y": 1.195950984954834,
+            "z": 0.8405289351940155
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 114,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "88361823e5e91b5a5c3c122494920fbb56dd06983b70b567469d427ba3871d4e"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "8c1b1972d54c7589c48bdcba8ae34d6a024f55937c929240f5679b2b59411ad2",
+        "authority": "none",
+        "observations": [
+          "SM_Env_Moss_Patch_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+      "sourceRelativePath": "registry/source-assets/sha256/6b/09/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020.glb",
+      "leakageGroupHash": "b0b107f28264397080e1340b79166e63502f1e8e14a4a100e64f44f309b4adaa",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "multi_object_aggregate",
+        "standalone"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Shallow rectangular bowl holding bananas and mixed red, green, and orange fruit",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "9ded555695787c23f36cc8497bf741aeac27a0b718506c2db45d669c4ea703e0",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "38e47e8e6b3d86ad425d118cef152fb425b1b42405fd1f29293bfa767f828cd7",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "9f632484ef6e2309d435a1ed25a93b5cb84f6a81ebd9723400b9a0bf9025e66d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "027b754116860a4951689bec9e4465a460c376999a3535209b744fd0f0c6a46b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "2e214ab610076cd6e36aac57552727572a2863aac1b725a01136912e4f35fe91",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "1d77938371a6982b4e55bce56365cc7d993d5d47733e1c01370995005b75ca8c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "e1b49e854d7a56f201efcc30c79ad1cc6e6be1053f6888a64e986e8e01a6b133",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "434a97151d48d18055144eb2bc6030e4554916bed16afd367d197a4be3f5c77e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "fc88775e5558db8861a11860c1ae975f3c8ff7eca6f98b35803095f2ccb176fb",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "d4627b5892c6f578efccef3c593ee6f2171e212821140c33d6345e0da6900cf5",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "a46115d6c6583c580642c04577165471c26a7ce4d890da5745a513faea70ab51",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "d5ae764927af8d0c8367c274d5503bb912cd3fd8fad268a7ce73e418a85007a1",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "19b1d55dd9f95ecb4c15332d0102f113ca78a305c383673c4e49e073425b3933",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+          "measurementHash": "4a95e3a945378ce5d7222849da04a2515a133226ab81a4a029def471044a8673",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.215201735496521,
+              "y": 0.013598067685961723,
+              "z": -0.2308325171470642
+            },
+            "max": {
+              "x": 0.21519961953163147,
+              "y": 0.24313953518867493,
+              "z": 0.1706256866455078
+            }
+          },
+          "sizeMeters": {
+            "x": 0.43040135502815247,
+            "y": 0.2295414675027132,
+            "z": 0.401458203792572
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 662,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.032564211869612336,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "e33c09a41baed4e6872a966216678f01b143b4c9aa7cac175dbb29518b6e1578"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "a9cb30e1ef36948230a4ff24d8cba681a8cd42ba348f26dd68a9ee22273c30bd",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_FruitBowl_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+      "sourceRelativePath": "registry/source-assets/sha256/6e/90/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107.glb",
+      "leakageGroupHash": "0257b6f5cdc1002e1974c7296c22af16ad640953dc65349378b1037278a633a4",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "environment_realizer",
+        "multi_object_aggregate",
+        "vegetation"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Cluster of three brown mushrooms with rounded caps",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "7c71253ffb9ab22da373221134c9f633361e7c643698fd276507217afa282a99",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "a2f414ae59a487ea9fd0a30b79046733ce25fa952e0bdbbcee4676d9946886cd",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "4efdf3a5c7e8d978a6e7121fab28c6135d3df08380c2add424124166188e7ed9",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "d83c0b6b6f2f9e5d4769f474a6dd4f2ad704dd886418494160cb4f60577b275a",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "4cfb4d526c333d96152118f09e5609b78d5477bee1e67feeb25bd2a03ce08349",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "819647356491945b0e4436f99ae6ebfc2b23d4f369bfc03a152d28d538f070e6",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "b0c8dd79ca4b4867eabcdf0c006ae8ac76ac20d6658e36c39244f1d70e0a96f4",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "bef955ac5090c4d76aa0d50a2ee266758421872b1ee83bd3061a751ac33f5e1d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "55601dfd41a9b4902f41a87e8a485afa439f0d60c722f479021a6592fb717684",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "a15457a61715316c342137926739e2f04173e3ba35357b8a7c28a69161e0c251",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "137f52e3dc719fab2809731dd9d546791fa53ca21e2c5884c28d29e5d920258d",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "2a1eea5922fd7f0561eb8a8afbeef578b76fc1503bc05ee63769b6d75c1e2e6b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "9d11f7d0a389f85b1beecda9e04ae86dd16fa83dabdd2027b627d47d64cdc3fe",
+            "rgbRelativePath": ".basalt/catalog/review/previews/6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+          "measurementHash": "4b7476da87dd43e8abd5f5a59976447ea6544f8131f17a7347d8f4b1f9205dde",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.19199520349502563,
+              "y": -0.14554546773433685,
+              "z": -0.17397773265838623
+            },
+            "max": {
+              "x": 0.19199520349502563,
+              "y": 0.3314271569252014,
+              "z": 0.17397774755954742
+            }
+          },
+          "sizeMeters": {
+            "x": 0.38399040699005127,
+            "y": 0.47697262465953827,
+            "z": 0.34795548021793365
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 206,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.00000981776975095272,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "3a27a5d6ea5c077ae52047f84a98fbfcfc83b3d480b15e30fcb55b5b28bc433b"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "7c1d553875a235b1088bb6f7835ab40994f35f62bf54f923d3e8c25acbc74a1d",
+        "authority": "none",
+        "observations": [
+          "SM_Plant_Mushrooms_05.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461",
+      "sourceRelativePath": "registry/source-assets/sha256/76/05/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461.glb",
+      "leakageGroupHash": "45711838be96f3c7cc288bf50a04fd451414521726475d3135d7dfdea03b9d0f",
+      "split": "development",
+      "selectionTags": [
+        "attachment",
+        "complete",
+        "semantic_boundary",
+        "single_object"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Red wheeled agricultural implement with a tow arm and multiple curved tines",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "b97824519d3786e7a02defa666b9bc274305ae7d56f77d60779559d2aa286ece",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "82a7f6f47a14cc4fa25de0763cd23167258838ff9806f70e86946365d4768c14",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "3e6bce87f390e7fc78d3209231867474d305fd64336d433285bc0e87edaba1e6",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "db1c311740ffcf9ec742a2056e2b8aebf95ee2ec535b813cd9fd55a015794b7e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "a3f7d46e4283f93e5160800a30832e474df91f5d8ad4718866e5469d4000c378",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "2e60ed416d85312e3c7a49b385fac86585a7f0bb5cf001cc84345d60153855ed",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "c3f7f0bb93fcd375c529856fffb289bf2ed80f7fee644ec5cac16cdd4879864f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "1b8de87a294332dd30b97431b412191f7d015e1f2c09dab769c7e8cd82f7e4c3",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "7d5903bc00d68c5402a03e4d41c1df4a464911168212ab731511353caa88c62c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "59b4966ae9b7d143d30889696411867dd6a633dc1189f6aa9730025bb96877f4",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "009aecf333b7159ce3fdff6692f58df0cc7ce2eb865ba20db3721ddb35d2a7a3",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "ede759dc3ac8e739eee02c765662add1fdb7d7851b39aa93ea74e82ef86d010e",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "3e07af986bb27e6cda05966211845b867939b2a8ba7d88c033e8b120fb04feac",
+            "rgbRelativePath": ".basalt/catalog/review/previews/760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461",
+          "measurementHash": "c0005f13194911aaf2a02c52dbbb70f67446614bbff445f248d84eba5fa345c6",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -1.834157109260559,
+              "y": -0.019922932609915733,
+              "z": -8.025033950805664
+            },
+            "max": {
+              "x": 1.8917852640151978,
+              "y": 0.9601893424987793,
+              "z": 0.08419494330883026
+            }
+          },
+          "sizeMeters": {
+            "x": 3.725942373275757,
+            "y": 0.980112275108695,
+            "z": 8.109228894114494
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 5,
+            "renderable": 5,
+            "collision": 0
+          },
+          "triangleCount": 1862,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0,
+            "measurementMethod": "lower_extrema"
+          },
+          "hash": "07c9105de50eb24fb6fd718b34418f85603785c7ced6ceb35ce84781304ccd6c"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "10544e3c9c690c65b3a3d84468e70cc8143ee3ba5dff2fbcec1b4408c7f5d7e3",
+        "authority": "none",
+        "observations": [
+          "SM_Veh_Attach_Plough_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+      "sourceRelativePath": "registry/source-assets/sha256/f6/8a/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda.glb",
+      "leakageGroupHash": "7d3c7b55a29699b1f52e884b34bf630dd7c295634de32551b7d7ed04c32eadf8",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "semantic_boundary",
+        "single_object",
+        "standalone"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Curved triple-monitor desktop rig mounted on a central adjustable stand",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "d5be623f45e0bbf200486a5cbfdf0bda7a0de3d6fc2c05ffccdba47898a6a159",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "e463b3fb6596558e2846535f7f65cfc713b212594d0423519f9b80c3e0e302e6",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "03c2d90f7a96d5e9ec88936a33e4d76d90e970d9c7ee4e2648a81d815915a356",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "22b564f1bb7a17fab7c808df468953300424aacba7d01312201d91a8bc4eec4c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "b29c53687e7d157e4debe8e48a056e53487d7c385a33bf314b1a2f024385f65c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "626bbcae35b6e740361dc98f681a36dd23e5f73bf611ec163f44c8123ba371b5",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "917bc6de8898a8d92cd6052011553920d1fee48625b153fa3829227001cfaa4c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "31d40950cd3d4be0915761c1af0932c3bc006e248ef06cf664b84b140d0c7902",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "1822bd5660b98bf8fc3453f942510e3b83b6eb0bedc87347fcba18f0d72b3bae",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "e1af763335b5b51e52c1fea51d27fe5f9f7b1c1a982a28f0daa7931b8a2793a2",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "5c17b17631511b754d23c93e89cff111707f778af48da7ab49d8180db7720ff2",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "75a525722692297346082e0af960136d3226a9d37dad7752b6af7682c25387c1",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "3f27aa6705ccb082cc691de2ee3bbc7342261dae74ba11792c4eb7a572c27ace",
+            "rgbRelativePath": ".basalt/catalog/review/previews/f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+          "measurementHash": "58c294715d30d51e40557ce0baf42bc5cbb5ffa56ff9ef0ec832dadddd2ebf56",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.9709569811820984,
+              "y": -0.13986307382583618,
+              "z": -0.07347900420427322
+            },
+            "max": {
+              "x": 0.9567364454269409,
+              "y": 0.7010734677314758,
+              "z": 0.532269299030304
+            }
+          },
+          "sizeMeters": {
+            "x": 1.9276934266090393,
+            "y": 0.840936541557312,
+            "z": 0.6057483032345772
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 884,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.0006055026315152645,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "d2d48655b6f3cd86625ab60428b645c60d0275a6babab2b24b47b23b128b98c4"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "1c3a448108bcd54319461f330d550b90eab411a48164d5de0051f97e2b6a8811",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_Computer_Monitor_Triple_01.glb"
+        ]
+      }
+    },
+    {
+      "sourceContentHash": "fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5",
+      "sourceRelativePath": "registry/source-assets/sha256/fe/de/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5.glb",
+      "leakageGroupHash": "a4d3fb905003f7de73c53761b619ab46ac2daa97c4d2e927bdafbee6dec16a93",
+      "split": "development",
+      "selectionTags": [
+        "complete",
+        "multi_object_aggregate",
+        "standalone"
+      ],
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Stack of sealed brown cardboard boxes in two uneven tiers",
+        "uncertaintyReason": null
+      },
+      "evidence": {
+        "renderEvidenceHash": "dcdb34ba71d8f324f9b7f82b21bdfe22359a34fd90026cf47069281d2be44f53",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/contact-sheet.png",
+        "rgbViews": [
+          {
+            "viewId": "high_00",
+            "rgbHash": "49bcf2f979433c1fdb82872f1367b993669dc836af605718dae5e2aefdf08c90",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/high_00-rgb.png"
+          },
+          {
+            "viewId": "high_01",
+            "rgbHash": "9a905482013da23c648d4393836ac06fafd7d500f62e2d78fbc6ddf42e5cbd0b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/high_01-rgb.png"
+          },
+          {
+            "viewId": "high_02",
+            "rgbHash": "a3cd8c787cb407e95493c70c5ef69b5c6d11f4605008dde76c76b4510922fd3f",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/high_02-rgb.png"
+          },
+          {
+            "viewId": "high_03",
+            "rgbHash": "38e66e7c422a9734a34c9ebb29b1c329ac59e07fe713269affc922af42bbf521",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/high_03-rgb.png"
+          },
+          {
+            "viewId": "low_00",
+            "rgbHash": "23f98c6375f409235991657c5cd085a32a02997b45042935bbd4a5802a972a6b",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/low_00-rgb.png"
+          },
+          {
+            "viewId": "low_01",
+            "rgbHash": "906a10b418c9f940ec226752fb6f1cf366d976d9e044783a94e9bf52a4fff182",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/low_01-rgb.png"
+          },
+          {
+            "viewId": "low_02",
+            "rgbHash": "ce4642724ba283ce79f0fb7b2cafb22de5b9857eae08ee4f24f12bbd19bc2bf0",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/low_02-rgb.png"
+          },
+          {
+            "viewId": "low_03",
+            "rgbHash": "aabe7e3910cd28bb09e9796300b3351ac91397ca2698af40c8f191fcbbd9adec",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/low_03-rgb.png"
+          },
+          {
+            "viewId": "low_04",
+            "rgbHash": "31f85677ce5bce29449f2bea2cac56087bea9b8e54457c62c6f7d7b29a0be319",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/low_04-rgb.png"
+          },
+          {
+            "viewId": "low_05",
+            "rgbHash": "67ea7728c8050ea200c07ad5bc67364ca804743265842e7e89acbc7de2c7b36c",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/low_05-rgb.png"
+          },
+          {
+            "viewId": "low_06",
+            "rgbHash": "1ce83943f61d3d7dcbf03ea3e995ff76f63a4a48b85d7f2f1f20958f5959d940",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/low_06-rgb.png"
+          },
+          {
+            "viewId": "low_07",
+            "rgbHash": "bc260efa20c3439e9befc0f672180f209e89ae4c6a4da03dfdb5dd56b862c198",
+            "rgbRelativePath": ".basalt/catalog/review/previews/fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5/low_07-rgb.png"
+          }
+        ],
+        "metricSummary": {
+          "kind": "AssetMetricPromptSummary",
+          "sourceContentHash": "fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5",
+          "measurementHash": "aa97ad338360730a31b7fb7d36a8450f2a862a75fa859d3756dd0b09a9070b48",
+          "coordinateSystem": "right_handed_y_up_meters",
+          "boundsMeters": {
+            "min": {
+              "x": -0.5048364400863647,
+              "y": 0,
+              "z": -0.5221868753433228
+            },
+            "max": {
+              "x": 0.5048364400863647,
+              "y": 0.9166775345802307,
+              "z": 0.5221874713897705
+            }
+          },
+          "sizeMeters": {
+            "x": 1.0096728801727295,
+            "y": 0.9166775345802307,
+            "z": 1.0443743467330933
+          },
+          "sourceFrame": {
+            "handedness": "right_handed",
+            "up": "+Y",
+            "forward": "-Z",
+            "unitsToMeters": 1
+          },
+          "partCounts": {
+            "total": 1,
+            "renderable": 1,
+            "collision": 0
+          },
+          "triangleCount": 276,
+          "support": {
+            "primaryContact": "bottom",
+            "contactAreaSquareMeters": 0.4732362956274301,
+            "measurementMethod": "planar_patch_fit"
+          },
+          "hash": "60131bc23555a35f702a9fd21660fcc5f43069935cb6e070982373f7fe6f62b4"
+        }
+      },
+      "filenameHint": {
+        "artifactHash": "bf14f56207d6ad6e888e7f64db837be1d03c5d17097f4a4925f62e6f1d8ff981",
+        "authority": "none",
+        "observations": [
+          "SM_Prop_CardboardBox_Stack_01.glb"
+        ]
+      }
+    }
+  ],
+  "hash": "9d964403bec5654ed51576633eff8cd36fbbb4cb9158dee1d1c7d1a06e3987f3"
+}

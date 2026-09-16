@@ -14,7 +14,7 @@ import {
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 import {
   TOWER_HEIGHT_PARAMETER_ID,
-  TOWER_NEURAL_GAP_RECEIPT_HASH,
+  TOWER_AUTHORED_CONSTRUCTION_HASH,
   TOWER_PROGRAM_ID,
   TOWER_WIDTH_PARAMETER_ID,
   observationTowerFixture,
@@ -139,7 +139,7 @@ test("observation tower refines through parameters and the affected dependency c
   );
   assert.ok(
     result.worldBuild.meso.constructedStructures[0]!.evidenceHashes.includes(
-      TOWER_NEURAL_GAP_RECEIPT_HASH,
+      TOWER_AUTHORED_CONSTRUCTION_HASH,
     ),
   );
   const structure = result.worldBuild.meso.constructedStructures[0]!;
@@ -178,8 +178,11 @@ test("observation tower refines through parameters and the affected dependency c
   );
   const readbackTransaction = roblox.transactions.find((entry) => entry.stage === "readback")!;
   const observedOpening = readbackTransaction.expectedConstructedOpenings[0]!;
-  assert.equal(observedOpening.clearanceBoundsMicrometers.min.x, 9_250_001);
-  assert.equal(observedOpening.clearanceBoundsMicrometers.max.z, 15_450_000);
+  const openingWidthMicrometers =
+    observedOpening.clearanceBoundsMicrometers.max.x -
+    observedOpening.clearanceBoundsMicrometers.min.x;
+  assert.ok(openingWidthMicrometers >= 1_599_998 && openingWidthMicrometers <= 1_600_002);
+  assert.deepEqual(observedOpening.blockingPartIds, []);
   const exactReadback = {
     kind: "RobloxReadback" as const,
     sessionHash: roblox.sessionHash,

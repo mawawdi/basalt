@@ -27,8 +27,8 @@ const vector = (
 export const TOWER_PROGRAM_ID = "ObservationTower";
 export const TOWER_HEIGHT_PARAMETER_ID = "TowerHeight";
 export const TOWER_WIDTH_PARAMETER_ID = "TowerWidth";
-export const TOWER_NEURAL_GAP_RECEIPT_HASH = contentHash(
-  "observation-tower-deterministic-fake-neural-gap-receipt",
+export const TOWER_AUTHORED_CONSTRUCTION_HASH = contentHash(
+  "observation-tower-authored-construction",
 );
 
 export async function observationTowerFixture(module: SemanticModule): Promise<{
@@ -42,6 +42,11 @@ export async function observationTowerFixture(module: SemanticModule): Promise<{
   const program = observationTowerProgram({
     semanticDependencyClosureHash: regionClosureHash,
     styleProfileHash: fixture.styleProfile.hash,
+    regionId: "MainRegion",
+    surfaceId: "GroundSurface",
+    entryRouteId: "MainRoute",
+    anchorPositionMeters: { x: 10, z: 4 },
+    towerCenterOffsetMeters: 8,
     heightMeters: 4,
     widthMeters: 5,
   });
@@ -97,26 +102,36 @@ export async function observationTowerFixture(module: SemanticModule): Promise<{
 export function observationTowerProgram(input: {
   readonly semanticDependencyClosureHash: string;
   readonly styleProfileHash: string;
+  readonly regionId: string;
+  readonly surfaceId: string;
+  readonly entryRouteId: string;
+  readonly anchorPositionMeters: { readonly x: number; readonly z: number };
+  readonly towerCenterOffsetMeters: number;
   readonly heightMeters: number;
   readonly widthMeters: number;
 }): ConstructionProgram {
   const height = TOWER_HEIGHT_PARAMETER_ID;
   const width = TOWER_WIDTH_PARAMETER_ID;
-  const towerCenterZ = 8;
+  const towerCenterZ = input.towerCenterOffsetMeters;
   const halfInset = (sign: -1 | 1) => bind(width, sign * 0.5, sign * -0.2);
   const platformCenterY = bind(height, 1, -0.15);
-  const railCenterY = bind(height, 1, 0.7);
-  const sideRailSize = vector(literal(0.12), literal(1.4), bind(width));
+  const railPostCenterY = bind(height, 1, 0.6);
+  const topRailCenterY = bind(height, 1, 1.08);
+  const midRailCenterY = bind(height, 1, 0.54);
+  const timberAppearance = {
+    materialId: "WoodPlanks",
+    baseColorSrgb: { red: 112, green: 78, blue: 45 },
+  };
   return sealConstructionProgram({
     programId: TOWER_PROGRAM_ID,
-    regionId: "MainRegion",
+    regionId: input.regionId,
     semanticDependencyClosureHash: input.semanticDependencyClosureHash,
     styleProfileHash: input.styleProfileHash,
-    defaultMaterialId: "WoodPlanks",
+    defaultAppearance: timberAppearance,
     anchor: {
       kind: "placement_surface",
-      surfaceId: "GroundSurface",
-      horizontalPositionMeters: { x: 10, z: 4 },
+      surfaceId: input.surfaceId,
+      horizontalPositionMeters: input.anchorPositionMeters,
       elevationOffsetMeters: 0,
     },
     localFrame: {
@@ -129,20 +144,20 @@ export function observationTowerProgram(input: {
     ],
     operations: [
       {
-        operationId: "BackRailHost",
+        operationId: "FrontGuardHost",
         kind: "box",
-        centerMeters: vector(literal(0), railCenterY, bind(width, 0.5, towerCenterZ - 0.06)),
-        sizeMeters: vector(bind(width), literal(1.4), literal(0.12)),
+        centerMeters: vector(literal(0), railPostCenterY, bind(width, -0.5, towerCenterZ + 0.06)),
+        sizeMeters: vector(bind(width), literal(1.2), literal(0.12)),
         templateOnly: false,
       },
       {
-        operationId: "BackRailOpening",
+        operationId: "FrontStairOpening",
         kind: "rectangular_opening",
-        hostOperationId: "BackRailHost",
+        hostOperationId: "FrontGuardHost",
         plane: "xy",
-        centerOffsetMeters: { horizontal: literal(0), vertical: literal(0.05) },
-        sizeMeters: { width: literal(1.5), height: literal(1) },
-        portalId: "TowerViewOpening",
+        centerOffsetMeters: { horizontal: literal(0), vertical: literal(0) },
+        sizeMeters: { width: literal(1.6), height: literal(0.9) },
+        portalId: "TowerStairGate",
         clearanceMeters: literal(0.2),
       },
       {
@@ -165,18 +180,73 @@ export function observationTowerProgram(input: {
           templateOnly: false,
         })),
       ),
+      ...([-1, 1] as const).flatMap((xSign) =>
+        ([-1, 1] as const).map((zSign) => ({
+          operationId: `RailPost_${xSign < 0 ? "West" : "East"}_${zSign < 0 ? "Front" : "Back"}`,
+          kind: "box" as const,
+          centerMeters: vector(
+            halfInset(xSign),
+            railPostCenterY,
+            bind(width, zSign * 0.5, towerCenterZ + zSign * -0.2),
+          ),
+          sizeMeters: vector(literal(0.18), literal(1.2), literal(0.18)),
+          templateOnly: false,
+        })),
+      ),
       {
-        operationId: "SideRailEast",
+        operationId: "SideTopRailEast",
         kind: "box",
-        centerMeters: vector(bind(width, 0.5, -0.06), railCenterY, literal(towerCenterZ)),
-        sizeMeters: sideRailSize,
+        centerMeters: vector(bind(width, 0.5, -0.06), topRailCenterY, literal(towerCenterZ)),
+        sizeMeters: vector(literal(0.14), literal(0.14), bind(width)),
         templateOnly: false,
       },
       {
-        operationId: "SideRailWest",
+        operationId: "SideMidRailEast",
         kind: "box",
-        centerMeters: vector(bind(width, -0.5, 0.06), railCenterY, literal(towerCenterZ)),
-        sizeMeters: sideRailSize,
+        centerMeters: vector(bind(width, 0.5, -0.06), midRailCenterY, literal(towerCenterZ)),
+        sizeMeters: vector(literal(0.12), literal(0.12), bind(width)),
+        templateOnly: false,
+      },
+      {
+        operationId: "SideTopRailWest",
+        kind: "box",
+        centerMeters: vector(bind(width, -0.5, 0.06), topRailCenterY, literal(towerCenterZ)),
+        sizeMeters: vector(literal(0.14), literal(0.14), bind(width)),
+        templateOnly: false,
+      },
+      {
+        operationId: "SideMidRailWest",
+        kind: "box",
+        centerMeters: vector(bind(width, -0.5, 0.06), midRailCenterY, literal(towerCenterZ)),
+        sizeMeters: vector(literal(0.12), literal(0.12), bind(width)),
+        templateOnly: false,
+      },
+      {
+        operationId: "BackTopRail",
+        kind: "box",
+        centerMeters: vector(literal(0), topRailCenterY, bind(width, 0.5, towerCenterZ - 0.06)),
+        sizeMeters: vector(bind(width), literal(0.14), literal(0.14)),
+        templateOnly: false,
+      },
+      {
+        operationId: "BackMidRail",
+        kind: "box",
+        centerMeters: vector(literal(0), midRailCenterY, bind(width, 0.5, towerCenterZ - 0.06)),
+        sizeMeters: vector(bind(width), literal(0.12), literal(0.12)),
+        templateOnly: false,
+      },
+      {
+        operationId: "PlatformBeamEastWest",
+        kind: "box",
+        centerMeters: vector(literal(0), bind(height, 1, -0.42), literal(towerCenterZ)),
+        sizeMeters: vector(bind(width), literal(0.24), literal(0.24)),
+        templateOnly: false,
+      },
+      {
+        operationId: "PlatformBeamNorthSouth",
+        kind: "box",
+        centerMeters: vector(literal(0), bind(height, 1, -0.42), literal(towerCenterZ)),
+        sizeMeters: vector(literal(0.24), literal(0.24), bind(width)),
         templateOnly: false,
       },
       {
@@ -190,14 +260,11 @@ export function observationTowerProgram(input: {
         maximumRiserHeightMeters: literal(0.2),
         maximumTreadDepthMeters: literal(0.28),
         minimumHeadroomMeters: literal(2),
-        entryRouteId: "MainRoute",
+        entryRouteId: input.entryRouteId,
         landingOperationId: "Landing",
       },
     ],
-    contributionEvidenceHashes: [
-      contentHash("observation-tower-authored-construction"),
-      TOWER_NEURAL_GAP_RECEIPT_HASH,
-    ],
+    contributionEvidenceHashes: [TOWER_AUTHORED_CONSTRUCTION_HASH],
   });
 }
 

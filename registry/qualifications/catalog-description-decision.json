@@ -1,0 +1,351 @@
+{
+  "kind": "CatalogQualificationDescriptionDecision",
+  "proposalHash": "9d964403bec5654ed51576633eff8cd36fbbb4cb9158dee1d1c7d1a06e3987f3",
+  "reviewer": {
+    "authority": "creator",
+    "reviewerId": "mawawdi"
+  },
+  "reviewMethod": "independent_visible_description_review",
+  "reviewerStatement": "Prior creator review covers all 24 assets; a separate independent visual audit of the same evidence identified and corrected four caption overclaims.",
+  "reviewedAt": "2026-09-15T20:18:08.695Z",
+  "coverage": "complete",
+  "assets": [
+    {
+      "sourceContentHash": "0034c2c42719801ce1e679c00d4062e8a86e39d6898c7ba57e52d760cc3b02bc",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Beige pillar-shaped piece with a faceted cap",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "020e15254e550187ed7627c2c566e4a37dad45f822ad7a2c3e07e1034557ec2d",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Closed wooden treasure chest with an arched slatted lid and gray metal bands",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "04db0038e87112d91bc1d2c8da17746bbeb82b71c0208f059e3878f215cea136",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Curved dirt-road segment with grassy banks and scattered stones",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "05206c0e079973ab7d3846ff41f87c13093acf9d2f86b5757e8ab0cde10df4d9",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Small arched wooden footbridge with railings on both sides",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "052942c66b259cfcf031a217b51b6a83def56c72617c5def78e0bf8d1eaeaeb0",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Low-poly tree with a brown trunk and snow-covered green crown",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "098e0b264794ad8ecf671727d98951721b80770c8751877fa8bc08032798ec0f",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Tabletop paper trimmer with a blue rectangular bed, straight guide rail, and black slider",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "1de7681563f4e018de08531d57e73ae5f2704639d2af553772e8d37fdeedc3de",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Scattered pale bones across a low irregular gray ground mound",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "1ee7945e406721919edd23b846ff1cafe3a88231931d2e3ec6a866399b17e855",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Faceted mustard-yellow beanbag chair with a deep slouched seat",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "1f3c7e8784292a1b102d18bfdd576a941fac4d3c0fdb5c8f5445935d3c06d19a",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Simple wooden fence panel made of three slightly uneven horizontal rails",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "2519f7d3fef35f984e57282d802a434e5187dafbc5e9cc3fab9a9a7e2f39d15b",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Slender bent palm tree with a small crown of bright-green fronds",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "2553b31cbd7c5c11e752d1e53fa011b628de163844bcb70520a6f67f30902b6b",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Black cannon mounted on a brown four-wheeled wooden carriage",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "25c127f1e39ae40d42cf8f123e7f3a3f29619e4f31405af4ab1a41c399c2232a",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Curved shallow tan earthen channel with grassy banks and stones",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "2c0f4c5a5d4b7abc6be33b0a0c810ac2ae9c955491efc01f897819c8a6252e34",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Boxy gray outdoor air-conditioning unit with a circular fan grille",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "3000ffbd87e5aa4f71b2fc3475e9ec77281d7b0379b64d32b267f8f0fc28b356",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "uncertain",
+        "text": "Thin elongated white cloud-like form with a small detached fragment",
+        "uncertaintyReason": "The isolated geometry supports a cloud-like reading, but scale and scene context are absent."
+      }
+    },
+    {
+      "sourceContentHash": "33626269f7598396c633a2c1e115070bc48679984e472df154690377c8ecc45d",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Long narrow gray rectangular beam with beveled ends",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "421e4424b52b4b85987b7906053de7885e9c40bbb5295b1fcd791f8d2913b593",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Tall upright gray faceted boulder with a flattened top",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "47ce4f9f15f0e1136b3cc0e3f6949179867228675e2648aa44293658c1f75225",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Two-tone conical party hat with a red-orange top and purple lower band",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "605c8509448840a4709efe97d966e2750d32fc416f254f8115d1b27b50c1e65b",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "White rectangular wall plate with two stacked electrical receptacles",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "61123c8b2a32e2998d6a1bde535d1319f6bf5db6ee52c6386d1a69e47370b166",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "uncertain",
+        "text": "Irregular low olive-green faceted ground clump",
+        "uncertaintyReason": "The views do not distinguish moss, rock, or another low ground-cover form with confidence."
+      }
+    },
+    {
+      "sourceContentHash": "6b091f89824cb3b949f882c7bf1770c53102fce88a0f659f34f63160a18e4020",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Shallow rectangular bowl holding bananas and mixed red, green, and orange fruit",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "6e909023406815ec410952b01dd597ed4a4bf83a4f635a4a83f374f96ef7d107",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Cluster of three brown mushrooms with rounded caps",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "760581ed515130882342903035e8d6e594bbd983a8732519fadb0c877acaa461",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Red wheeled agricultural implement with a tow arm and multiple curved tines",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "f68a62f4a45621b57b5260697f0806741423c9818d63e540debde90ea24b0fda",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Curved triple-monitor desktop rig mounted on a central adjustable stand",
+        "uncertaintyReason": null
+      }
+    },
+    {
+      "sourceContentHash": "fede7d0c848deb25b909ca7b0201c3c824a8c25b5d3ab1a6a5dc6faf706386e5",
+      "reviewAction": "accurate",
+      "evidenceUsability": {
+        "status": "usable",
+        "defectKinds": [],
+        "note": null
+      },
+      "visibleDescription": {
+        "status": "concrete",
+        "text": "Stack of sealed brown cardboard boxes in two uneven tiers",
+        "uncertaintyReason": null
+      }
+    }
+  ],
+  "hash": "e3e997dd72f2711adab518ec402e9309b710fcb7d1e22534862ba69dbe89f262"
+}

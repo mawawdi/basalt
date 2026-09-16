@@ -270,11 +270,22 @@ export function analyzeCatalogLeakage(input: {
     );
 
   const searchedSources = new Set(nearDuplicateSearch.searchedSourceContentHashes);
-  const missingNearDuplicateSources = [...expectedSources].filter(
+  const collisionOnlySources = new Set(
+    measurements.assets
+      .filter(
+        (asset) =>
+          asset.parts.length > 0 && asset.parts.every((part) => part.role === "collision_proxy"),
+      )
+      .map((asset) => asset.source.contentHash),
+  );
+  const expectedNearDuplicateSources = new Set(
+    [...expectedSources].filter((hash) => !collisionOnlySources.has(hash)),
+  );
+  const missingNearDuplicateSources = [...expectedNearDuplicateSources].filter(
     (hash) => !searchedSources.has(hash),
   );
   const unknownNearDuplicateSources = nearDuplicateSearch.searchedSourceContentHashes.filter(
-    (hash) => !expectedSources.has(hash),
+    (hash) => !expectedNearDuplicateSources.has(hash),
   );
   if (nearDuplicateSearch.sourceManifestHash !== sourceManifestHash)
     diagnostics.push(
@@ -303,7 +314,7 @@ export function analyzeCatalogLeakage(input: {
     diagnostics.push(
       leakageDiagnostic(
         "near_duplicate_unknown_sources",
-        `${unknownNearDuplicateSources.length} near-duplicate descriptors reference unknown sources`,
+        `${unknownNearDuplicateSources.length} near-duplicate descriptors reference collision-only or unknown sources`,
         "rejected",
         ["nearDuplicateSearchHash"],
         unknownNearDuplicateSources.slice(0, 256),
@@ -313,7 +324,7 @@ export function analyzeCatalogLeakage(input: {
     diagnostics.push(
       leakageDiagnostic(
         "near_duplicate_search_pending",
-        `${missingNearDuplicateSources.length} source identities lack near-duplicate shape evidence`,
+        `${missingNearDuplicateSources.length} renderable source identities lack near-duplicate shape evidence`,
         "incomplete",
         ["coverage", "nearDuplicateShape"],
         missingNearDuplicateSources.slice(0, 256),

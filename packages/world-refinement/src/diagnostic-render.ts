@@ -27,6 +27,8 @@ export const WORLD_DIAGNOSTIC_RENDERER_IMPLEMENTATION_HASH = contentHash(
       "axis_aligned_box",
       "height_field_triangle",
       "road_surface_triangle",
+      "route_edge_rail_triangle",
+      "route_junction_cylinder",
       "vertical_cylinder",
     ],
     shading: "normal_depth_material_hash",
@@ -106,8 +108,8 @@ function renderPrimitives(worldBuild: WorldBuild): RenderPrimitive[] {
     color: colorFromIdentity(instance.entryHash),
     hash: instance.hash,
   }));
-  const routes: RenderPrimitive[] = worldBuild.foundation.routeConstructions.flatMap((route) =>
-    route.travelSegments.flatMap((segment) => {
+  const routes: RenderPrimitive[] = worldBuild.foundation.routeConstructions.flatMap((route) => [
+    ...route.travelSegments.flatMap((segment) => {
       const [a, b, c, d] = segment.vertices.map((entry) => entry.positionMeters) as [
         Point,
         Point,
@@ -145,11 +147,65 @@ function renderPrimitives(worldBuild: WorldBuild): RenderPrimitive[] {
         },
       ];
     }),
-  );
+    ...route.edgeRails.flatMap((rail) => {
+      const [a, b, c, d] = rail.vertices.map((entry) => entry.positionMeters) as [
+        Point,
+        Point,
+        Point,
+        Point,
+      ];
+      const color = appearanceColor(rail.appearance);
+      return [
+        {
+          kind: "triangle" as const,
+          a,
+          b,
+          c: d,
+          color,
+          hash: contentHash(stableJson({ railHash: rail.hash, triangle: 0 })),
+        },
+        {
+          kind: "triangle" as const,
+          a,
+          b: d,
+          c,
+          color,
+          hash: contentHash(stableJson({ railHash: rail.hash, triangle: 1 })),
+        },
+      ];
+    }),
+    ...route.supports.map((support) => ({
+      kind: "cylinder" as const,
+      center: support.centerMeters,
+      radius: support.radiusMeters,
+      height: support.heightMeters,
+      color: appearanceColor(support.appearance),
+      hash: support.hash,
+    })),
+    ...route.edgePosts.map((post) => ({
+      kind: "cylinder" as const,
+      center: post.centerMeters,
+      radius: post.radiusMeters,
+      height: post.heightMeters,
+      color: appearanceColor(post.appearance),
+      hash: post.hash,
+    })),
+  ]);
+  const junctions: RenderPrimitive[] = worldBuild.foundation.routeJunctions.map((junction) => ({
+    kind: "cylinder",
+    center: {
+      ...junction.centerTopMeters,
+      y: junction.centerTopMeters.y - junction.thicknessMeters / 2,
+    },
+    radius: junction.radiusMeters,
+    height: junction.thicknessMeters,
+    color: appearanceColor(junction.appearance),
+    hash: junction.hash,
+  }));
   const terrain = worldBuild.foundation.terrainFields.flatMap((field) =>
     terrainPrimitives(worldBuild, field),
   );
-  return [...constructed, ...instances, ...routes, ...terrain].sort((left, right) =>
+  return [...constructed, ...instances, ...routes, ...junctions, ...terrain].sort((left, right) =>
     left.hash < right.hash ? -1 : left.hash > right.hash ? 1 : 0,
   );
 }
@@ -251,7 +307,7 @@ function uniformCoordinates(minimum: number, maximum: number, count: number): nu
 }
 
 function primitiveFromElement(element: ConstructedElement): RenderPrimitive {
-  const color = colorFromIdentity(`${element.materialId}:${element.styleProfileHash}`);
+  const color = appearanceColor(element.appearance);
   if (element.geometry.kind === "box")
     return { kind: "box", bounds: element.boundsMeters, color, hash: element.hash };
   return {
@@ -262,6 +318,16 @@ function primitiveFromElement(element: ConstructedElement): RenderPrimitive {
     color,
     hash: element.hash,
   };
+}
+
+function appearanceColor(appearance: {
+  readonly baseColorSrgb: { readonly red: number; readonly green: number; readonly blue: number };
+}): readonly [number, number, number] {
+  return [
+    appearance.baseColorSrgb.red,
+    appearance.baseColorSrgb.green,
+    appearance.baseColorSrgb.blue,
+  ];
 }
 
 function renderPpm(

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { execFile as execFileCallback } from "node:child_process";
 import { lstat, mkdir, readdir, unlink } from "node:fs/promises";
 import { availableParallelism, homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { Worker } from "node:worker_threads";
 import { z } from "zod";
@@ -32,6 +32,7 @@ import {
   sealCatalogAuthorityCommit,
   sealCatalogCalibrationSplit,
   sealCatalogNearDuplicateSearch,
+  sourceFilenameObservationsIdentifyCollisionCompanion,
   validateCatalogCalibrationSplit,
   type RetainedCatalogEvidence,
   type CatalogAcceptanceAudit,
@@ -275,6 +276,7 @@ async function catalogCalibration(values: string[]): Promise<void> {
     );
     const nearDuplicateSearch = await runCatalogNearDuplicateSearch({
       sourceManifest,
+      measurements,
       visualReview,
       groupingPolicy,
       outputPath: options.get("--near-duplicates") ?? "registry/near-duplicate-search.json",
@@ -339,12 +341,15 @@ async function catalogCalibration(values: string[]): Promise<void> {
 
 async function runCatalogNearDuplicateSearch(input: {
   readonly sourceManifest: z.output<typeof TRUSTED_SOURCE_MANIFEST_SCHEMA>;
+  readonly measurements: z.output<typeof CATALOG_MEASUREMENT_SET_SCHEMA>;
   readonly visualReview: z.output<typeof CATALOG_VISUAL_REVIEW_INDEX_SCHEMA>;
   readonly groupingPolicy: z.output<typeof CATALOG_LEAKAGE_GROUPING_POLICY_SCHEMA>;
   readonly outputPath: string;
   readonly workerOutputPath: string;
 }) {
   const sourceManifestHash = contentHash(stableJson(input.sourceManifest));
+  if (input.measurements.sourceManifestHash !== sourceManifestHash)
+    throw new Error("Measurements do not bind the canonical source manifest");
   if (input.visualReview.sourceManifestHash !== sourceManifestHash)
     throw new Error("Visual evidence does not bind the canonical source manifest");
   const workerPath = absolute(CATALOG_NEAR_DUPLICATE_WORKER);
@@ -413,10 +418,33 @@ async function runCatalogNearDuplicateSearch(input: {
       ),
     };
   });
+  const collisionOnlySources = new Set(
+    input.measurements.assets
+      .filter(
+        (asset) =>
+          asset.parts.length > 0 && asset.parts.every((part) => part.role === "collision_proxy"),
+      )
+      .map((asset) => asset.source.contentHash),
+  );
+  const expectedAppearanceSources = new Set(
+    input.sourceManifest.assets
+      .map((asset) => asset.contentHash)
+      .filter((hash) => !collisionOnlySources.has(hash)),
+  );
+  const searchedSources = new Set(output.searchedSourceContentHashes);
   const renderedSources = new Set(input.visualReview.items.map((item) => item.sourceContentHash));
-  const missingSources = input.sourceManifest.assets
-    .map((asset) => asset.contentHash)
-    .filter((hash) => !renderedSources.has(hash));
+  const missingSources = [...expectedAppearanceSources].filter(
+    (hash) => !searchedSources.has(hash),
+  );
+  const unexpectedSources = output.searchedSourceContentHashes.filter(
+    (hash) => !expectedAppearanceSources.has(hash),
+  );
+  const missingRenderedSources = [...expectedAppearanceSources].filter(
+    (hash) => !renderedSources.has(hash),
+  );
+  const unexpectedRenderedSources = input.visualReview.items
+    .map((item) => item.sourceContentHash)
+    .filter((hash) => !expectedAppearanceSources.has(hash));
   const diagnostics = [
     ...output.diagnostics.map((message) => ({
       code: "near_duplicate_worker_diagnostic",
@@ -436,15 +464,37 @@ async function runCatalogNearDuplicateSearch(input: {
             evidenceHashes: [input.visualReview.hash],
           },
         ]),
+    ...(missingRenderedSources.length === 0 && unexpectedRenderedSources.length === 0
+      ? []
+      : [
+          {
+            code: "appearance_render_coverage_mismatch",
+            message: `Appearance evidence is missing ${missingRenderedSources.length} renderable sources and includes ${unexpectedRenderedSources.length} collision-only or unknown sources`,
+            gateStatus: "rejected" as const,
+            path: ["visualReviewIndexHash"],
+            evidenceHashes: [...missingRenderedSources, ...unexpectedRenderedSources].slice(0, 256),
+          },
+        ]),
     ...(missingSources.length === 0
       ? []
       : [
           {
             code: "near_duplicate_sources_missing",
-            message: `${missingSources.length} source identities lack render shape descriptors`,
+            message: `${missingSources.length} renderable source identities lack shape descriptors`,
             gateStatus: "incomplete" as const,
             path: ["searchedSourceContentHashes"],
             evidenceHashes: missingSources.slice(0, 256),
+          },
+        ]),
+    ...(unexpectedSources.length === 0
+      ? []
+      : [
+          {
+            code: "near_duplicate_unexpected_sources",
+            message: `${unexpectedSources.length} collision-only or unknown sources received appearance shape descriptors`,
+            gateStatus: "rejected" as const,
+            path: ["searchedSourceContentHashes"],
+            evidenceHashes: unexpectedSources.slice(0, 256),
           },
         ]),
   ];
@@ -474,7 +524,13 @@ async function catalogMeasure(values: string[]): Promise<void> {
   const source = options.get("--source") ?? "registry/source-manifest.json";
   const output = options.get("--output") ?? ".basalt/catalog/measurements.json";
   const manifest = TRUSTED_SOURCE_MANIFEST_SCHEMA.parse(await readJson(source));
-  await requireSourceProvenance(manifest, options.get("--provenance"));
+  const provenance = await requireSourceProvenance(manifest, options.get("--provenance"));
+  const filenamesBySource = new Map<string, string[]>();
+  for (const record of provenance.records)
+    filenamesBySource.set(record.sourceContentHash, [
+      ...(filenamesBySource.get(record.sourceContentHash) ?? []),
+      basename(record.originalPath),
+    ]);
   const assets = new Map<string, CatalogAssetArtifact>();
   const diagnostics: Array<{ sourceContentHash: string; reason: string }> = [];
   const tasks = manifest.assets
@@ -485,6 +541,11 @@ async function catalogMeasure(values: string[]): Promise<void> {
         contentHash: asset.contentHash,
         rights: asset.rights,
         metersPerSourceUnit: asset.metersPerSourceUnit,
+        sourcePurpose: sourceFilenameObservationsIdentifyCollisionCompanion(
+          filenamesBySource.get(asset.contentHash) ?? [],
+        )
+          ? ("collision_companion" as const)
+          : ("renderable" as const),
       },
     }))
     .sort((left, right) => compare(left.source.contentHash, right.source.contentHash))
@@ -701,11 +762,12 @@ interface CatalogAuthorityInputs {
 async function requireSourceProvenance(
   manifest: z.output<typeof TRUSTED_SOURCE_MANIFEST_SCHEMA>,
   path = "registry/source-provenance.json",
-): Promise<void> {
+): Promise<z.output<typeof SOURCE_PROVENANCE_LEDGER_SCHEMA>> {
   const provenance = SOURCE_PROVENANCE_LEDGER_SCHEMA.parse(await readJson(path));
   const result = validateSourceAuthority({ manifest, provenance });
   if (result.status !== "eligible")
     throw new Error(`Source authority is ${result.status}: ${stableJson(result.diagnostics)}`);
+  return provenance;
 }
 
 async function loadCatalogAuthority(
@@ -1138,11 +1200,11 @@ function usage(): void {
       "",
       "  basalt semantics validate|seal|explain",
       "  basalt catalog inventory|calibration|providers|measure|render",
-      "  basalt catalog metadata prepare|generate|commit",
+      "  basalt catalog metadata prepare|generate|import-descriptions|ingest|commit",
       "  basalt catalog index",
       "  basalt catalog search <query>",
       "  basalt catalog context prepare|generate|review",
-      "  basalt catalog qualify prepare|run|evaluate",
+      "  basalt catalog qualify prepare|pool|validate|run|evaluate",
       "  basalt catalog validate|seal|commit",
       "  basalt world compile <plan> --catalog <committed-catalog>",
       "  basalt roblox install-plugin",

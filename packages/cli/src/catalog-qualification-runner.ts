@@ -233,9 +233,12 @@ export async function executeQualificationSplit(input: {
   }
 
   const embedding = await generateImageTextEmbeddings({
-    split: input.split,
     executor: input.executor,
-    fixture,
+    sourceContentHashes: candidatePool(fixture, input.split, "uniform").assets.map(
+      (entry) => entry.sourceContentHash,
+    ),
+    sourceManifestHash: fixture.sourceManifestHash,
+    visualReviewIndexHash: fixture.visualReviewIndexHash,
     model: runtime.imageTextModel,
     renders: runtime.renders,
     workerImplementationHash: runtime.workerImplementationHash,
@@ -758,18 +761,17 @@ async function loadRuntimeInputs(
   };
 }
 
-async function generateImageTextEmbeddings(input: {
-  readonly split: CatalogQualificationSplit;
+export async function generateImageTextEmbeddings(input: {
   readonly executor: Executor;
-  readonly fixture: CatalogQualificationFixture;
+  readonly sourceContentHashes: readonly string[];
+  readonly sourceManifestHash: string;
+  readonly visualReviewIndexHash: string;
   readonly model: CatalogModelDeclaration;
   readonly renders: ReturnType<typeof CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse>;
   readonly workerImplementationHash: string;
   readonly context: CatalogCommandContext;
 }) {
-  const sources = candidatePool(input.fixture, input.split, "uniform").assets.map(
-    (entry) => entry.sourceContentHash,
-  );
+  const sources = [...input.sourceContentHashes];
   const renderBySource = new Map(
     input.renders.items.map((entry) => [entry.sourceContentHash, entry] as const),
   );
@@ -808,8 +810,8 @@ async function generateImageTextEmbeddings(input: {
     const sizes = items.flatMap((entry) => entry.views.map((view) => view.rgbSizeBytes!));
     const job = sealCliArtifact(CATALOG_EMBEDDING_WORKER_JOB_SCHEMA, {
       kind: "CatalogEmbeddingWorkerJob" as const,
-      sourceManifestHash: input.fixture.sourceManifestHash,
-      visualReviewIndexHash: input.fixture.visualReviewIndexHash,
+      sourceManifestHash: input.sourceManifestHash,
+      visualReviewIndexHash: input.visualReviewIndexHash,
       workerImplementationHash: input.workerImplementationHash,
       purposes: ["image_text_retrieval"] as const,
       models: [input.model],
@@ -858,7 +860,7 @@ async function generateImageTextEmbeddings(input: {
   };
 }
 
-async function generateQueryEmbeddings(input: {
+export async function generateQueryEmbeddings(input: {
   readonly queries: readonly CatalogSearchQuery[];
   readonly model: CatalogModelDeclaration;
   readonly workerImplementationHash: string;
@@ -909,7 +911,7 @@ async function generateQueryEmbeddings(input: {
   return receipts;
 }
 
-async function executeValidationRequests(input: {
+export async function executeValidationRequests(input: {
   readonly requests: readonly CatalogSearchValidationRequest[];
   readonly model: CatalogModelDeclaration;
   readonly metadata: ReadonlyMap<string, AssetSearchMetadataReceipt>;
@@ -925,6 +927,35 @@ async function executeValidationRequests(input: {
   readonly context: CatalogCommandContext;
 }): Promise<CatalogValidationReceipt[]> {
   if (input.requests.length === 0) return [];
+  const promptTemplateHash = contentHash(input.prompt);
+  for (const request of input.requests)
+    if (request.promptTemplateHash !== promptTemplateHash)
+      throw new Error(`Validation request binds a stale prompt template: ${request.hash}`);
+  if (input.requests.length > 8) {
+    const shards = Array.from({ length: Math.ceil(input.requests.length / 8) }, (_value, index) =>
+      input.requests.slice(index * 8, index * 8 + 8),
+    );
+    const completed = new Array<CatalogValidationReceipt[]>(shards.length);
+    let nextShard = 0;
+    await Promise.all(
+      Array.from({ length: Math.min(2, shards.length) }, async () => {
+        while (nextShard < shards.length) {
+          const index = nextShard;
+          nextShard += 1;
+          completed[index] = await executeValidationRequests({
+            ...input,
+            requests: shards[index]!,
+          });
+        }
+      }),
+    );
+    const byRequest = new Map(completed.flat().map((entry) => [entry.requestHash, entry] as const));
+    return input.requests.map((entry) => {
+      const receipt = byRequest.get(entry.hash);
+      if (!receipt) throw new Error(`Validator omitted qualification request ${entry.hash}`);
+      return receipt;
+    });
+  }
   const receipts: CatalogValidationReceipt[] = [];
   for (let start = 0; start < input.requests.length; start += 8) {
     const requests = input.requests.slice(start, start + 8);
@@ -968,7 +999,7 @@ async function executeValidationRequests(input: {
     const job = sealCliArtifact(CATALOG_VALIDATION_WORKER_JOB_SCHEMA, {
       kind: "CatalogValidationWorkerJob" as const,
       promptTemplate: input.prompt,
-      promptTemplateHash: contentHash(input.prompt),
+      promptTemplateHash,
       outputSchema: CATALOG_VISUAL_VALIDATION_JSON_SCHEMA,
       outputSchemaHash: CATALOG_VISUAL_VALIDATION_JSON_SCHEMA_HASH,
       workerImplementationHash: input.workerImplementationHash,
@@ -1073,7 +1104,7 @@ function qualificationQuery(
   });
 }
 
-async function retainMatrixBytes(
+export async function retainMatrixBytes(
   context: CatalogCommandContext,
   matrix: CatalogEmbeddingMatrix,
   bytes: Uint8Array,

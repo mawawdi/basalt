@@ -59,42 +59,125 @@ node bin/basalt.js catalog index
 node bin/basalt.js catalog search "tree" --mode basename_only --validate 0
 ```
 
-The progressive index includes every valid measured source before metadata or embeddings are
-available, reports missing enrichment per document, and retains hard metric and rights filters.
+The progressive index includes every valid measured standalone renderable source before metadata
+or embeddings are available, explicitly records measured collision-only companion exclusions,
+reports missing enrichment per document, and retains hard metric and rights filters.
 Retrieval without validation is candidate evidence, never a suitability verdict. The 32-asset
 smoke fixture checks plumbing and determinism but cannot authorize a corpus run.
 
-Production qualification has a mandatory independent creator adjudication gate. First inspect
-all asset-description, query–asset relevance, and validator-verdict pages under
-`.basalt/catalog/qualification/review/`; complete every action in the decision template; then
-seal the reviewed answer key:
+Production qualification is authored in independently reviewed stages. The first stage is a
+24-asset development-only description pilot. It audits the complete evidence inventory, excludes
+explicit non-renderable collision companions, and keeps filename observations separate from visual
+authority. Generate one review workspace containing all 24 assets, twelve views per asset,
+measurements, and one narrow question per asset: whether the proposed description accurately
+describes what is visible. Benchmark selection tags stay internal and contextual use is not part
+of this review:
 
 ```sh
+npm run catalog:qualification:pilot
 npm run catalog:qualification:review
-npm run catalog:qualification:finalize -- \
-  --decision .basalt/catalog/qualification/review/decision-template.json
-node bin/basalt.js catalog qualify prepare
-node bin/basalt.js catalog qualify run --split development --executor modal
-node bin/basalt.js catalog qualify run --split model_selection --executor modal
-node bin/basalt.js catalog qualify evaluate --split model_selection
-node bin/basalt.js catalog qualify run --split holdout --executor modal
-node bin/basalt.js catalog qualify evaluate --split holdout
 ```
 
-The runner loads and verifies the proposal, review packet, and creator decision artifact before
-any model call. It executes metadata, embeddings, retrieval ablations, independent validation,
-and the candidate-decision policy into resumable content-addressed evidence. Only an eligible
-holdout report bound to the frozen model-selection artifact unlocks
-`catalog metadata prepare --scope corpus`; only a complete corpus run may be committed to
-`registry/catalog-search.json`. Metadata worker shards contain **up to** eight assets and are
-also bounded by evidence bytes, file count, and preprocessed pixels. Eight is a resumable
-checkpoint ceiling, not a GPU batch size.
+Open `.basalt/catalog/qualification/review/index.html`, inspect every asset, then choose
+**Accurate**, **Edit description**, **Unsure**, or **Image problem**. Extra fields appear only for
+the latter three answers. Download the completed decision JSON and seal only that description
+stage with:
+
+```sh
+npm run catalog:qualification:finalize-descriptions -- \
+  --decision /absolute/path/to/catalog-description-decision.json
+```
+
+When every proposal is accurate, the reviewer may instead record the same exact decision without a
+downloaded intermediary:
+
+```sh
+npm run catalog:qualification:finalize-descriptions -- \
+  --all-accurate-reviewer <reviewer-id>
+```
+
+This does not unlock model execution. Once the exact reviewed-description artifacts exist, author
+the bounded development requests with:
+
+```sh
+npm run catalog:qualification:queries
+```
+
+The same reviewed descriptions can immediately enrich the local starting catalog without a bulk
+model run. This creates a distinct agent-authored evidence batch, imports the exact creator review,
+and rebuilds search with honest producer and reviewer provenance:
+
+```sh
+npm run catalog:metadata:import-reviewed
+node bin/basalt.js catalog index
+node bin/basalt.js catalog search "small wooden bridge" --mode metadata_only
+```
+
+For subsequent bounded batches, write a `CatalogAuthoredMetadataBatch` and optionally a
+`CatalogAuthoredMetadataReview`, then run `basalt catalog metadata ingest --batch <batch.json>
+--review <review.json>`. Omitting `--review` preserves every record as unreviewed rather than
+inventing approval. Authored metadata can improve retrieval but cannot authorize qualification,
+catalog admission, or compilation. Successful ingestion registers the exact set hash in
+`.basalt/catalog/metadata/authored-sets.json`; an ordinary `catalog index` rebuild loads and verifies
+every registered bounded set.
+
+The first demand-driven tranche is the 24 outdoor sources already admitted and exercised by the
+first-region fixture. Materialize their current render-and-measurement-bound captions, open the
+single page containing every asset, and rebuild search with both bounded authored sets:
+
+```sh
+npm run catalog:metadata:first-region
+open .basalt/catalog/metadata/first-region-review.html
+npm run catalog:index:starting
+```
+
+Materialization leaves this tranche explicitly unreviewed. If the creator confirms every visible
+description on the bound page, seal that narrow decision, ingest it, and rebuild the ordinary index:
+
+```sh
+npm run catalog:metadata:first-region:review-all -- --all-accurate-reviewer <reviewer-id>
+node bin/basalt.js catalog metadata ingest \
+  --batch .basalt/catalog/metadata/first-region-batch.json \
+  --review .basalt/catalog/metadata/first-region-review.json \
+  --output .basalt/catalog/metadata/first-region-set.json
+node bin/basalt.js catalog index
+```
+
+The decision covers captions only. It does not approve construction suitability, contextual
+purpose, or the broader claim that a finished region has no catalog gaps.
+
+The current set contains 20 distinct requests, including executable metric limits, close visual
+alternatives, absence probes, and properties that renders cannot establish. It contains no
+relevance labels or expected validator verdicts. Build the canonical four-channel union pool and
+open the one-page relevance ledger with:
+
+```sh
+node bin/basalt.js catalog qualify pool --split development --executor local
+npm run catalog:qualification:review-relevance
+```
+
+The ledger at `.basalt/catalog/qualification/development/relevance-review/index.html` shows every
+query–asset pair together, with enlargement, twelve views, and measurements. It hides filenames,
+generated captions, retrieval channels, and ranks. Mark each request usable or in need of rewriting;
+for usable requests, mark every candidate **Relevant**, **Not a match**, or **Unsure**. Download the
+decision and seal it with:
+
+```sh
+npm run catalog:qualification:finalize-relevance -- \
+  --decision /absolute/path/to/catalog-development-relevance-decision.json
+```
+
+This still does not approve validator verdicts or unlock execution. Unknown judgments remain
+unknown. The final qualification fixture and runner inputs do not exist until validator cases are
+also independently reviewed and every final surface binds the exact creator decisions. Metadata
+worker shards contain **up to** eight assets and are also bounded by evidence bytes, file count, and
+preprocessed pixels. Eight is a resumable checkpoint ceiling, not a GPU batch size.
 
 Context packets for ambiguous modular assets are separate from per-asset metadata:
 
 ```sh
 node bin/basalt.js catalog context prepare --assembly-evidence <evidence.json>
-node bin/basalt.js catalog context generate --executor modal
+node bin/basalt.js catalog context generate --executor local
 node bin/basalt.js catalog context review
 ```
 
@@ -164,6 +247,19 @@ manifest under `.basalt/evals/route-corridor/`.
 ```sh
 npm run eval:routes
 node bin/basalt.js roblox import .basalt/evals/route-corridor/world-build.json
+```
+
+The first integrated region core is materialized with `npm run eval:first-finished-region`.
+It combines the real committed outdoor catalog with a grounded ridge trail, an elevated
+boardwalk alternative, shared split/merge junctions, and a route-connected procedural
+observation tower. Its requirements and remaining optional prop gaps are explicit under
+`.basalt/evals/first-finished-region/`; no candidate becomes catalog authority merely because
+search retrieved it. The 48-meter build is an integration gate, not a claim about the full
+40-square-kilometer world and not a reason to run a metadata worker or neural generator.
+
+```sh
+npm run eval:first-finished-region
+node bin/basalt.js roblox import .basalt/evals/first-finished-region/world-build.json
 ```
 
 The user runs the final Roblox Studio import, play, and readback gate. Basalt never

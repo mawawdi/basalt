@@ -13,6 +13,7 @@ export interface CatalogGlbSource {
   readonly contentHash: string;
   readonly rights: CatalogRights;
   readonly metersPerSourceUnit: number;
+  readonly sourcePurpose: "collision_companion" | "renderable";
 }
 
 export type CatalogBottomSupportMeasurement =
@@ -58,6 +59,7 @@ export function measureCatalogGlb(
     throw new Error("Measured mesh inventory does not match bounded mesh nodes");
   const geometry = combineMeshes(measuredMeshes);
   const deformable = report.deformationMode !== "static";
+  const collisionCompanion = source.sourcePurpose === "collision_companion";
   const supportMeasurement = deformable
     ? ({
         status: "refused",
@@ -89,10 +91,23 @@ export function measureCatalogGlb(
           };
         })
       : [];
+  const collisionOrientedBounds = collisionCompanion
+    ? meshNodes.map((node) => collisionBounds(node.bounds!, scale))
+    : [];
+  const collisionEvidenceHash = collisionCompanion
+    ? contentHash(
+        stableJson({
+          policy: MEASUREMENT_POLICY_HASH,
+          sourcePurpose: source.sourcePurpose,
+          orientedBounds: collisionOrientedBounds,
+        }),
+      )
+    : undefined;
   const measurementEvidenceHashes = [
     report.hash,
     supportMeasurement.status === "measured" ? supportMeasurement.evidenceHash : undefined,
     socketEvidence,
+    collisionEvidenceHash,
   ]
     .filter((hash): hash is string => hash !== undefined)
     .sort();
@@ -124,7 +139,11 @@ export function measureCatalogGlb(
     parts: meshNodes.map((node, index) => ({
       partId: `part_${index.toString(16).padStart(8, "0")}`,
       geometryHash: catalogGeometryHash(measuredMeshes[index]!),
-      role: deformable ? ("render_interactive" as const) : ("render_static" as const),
+      role: collisionCompanion
+        ? ("collision_proxy" as const)
+        : deformable
+          ? ("render_interactive" as const)
+          : ("render_static" as const),
       transform: identityTransform(),
       bounds: {
         min: fixedVector({
@@ -172,7 +191,14 @@ export function measureCatalogGlb(
           }
         : {}),
     },
-    collision: { mode: "none", companionAssetHashes: [], orientedBounds: [] },
+    collision: collisionCompanion
+      ? {
+          mode: "part_obbs",
+          companionAssetHashes: [],
+          orientedBounds: collisionOrientedBounds,
+          evidenceHash: collisionEvidenceHash!,
+        }
+      : { mode: "none", companionAssetHashes: [], orientedBounds: [] },
     sockets,
     ...(jointResult.status === "refused"
       ? { socketMeasurementRefusal: `Geometric interface fit refused: ${jointResult.reason}` }
@@ -186,11 +212,33 @@ export function measureCatalogGlb(
 const MEASUREMENT_POLICY_HASH = contentHash(
   stableJson({
     coordinateSystem: "right_handed_y_up_meters",
+    collisionCompanions: "explicit_source_role_with_per_part_axis_aligned_obbs",
     support: "planar_bottom_patch_fit_then_lower_extrema_alignment",
     interfaces: "exterior_planar_component_fit",
     interfaceLimit: 4096,
   }),
 );
+
+function collisionBounds(
+  bounds: { readonly minimum: readonly number[]; readonly maximum: readonly number[] },
+  scale: number,
+) {
+  const minimum = bounds.minimum.map((value) => value * scale);
+  const maximum = bounds.maximum.map((value) => value * scale);
+  return {
+    center: {
+      x: quantizeQ32_32((minimum[0]! + maximum[0]!) / 2),
+      y: quantizeQ32_32((minimum[1]! + maximum[1]!) / 2),
+      z: quantizeQ32_32((minimum[2]! + maximum[2]!) / 2),
+    },
+    halfSize: {
+      x: quantizeQ32_32((maximum[0]! - minimum[0]!) / 2),
+      y: quantizeQ32_32((maximum[1]! - minimum[1]!) / 2),
+      z: quantizeQ32_32((maximum[2]! - minimum[2]!) / 2),
+    },
+    rotation: [0, 0, 0, 1] as [number, number, number, number],
+  };
+}
 
 /**
  * Measures geometric bottom placement without treating a planar mounting face as a

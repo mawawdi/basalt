@@ -11,6 +11,7 @@ import hashlib
 import json
 import os
 import stat
+import subprocess
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -27,6 +28,27 @@ MAX_EVIDENCE_FILES = 192
 MAX_EVIDENCE_TOTAL_BYTES = 64 * 1024 * 1024
 MAX_TRANSPORT_BYTES = 128 * 1024 * 1024
 
+TYPESCRIPT_ARTIFACT_HASH_PROGRAM = r"""
+const crypto = require("node:crypto");
+const fs = require("node:fs");
+const [path, excludedKey] = process.argv.slice(1);
+const value = JSON.parse(fs.readFileSync(path, "utf8"));
+delete value[excludedKey];
+const normalize = (entry) => {
+  if (Array.isArray(entry)) return entry.map(normalize);
+  if (entry !== null && typeof entry === "object") {
+    return Object.fromEntries(
+      Object.keys(entry).sort().filter((key) => entry[key] !== undefined)
+        .map((key) => [key, normalize(entry[key])]),
+    );
+  }
+  return entry;
+};
+process.stdout.write(
+  crypto.createHash("sha256").update(JSON.stringify(normalize(value))).digest("hex"),
+);
+"""
+
 
 def required_environment(name: str) -> str:
     value = os.environ.get(name, "")
@@ -42,6 +64,20 @@ def canonical_json(value: Any) -> str:
 def digest(value: bytes | str) -> str:
     material = value.encode("utf-8") if isinstance(value, str) else value
     return hashlib.sha256(material).hexdigest()
+
+
+def typescript_artifact_hash(path: Path, excluded_key: str = "hash") -> str:
+    result = subprocess.run(
+        ["node", "-e", TYPESCRIPT_ARTIFACT_HASH_PROGRAM, str(path), excluded_key],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    value = result.stdout.strip()
+    if len(value) != 64 or any(character not in "0123456789abcdef" for character in value):
+        raise ValueError("TypeScript artifact hash helper returned an invalid digest")
+    return value
 
 
 def safe_relative_path(raw: str) -> str:
@@ -76,6 +112,7 @@ def atomic_write(path: Path, payload: bytes) -> None:
 WORKER_SOURCE = Path(__file__).with_name("worker.py")
 IMAGE = (
     modal.Image.debian_slim(python_version="3.12")
+    .apt_install("nodejs")
     .pip_install(
         "vllm==0.11.0",
         "transformers==4.57.3",
@@ -99,8 +136,6 @@ app = modal.App(APP_NAME, include_source=True)
 
 
 def execute_remote(job_hash: str, job_relative_path: str, output_relative_path: str, accelerator: str) -> dict[str, Any]:
-    import subprocess
-
     if len(job_hash) != 64 or any(character not in "0123456789abcdef" for character in job_hash):
         raise ValueError("Catalog metadata job hash is invalid")
     job_relative_path = safe_relative_path(job_relative_path)
@@ -109,8 +144,7 @@ def execute_remote(job_hash: str, job_relative_path: str, output_relative_path: 
     job_path = workspace / job_relative_path
     output_path = workspace / output_relative_path
     job = json.loads(job_path.read_text(encoding="utf-8"))
-    material = {key: value for key, value in job.items() if key != "hash"}
-    if job.get("hash") != job_hash or digest(canonical_json(material)) != job_hash:
+    if job.get("hash") != job_hash or typescript_artifact_hash(job_path) != job_hash:
         raise ValueError("Remote catalog metadata job identity is invalid")
     environment = {
         **os.environ,
@@ -155,7 +189,7 @@ FUNCTION_OPTIONS = {
     "min_containers": 0,
     "max_containers": 1,
     "buffer_containers": 0,
-    "scaledown_window": 1,
+    "scaledown_window": 2,
     "retries": 0,
     "timeout": 2 * 60 * 60,
     "startup_timeout": 20 * 60,
@@ -240,9 +274,8 @@ def main(job: str, output: str) -> None:
     if output_path != root and root not in output_path.parents:
         raise ValueError("Catalog metadata output escapes the workspace")
     job_value = json.loads(job_path.read_text(encoding="utf-8"))
-    material = {key: value for key, value in job_value.items() if key != "hash"}
     job_hash = job_value.get("hash")
-    if not isinstance(job_hash, str) or digest(canonical_json(material)) != job_hash:
+    if not isinstance(job_hash, str) or typescript_artifact_hash(job_path) != job_hash:
         raise ValueError("Local catalog metadata job identity is invalid")
     job_relative_path = job_path.relative_to(root).as_posix()
     output_relative_path = output_path.relative_to(root).as_posix()
@@ -277,7 +310,7 @@ def main(job: str, output: str) -> None:
         gpu=accelerator,
         max_containers=1,
         buffer_containers=0,
-        scaledown_window=1,
+        scaledown_window=2,
     ).remote(
         job_hash,
         job_relative_path,

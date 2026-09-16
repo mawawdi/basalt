@@ -109,7 +109,9 @@ boxes, vertical cylinders, linear repetition, rectangular panel openings, surfac
 attachments, and stair runs. Values are literals or affine bindings to declared scalar
 parameters; repeat counts may bind integer parameters. Programs also bind a region,
 semantic closure, style profile, placement-surface or region-point anchor, and local
-quarter-turn frame.
+quarter-turn frame. Their default and per-operation appearances carry both the engine
+material and exact sRGB color; construction lowering may not fall back to an engine-default
+part color.
 
 Sealing validates every reference, parameter use, host/child relationship, template,
 opening host, landing, and dependency cycle. There is no arbitrary expression evaluator,
@@ -131,7 +133,8 @@ appearance, and construction treatment. The four treatments have different autho
 
 - `follow_surface` follows relief within explicit grade, cut, fill, and grounding bounds;
 - `cut_fill` designs a smooth control-point profile and grades a roadbed plus shoulders;
-- `elevated` preserves terrain and emits a deck with measured supports; and
+- `elevated` preserves terrain and emits a deck with measured supports plus its explicitly
+  authored edge-protection policy; and
 - `stepped` emits bounded treads and landings instead of disguising an infeasible slope.
 
 Foundation compilation seals authored terrain first as a `BaseTerrainFieldArtifact`. It
@@ -147,7 +150,9 @@ explicit stepped construction remains discrete. Segment bounds include the compl
 underside. A bend that cannot fit its adjacent spans is rejected at plan sealing rather than
 silently sharpened.
 Shared junctions own one position and elevation; connected profiles receive a bounded flat
-landing at the junction before grade validation.
+landing at the junction before grade validation. Junction travel-surface appearance is
+separate from the terrain material graded beneath it, so a timber landing does not paint the
+terrain as timber.
 
 Only eligible grounded treatments enter `TerrainFieldArtifact`. This artifact is a compact
 composition of the exact base hash plus ordered route and junction hashes, not a dense copy
@@ -202,13 +207,15 @@ endpoint correction before parts are created. Readback recomputes each realized 
 junction's transform, dimensions, material, collision state, and terrain contact against
 actual smooth terrain. Minimum reveal is measured from the travel top. Exposed space is
 measured from the authored route body's underside—not from the top—so route thickness is not
-misclassified as a void. When that body gap is within the authored grounding tolerance, the
-adapter emits a deterministic, exactly read-back grounding skirt down into the voxel surface;
-larger discrepancies remain incomplete. Maximum top clearance is retained as a diagnostic,
-not used as a proxy for grounding. Roblox publishes newly written voxel channels before its
-terrain collision representation is ray-queryable, so a missing terrain query crosses at most
-four scheduler frames before remaining a hard observation failure. A stored route hash alone
-is not evidence.
+misclassified as a void. The compiler enforces the authored grounding tolerance against its
+exact terrain field. At the Roblox boundary, the connector records that tolerance separately
+from a half-voxel engine-realization allowance and the raycast observation tolerance; it never
+rewrites the authored value. A body gap inside that explicit combined envelope receives a
+deterministic, exactly read-back grounding skirt down into the voxel surface. A gap beyond the
+envelope remains incomplete. Maximum top clearance is retained as a diagnostic, not used as a
+proxy for grounding. Roblox publishes newly written voxel channels before its terrain collision
+representation is ray-queryable, so a missing terrain query crosses at most four scheduler
+frames before remaining a hard observation failure. A stored route hash alone is not evidence.
 
 The import command binds a private local bridge to `127.0.0.1`, selects one port from
 8787–8797, authenticates requests, and streams one canonical import plan. The plugin
@@ -327,7 +334,13 @@ is sealed before the holdout attempt, and corpus metadata stages recheck the fro
 Metadata jobs use deterministic resource-bounded shards: at most eight assets, 192
 evidence files, 64 MiB of evidence bytes, and a fixed preprocessed-pixel ceiling at a
 384-pixel long edge. A shard is a resumable checkpoint and transport unit, not a model
-batch. Only one Modal GPU container and no more than four local CPU tasks may run.
+batch. Remote execution is an explicit optional transport rather than a catalog dependency;
+only one remote GPU worker and no more than four local CPU tasks may run.
+
+The starting-catalog lane accepts bounded agent-authored metadata as a separate evidence kind.
+Each record binds current measurements and renders and preserves producer identity, uncertainty,
+review coverage, reviewer identity, and the exact review artifact. It can enrich search without a
+qualified bulk run, but it cannot authorize qualification, semantic admission, or compilation.
 
 ## Storage and identity
 

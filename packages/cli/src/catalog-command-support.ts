@@ -77,6 +77,10 @@ export async function readText(root: string, path: string): Promise<string> {
     .trim();
 }
 
+export async function readTextExact(root: string, path: string): Promise<string> {
+  return Buffer.from(await readBoundedWorkspaceBytes(root, path, 64 * 1024)).toString("utf8");
+}
+
 export async function fileSize(root: string, path: string): Promise<number> {
   return getBoundedWorkspaceFileSize(root, path, 64 * 1024 * 1024);
 }
@@ -146,10 +150,16 @@ async function executeCatalogWorker(
           "--output",
           absolute(root, outputPath),
         ];
+  const environment: NodeJS.ProcessEnv = { ...process.env, PYTHONDONTWRITEBYTECODE: "1" };
+  for (const name of ["HUGGINGFACE_TOKEN"] as const) {
+    if (environment[name]) continue;
+    const value = await readRepositoryEnvValue(root, name);
+    if (value) environment[name] = value;
+  }
   await new Promise<void>((resolveRun, rejectRun) => {
     const child = spawn(command, values, {
       cwd: root,
-      env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" },
+      env: environment,
       stdio: "inherit",
     });
     child.once("error", rejectRun);
@@ -157,6 +167,24 @@ async function executeCatalogWorker(
       code === 0 ? resolveRun() : rejectRun(new Error(`${command} exited with status ${code}`)),
     );
   });
+}
+
+async function readRepositoryEnvValue(root: string, name: string): Promise<string | undefined> {
+  let text: string;
+  try {
+    text = Buffer.from(await readBoundedWorkspaceBytes(root, ".env", 64 * 1024)).toString("utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+    throw error;
+  }
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const pattern = new RegExp(`^\\s*(?:export\\s+)?${escaped}\\s*=\\s*("?)([^"\\n]*)\\1\\s*$`, "u");
+  let found: string | undefined;
+  for (const line of text.split("\n")) {
+    const match = pattern.exec(line);
+    if (match?.[2]?.trim()) found = match[2].trim();
+  }
+  return found;
 }
 
 async function removeRegularFileIfPresent(root: string, path: string): Promise<void> {

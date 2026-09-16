@@ -206,6 +206,20 @@ const groundedRouteTreatment = {
   terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
 };
 
+const elevatedEdgeProtection = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("none") }).strict(),
+  z
+    .object({
+      kind: z.literal("guardrail"),
+      heightMeters: positive.max(10),
+      railThicknessMeters: positive.max(2),
+      postSpacingMeters: positive.max(100),
+      postRadiusMeters: positive.max(1),
+      appearance: ROUTE_APPEARANCE_SCHEMA,
+    })
+    .strict(),
+]);
+
 /**
  * Construction treatment is deliberately separate from route denotation and
  * appearance. It determines how a resolved travel surface changes, or
@@ -235,6 +249,7 @@ export const ROUTE_CONSTRUCTION_TREATMENT_SCHEMA = z.discriminatedUnion("kind", 
       maximumSupportHeightMeters: positive.max(10_000),
       vegetationClearanceMeters: nonnegative.max(1_000),
       supportAppearance: ROUTE_APPEARANCE_SCHEMA,
+      edgeProtection: elevatedEdgeProtection,
     })
     .strict(),
   z
@@ -397,6 +412,7 @@ export const ROUTE_JUNCTION_SCHEMA = z
     maximumSnapDistanceMeters: nonnegative.max(1_000),
     radiusMeters: positive.max(1_000),
     appearance: ROUTE_APPEARANCE_SCHEMA,
+    terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
     targetHash: HASH_SCHEMA.optional(),
   })
   .strict()

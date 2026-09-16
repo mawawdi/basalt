@@ -29,6 +29,11 @@ import {
   type CatalogSearchMetadataSet,
 } from "./metadata.js";
 import {
+  CATALOG_AUTHORED_SEARCH_METADATA_SET_SCHEMA,
+  type CatalogAuthoredSearchMetadataRecord,
+  type CatalogAuthoredSearchMetadataSet,
+} from "./authored-metadata.js";
+import {
   CATALOG_SEARCH_FIELD_NAMES,
   CATALOG_SEARCH_POLICY_SCHEMA,
   type CatalogSearchPolicy,
@@ -87,12 +92,42 @@ export const CATALOG_SEARCH_DOCUMENT_SCHEMA = z
     renderEvidenceHash: HASH_SCHEMA.optional(),
     fields: z.array(SEARCH_FIELD_TOKEN_SCHEMA).length(CATALOG_SEARCH_FIELD_NAMES.length),
     metadataEvidence: z
-      .object({
-        metadataReceiptHash: HASH_SCHEMA,
-        renderEvidenceHash: HASH_SCHEMA,
-        metadata: CATALOG_SEARCH_METADATA_SCHEMA,
-      })
-      .strict()
+      .discriminatedUnion("kind", [
+        z
+          .object({
+            kind: z.literal("worker"),
+            evidenceHash: HASH_SCHEMA,
+            renderEvidenceHash: HASH_SCHEMA,
+            metadata: CATALOG_SEARCH_METADATA_SCHEMA,
+          })
+          .strict(),
+        z
+          .object({
+            kind: z.literal("authored"),
+            evidenceHash: HASH_SCHEMA,
+            batchHash: HASH_SCHEMA,
+            producer: z
+              .object({
+                authority: z.enum(["creator", "delegated_ai"]),
+                actorId: z.string().trim().min(1).max(160),
+              })
+              .strict(),
+            authoringCertainty: z.discriminatedUnion("status", [
+              z.object({ status: z.literal("concrete") }).strict(),
+              z
+                .object({
+                  status: z.literal("uncertain"),
+                  reason: z.string().trim().min(16).max(2_048),
+                })
+                .strict(),
+            ]),
+            reviewStatus: z.enum(["accepted", "revised", "uncertain", "unreviewed"]),
+            reviewScope: z.enum(["complete_metadata", "visible_description_only"]).optional(),
+            renderEvidenceHash: HASH_SCHEMA,
+            metadata: CATALOG_SEARCH_METADATA_SCHEMA,
+          })
+          .strict(),
+      ])
       .optional(),
     metric: DOCUMENT_METRIC_SCHEMA,
     rights: DOCUMENT_RIGHTS_SCHEMA,
@@ -119,8 +154,26 @@ export const CATALOG_SEARCH_DOCUMENT_SCHEMA = z
         path: ["missingEvidence"],
         message: "Search document evidence gaps are inconsistent",
       });
+    if (
+      value.metadataEvidence?.kind === "authored" &&
+      (value.metadataEvidence.reviewStatus === "unreviewed") !==
+        (value.metadataEvidence.reviewScope === undefined)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["metadataEvidence", "reviewScope"],
+        message: "Authored metadata review scope must be present exactly when review occurred",
+      });
   });
 export type CatalogSearchDocument = z.output<typeof CATALOG_SEARCH_DOCUMENT_SCHEMA>;
+
+const CATALOG_SEARCH_EXCLUDED_SOURCE_SCHEMA = z
+  .object({
+    sourceContentHash: HASH_SCHEMA,
+    measurementHash: HASH_SCHEMA,
+    reason: z.literal("non_renderable_collision_companion"),
+  })
+  .strict();
 
 export const CATALOG_SEARCH_INDEX_SCHEMA = z
   .object({
@@ -131,6 +184,7 @@ export const CATALOG_SEARCH_INDEX_SCHEMA = z
     visualReviewIndexHash: HASH_SCHEMA.optional(),
     sourceNameHintSetHash: HASH_SCHEMA,
     metadataSetHash: HASH_SCHEMA.optional(),
+    authoredMetadataSetHashes: z.array(HASH_SCHEMA).max(10_000),
     imageTextEmbeddingMatrixHash: HASH_SCHEMA.optional(),
     shapeEmbeddingMatrixHash: HASH_SCHEMA.optional(),
     searchPolicyHash: HASH_SCHEMA,
@@ -138,13 +192,17 @@ export const CATALOG_SEARCH_INDEX_SCHEMA = z
     buildImplementationHash: HASH_SCHEMA,
     coverage: z
       .object({
-        measuredAndNamed: z.number().int().nonnegative(),
+        searchableSources: z.number().int().nonnegative(),
+        excludedNonRenderableCollisionCompanions: z.number().int().nonnegative(),
         metadata: z.number().int().nonnegative(),
+        workerMetadata: z.number().int().nonnegative(),
+        authoredMetadata: z.number().int().nonnegative(),
         imageTextEmbedding: z.number().int().nonnegative(),
         shapeEmbedding: z.number().int().nonnegative(),
       })
       .strict(),
     documents: z.array(CATALOG_SEARCH_DOCUMENT_SCHEMA).max(100_000),
+    excludedSources: z.array(CATALOG_SEARCH_EXCLUDED_SOURCE_SCHEMA).max(100_000),
     diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(100_000),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
@@ -158,7 +216,26 @@ export const CATALOG_SEARCH_INDEX_SCHEMA = z
       "search documents",
       context,
     );
+    requireCanonicalValues(
+      value.excludedSources,
+      (entry) => entry.sourceContentHash,
+      "excluded search sources",
+      context,
+    );
     requireCanonicalValues(value.diagnostics, String, "search index diagnostics", context);
+    requireCanonicalValues(
+      value.authoredMetadataSetHashes,
+      String,
+      "authored metadata set hashes",
+      context,
+    );
+    const documentSources = new Set(value.documents.map((entry) => entry.sourceContentHash));
+    if (value.excludedSources.some((entry) => documentSources.has(entry.sourceContentHash)))
+      context.addIssue({
+        code: "custom",
+        path: ["excludedSources"],
+        message: "A source cannot be both searchable and excluded",
+      });
     const expected = value.diagnostics.length === 0 ? "eligible" : "incomplete";
     if (value.status !== expected)
       context.addIssue({
@@ -173,8 +250,14 @@ export const CATALOG_SEARCH_INDEX_SCHEMA = z
         message: "Search index binds a different tokenizer",
       });
     const actualCoverage = {
-      measuredAndNamed: value.documents.length,
+      searchableSources: value.documents.length,
+      excludedNonRenderableCollisionCompanions: value.excludedSources.length,
       metadata: value.documents.filter((entry) => entry.metadataEvidence !== undefined).length,
+      workerMetadata: value.documents.filter((entry) => entry.metadataEvidence?.kind === "worker")
+        .length,
+      authoredMetadata: value.documents.filter(
+        (entry) => entry.metadataEvidence?.kind === "authored",
+      ).length,
       imageTextEmbedding: value.documents.filter(
         (entry) => entry.imageTextEmbeddingRow !== undefined,
       ).length,
@@ -259,7 +342,8 @@ const SEARCH_RESULT_SCHEMA = z
   .object({
     sourceContentHash: HASH_SCHEMA,
     measurementHash: HASH_SCHEMA,
-    metadataReceiptHash: HASH_SCHEMA.optional(),
+    metadataEvidenceHash: HASH_SCHEMA.optional(),
+    metadataEvidenceKind: z.enum(["authored", "worker"]).optional(),
     renderEvidenceHash: HASH_SCHEMA.optional(),
     channelRanks: z
       .object({
@@ -311,6 +395,15 @@ const SEARCH_RESULT_SCHEMA = z
         code: "custom",
         path: ["validationReceiptHash"],
         message: "Completed validation requires its exact receipt",
+      });
+    if (
+      (value.metadata !== undefined) !== (value.metadataEvidenceHash !== undefined) ||
+      (value.metadata !== undefined) !== (value.metadataEvidenceKind !== undefined)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["metadataEvidenceHash"],
+        message: "Search-result metadata must bind its exact evidence kind and hash",
       });
   });
 
@@ -391,6 +484,7 @@ export function sealCatalogSearchQuery(
 export function buildCatalogSearchIndex(input: {
   readonly measurements: CatalogMeasurementSet;
   readonly metadata?: CatalogSearchMetadataSet;
+  readonly authoredMetadata?: readonly CatalogAuthoredSearchMetadataSet[];
   readonly sourceNames: CatalogSourceNameHintSet;
   readonly renders?: CatalogVisualReviewIndex;
   readonly imageTextEmbeddings?: CatalogEmbeddingMatrix;
@@ -403,6 +497,9 @@ export function buildCatalogSearchIndex(input: {
   const metadata = input.metadata
     ? CATALOG_SEARCH_METADATA_SET_SCHEMA.parse(input.metadata)
     : undefined;
+  const authoredMetadata = (input.authoredMetadata ?? []).map((entry) =>
+    CATALOG_AUTHORED_SEARCH_METADATA_SET_SCHEMA.parse(entry),
+  );
   const sourceNames = CATALOG_SOURCE_NAME_HINT_SET_SCHEMA.parse(input.sourceNames);
   const renders = input.renders
     ? CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(input.renders)
@@ -423,6 +520,12 @@ export function buildCatalogSearchIndex(input: {
   if (
     measurements.sourceManifestHash !== sourceNames.sourceManifestHash ||
     (renders && measurements.sourceManifestHash !== renders.sourceManifestHash) ||
+    authoredMetadata.some(
+      (entry) =>
+        entry.sourceManifestHash !== measurements.sourceManifestHash ||
+        entry.measurementSetHash !== measurements.hash ||
+        (renders && entry.visualReviewIndexHash !== renders.hash),
+    ) ||
     (imageTextMatrix && measurements.sourceManifestHash !== imageTextMatrix.sourceManifestHash) ||
     (shapeMatrix && measurements.sourceManifestHash !== shapeMatrix.sourceManifestHash)
   )
@@ -434,6 +537,19 @@ export function buildCatalogSearchIndex(input: {
       .filter((entry) => entry.status === "eligible" && entry.metadata)
       .map((entry) => [entry.sourceContentHash, entry] as const),
   );
+  const authoredMetadataBySource = new Map<string, CatalogAuthoredSearchMetadataRecord>();
+  for (const set of authoredMetadata)
+    for (const record of set.records) {
+      if (metadataBySource.has(record.sourceContentHash))
+        throw new Error(
+          `Source ${record.sourceContentHash} has both worker and authored metadata; select one evidence source`,
+        );
+      if (authoredMetadataBySource.has(record.sourceContentHash))
+        throw new Error(
+          `Source ${record.sourceContentHash} appears in multiple authored metadata sets`,
+        );
+      authoredMetadataBySource.set(record.sourceContentHash, record);
+    }
   const namesBySource = new Map(
     sourceNames.items.map((entry) => [entry.sourceContentHash, entry] as const),
   );
@@ -448,6 +564,7 @@ export function buildCatalogSearchIndex(input: {
   );
   const diagnostics: string[] = [];
   const documents: CatalogSearchDocument[] = [];
+  const excludedSources: z.output<typeof CATALOG_SEARCH_EXCLUDED_SOURCE_SCHEMA>[] = [];
   const candidates = input.candidateSourceContentHashes
     ? new Set(
         canonicalValues(input.candidateSourceContentHashes, String, "search candidate sources"),
@@ -464,7 +581,16 @@ export function buildCatalogSearchIndex(input: {
   for (const asset of measurements.assets) {
     const sourceHash = asset.source.contentHash;
     if (candidates && !candidates.has(sourceHash)) continue;
+    if (asset.parts.length > 0 && asset.parts.every((part) => part.role === "collision_proxy")) {
+      excludedSources.push({
+        sourceContentHash: sourceHash,
+        measurementHash: asset.hash,
+        reason: "non_renderable_collision_companion",
+      });
+      continue;
+    }
     const receipt = metadataBySource.get(sourceHash);
+    const authoredRecord = authoredMetadataBySource.get(sourceHash);
     const sourceName = namesBySource.get(sourceHash);
     const render = renderBySource.get(sourceHash);
     const imageTextEmbeddingRow = imageTextRowBySource.get(sourceHash);
@@ -477,29 +603,56 @@ export function buildCatalogSearchIndex(input: {
       throw new Error(`Search metadata binds a stale measurement for ${sourceHash}`);
     if (receipt && render && receipt.renderEvidenceHash !== render.evidence.hash)
       throw new Error(`Search metadata binds stale render evidence for ${sourceHash}`);
+    if (authoredRecord && authoredRecord.measurementHash !== asset.hash)
+      throw new Error(`Authored search metadata binds a stale measurement for ${sourceHash}`);
+    if (authoredRecord && render && authoredRecord.renderEvidenceHash !== render.evidence.hash)
+      throw new Error(`Authored search metadata binds stale render evidence for ${sourceHash}`);
     const sourceTokens = sourceName.observations.flatMap((entry) => entry.tokens);
-    const fields = documentFields(receipt?.metadata, sourceTokens);
+    const selectedMetadata = receipt?.metadata ?? authoredRecord?.metadata;
+    const fields = documentFields(selectedMetadata, sourceTokens);
     const missingEvidence = [
-      ...(receipt?.metadata ? [] : ["metadata" as const]),
+      ...(selectedMetadata ? [] : ["metadata" as const]),
       ...(imageTextEmbeddingRow === undefined ? ["image_text_embedding" as const] : []),
       ...(shapeEmbeddingRow === undefined ? ["shape_embedding" as const] : []),
     ].sort(compareCanonicalStrings);
     documents.push({
       sourceContentHash: sourceHash,
       measurementHash: asset.hash,
-      ...(render || receipt
-        ? { renderEvidenceHash: render?.evidence.hash ?? receipt!.renderEvidenceHash }
+      ...(render || receipt || authoredRecord
+        ? {
+            renderEvidenceHash:
+              render?.evidence.hash ??
+              receipt?.renderEvidenceHash ??
+              authoredRecord!.renderEvidenceHash,
+          }
         : {}),
       fields,
       ...(receipt?.metadata
         ? {
             metadataEvidence: {
-              metadataReceiptHash: receipt.hash,
+              kind: "worker" as const,
+              evidenceHash: receipt.hash,
               renderEvidenceHash: receipt.renderEvidenceHash,
               metadata: receipt.metadata,
             },
           }
-        : {}),
+        : authoredRecord
+          ? {
+              metadataEvidence: {
+                kind: "authored" as const,
+                evidenceHash: authoredRecord.hash,
+                batchHash: authoredRecord.batchHash,
+                producer: authoredRecord.producer,
+                authoringCertainty: authoredRecord.authoringCertainty,
+                reviewStatus: authoredRecord.review.status,
+                ...(authoredRecord.review.status === "unreviewed"
+                  ? {}
+                  : { reviewScope: authoredRecord.review.reviewScope }),
+                renderEvidenceHash: authoredRecord.renderEvidenceHash,
+                metadata: authoredRecord.metadata,
+              },
+            }
+          : {}),
       metric: measurementMetric(asset),
       rights: {
         commercialUsePermitted: asset.source.rights.commercialUsePermitted,
@@ -515,6 +668,11 @@ export function buildCatalogSearchIndex(input: {
     (entry) => entry.sourceContentHash,
     "search documents",
   );
+  const canonicalExcludedSources = canonicalValues(
+    excludedSources,
+    (entry) => entry.sourceContentHash,
+    "excluded search sources",
+  );
   return sealArtifact(CATALOG_SEARCH_INDEX_SCHEMA, {
     kind: "CatalogSearchIndex" as const,
     status: diagnostics.length === 0 ? ("eligible" as const) : ("incomplete" as const),
@@ -523,14 +681,26 @@ export function buildCatalogSearchIndex(input: {
     ...(renders ? { visualReviewIndexHash: renders.hash } : {}),
     sourceNameHintSetHash: sourceNames.hash,
     ...(metadata ? { metadataSetHash: metadata.hash } : {}),
+    authoredMetadataSetHashes: canonicalValues(
+      authoredMetadata.map((entry) => entry.hash),
+      String,
+      "authored metadata set hashes",
+    ),
     ...(imageTextMatrix ? { imageTextEmbeddingMatrixHash: imageTextMatrix.hash } : {}),
     ...(shapeMatrix ? { shapeEmbeddingMatrixHash: shapeMatrix.hash } : {}),
     searchPolicyHash: policy.hash,
     tokenizerImplementationHash: CATALOG_SEARCH_TOKENIZER_IMPLEMENTATION_HASH,
     buildImplementationHash: input.buildImplementationHash,
     coverage: {
-      measuredAndNamed: canonicalDocuments.length,
+      searchableSources: canonicalDocuments.length,
+      excludedNonRenderableCollisionCompanions: canonicalExcludedSources.length,
       metadata: canonicalDocuments.filter((entry) => entry.metadataEvidence !== undefined).length,
+      workerMetadata: canonicalDocuments.filter(
+        (entry) => entry.metadataEvidence?.kind === "worker",
+      ).length,
+      authoredMetadata: canonicalDocuments.filter(
+        (entry) => entry.metadataEvidence?.kind === "authored",
+      ).length,
       imageTextEmbedding: canonicalDocuments.filter(
         (entry) => entry.imageTextEmbeddingRow !== undefined,
       ).length,
@@ -538,6 +708,7 @@ export function buildCatalogSearchIndex(input: {
         .length,
     },
     documents: canonicalDocuments,
+    excludedSources: canonicalExcludedSources,
     diagnostics: canonicalValues(diagnostics, String, "search index diagnostics"),
     compilerAuthority: false as const,
   });
@@ -714,7 +885,8 @@ export function executeCatalogSearch(input: {
       measurementHash: document.measurementHash,
       ...(metadataEvidence
         ? {
-            metadataReceiptHash: metadataEvidence.metadataReceiptHash,
+            metadataEvidenceHash: metadataEvidence.evidenceHash,
+            metadataEvidenceKind: metadataEvidence.kind,
             metadata: metadataEvidence.metadata,
           }
         : {}),
