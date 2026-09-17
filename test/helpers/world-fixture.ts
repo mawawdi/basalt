@@ -7,8 +7,8 @@ import {
 import { DEFAULT_WORLD_VISUAL_ENVIRONMENT, sealSpatialWorldPlan } from "@basalt/world-planning";
 import { catalogFixture } from "./catalog-fixture.js";
 
-export async function worldFixture(module: SemanticModule) {
-  const catalog = await catalogFixture(module);
+export async function worldFixture(module: SemanticModule, verticalOffsetMeters = 0) {
+  const catalog = await catalogFixture(module, verticalOffsetMeters);
   const regionConcept = module.concepts.find((entry) => entry.conceptId === "bsc_000316")!;
   const routeConcept = module.concepts.find((entry) => entry.conceptId === "bsc_000305")!;
   const regionClosure = createSemanticDependencyClosure({

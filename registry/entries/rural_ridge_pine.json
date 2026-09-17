@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_ridge_pine",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000003",
+      "commitmentHash": "941f3e31cb795011c5f16329a17dafef61bfe718fcb68d499694f965fedfb582"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "161bbf9229258873d87f489081248e72ce9971c75c8103a907b5e4b17d466f33"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "5e6f9a711bb98df924497bca671069ec39903b8dd84197ae09ae4053e83b6050",
+    "7d2f8b27b722a676a3728ab7fe085eaf0bf8f9be3151b286ba7918f1e2390bb0",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f"
+  ],
+  "members": [
+    {
+      "memberId": "source_8d6ccba4a5a28427",
+      "assetHash": "5e6f9a711bb98df924497bca671069ec39903b8dd84197ae09ae4053e83b6050",
+      "assertionBundleHash": "69148b1591bbef39fb7cb48e803569d9359d15ee940522bbc70b293b42309623",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_trimmed_hedge",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000101",
+      "commitmentHash": "9826c9d7ff925cb315f9f3342d5d6c52e18ab47a9d7cc4cb66e7aa5a9f989ec0"
+    },
+    "realizationForm": "aggregate",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "fdbb56b7843dce1731825f22940a01bb2f1f9d19af4b9681ceda7ab8a297c22e"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f"
+  ],
+  "members": [
+    {
+      "memberId": "source_ed1f95afed4b4d16",
+      "assetHash": "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+      "assertionBundleHash": "cbc3da1bb289108d54ca83fbfd5235317adc224063a6f196b7c022dcf700c8e5",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

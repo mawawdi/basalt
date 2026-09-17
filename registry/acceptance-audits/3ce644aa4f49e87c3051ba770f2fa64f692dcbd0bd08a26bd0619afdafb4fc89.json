@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "3ce644aa4f49e87c3051ba770f2fa64f692dcbd0bd08a26bd0619afdafb4fc89",
+  "assetHash": "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+  "renderEvidenceHash": "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+  "assertionBundleHash": "48f3f02aa62f2566eabc69877a4bcb57d3fea610753975209937e7c1441ce8b0",
+  "entryHandle": "rural_rail_fence",
+  "memberId": "source_3ce644aa4f49e87c",
+  "entryDeclarationHash": "6bfe5fafa96767cb9f99145d0183f03f716de954e5f12d57d8852c5f136a4014",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+        "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+        "f8892e8d91ba1d19a512923b3b357027423c81e7f0512a07139b66f18e7824c7"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Independently placeable fence section; do not infer kit compatibility."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "f1ab959b251180a36390c9efcd618681d59e5f6c3e4378b310ab8388cede956e"
+}

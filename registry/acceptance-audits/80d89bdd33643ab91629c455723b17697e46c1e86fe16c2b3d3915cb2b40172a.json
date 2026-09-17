@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "80d89bdd33643ab91629c455723b17697e46c1e86fe16c2b3d3915cb2b40172a",
+  "assetHash": "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+  "renderEvidenceHash": "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431",
+  "assertionBundleHash": "c5c7fd8deb38bda954e0812ce5b245676be42fb5fb3961c03f0235dbb2fb15e7",
+  "entryHandle": "rural_small_red_flowers",
+  "memberId": "source_80d89bdd33643ab9",
+  "entryDeclarationHash": "79c9c9a06ec0d606585776638c007cbcf2d198ef80acbfe7ea0f59f1da1dac78",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. One mesh containing several flowering plants."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f",
+        "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. One mesh containing several flowering plants."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "3bc32f07bc81954234c78398768be28a9b26096e0886278f1416e12338abae0b"
+}

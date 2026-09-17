@@ -146,7 +146,7 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
       context.addIssue({
         code: "custom",
         path: ["acceptanceAudits"],
-        message: "Every eligible source requires exactly one creator acceptance audit",
+        message: "Every eligible source requires exactly one authored acceptance audit",
       });
     const declarationByHandle = new Map(
       value.declarations.map((entry) => [entry.handle, entry] as const),

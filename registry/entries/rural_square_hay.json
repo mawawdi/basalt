@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_square_hay",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "a318fa6e77676c2d230645d9e9ed2f497a2cadeba9570ae767863d12f1326218"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "188d10e02a7a88a796b294615fddbffd686adb95af0fb8b8924409be6cf5c4a4",
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "d9db4ed071e3031d4336d2710feec82f034e9232b726e060b0da2db4c488acd4",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_ad6546f15c50cfc3",
+      "assetHash": "d9db4ed071e3031d4336d2710feec82f034e9232b726e060b0da2db4c488acd4",
+      "assertionBundleHash": "10ca541d6e6ced293a43e3c47c20f527831c4c19e5792b3f4ef5f48583159250",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

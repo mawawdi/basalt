@@ -263,6 +263,32 @@ test("hypothesis assertions cannot enter a sealed catalog", async () => {
   );
 });
 
+test("explicit catalog selection narrows eligible entries without bypassing hard requirements", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await catalogFixture(module);
+  const selected = { ...fixture.requirement, allowedEntryHandles: [fixture.declaration.handle] };
+  const resolve = (requirement: typeof selected) =>
+    resolveCatalogRequirements({
+      semanticModule: module,
+      snapshot: fixture.snapshot,
+      requirements: [requirement],
+    });
+  assert.equal(resolve(selected).status, "eligible");
+  assert.equal(resolve(selected).bindings[0]?.entryHandle, fixture.declaration.handle);
+  assert.equal(
+    resolve({ ...selected, allowedEntryHandles: ["not_admitted"] }).status,
+    "incomplete",
+  );
+  assert.equal(
+    resolve({ ...selected, budget: { ...selected.budget, maximumSourceBytes: 1 } }).status,
+    "incomplete",
+  );
+  assert.equal(
+    resolve({ ...selected, styleProfileHandles: ["unavailable_style"] }).status,
+    "incomplete",
+  );
+});
+
 test("resolver hard-filters, emits typed required gaps, and is input-order independent", async () => {
   const module = await loadSemanticRegistry();
   const fixture = await catalogFixture(module);

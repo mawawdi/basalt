@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_rustic_fence",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000025",
+      "commitmentHash": "bb13da328a4da896f6c12650da2fd7dd3f927cd41acf1a59dbd5d44c6bdf2082"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "15cb2e48b19dc8954d9ccd77b36c3525faf0f580b862bb98e47a0b5dac2812dc"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+    "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+  ],
+  "members": [
+    {
+      "memberId": "source_f463a8ba577b53bf",
+      "assetHash": "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+      "assertionBundleHash": "bbaf2a179fe3f497a40cad8df0b6fafb70acb091722da3e82b4de6c2a90d5773",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

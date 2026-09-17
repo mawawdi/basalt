@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_harvest_cart",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000075",
+      "commitmentHash": "852d8aac2a0634c386e6b5e058b28271c21d5c5bc468b7197a5c685e3cee6023"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "eab8b5a1ed2b7401451b5b765f2a2f762347837445fbcc12b864354440d1e7d0"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+    "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_0431d44485b9d89b",
+      "assetHash": "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+      "assertionBundleHash": "c00ccc29be54b5209187588c7935f229261253b44ef0ce0c8171915fb32b2fd7",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

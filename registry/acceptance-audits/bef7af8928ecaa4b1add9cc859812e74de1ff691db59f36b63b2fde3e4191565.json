@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "bef7af8928ecaa4b1add9cc859812e74de1ff691db59f36b63b2fde3e4191565",
+  "assetHash": "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+  "renderEvidenceHash": "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+  "assertionBundleHash": "131d0eea3f807389bf99a99d1649b58243d7a2a40f75ec93155dce9a61193f86",
+  "entryHandle": "rural_empty_handcart",
+  "memberId": "source_bef7af8928ecaa4b",
+  "entryDeclarationHash": "75076e5e212577ad89c2a4facc7c15dc2d653241d71d0fbc2f8a39edbf3d0792",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Static cart; no wheel motion or towing connection is asserted."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9dcb48f9f4e0dd8e09634ce215effeaff7637fb5daa980111f141a4d57c52c5c",
+        "cb2488bf82339a88929c12603b25ff57563b87f47ee35254f8e4c4281ee67985",
+        "f7dfb1787b4ec57c2488ca07fbe05bb14275d2063e314ad085cffb757656940b"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Static cart; no wheel motion or towing connection is asserted."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "341d605ae24dd7bd9cc3228aec73bb52de77cb10930f21b6aef999996f1fb7d0"
+}

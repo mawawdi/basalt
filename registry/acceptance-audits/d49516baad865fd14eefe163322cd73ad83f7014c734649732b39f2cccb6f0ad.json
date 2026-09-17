@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "d49516baad865fd14eefe163322cd73ad83f7014c734649732b39f2cccb6f0ad",
+  "assetHash": "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591",
+  "renderEvidenceHash": "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+  "assertionBundleHash": "b603f21c06a6053c41e42b7cfe74aea2c716cb310af0f925e99d08687ee54cf4",
+  "entryHandle": "rural_meadow_grass_patch",
+  "memberId": "source_d49516baad865fd1",
+  "entryDeclarationHash": "72becb411f784ccf4fd71a9e8376425ce737be385c8ffdfba0e1a36063fbb9ee",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "102cd026136c0f378fc70e73561ae3df19acd64815ee80fe19acec2da61b3427",
+        "7a87e677ac4b0ab28d9585a8e128de30b4150c45a44808bd79658f59a29c16c6",
+        "d3c96c3c4c378ad4afc4cb506b1d6e2eea6b8bd07e44b273fdc7d3a788b3d591"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Precomposed groundcover; blades are one placement unit."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "199db1874351ec7bc7dbe68c9d2ebf1206ce60db52f1fefe87d5056f2533da1c"
+}

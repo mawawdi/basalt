@@ -67,7 +67,7 @@ const [
   existingDeclarations,
 ] = await Promise.all([
   loadSemanticModule(),
-  readJson(".basalt/catalog/measurements.json").then((value) =>
+  readJson(options.get("--measurements") ?? ".basalt/catalog/measurements.json").then((value) =>
     CATALOG_MEASUREMENT_SET_SCHEMA.parse(value),
   ),
   readJson("registry/admission-policy.json").then((value) =>

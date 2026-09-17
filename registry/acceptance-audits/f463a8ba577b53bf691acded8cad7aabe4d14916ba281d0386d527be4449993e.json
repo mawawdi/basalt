@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "f463a8ba577b53bf691acded8cad7aabe4d14916ba281d0386d527be4449993e",
+  "assetHash": "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+  "renderEvidenceHash": "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc",
+  "assertionBundleHash": "bbaf2a179fe3f497a40cad8df0b6fafb70acb091722da3e82b4de6c2a90d5773",
+  "entryHandle": "rural_rustic_fence",
+  "memberId": "source_f463a8ba577b53bf",
+  "entryDeclarationHash": "0088d6e28b8c432067c81226898019bfa1faf4a931c66693e39d926d0321555f",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2ddfde5777514a35b9fb3548ce1a3bcb2a0da1dd48361b274386eea959a65b51",
+        "88d26e088b3ffec554fb35da92c12d3d57b8a34d747b9f9e8fa8d3993f1ca917",
+        "ea85ee94a7def54d8b65c6bce077382d1393475c4076db78cb81d10a1844fdcc"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "447876441f818892259cfe84d42bfc042b2d54f976dd772574c4ea516d8de373"
+}

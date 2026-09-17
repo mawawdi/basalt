@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_monument_tree",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000003",
+      "commitmentHash": "941f3e31cb795011c5f16329a17dafef61bfe718fcb68d499694f965fedfb582"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "161bbf9229258873d87f489081248e72ce9971c75c8103a907b5e4b17d466f33"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+    "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+  ],
+  "members": [
+    {
+      "memberId": "source_f55ea891598a40fd",
+      "assetHash": "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95",
+      "assertionBundleHash": "20b8dbbd5c3ceea56d41409eac7e66d2e2b970ace50232574060daad32481ceb",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

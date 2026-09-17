@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_dense_grass_patch",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000101",
+      "commitmentHash": "9826c9d7ff925cb315f9f3342d5d6c52e18ab47a9d7cc4cb66e7aa5a9f989ec0"
+    },
+    "realizationForm": "aggregate",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "fdbb56b7843dce1731825f22940a01bb2f1f9d19af4b9681ceda7ab8a297c22e"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+    "e47c18d11206d2f681eaf9458cc5b496964cf6579b43fddf195f4aa671289af5",
+    "f3dbb1a511caa8188c619135289253d82cd13bf27e918499b01aa280a31465ad"
+  ],
+  "members": [
+    {
+      "memberId": "source_32bd22f9a1b8430d",
+      "assetHash": "f3dbb1a511caa8188c619135289253d82cd13bf27e918499b01aa280a31465ad",
+      "assertionBundleHash": "23b51f7d9e622e1956afe1449df7138915084ef3acd3d1590d83960113596ed0",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

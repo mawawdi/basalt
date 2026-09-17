@@ -112,5 +112,94 @@
         "roughness": 0.9
       }
     ]
+  },
+  {
+    "handle": "stylized_rural_highlands",
+    "shapeLanguage": "Readable stylized rural silhouettes: faceted vegetation and rocks, timber farm buildings, pitched shingle roofs and simple agricultural props.",
+    "silhouetteHierarchy": [
+      {
+        "level": "primary",
+        "guidance": "Keep trunks, canopies, rock masses, and groundcover clusters readable at world scale."
+      },
+      {
+        "level": "secondary",
+        "guidance": "Preserve the few large angular breaks that distinguish variants without adding fine noise."
+      }
+    ],
+    "detailScale": [
+      {
+        "level": "asset",
+        "guidance": "Use broad color blocks and authored facets; avoid microdetail that competes with the silhouette."
+      }
+    ],
+    "edgeTreatment": "Retain authored hard-edged low-poly facets and clean silhouette transitions.",
+    "materialLanguage": "Authored matte earth, straw, timber, muted red paint and weathered white walls with slate-gray roofs; preserve source texture and vertex colors.",
+    "texelDensity": {
+      "minimumPixelsPerMeter": 4,
+      "targetPixelsPerMeter": 64,
+      "maximumPixelsPerMeter": 1024
+    },
+    "surfaceVariation": {
+      "scaleMeters": 2,
+      "intensity": 0,
+      "guidance": "Retain authored color variation; add no compiler-authored mottling."
+    },
+    "wearPolicy": {
+      "amount": 0,
+      "placement": "Retain source wear only.",
+      "exclusions": [
+        "Do not add edge wear or dirt during catalog realization."
+      ]
+    },
+    "lightingIntent": "Read as matte stylized outdoor forms under world-level lighting.",
+    "antiGoals": [
+      "Do not infer interchangeability from the shared visual family.",
+      "Do not smooth away the authored faceted silhouette.",
+      "Do not replace authored materials with photorealistic textures."
+    ],
+    "palette": [
+      {
+        "id": "bark_brown",
+        "name": "Bark brown",
+        "color": "#6A4A2F",
+        "metallic": 0,
+        "roughness": 0.85
+      },
+      {
+        "id": "foliage_green",
+        "name": "Foliage green",
+        "color": "#667A32",
+        "metallic": 0,
+        "roughness": 0.85
+      },
+      {
+        "id": "rock_gray",
+        "name": "Rock gray",
+        "color": "#77766F",
+        "metallic": 0,
+        "roughness": 0.9
+      },
+      {
+        "id": "barn_red",
+        "name": "Muted barn red",
+        "color": "#914634",
+        "metallic": 0,
+        "roughness": 0.9
+      },
+      {
+        "id": "straw_gold",
+        "name": "Dry straw",
+        "color": "#B9A26B",
+        "metallic": 0,
+        "roughness": 0.9
+      },
+      {
+        "id": "warm_white",
+        "name": "Weathered white",
+        "color": "#CDC9BA",
+        "metallic": 0,
+        "roughness": 0.85
+      }
+    ]
   }
 ]

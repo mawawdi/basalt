@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "d9fec8e5b6319156491e21b7ff21db0d6e5c29e766334288e50571db5a396ee3",
+  "assetHash": "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+  "renderEvidenceHash": "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+  "assertionBundleHash": "153efd8b8f8390be96e6ef4066dd51b134292378017c6032103d8bd480bae02d",
+  "entryHandle": "rural_wooden_wheelbarrow",
+  "memberId": "source_d9fec8e5b6319156",
+  "entryDeclarationHash": "44b0a5c48a2d9cf9e8337f2a7a92a88cde6e9509592f55e6c2816256730c3d74",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+        "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+        "ac142fef3af3cab70b742caa4406612b3f080db22fdac6d4426bca92d71c1cdc"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Static equipment; wheel movement and load carrying are not asserted."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "10c3eddbef6809f26b4b05e9889376c16ae329b8c89c89410b39db930e6a6563"
+}

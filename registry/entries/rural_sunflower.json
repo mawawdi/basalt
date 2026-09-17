@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_sunflower",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000005",
+      "commitmentHash": "46cc92583e87b278992e0231f5d29daa27e7459dc849ff87c67b7c1fa7e61e7f"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "c1c1b2e0b9ae2b7eeb209fb9035ecaf8223906dc1247658becadadc8833f25db"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "8e535c6c04934b8e6e2d8a71c2624e74809374ece4f130985ff642ef265143ab",
+    "914b8bacfb4f0c3b7d7420982008ace91d1e5be6e1ee0dd2533057222b771aaa",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_0b98e70256ac9a8d",
+      "assetHash": "914b8bacfb4f0c3b7d7420982008ace91d1e5be6e1ee0dd2533057222b771aaa",
+      "assertionBundleHash": "61e7ed0042af855c896ef4e0c5f5948f2df13ec51c447cd08518ce125db0631b",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

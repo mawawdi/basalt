@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "09c199c3ea03c5c922853fe77779feee5a429db277b914fd213f4838ddd9bce4",
+  "assetHash": "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+  "renderEvidenceHash": "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9",
+  "assertionBundleHash": "1db53a923015855fe15133e894f3b55a7a83e228d9a9dc12048e5ec85cc5aa34",
+  "entryHandle": "rural_woodland_group",
+  "memberId": "source_09c199c3ea03c5c9",
+  "entryDeclarationHash": "900479ab7a4f27f8d5c18e5dd38d0025c8f32746bf40070021a694bb76cfc29c",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+        "17457ceed1108590b3c6175c40e29b514e85d5eb7b0840a16d5a66c235aaf5e7",
+        "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "15e1210780f793c1e727227734d59c40ef4a6f15e5286883b8d9fab882fb1218"
+}

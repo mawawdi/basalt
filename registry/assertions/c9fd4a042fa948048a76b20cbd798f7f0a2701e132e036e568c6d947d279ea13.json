@@ -1,0 +1,39 @@
+{
+  "kind": "SemanticAssertionBundle",
+  "authority": "admitted",
+  "assertions": [
+    {
+      "assertionKind": "denotation",
+      "subject": {
+        "kind": "catalog_asset",
+        "id": "asset_c9fd4a042fa948048a76b20cbd798f7f"
+      },
+      "concept": {
+        "conceptId": "bsc_000059",
+        "commitmentHash": "38cb87abe93b432c17336a68c6ad60e5bcc350dc751e40e5277ebfa1b6e00c65"
+      },
+      "evidence": {
+        "level": "declared",
+        "evidenceHashes": [
+          "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+          "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f"
+        ]
+      }
+    },
+    {
+      "assertionKind": "realization_form",
+      "subject": {
+        "kind": "catalog_asset",
+        "id": "asset_c9fd4a042fa948048a76b20cbd798f7f"
+      },
+      "realizationForm": "whole",
+      "evidence": {
+        "level": "measured",
+        "evidenceHashes": [
+          "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+        ]
+      }
+    }
+  ],
+  "hash": "6d35e011008232f6e19226990e214e9b6478553b10978c57399d23608ba8402c"
+}

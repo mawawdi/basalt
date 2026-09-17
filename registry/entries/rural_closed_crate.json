@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_closed_crate",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000058",
+      "commitmentHash": "3040627892f2f57db2297504d0aea01beb0b361ba5bf6529e854a48400a0a673"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "52b83b954b30e1e6f8a3a176fd0c6e02466e30896cb6c5a1e0c1e4acda70d55b"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+    "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+  ],
+  "members": [
+    {
+      "memberId": "source_154862255c8771c2",
+      "assetHash": "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44",
+      "assertionBundleHash": "df7816d172fea9651a7e064d940ec7bbbff91ce9ef5a1be774d4c0fbc0c3b83c",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

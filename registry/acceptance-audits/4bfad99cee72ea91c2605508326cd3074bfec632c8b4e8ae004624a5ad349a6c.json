@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "4bfad99cee72ea91c2605508326cd3074bfec632c8b4e8ae004624a5ad349a6c",
+  "assetHash": "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5",
+  "renderEvidenceHash": "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+  "assertionBundleHash": "4049cdeb6145a0a076cf1a5a83f718c8fc22c93f02ff62835650ed1abee7e2d0",
+  "entryHandle": "rural_canvas_shelter",
+  "memberId": "source_4bfad99cee72ea91",
+  "entryDeclarationHash": "b45ddce9819479f7846d04a47cdecc42170d8817e4510849c8e208efdcf55d35",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb",
+        "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "5b335c3f2e266aaf02c09451409a4879c9f4e5ad08c4290e4c7408602f896c7b"
+}

@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "8dca04af8ea5c8a3f60b07c0a3a9e462d2981b372dbd8779787743d7a2edb7ae",
+  "assetHash": "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+  "renderEvidenceHash": "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+  "assertionBundleHash": "26699d3e2c17998423b957def0d4df067212d767b68aa5d93ec2947a8567b37a",
+  "entryHandle": "rural_small_barn",
+  "memberId": "source_8dca04af8ea5c8a3",
+  "entryDeclarationHash": "0ddb9caa630da51390d3758097f4a8115555742855b70dcadff0099177fe62b5",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Complete exterior building; no gameplay or interior claim."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "4ccba3eb690a1e62a59efc05b32a1016c7b78755c412df70aea2f4dac125c8bf"
+}

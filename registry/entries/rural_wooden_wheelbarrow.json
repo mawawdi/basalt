@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_wooden_wheelbarrow",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000075",
+      "commitmentHash": "852d8aac2a0634c386e6b5e058b28271c21d5c5bc468b7197a5c685e3cee6023"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "eab8b5a1ed2b7401451b5b765f2a2f762347837445fbcc12b864354440d1e7d0"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+    "9ed31f2f0dc62d850c18ae05802a8d7a76404a1290d73d5bc3408551e5432faa",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f"
+  ],
+  "members": [
+    {
+      "memberId": "source_d9fec8e5b6319156",
+      "assetHash": "819c82a684401d634836f62369401d603607b56246291e3c98790f02c43370ac",
+      "assertionBundleHash": "153efd8b8f8390be96e6ef4066dd51b134292378017c6032103d8bd480bae02d",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import test from "node:test";
 import { compileBasaltWorld } from "@basalt/world-compiler";
 import {
   ROBLOX_ASSET_BINDING_SCHEMA,
   ROBLOX_IMPORT_REPORT_PATH,
+  ROBLOX_IMPORT_LOCK_PATH,
   ROBLOX_IMPORT_REPORT_SCHEMA,
   ROBLOX_READBACK_SCHEMA,
   ROBLOX_TRACE_EVENT_SCHEMA,
@@ -76,6 +79,75 @@ test("Roblox is the only unit-conversion and import-protocol boundary", async ()
   );
   assert.equal(manifest.loweringGaps.length, 0);
 });
+
+test(
+  "closing the CLI terminal releases its import lock and records an incomplete import",
+  { timeout: 20_000 },
+  async () => {
+    const root = await mkdtemp(join(tmpdir(), "basalt-roblox-hangup-test-"));
+    let child: ReturnType<typeof spawn> | undefined;
+    try {
+      const module = await loadSemanticRegistry();
+      const fixture = await worldFixture(module);
+      const world = compileBasaltWorld({
+        semanticModule: module,
+        catalogSnapshot: fixture.snapshot,
+        catalogAssets: [fixture.asset],
+        spatialPlan: fixture.plan,
+      });
+      await writeFile(join(root, "world.json"), JSON.stringify(world));
+      await installRobloxCredential(root);
+      child = spawn(
+        process.execPath,
+        [resolve("bin/basalt.js"), "roblox", "import", "world.json"],
+        {
+          cwd: root,
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
+      const closed = once(child, "close");
+      let output = "";
+      const diagnostics: string[] = [];
+      child.stderr!.on("data", (chunk: Buffer) => diagnostics.push(chunk.toString()));
+      await new Promise<void>((ready, reject) => {
+        const timer = setTimeout(
+          () => reject(new Error(`Bridge did not start: ${diagnostics.join("")}`)),
+          10_000,
+        );
+        const receive = (chunk: Buffer) => {
+          output += chunk.toString();
+          if (output.includes('"status": "pending"')) {
+            clearTimeout(timer);
+            child!.stdout!.off("data", receive);
+            ready();
+          }
+        };
+        child!.stdout!.on("data", receive);
+        child!.once("error", (error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
+        child!.once("exit", () => {
+          clearTimeout(timer);
+          reject(new Error(diagnostics.join("")));
+        });
+      });
+      child.kill("SIGHUP");
+      const [code, signal] = await closed;
+      assert.equal(code, 1);
+      assert.equal(signal, null);
+      await assert.rejects(readFile(join(root, ROBLOX_IMPORT_LOCK_PATH)), { code: "ENOENT" });
+      const report = ROBLOX_IMPORT_REPORT_SCHEMA.parse(
+        JSON.parse(await readFile(join(root, ROBLOX_IMPORT_REPORT_PATH), "utf8")),
+      );
+      assert.equal(report.state, "incomplete");
+      assert.match(report.diagnostics.join("; "), /stopped before the import/u);
+    } finally {
+      if (child && child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);
 
 test("Roblox lowering gaps remain explicit when no admitted binding exists", async () => {
   const module = await loadSemanticRegistry();

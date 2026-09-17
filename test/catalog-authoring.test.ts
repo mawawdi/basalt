@@ -1182,7 +1182,7 @@ test("the tracked catalog root excludes learned search evidence", async () => {
   assert.equal(commit.acceptanceAudits[0]?.reviewDecisionHash, reviewDecisionHash);
   assert.throws(
     () => sealCatalogAuthorityCommit({ ...input, acceptanceAudits: [] }),
-    /requires exactly one creator acceptance audit/iu,
+    /requires exactly one authored acceptance audit/iu,
   );
   assert.throws(
     () => sealCatalogAuthorityCommit({ ...input, retainedEvidence: [] }),

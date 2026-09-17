@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "39b73cdb547db18cd92b605bca89e0f8bf2a306bc675b37d83f75b85ca9a18b2",
+  "assetHash": "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999",
+  "renderEvidenceHash": "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+  "assertionBundleHash": "72dc9230abae506ac93dd8a68e7d0817b836b555fa18130694fcce3a8f372829",
+  "entryHandle": "rural_long_barn",
+  "memberId": "source_39b73cdb547db18c",
+  "entryDeclarationHash": "4e4392df1bf2f8cc5e74d1d96d2ad1ac311eed412b9d928a2eb7bb9ca5708718",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e",
+        "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Complete exterior building; separate rendered wall and roof parts retained."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "bea7ed7dcc60cf5a7611dcaf3806da34c71da792205398ff5dc06bc4ddacde5f"
+}

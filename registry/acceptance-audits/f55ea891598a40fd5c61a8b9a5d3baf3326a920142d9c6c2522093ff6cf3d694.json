@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "f55ea891598a40fd5c61a8b9a5d3baf3326a920142d9c6c2522093ff6cf3d694",
+  "assetHash": "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95",
+  "renderEvidenceHash": "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+  "assertionBundleHash": "20b8dbbd5c3ceea56d41409eac7e66d2e2b970ace50232574060daad32481ceb",
+  "entryHandle": "rural_monument_tree",
+  "memberId": "source_f55ea891598a40fd",
+  "entryDeclarationHash": "878f38ccc871da64940412f4a33d9bf7111d6d3d746cc8128be3e69c2ec2a7ba",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3a58a3e0ca03525aae712ef4c4e32a42297baeceb5635da43bbb58a002f3d1c0",
+        "72e192ff748cced65a08caaaed07c310a067b8808a677799ec766f801aa5ad42",
+        "d8fb6faa5f637e065b57f9740e166d0574fef871533477b5f114fa987fe65c95"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "86b2dca07f92d665add36fc42a691d8618708978eb2d300a3ba4911da6299dd3"
+}

@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_campfire_ring",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000020",
+      "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+    },
+    "realizationForm": "aggregate",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "e5afb224d5d05fcf638477409bcb34c789bf84ad4f191152eac6adb2b71ab405"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_50031169641cc609",
+      "assetHash": "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+      "assertionBundleHash": "9e9fcd5812246189b96e8461a7002a3195b82ed081ee932f5ecf4cab999a6d43",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

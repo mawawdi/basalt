@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "154862255c8771c20b3930642823621219373f875f035d2cedcb778eb7597dca",
+  "assetHash": "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44",
+  "renderEvidenceHash": "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+  "assertionBundleHash": "df7816d172fea9651a7e064d940ec7bbbff91ce9ef5a1be774d4c0fbc0c3b83c",
+  "entryHandle": "rural_closed_crate",
+  "memberId": "source_154862255c8771c2",
+  "entryDeclarationHash": "70d47703c16e8bfcc9af1193a9fb2c00960a49feb50e5b5ae2825f771a15f5c7",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. No opening or stacking affordance is asserted."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "262773b016ca53d4efc95214009703a2207320d9edc06924189461ee31204a38",
+        "6187e9ac373b3cc015add22a044293ee63f56e7346b8a41accd5a4778f043657",
+        "f6b55f6d7f28443577340959359a93385dd38b1d66c8e59f3e14f17b452e1d44"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. No opening or stacking affordance is asserted."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "3422b242e634555a75f3915d532d22abec84ed1d758889993cc0eb821d8f79db"
+}

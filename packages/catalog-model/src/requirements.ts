@@ -28,6 +28,7 @@ import type { CatalogSnapshot, SealedRuntimeCatalogEntry } from "./entries.js";
 export const CATALOG_REQUIREMENT_SCHEMA = z
   .object({
     requirementId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
+    allowedEntryHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1).max(128).optional(),
     semantic: SEMANTIC_REQUIREMENT_SCHEMA,
     acceptedEntryKinds: z
       .array(CATALOG_ENTRY_KIND_SCHEMA.exclude(["collection"]))
@@ -80,6 +81,7 @@ export const REALIZATION_INTENT_SCHEMA = z
         regionId: z.string().min(1).max(64),
         surfaceId: z.string().min(1).max(64),
         at: point2,
+        yawDegrees: z.number().finite().min(0).lt(360).optional(),
       })
       .strict(),
     z
@@ -246,6 +248,7 @@ export const RESOLVED_CATALOG_BINDING_SCHEMA = z
     explanation: z
       .object({
         hardFilterOrder: z.tuple([
+          z.literal("entry_selection"),
           z.literal("entry_kind"),
           z.literal("semantic_commitment"),
           z.literal("realization_form"),
@@ -387,6 +390,11 @@ export function resolveCatalogRequirements(input: {
     for (const candidate of input.snapshot.entries) {
       if (candidate.kind === "collection") continue;
       const reasons: string[] = [];
+      if (
+        requirement.allowedEntryHandles &&
+        !requirement.allowedEntryHandles.includes(candidate.handle)
+      )
+        reasons.push("entry_selection");
       if (!requirement.acceptedEntryKinds.includes(candidate.kind)) reasons.push("entry_kind");
       const distance = semanticAncestorDistance(
         input.semanticModule,
@@ -541,6 +549,7 @@ export function resolveCatalogRequirements(input: {
       rank: 0,
       explanation: {
         hardFilterOrder: [
+          "entry_selection",
           "entry_kind",
           "semantic_commitment",
           "realization_form",

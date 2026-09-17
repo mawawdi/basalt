@@ -2,6 +2,25 @@
 
 local LoadedAsset = {}
 
+-- Catalog realization is static. Do not inherit accidental physics state from
+-- a published package or allow geometry to fall apart when Play starts.
+function LoadedAsset.anchorGeometry(model: Model): ()
+	for _, descendant in ipairs(model:GetDescendants()) do
+		if descendant:IsA("BasePart") then descendant.Anchored = true end
+	end
+end
+
+function LoadedAsset.verifyAnchoredGeometry(model: Model): ()
+	local hasGeometry = false
+	for _, descendant in ipairs(model:GetDescendants()) do
+		if descendant:IsA("BasePart") then
+			hasGeometry = true
+			if not descendant.Anchored then error("catalog geometry is not anchored: " .. descendant:GetFullName()) end
+		end
+	end
+	if not hasGeometry then error("catalog model has no geometry: " .. model.Name) end
+end
+
 local function containsGeometry(instance: Instance): boolean
 	if instance:IsA("BasePart") then return true end
 	for _, descendant in ipairs(instance:GetDescendants()) do

@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_weathered_barrel",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000059",
+      "commitmentHash": "38cb87abe93b432c17336a68c6ad60e5bcc350dc751e40e5277ebfa1b6e00c65"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "42b6d6b44b947b450d18a36604c1c689d330edf1ef30ae66e049c4e8493d71bd"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "596bd3a79dfb7e228d01b1b22fa33cc563b149228b5a5ffc5f984c799393d042",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+    "e06c4822d9dd7af962e0e9ea27f3982cdaddae75dd233b7170f37b0b07c686eb"
+  ],
+  "members": [
+    {
+      "memberId": "source_36f1bfb477d1076b",
+      "assetHash": "596bd3a79dfb7e228d01b1b22fa33cc563b149228b5a5ffc5f984c799393d042",
+      "assertionBundleHash": "ffb7394e097a2707a3d3070171e6e622217abb9439c8789fd0bfe5de82db8746",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

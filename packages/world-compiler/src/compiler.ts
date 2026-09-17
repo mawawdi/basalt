@@ -673,6 +673,7 @@ function realizeIntent(
     let candidateCount = 0;
     let outsideRegionCount = 0;
     let occupancyConflictCount = 0;
+    let routeClearanceConflictCount = 0;
     for (const target of targets) {
       if (placed >= targetCount) break;
       const candidateIndex = candidateCount;
@@ -682,11 +683,33 @@ function realizeIntent(
         diagnostics.push(`intent:${intent.intentId}:entry has no realizable asset member`);
         break;
       }
+      const surfacePlaced =
+        intent.kind === "single" ||
+        intent.kind === "surface_scatter" ||
+        intent.kind === "cluster" ||
+        intent.kind === "surface_grid" ||
+        intent.kind === "along_route";
+      const position =
+        surfacePlaced &&
+        entry.placement.support === "ground" &&
+        entry.placement.contact === "bottom" &&
+        source.asset.support.primaryContact === "bottom"
+          ? {
+              ...target.position,
+              y:
+                target.position.y -
+                transformedBounds(
+                  source.asset,
+                  { x: 0, y: 0, z: 0 },
+                  target.rotation ?? yawQuaternion(contentHash(stableJson(intent))),
+                ).min.y,
+            }
+          : target.position;
       const instance = buildInstance(
         intent,
         entry,
         source,
-        target.position,
+        position,
         target.regionId,
         target.surfaceId,
         undefined,
@@ -696,6 +719,15 @@ function realizeIntent(
         assertInstanceInsideRegion(state.input.spatialPlan, instance);
       } catch {
         outsideRegionCount += 1;
+        continue;
+      }
+      if (
+        (intent.kind === "surface_scatter" ||
+          intent.kind === "cluster" ||
+          intent.kind === "surface_grid") &&
+        violatesGroundRouteClearance(state.foundation, instance)
+      ) {
+        routeClearanceConflictCount += 1;
         continue;
       }
       const reservation = reservationFor(instance, source.asset, separationForIntent(intent) / 2);
@@ -712,7 +744,7 @@ function realizeIntent(
       diagnostics.push(`intent:${intent.intentId}:has no valid spatial targets`);
     } else if (placed < minimum) {
       diagnostics.push(
-        `intent:${intent.intentId}:placed ${placed} of required ${minimum} after ${candidateCount} candidates (${outsideRegionCount} outside region, ${occupancyConflictCount} occupancy conflicts)`,
+        `intent:${intent.intentId}:placed ${placed} of required ${minimum} after ${candidateCount} candidates (${outsideRegionCount} outside region, ${occupancyConflictCount} occupancy conflicts, ${routeClearanceConflictCount} route clearance conflicts)`,
       );
     }
   } catch (error) {
@@ -720,6 +752,25 @@ function realizeIntent(
       `intent:${intent.intentId}:${error instanceof Error ? error.message : String(error)}`,
     );
   }
+}
+
+/** Ground population respects the authored route mask using its complete rotated footprint. */
+function violatesGroundRouteClearance(
+  foundation: CompiledWorldFoundation,
+  instance: RealizedInstance,
+): boolean {
+  const bounds = instance.boundsMeters;
+  return foundation.routeConstructions.some((route) => {
+    if (route.surfaceId !== instance.surfaceId || route.treatmentKind === "elevated") return false;
+    const margin = Math.max(0, route.vegetationMask.halfWidthMeters - route.widthMeters / 2);
+    return route.travelSegments.some(
+      ({ boundsMeters: travel }) =>
+        bounds.max.x > travel.min.x - margin &&
+        bounds.min.x < travel.max.x + margin &&
+        bounds.max.z > travel.min.z - margin &&
+        bounds.min.z < travel.max.z + margin,
+    );
+  });
 }
 
 function realizeRouteNetwork(
@@ -1666,6 +1717,16 @@ function targetsForIntent(
         },
         regionId: intent.regionId,
         surfaceId: intent.surfaceId,
+        ...(intent.yawDegrees === undefined
+          ? {}
+          : {
+              rotation: [
+                0,
+                Math.sin((intent.yawDegrees * Math.PI) / 360),
+                0,
+                Math.cos((intent.yawDegrees * Math.PI) / 360),
+              ] as [number, number, number, number],
+            }),
       },
     ];
   if (intent.kind === "wall_attachment") return [wallAttachmentTarget(state, intent)];
@@ -1948,13 +2009,20 @@ function transformedBounds(
   position: WorldVector3,
   rotation: readonly [number, number, number, number],
 ) {
-  const minimum = fixedVector(asset.bounds.min);
-  const maximum = fixedVector(asset.bounds.max);
-  const corners = [minimum.x, maximum.x].flatMap((x) =>
-    [minimum.y, maximum.y].flatMap((y) =>
-      [minimum.z, maximum.z].map((z) => add(position, rotate({ x, y, z }, rotation))),
-    ),
-  );
+  // Part bounds are measured in the canonical asset frame. Rotate each box
+  // before taking their union: rotating the aggregate AABB invents corners
+  // between separate parts and disagrees with engine bounds at oblique angles.
+  // Unpartitioned assets have only the aggregate measured box.
+  const boxes = asset.parts.length > 0 ? asset.parts.map((part) => part.bounds) : [asset.bounds];
+  const corners = boxes.flatMap((box) => {
+    const minimum = fixedVector(box.min);
+    const maximum = fixedVector(box.max);
+    return [minimum.x, maximum.x].flatMap((x) =>
+      [minimum.y, maximum.y].flatMap((y) =>
+        [minimum.z, maximum.z].map((z) => add(position, rotate({ x, y, z }, rotation))),
+      ),
+    );
+  });
   return {
     min: {
       x: Math.min(...corners.map((point) => point.x)),
@@ -2101,6 +2169,7 @@ function* scatterTargets(
       },
       regionId: intent.regionId,
       surfaceId: intent.surfaceId,
+      rotation: point.rotation,
     };
 }
 
@@ -2110,11 +2179,10 @@ function* clusterTargets(
   maximumAttempts: number,
   hash: string,
 ): Generator<Target> {
-  const firstPhase = Number.parseInt(hash.slice(0, 8), 16) / 0xffff_ffff;
-  const secondPhase = Number.parseInt(hash.slice(8, 16), 16) / 0xffff_ffff;
   for (let attempt = 0; attempt < maximumAttempts; attempt += 1) {
-    const radial = Math.sqrt(fractional(firstPhase + (attempt + 0.5) * 0.7548776662466927));
-    const angle = 2 * Math.PI * fractional(secondPhase + (attempt + 0.5) * 0.5698402909980532);
+    const sample = populationSample(hash, attempt);
+    const radial = Math.sqrt(sample.u);
+    const angle = 2 * Math.PI * sample.v;
     const x = intent.center.u + Math.cos(angle) * intent.radiusMeters * radial;
     const z = intent.center.v + Math.sin(angle) * intent.radiusMeters * radial;
     yield {
@@ -2125,6 +2193,7 @@ function* clusterTargets(
       },
       regionId: intent.regionId,
       surfaceId: intent.surfaceId,
+      rotation: sample.rotation,
     };
   }
 }
@@ -2133,19 +2202,27 @@ function* candidatePointsInPolygon(
   boundary: readonly { u: number; v: number }[],
   maximumAttempts: number,
   hash: string,
-): Generator<{ x: number; z: number }> {
+): Generator<{ x: number; z: number; rotation: [number, number, number, number] }> {
   const minX = Math.min(...boundary.map((point) => point.u));
   const maxX = Math.max(...boundary.map((point) => point.u));
   const minZ = Math.min(...boundary.map((point) => point.v));
   const maxZ = Math.max(...boundary.map((point) => point.v));
-  const firstPhase = Number.parseInt(hash.slice(0, 8), 16) / 0xffff_ffff;
-  const secondPhase = Number.parseInt(hash.slice(8, 16), 16) / 0xffff_ffff;
   for (let attempt = 0; attempt < maximumAttempts; attempt += 1) {
-    const u = fractional(firstPhase + (attempt + 0.5) * 0.7548776662466927);
-    const v = fractional(secondPhase + (attempt + 0.5) * 0.5698402909980532);
-    const candidate = { x: minX + u * (maxX - minX), z: minZ + v * (maxZ - minZ) };
+    const { u, v, rotation } = populationSample(hash, attempt);
+    const candidate = { x: minX + u * (maxX - minX), z: minZ + v * (maxZ - minZ), rotation };
     if (pointInIntentPolygon(candidate, boundary)) yield candidate;
   }
+}
+
+// Independent, reproducible coordinates avoid visible low-discrepancy bands. Rotation
+// belongs to each candidate, so occupancy is checked against the orientation we emit.
+function populationSample(seed: string, attempt: number) {
+  const hash = contentHash(`${seed}:${attempt}`);
+  return {
+    u: Number.parseInt(hash.slice(0, 8), 16) / 0x1_0000_0000,
+    v: Number.parseInt(hash.slice(8, 16), 16) / 0x1_0000_0000,
+    rotation: yawQuaternion(hash.slice(16)),
+  };
 }
 
 interface RouteFrame {
@@ -2198,10 +2275,6 @@ function offsetRoute(frame: RouteFrame, offset: number): WorldVector3 {
     y: frame.position.y,
     z: frame.position.z + (frame.tangent.x / length) * offset,
   };
-}
-
-function fractional(value: number): number {
-  return value - Math.floor(value);
 }
 
 function pointInIntentPolygon(

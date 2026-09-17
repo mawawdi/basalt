@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_stone_arch",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000012",
+      "commitmentHash": "0c42e1825af9a77cbae1bd3369676372a02ddc6d1278f0ee03d514bc4fc5667d"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "2a2b7db38c2aaece8c2b2c8e2fa7217800adb49080966ae66e25ceed45157551"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_38b4ad677ecdc81b",
+      "assetHash": "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+      "assertionBundleHash": "cdfadc1042c16c434daef0defdc7f7268411e8905754e9cfe5f08fa235ca90dc",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

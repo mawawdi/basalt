@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "38b4ad677ecdc81bae0215650056f2ad2be5aec19e6d3b246816bc57a46a72a7",
+  "assetHash": "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+  "renderEvidenceHash": "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9",
+  "assertionBundleHash": "cdfadc1042c16c434daef0defdc7f7268411e8905754e9cfe5f08fa235ca90dc",
+  "entryHandle": "rural_stone_arch",
+  "memberId": "source_38b4ad677ecdc81b",
+  "entryDeclarationHash": "0e049f7634c756efb4da69158c83ef4dcc24f201c9e4fd81fefb156f0a7ae5b8",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0",
+        "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "4c5ecee57e3170ac3b97a4bc3f5f0edd40691d7db87fdfb91d91d410ee902cda"
+}

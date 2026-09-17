@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "ed1f95afed4b4d163c675d2fb0f17f553be096a8c58a36a03e7a66ec38f80d57",
+  "assetHash": "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+  "renderEvidenceHash": "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+  "assertionBundleHash": "cbc3da1bb289108d54ca83fbfd5235317adc224063a6f196b7c022dcf700c8e5",
+  "entryHandle": "rural_trimmed_hedge",
+  "memberId": "source_ed1f95afed4b4d16",
+  "entryDeclarationHash": "14c3ebb62d3f6ddafd8a678be5306c8ca4b5416b849ed2715b6762dbf82bef45",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "2a3a4300539778d0272f543ab27894ba9c04d55aef64d2a2af58e6f93fd235a0",
+        "93d49652da6639e1b010dd79eafbfb114852fadf8af1ac829bc9f3274e6d3c21",
+        "c04e5cbc5bfa22a19cb7a52ff93c200a49b844846623d7d002dbf1720e2d9eec"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "8e3d70039f4afcff7ddc6b0e275af9aae749c987631d3b214726e1d558628d7a"
+}

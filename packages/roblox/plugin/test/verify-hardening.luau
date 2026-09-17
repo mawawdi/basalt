@@ -3,6 +3,7 @@ local ImportSequence = require("../src/Basalt/ImportSequence")
 local BoundedQuery = require("../src/Basalt/BoundedQuery")
 local Constants = require("../src/Basalt/Constants")
 local LoadedAsset = require("../src/Basalt/LoadedAsset")
+local AssetBindingCapture = require("../src/Basalt/AssetBindingCapture")
 local ModelBounds = require("../src/Basalt/ModelBounds")
 local RouteCoordination = require("../src/Basalt/RouteCoordination")
 local RouteGeometry = require("../src/Basalt/RouteGeometry")
@@ -127,6 +128,31 @@ check("model bounds are world-axis-aligned independently of the model pivot", fu
 	assert((size - Roblox.Vector3.new(6, 4, 2)).Magnitude < 0.000001)
 end)
 
+check("multipart oblique bounds match the compiler wind pump declaration", function()
+	-- Measured canonical boxes, in meters, for the rotor, tail, and tower.
+	local measured = {
+		{ {-8173092026, 32881402759, 396250308}, {8004403021, 49093698077, 5480526521} },
+		{ {-1542173440, 37958868992, -15252494336}, {1238420608, 43872575488, 396250304} },
+		{ {-4509715456, -214748352, -4509715456}, {4509715456, 40016437248, 4509715456} },
+	}
+	local placement = Roblox.CFrame.new(85, 6.049999997019768, 66)
+		* Roblox.CFrame.Angles(0, math.rad(20), 0)
+	local boxes = {}
+	for _, bounds in ipairs(measured) do
+		local minimum = Roblox.Vector3.new(bounds[1][1], bounds[1][2], bounds[1][3]) / 4294967296
+		local maximum = Roblox.Vector3.new(bounds[2][1], bounds[2][2], bounds[2][3]) / 4294967296
+		table.insert(boxes, {
+			cframe = placement * Roblox.CFrame.new((minimum + maximum) / 2),
+			size = maximum - minimum,
+		})
+	end
+	local center, size = ModelBounds.worldAabbForBoxes(boxes, function(x: number, y: number, z: number): any
+		return Roblox.Vector3.new(x, y, z)
+	end)
+	assert((size - Roblox.Vector3.new(3.9443368086460993, 11.48051731963642, 5.285626651233812)).Magnitude < 0.0001)
+	assert((center - Roblox.Vector3.new(85.21553833970582, 11.74025865981821, 65.2071128527154)).Magnitude < 0.0001)
+end)
+
 check("loaded model assets unwrap their transport container", function()
 	local wrapper = Roblox.Instance.new("Model")
 	local packageModel = Roblox.Instance.new("Model")
@@ -168,6 +194,57 @@ check("loaded model assets reject geometry outside the package root", function()
 	local ok, message = pcall(function() LoadedAsset.unwrap(wrapper) end)
 	assert(not ok)
 	assert(string.find(tostring(message), "geometry outside", 1, true) ~= nil)
+end)
+
+check("asset observation preserves duplicate-name paths and exact texture properties", function()
+	local model = Roblox.Instance.new("Model")
+	local folder = Roblox.Instance.new("Folder")
+	folder.Name = "Geometry"
+	folder.Parent = model
+	for index = 1, 2 do
+		local part = Roblox.Instance.new("MeshPart")
+		part.Name = "Mesh"
+		part.Material = Roblox.Enum.Material.Plastic
+		part.Color = Roblox.Color3.fromRGB(81, 121, 63)
+		part.Transparency = 0.1
+		part.Reflectance = 0
+		part.TextureID = "rbxassetid://" .. tostring(index)
+		part.Parent = folder
+	end
+	local captured = AssetBindingCapture.inspectModel(model)
+	assert(#captured == 2)
+	for index, item in ipairs(captured) do
+		assert(#item.partPath == 2 and item.partPath[1].name == "Geometry")
+		assert(item.partPath[2].name == "Mesh" and item.partPath[2].siblingOrdinal == index - 1)
+		assert(item.meshTextureId == "rbxassetid://" .. tostring(index))
+		assert(item.color.red == 81 and item.color.green == 121 and item.color.blue == 63)
+	end
+	local executable = Roblox.Instance.new("Script")
+	executable.Parent = model
+	local ok = pcall(function() AssetBindingCapture.inspectModel(model) end)
+	assert(not ok)
+	model:Destroy()
+end)
+
+check("static catalog placement anchors every part and readback rejects physics drift", function()
+	local model = Roblox.Instance.new("Model")
+	local nested = Roblox.Instance.new("Model")
+	nested.Parent = model
+	local first = Roblox.Instance.new("Part")
+	first.Anchored = false
+	first.CanCollide = false
+	first.Parent = model
+	local second = Roblox.Instance.new("MeshPart")
+	second.Anchored = false
+	second.CanCollide = true
+	second.Parent = nested
+	LoadedAsset.anchorGeometry(model)
+	LoadedAsset.verifyAnchoredGeometry(model)
+	assert(first.Anchored and second.Anchored)
+	assert(not first.CanCollide and second.CanCollide)
+	second.Anchored = false
+	assert(not pcall(function() LoadedAsset.verifyAnchoredGeometry(model) end))
+	model:Destroy()
 end)
 
 check("skewed route quads lower through an orthonormal frame", function()
@@ -332,6 +409,100 @@ check("route junction coordination retains a hard divergence bound", function()
 	end)
 	assert(not ok)
 	assert(string.find(tostring(message), "after 4 monotone passes", 1, true) ~= nil)
+end)
+
+check("junction passes retain interior corrections instead of repeatedly lifting the endpoint", function()
+	local calls = 0
+	local result = RouteCoordination.resolve(
+		{ { routeId = "InteriorDip" } },
+		{ { junctionId = "Shared", participants = { { routeId = "InteriorDip", endpoint = "start" } } } },
+		{ Shared = 0 },
+		function(_route: any, overrides: any, previous: any): any
+			calls += 1
+			if previous then assert(table.isfrozen(previous)) end
+			local seed = RouteGrounding.seedStations({ 0, 0, 0 }, previous, overrides, 2, "InteriorDip")
+			-- The footprint bottleneck is at an interior station. Lifting both
+			-- ends of that span is valid, but forgetting the interior lift on the
+			-- next junction pass repeats the same correction forever.
+			local stations = RouteGrounding.conformStations(seed,
+				function(index: number, start: number, finish: number): number
+					return if index == 1 then finish - 0.00005 else math.min(start, finish)
+				end, 0, 2, 8, "InteriorDip")
+			return { stationAdjustments = stations, acceptedCall = calls }
+		end,
+		16,
+		0.0001
+	)
+	assert(result.iterations == 2)
+	assert(result.junctionAdjustments.Shared == 0.0001)
+	assert(result.routeResolutions.InteriorDip.stationAdjustments[2] == 0.00005)
+	assert(result.routeResolutions.InteriorDip.acceptedCall == calls)
+end)
+
+check("carried route corrections and junction overrides retain the physical residual bound", function()
+	local initial = { 0.1, 0.2, 0.3 }
+	local previous = { 0.2, 0.4, 0.3 }
+	local seed = RouteGrounding.seedStations(initial, previous, { start = 0.5, finish = 0.6 }, 2, "Bounded")
+	assert(seed[1] == 0.5 and seed[2] == 0.4 and seed[3] == 0.6)
+	assert(initial[1] == 0.1 and previous[2] == 0.4)
+	for _, bad in ipairs({ 2.0001, math.huge, 0 / 0 }) do
+		assert(not pcall(function()
+			RouteGrounding.seedStations(initial, previous, { start = bad }, 2, "Bounded")
+		end))
+	end
+	assert(not pcall(function()
+		RouteGrounding.seedStations(initial, { 0, 2.0001, 0 }, nil, 2, "Bounded")
+	end))
+	assert(not pcall(function()
+		RouteGrounding.conformStations({ 0, 0 }, function(): number return -3 end, 0, 2, 8, "Bounded")
+	end))
+	assert(not pcall(function()
+		RouteGrounding.conformStations({ 0, 0 }, function(): number return 0 / 0 end, 0, 2, 8, "Bounded")
+	end))
+end)
+
+check("route correction remains stable with float32 heights and a four-way junction", function()
+	local routes = {}
+	local participants = {}
+	for index = 1, 4 do
+		local id = "Branch" .. tostring(index)
+		table.insert(routes, { routeId = id, terrainY = 32 + index * 0.02 })
+		table.insert(participants, { routeId = id, endpoint = if index % 2 == 0 then "start" else "end" })
+	end
+	local target = 0.08 / Constants.STUD_METERS + Constants.TERRAIN_CONFORMANCE_MARGIN_STUDS
+	local result = RouteCoordination.resolve(routes, { { junctionId = "Cross", participants = participants } },
+		{ Cross = 0 },
+		function(route: any, overrides: any, previous: any): any
+			local seed = RouteGrounding.seedStations({ 0, 0, 0 }, previous, overrides, 2, route.routeId)
+			local stations = RouteGrounding.conformStations(seed,
+				function(_index: number, start: number, finish: number): number
+					local first = Roblox.Vector3.new(200, 32 + start, 210).Y
+					local last = Roblox.Vector3.new(200, 32 + finish, 212).Y
+					return math.min(first, last) - route.terrainY
+				end, target, 2, 8, route.routeId)
+			return { stationAdjustments = stations }
+		end, 16, 0.0001)
+	assert(result.iterations <= 4)
+	for index, route in ipairs(routes) do
+		local stations = result.routeResolutions[route.routeId].stationAdjustments
+		assert(stations[if index % 2 == 0 then 1 else #stations] == result.junctionAdjustments.Cross)
+		for _, adjustment in ipairs(stations) do
+			assert(Roblox.Vector3.new(0, 32 + adjustment, 0).Y - route.terrainY >= target - 0.00001)
+		end
+	end
+end)
+
+check("junction coordination rejects a solver that forgets a prior station correction", function()
+	local calls = 0
+	local ok, message = pcall(function()
+		RouteCoordination.resolve({ { routeId = "Regressing" } },
+			{ { junctionId = "Shared", participants = { { routeId = "Regressing", endpoint = "start" } } } },
+			{ Shared = 0 }, function(_route: any, overrides: any): any
+				calls += 1
+				return { stationAdjustments = { if overrides then overrides.start else 0.01, if calls == 1 then 1 else 0, 0 } }
+			end, 16, 0.0001)
+	end)
+	assert(not ok and string.find(tostring(message), "not monotone", 1, true) ~= nil)
 end)
 
 check("profile miters preserve their sealed sloped extension", function()

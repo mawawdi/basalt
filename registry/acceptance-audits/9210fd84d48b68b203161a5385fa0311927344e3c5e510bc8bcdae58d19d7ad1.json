@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "9210fd84d48b68b203161a5385fa0311927344e3c5e510bc8bcdae58d19d7ad1",
+  "assetHash": "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+  "renderEvidenceHash": "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee",
+  "assertionBundleHash": "8b3d9a885642706d21b1240f78953460c9399889d1397ff55e77e65a67ab1874",
+  "entryHandle": "rural_tall_canopy_tree",
+  "memberId": "source_9210fd84d48b68b2",
+  "entryDeclarationHash": "91de531177b6b573e6ff1d666d4eccfea7cec76382f46d6b859823092bda4f93",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+        "adda107c920605805f8a2c581bfbf6a2d1ccf9f5b15d3317b8047ec6e52aa8d4",
+        "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Preserve the measured 18.7-meter height and complete crown footprint."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "65bb527c10a1f7da9397973c2f7a5a4524487815af693d8d60b767da84756364"
+}

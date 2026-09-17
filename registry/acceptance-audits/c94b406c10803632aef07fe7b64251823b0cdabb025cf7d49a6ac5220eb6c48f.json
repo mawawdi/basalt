@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "c94b406c10803632aef07fe7b64251823b0cdabb025cf7d49a6ac5220eb6c48f",
+  "assetHash": "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+  "renderEvidenceHash": "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+  "assertionBundleHash": "b689894c5cb9f6be9b6f6e90df04dbfcf8e926739a6866de5f14fcd42c63c2d5",
+  "entryHandle": "rural_garden_hedge",
+  "memberId": "source_c94b406c10803632",
+  "entryDeclarationHash": "98a85c005472b6b5303e453e17535f098e92ad5517d1569eada9b2c8b494d5ce",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "326a8a5504b7fa99b3bc75bc6fc5008f8b528bd19cce9dd39bc3943f6da6a202",
+        "960b18125e8c09824223107d251e59a885ae0e33d243cd3a25e6dfb65f5aa064",
+        "c2519995304f31466822c4a277ab11f41482513d07839a9a05be48e6fe3d6ffc"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. One bounded planting unit; exact measured size controls placement."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "cc309a37d036767e7c12d7b2b5aac26c7eba0ddde0cdf1ea77542126c9302bf7"
+}

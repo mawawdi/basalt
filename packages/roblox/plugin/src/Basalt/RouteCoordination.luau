@@ -43,7 +43,7 @@ function RouteCoordination.resolve(
 	routes: { any },
 	junctions: { any },
 	initialJunctionAdjustments: { [string]: number },
-	resolveRoute: (any, any) -> any,
+	resolveRoute: (any, any, any) -> any,
 	maximumIterations: number,
 	quantumStuds: number
 ): any
@@ -62,15 +62,30 @@ function RouteCoordination.resolve(
 	end
 
 	local overrideTicks: { [string]: any } = {}
+	local previousStations: { [string]: { number } } = {}
 	local lastChangedJunction = "none"
 	local lastIncreaseTicks = 0
 	for iteration = 1, maximumIterations do
 		local resolutions: { [string]: any } = {}
 		for _, route in ipairs(routes) do
-			resolutions[route.routeId] = resolveRoute(
+			local previous = previousStations[route.routeId]
+			local resolution = resolveRoute(
 				route,
-				studOverrides(overrideTicks[route.routeId], quantumStuds)
+				studOverrides(overrideTicks[route.routeId], quantumStuds),
+				if previous then table.freeze(table.clone(previous)) else nil
 			)
+			local stations = resolution.stationAdjustments
+			if typeof(stations) ~= "table" or #stations < 2 or (previous and #previous ~= #stations) then
+				error("route correction station count changed: " .. route.routeId)
+			end
+			for index, adjustment in ipairs(stations) do
+				correctionTicks(adjustment, quantumStuds, "route station correction " .. route.routeId)
+				if adjustment < 0 or (previous and adjustment < previous[index]) then
+					error("route station correction is not monotone: " .. route.routeId)
+				end
+			end
+			previousStations[route.routeId] = table.clone(stations)
+			resolutions[route.routeId] = resolution
 		end
 
 		local changed = false
@@ -126,6 +141,7 @@ function RouteCoordination.resolve(
 			return {
 				junctionAdjustments = studAdjustments(junctionTicks, quantumStuds),
 				routeOverrides = routeStudOverrides(overrideTicks, quantumStuds),
+				routeResolutions = resolutions,
 				iterations = iteration,
 			}
 		end

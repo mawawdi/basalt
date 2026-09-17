@@ -93,6 +93,148 @@ function interpolate(
   };
 }
 
+test("scatter and cluster rotate candidates independently while preserving bounds and replay", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
+  const { kind: _kind, coordinateSystem: _coordinates, planHash: _hash, ...body } = fixture.plan;
+  for (const placement of [
+    { kind: "cluster" as const, center: { u: 10, v: 11 }, radiusMeters: 6 },
+    {
+      kind: "surface_scatter" as const,
+      boundary: [
+        { u: 4, v: 5 },
+        { u: 16, v: 5 },
+        { u: 16, v: 17 },
+        { u: 4, v: 17 },
+      ],
+    },
+  ]) {
+    const spatialPlan = sealSpatialWorldPlan({
+      ...body,
+      realizationIntents: [
+        {
+          ...placement,
+          intentId: "PlantGroup",
+          requirementId: fixture.requirement.requirementId,
+          priority: 10,
+          regionId: "MainRegion",
+          surfaceId: "GroundSurface",
+          minimumCount: 6,
+          targetCount: 6,
+          minimumSeparationMeters: 0.1,
+        },
+      ],
+    });
+    const input = {
+      semanticModule: module,
+      catalogSnapshot: fixture.snapshot,
+      catalogAssets: [fixture.asset],
+      spatialPlan,
+    };
+    const world = compileBasaltWorld(input);
+    assert.equal(world.status, "eligible", world.diagnostics.join("; "));
+    assert.equal(world.instances.length, 6);
+    assert.equal(
+      new Set(world.instances.map((item) => JSON.stringify(item.transformMeters.rotation))).size,
+      6,
+    );
+    assert.equal(compileBasaltWorld(input).worldBuildHash, world.worldBuildHash);
+    for (const instance of world.instances) {
+      const { x, z } = instance.transformMeters.position;
+      if (placement.kind === "cluster") assert.ok(Math.hypot(x - 10, z - 11) <= 6);
+      else assert.ok(x >= 4 && x <= 16 && z >= 5 && z <= 17);
+      assert.ok(instance.boundsMeters.min.x >= 0 && instance.boundsMeters.max.x <= 20);
+      assert.ok(instance.boundsMeters.min.z >= 0 && instance.boundsMeters.max.z <= 20);
+    }
+  }
+});
+
+test("ground population keeps full footprints outside route clearance and reports blocked grids", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
+  const { kind: _kind, coordinateSystem: _coordinates, planHash: _hash, ...body } = fixture.plan;
+  const common = {
+    intentId: "PathsidePlants",
+    requirementId: fixture.requirement.requirementId,
+    priority: 10,
+    regionId: "MainRegion",
+    surfaceId: "GroundSurface",
+  };
+  const compile = (spatialPlan: typeof fixture.plan) =>
+    compileBasaltWorld({
+      semanticModule: module,
+      catalogSnapshot: fixture.snapshot,
+      catalogAssets: [fixture.asset],
+      spatialPlan,
+    });
+  const planted = compile(
+    sealSpatialWorldPlan({
+      ...body,
+      realizationIntents: [
+        {
+          ...common,
+          kind: "cluster",
+          center: { u: 10, v: 4 },
+          radiusMeters: 3,
+          minimumCount: 6,
+          targetCount: 6,
+          minimumSeparationMeters: 0.1,
+        },
+      ],
+    }),
+  );
+  assert.equal(planted.status, "eligible", planted.diagnostics.join("; "));
+  assert.equal(planted.instances.length, 6);
+  for (const instance of planted.instances) assert.ok(instance.boundsMeters.min.z >= 2.5);
+  const blocked = compile(
+    sealSpatialWorldPlan({
+      ...body,
+      realizationIntents: [
+        {
+          ...common,
+          kind: "surface_grid",
+          origin: { u: 10, v: 2.8 },
+          columns: 1,
+          rows: 1,
+          spacingUMeters: 1,
+          spacingVMeters: 1,
+        },
+      ],
+    }),
+  );
+  assert.equal(blocked.status, "incomplete");
+  assert.equal(blocked.instances.length, 0);
+  assert.ok(
+    blocked.micro.diagnostics.some((entry) => entry.includes("1 route clearance conflicts")),
+  );
+});
+
+test("ground placement aligns measured bottoms for sources whose pivots lie above or below the mesh", async () => {
+  const module = await loadSemanticRegistry();
+  for (const verticalOffset of [-1.75, 3.25]) {
+    const fixture = await worldFixture(module, verticalOffset);
+    const world = compileBasaltWorld({
+      semanticModule: module,
+      catalogSnapshot: fixture.snapshot,
+      catalogAssets: [fixture.asset],
+      spatialPlan: fixture.plan,
+    });
+    assert.equal(world.status, "eligible", world.diagnostics.join("; "));
+    const instance = world.instances[0]!;
+    const ground = sampleTerrainFieldElevation(
+      world.foundation.terrainFields[0]!,
+      world.foundation.baseTerrainFields[0]!,
+      world.foundation.routeConstructions,
+      world.foundation.routeJunctions,
+      instance.transformMeters.position.x,
+      instance.transformMeters.position.z,
+    );
+    assert.ok(Math.abs(instance.boundsMeters.min.y - ground) < 1e-9);
+    assert.ok(Math.abs(instance.boundsMeters.max.y - ground - 2) < 1e-9);
+    assert.ok(Math.abs(instance.transformMeters.position.y - ground + verticalOffset) < 1e-9);
+  }
+});
+
 test("compilation task identity names inputs while result hashes include outcomes", () => {
   const input = {
     subjectId: "MainRegion",

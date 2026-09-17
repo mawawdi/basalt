@@ -1,0 +1,1703 @@
+{
+  "kind": "CatalogCreatorReviewPacket",
+  "batchId": "harvest-valley-catalog",
+  "purpose": "outdoor_catalog_admission",
+  "sourceManifestHash": "f02d6e296e1f36cc73f87ad3e0f074af1e5ad8041e12d8d99931c207684b5a4c",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "proposedStyleProfile": {
+    "handle": "stylized_rural_highlands",
+    "shapeLanguage": "Readable stylized rural silhouettes: faceted vegetation and rocks, timber farm buildings, pitched shingle roofs and simple agricultural props.",
+    "silhouetteHierarchy": [
+      {
+        "level": "primary",
+        "guidance": "Keep trunks, canopies, rock masses, and groundcover clusters readable at world scale."
+      },
+      {
+        "level": "secondary",
+        "guidance": "Preserve the few large angular breaks that distinguish variants without adding fine noise."
+      }
+    ],
+    "detailScale": [
+      {
+        "level": "asset",
+        "guidance": "Use broad color blocks and authored facets; avoid microdetail that competes with the silhouette."
+      }
+    ],
+    "edgeTreatment": "Retain authored hard-edged low-poly facets and clean silhouette transitions.",
+    "materialLanguage": "Authored matte earth, straw, timber, muted red paint and weathered white walls with slate-gray roofs; preserve source texture and vertex colors.",
+    "texelDensity": {
+      "minimumPixelsPerMeter": 4,
+      "targetPixelsPerMeter": 64,
+      "maximumPixelsPerMeter": 1024
+    },
+    "surfaceVariation": {
+      "scaleMeters": 2,
+      "intensity": 0,
+      "guidance": "Retain authored color variation; add no compiler-authored mottling."
+    },
+    "wearPolicy": {
+      "amount": 0,
+      "placement": "Retain source wear only.",
+      "exclusions": [
+        "Do not add edge wear or dirt during catalog realization."
+      ]
+    },
+    "lightingIntent": "Read as matte stylized outdoor forms under world-level lighting.",
+    "antiGoals": [
+      "Do not infer interchangeability from the shared visual family.",
+      "Do not smooth away the authored faceted silhouette.",
+      "Do not replace authored materials with photorealistic textures."
+    ],
+    "palette": [
+      {
+        "id": "bark_brown",
+        "name": "Bark brown",
+        "color": "#6A4A2F",
+        "metallic": 0,
+        "roughness": 0.85
+      },
+      {
+        "id": "foliage_green",
+        "name": "Foliage green",
+        "color": "#667A32",
+        "metallic": 0,
+        "roughness": 0.85
+      },
+      {
+        "id": "rock_gray",
+        "name": "Rock gray",
+        "color": "#77766F",
+        "metallic": 0,
+        "roughness": 0.9
+      },
+      {
+        "id": "barn_red",
+        "name": "Muted barn red",
+        "color": "#914634",
+        "metallic": 0,
+        "roughness": 0.9
+      },
+      {
+        "id": "straw_gold",
+        "name": "Dry straw",
+        "color": "#B9A26B",
+        "metallic": 0,
+        "roughness": 0.9
+      },
+      {
+        "id": "warm_white",
+        "name": "Weathered white",
+        "color": "#CDC9BA",
+        "metallic": 0,
+        "roughness": 0.85
+      }
+    ]
+  },
+  "selectionRationale": "Eighteen visually inspected singleton entries selected for a coherent rural valley: complete exterior farm buildings, agricultural landmarks, market and campsite props, rock formation and flowering groundcover. Source names were discovery hints; visual and measured evidence decide admission.",
+  "reviewProcedure": [
+    "Inspect canonical multiview RGB evidence and measured scale, source integrity, materials, bottom contact and part structure.",
+    "Preserve every selected source as a singleton; no folder- or name-based substitution grouping.",
+    "Keep interior traversal, interaction, light emission and engine behavior unasserted. The creator performs final Studio inspection.",
+    "This is an explicit user-delegated authoring decision, not independent human review or automated corpus qualification."
+  ],
+  "candidates": [
+    {
+      "sourceContentHash": "03a76159fc1c5a78e1294dde5f907e3e5fc16e57a00e0cad13219b87258004a7",
+      "sourceRelativePath": "registry/source-assets/sha256/03/a7/03a76159fc1c5a78e1294dde5f907e3e5fc16e57a00e0cad13219b87258004a7.glb",
+      "assetId": "asset_03a76159fc1c5a78e1294dde5f907e3e",
+      "assetHash": "be483686caff4368b33a46dbecbc5e61b7e24527be3d15b676a8f4f1e5a97b7b",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "174d6c5862183f0f804400d18b76a19e4e20d1712e6c557971ed7eb1e4ec6c8c"
+      },
+      "evidence": {
+        "measurementHash": "be483686caff4368b33a46dbecbc5e61b7e24527be3d15b676a8f4f1e5a97b7b",
+        "renderEvidenceHash": "9e20f5654c19220af5335d3bc8bff3ed2a185c5d6b33339ec3c714313d975d2a",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/03a76159fc1c5a78e1294dde5f907e3e5fc16e57a00e0cad13219b87258004a7/contact-sheet.png",
+        "rgbViewHashes": [
+          "22a1cf5e3dd658f2891ca9335646a85da453bda9e94216f5959d29c172f64c71",
+          "23f2bd9c70b0e71ef3a1ef01429ae66d6df12bc1eac358ae10db011adc413b04",
+          "4033e0a1ba6660c391fa17bf8208a0d590a9e630bac039ec4664a3c1a3f7d6df",
+          "44b4453d30eb3b439467361086f8215ab57b25b49ee7824c79c739e83390f491",
+          "7d6ff257cef657a874c46d4f41fbc404bdddfae60607086c9f0fb837fa82db11",
+          "84a2360cab8dade71ea1ab8691c61813a9378e26333dbe39aa582cc8537cdd1c",
+          "957589548bd28720d650e88060e808dc8d3bd80c66ab5b73205bda2088546f99",
+          "b266ad9457ff9c625620f2190f3c3124acddc041b762ad83a6bc83c35eb998a2",
+          "c45d56aa8fd864b65f293fe0dcacbf6e958f3f03ae1dd112c2f52c13ed574543",
+          "cb06411d5fe2af44abef37faea987352a2fb5006733b170ed51f2d458a231971",
+          "ed9d3dede7965aa8e3f9dc0a927312808205918b7e32cc0aa5f202331f325b72",
+          "eecc22010691eb79d6dd792219d8631f089768ebfeb007f8659a315d3423069c"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 0.4179859161376953,
+          "y": 0.8210020065307617,
+          "z": 0.5767905712127686
+        },
+        "triangleCount": 294,
+        "sourceBytes": 151564,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "emissive",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_mushrooms",
+        "memberId": "source_03a76159fc1c5a78",
+        "denotation": {
+          "conceptId": "bsc_000008",
+          "commitmentHash": "93baf2f0a86c46be5884a104f3bf3acc7e766dcb9ad7e8c60b083d6a836f7bdb"
+        },
+        "realizationForm": "aggregate",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "0431d44485b9d89b0434b2ec76fecded7804594a133782246d75d7ad9525761f",
+      "sourceRelativePath": "registry/source-assets/sha256/04/31/0431d44485b9d89b0434b2ec76fecded7804594a133782246d75d7ad9525761f.glb",
+      "assetId": "asset_0431d44485b9d89b0434b2ec76fecded",
+      "assetHash": "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2"
+      },
+      "evidence": {
+        "measurementHash": "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "renderEvidenceHash": "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/0431d44485b9d89b0434b2ec76fecded7804594a133782246d75d7ad9525761f/contact-sheet.png",
+        "rgbViewHashes": [
+          "00acd41b08688957a48c4db8fcdf4e21ba3003a0ba02702b311f5d4a54888f5f",
+          "2d7f40898cf3de5ba5981a9d26d2a3db158ae03185b16c0a52842d264e435d14",
+          "38b79be2c9303d99040b49ac95a72f4e2a1316f69802334112cce223ba18c806",
+          "49078f0054a83fe7030bceff1716f26e93e2fcb55cc1e1a3bceac494b2a9f2a7",
+          "4d9f1a8707d349c5233f5f9d10aca0cef70f34ed79c790b6c9d73379be678b24",
+          "4dd2c8b1cda792c75415109e500a9745664220f7f0e341a825c0775a6fdcf90a",
+          "9806b364d6e44ac83b08536dac473f1c437f9f36e4c9a003f38c944a184812dd",
+          "ac866267b3abb301a913a354c49c57bb420b9faa3b0368f65ce5dbe7c8d63abc",
+          "aef3c55299c847663ccd6713ce748a84955de75af900ddc93ea55e57eb6f1edf",
+          "b7824eb3863130c7b265b09e65974f0dbe66f4ee74ee9f107f80017cb164a066",
+          "b81fbc7fac8aa1dcbb57c9a1c97e01671f7dcfe06f482e0beb08026da33c3367",
+          "c9af91e13d6d4f66e9019528e07a54f240ebdad3d43fa7deead926723a5754a4"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 1.668048083782196,
+          "y": 1.7996962070465088,
+          "z": 3.1524314880371094
+        },
+        "triangleCount": 5710,
+        "sourceBytes": 469948,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_harvest_cart",
+        "memberId": "source_0431d44485b9d89b",
+        "denotation": {
+          "conceptId": "bsc_000075",
+          "commitmentHash": "852d8aac2a0634c386e6b5e058b28271c21d5c5bc468b7197a5c685e3cee6023"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "0a99d060545f16be538f852d3d496f852896da99240d3eedecf5614980b068ea",
+      "sourceRelativePath": "registry/source-assets/sha256/0a/99/0a99d060545f16be538f852d3d496f852896da99240d3eedecf5614980b068ea.glb",
+      "assetId": "asset_0a99d060545f16be538f852d3d496f85",
+      "assetHash": "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130"
+      },
+      "evidence": {
+        "measurementHash": "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2",
+        "renderEvidenceHash": "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/0a99d060545f16be538f852d3d496f852896da99240d3eedecf5614980b068ea/contact-sheet.png",
+        "rgbViewHashes": [
+          "0466a03b5f367542ab9deac7246f41973a48855b733331c3dc93f15436ea07c3",
+          "35fa8080eb1d93a2125d42049dd13a1939eebc91cac6c67df5f26acc626cd737",
+          "38de64af5f13a9cb45097480827ff92d4f91de5f6b7b95a43ebe4df5214b093d",
+          "7d9b1cc65081c63e9d2af583b3b87a5d4fdaa817107e1a75b920c945e8ea85d9",
+          "83743e838f71140f28ab9f6eaf3e7f64e8feed1534e92881d9ff9fdd7161e618",
+          "8ba6df821ccbf79c793a9f7ed5aa4898353105dd6acd47f45a312b0ac612e8a7",
+          "8e623e388c52c3023f5500f4e123de6889fa0374552058a8145d0fd4d85f2ffa",
+          "8ec3fadafcc585c9f3bb348e83a6fe6b44199e243a9bd8e652c1e61ccc954d74",
+          "91fec054bb9c0ba1ef3d5e5e672cb75864389c95b576989378b3c066e8951cfc",
+          "a92938c4e60c7bbc449fe4ab32e0038a057006858fe6d5a5fb3c68e63ee8d272",
+          "bf193fa508a2b42fb002cee19d0486a11d5df3bb02098518537df951eaf43b18",
+          "d637238e6b7ddd79db16d70672ed1e6f20505d43c35c5e38310c1bd990e218b3"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 2.9988012313842773,
+          "y": 2.9655559360980988,
+          "z": 2.985271453857422
+        },
+        "triangleCount": 6971,
+        "sourceBytes": 512224,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0.10066347848623991,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 2
+      },
+      "proposal": {
+        "entryHandle": "rural_market_stall",
+        "memberId": "source_0a99d060545f16be",
+        "denotation": {
+          "conceptId": "bsc_000021",
+          "commitmentHash": "fa836e5762c547d60f6b40ed535230276615e2bfe536b310f2c2e2b5d9933013"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "0b98e70256ac9a8da9be169d5112f6bc0f11f44f5614be292ecbb3b048249547",
+      "sourceRelativePath": "registry/source-assets/sha256/0b/98/0b98e70256ac9a8da9be169d5112f6bc0f11f44f5614be292ecbb3b048249547.glb",
+      "assetId": "asset_0b98e70256ac9a8da9be169d5112f6bc",
+      "assetHash": "914b8bacfb4f0c3b7d7420982008ace91d1e5be6e1ee0dd2533057222b771aaa",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "5e85997062ca360ae16d4fc81c4ccf2483021e0a339a9092875622e2bd302f62"
+      },
+      "evidence": {
+        "measurementHash": "914b8bacfb4f0c3b7d7420982008ace91d1e5be6e1ee0dd2533057222b771aaa",
+        "renderEvidenceHash": "8e535c6c04934b8e6e2d8a71c2624e74809374ece4f130985ff642ef265143ab",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/0b98e70256ac9a8da9be169d5112f6bc0f11f44f5614be292ecbb3b048249547/contact-sheet.png",
+        "rgbViewHashes": [
+          "099716f1bcb56727e1c300dec0764de28a611f5c1b6858fd74090daa3efb16af",
+          "0b47ef8ffed51bf15e3c96f71ca4f6eb4bc13802f659b5432ce457bb5a8222cb",
+          "2d460b292279d3b084933f7aa92bb274ee8ea33694d58e7e6e6ea3ce3e123e0a",
+          "453551a65b3222a375e72f14fc120a89d798e624b240377271d413150e730aeb",
+          "56bcc94ea295f5ddb032ba6f234401f53254036461a979ea9ea359b39f3ca914",
+          "630e82c26847204e0ded6db759632404089d04a161f1f738e81f77b3be0776cf",
+          "69a9ce9d327f0a6b11ed6e7f1554efa721e3c0a5f713e05ef355c48ae5fe0bd2",
+          "7ef2d911bfab8617c7bc8b5bd9fb4e85a6339ecfb0643e004222dd8eb0b13c59",
+          "c6d3ba029bf3956e5bfbf29429ba49864107bb4f23c1d2e357136e68d6de2eed",
+          "eeae2f85de7b248ae9c80704f1a89ed4ae5be3ebca516cf5cde8854cf9675730",
+          "eee46cd94e7f7d3cbda67f88a00245e75503558ac266a395a406e9d814495714",
+          "f77073920d6a4f33b87902084055a2ea473e2d54a675fd0959fe7477aea29c91"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 0.5423387289047241,
+          "y": 1.5740951299667358,
+          "z": 0.5288298726081848
+        },
+        "triangleCount": 155,
+        "sourceBytes": 186564,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "emissive",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_sunflower",
+        "memberId": "source_0b98e70256ac9a8d",
+        "denotation": {
+          "conceptId": "bsc_000005",
+          "commitmentHash": "46cc92583e87b278992e0231f5d29daa27e7459dc849ff87c67b7c1fa7e61e7f"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "0e70fe0d8118bd048e161939db4b14bb39c23691bf82773e164d22f19b230276",
+      "sourceRelativePath": "registry/source-assets/sha256/0e/70/0e70fe0d8118bd048e161939db4b14bb39c23691bf82773e164d22f19b230276.glb",
+      "assetId": "asset_0e70fe0d8118bd048e161939db4b14bb",
+      "assetHash": "d4b5ed870b707d60799b578d6b5288865ce46e0318815426993b1f13e066e901",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "7b47fe30b031782ff12f493643f463e6a2934145a54d198cd6b8f3ee1fbcbe38"
+      },
+      "evidence": {
+        "measurementHash": "d4b5ed870b707d60799b578d6b5288865ce46e0318815426993b1f13e066e901",
+        "renderEvidenceHash": "df8f70e43819db09f437d7ceec485b16868de2ab2c272afa1ea9330f7b23b9e3",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/0e70fe0d8118bd048e161939db4b14bb39c23691bf82773e164d22f19b230276/contact-sheet.png",
+        "rgbViewHashes": [
+          "19f0bf1c3d16e487e45b6317f00d936ffc3d5e020696fdf040b28cadb59a1bfe",
+          "26196b95762f3a2e4fdce7ec6b149923ad96dfc936a065440028a15fbbfcab4d",
+          "4156b602d894049dbbe531c23f1950e62da0d228d673a776cf70aa502c7eadf0",
+          "44d5dd8fbb49822626a2d645b3386a2f507d813d74926f62f04df86835246dcd",
+          "5d8a0b17717ec5a259d0eb6c5f301dd54b3ae513bfe76289fdfb1380df6f246c",
+          "5e8dc07d564f537e7daf03a10c4c6bf663c7efa6d0acf5d2abc3c7fdf03b27ac",
+          "639693a254514e943ecfa28cf0df8c9649df65810377acb0e8442881a90143a6",
+          "7a5e31b2cfd72a253f2664d2afb0dd1be2a0cfd5a7a7fd77994a1fc139618a2b",
+          "b813839eca7c44183ac30959c9c277936ea7673896b39ca2d6d7e6e7b9bb86fe",
+          "c83c609ffdcc91393d094125937bda50efea1898b7b6ffd77adcd7f57f652500",
+          "f7d8c3d8e50cee0adfe12a772998addd58e9e3aab2d6ec4b4c3d505adad23ceb",
+          "fa18c243ac33a516f8f208236d7074c83f0f3a8b57db8d4148d1bfb866b4128d"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 1.6018933653831482,
+          "y": 1.6754072308540344,
+          "z": 1.4147334098815918
+        },
+        "triangleCount": 717,
+        "sourceBytes": 465568,
+        "partCount": 2,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 1.1302794346120209,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 1
+      },
+      "proposal": {
+        "entryHandle": "rural_stone_well",
+        "memberId": "source_0e70fe0d8118bd04",
+        "denotation": {
+          "conceptId": "bsc_000027",
+          "commitmentHash": "a0a432db2a472daccddbd201dba0db3c9451ebce862222382cab0d0644c20e85"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "1fd34c63d5d4676cd99e9d1f886b65ef8a1bc00befda076f2a90da728e30f334",
+      "sourceRelativePath": "registry/source-assets/sha256/1f/d3/1fd34c63d5d4676cd99e9d1f886b65ef8a1bc00befda076f2a90da728e30f334.glb",
+      "assetId": "asset_1fd34c63d5d4676cd99e9d1f886b65ef",
+      "assetHash": "cb304b485db6050a52418eec3673c50a22e3424319d2b043d94ccafc7489a866",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "19db510fb6d4b3b884a29ae57ae47f114e35dbb0399d628bafdf9565fb443931"
+      },
+      "evidence": {
+        "measurementHash": "cb304b485db6050a52418eec3673c50a22e3424319d2b043d94ccafc7489a866",
+        "renderEvidenceHash": "e76a38bc8f37c0ac6dc96f9c6a642edb209a872e9f2d40aa2f2f768201501f27",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/1fd34c63d5d4676cd99e9d1f886b65ef8a1bc00befda076f2a90da728e30f334/contact-sheet.png",
+        "rgbViewHashes": [
+          "2474d51c81454fe2ccee4d73baa50ef4652c0f5812534293edb5021878de3e18",
+          "3ed184c85752ae17291e18cf43a0f6e37360828d81a5f01e034fe8e14e9af968",
+          "3ee2734810075365c792c52b090f723d8817a6f0f0febc311a2b684ef6bf4d56",
+          "42135af58ec21bc83f38c811cf73f3731ff656b725e2053095b166655d83e369",
+          "7700e5737e10ca228eb0b54857bd3ca9af88bbdac3207aae37582eec42bb58f8",
+          "8faa00891456ab25def5568fa8de1a645ed39acd4352481acfd52ce5bb8535b9",
+          "a25250a2a0429cefeda2679623dd04a18f98bc0d961e82b033d7122bf0d276a3",
+          "b899d6436927d01dbb4065ee7ab2c1f810c34ae881eca1534afc1e7210bf8961",
+          "c03062fcbe512099d3d60eef57e407663cf6b58234daa6d8b5b978573c9f4223",
+          "c895252b2452a652deac292c125fbcc82ea4a04dca33b8396ca7efb92ba00a09",
+          "d3cf18b74b732c339a6395f8baac4a9fa33352a5ae385d59a4bcec165b8130f5",
+          "df5e0d2638fc7d58d1e6982b5356fa75bb0276a2fc406f839cf9f31b8868fcc6"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 2.0794647932052612,
+          "y": 1.0482580661773682,
+          "z": 0.6236400604248047
+        },
+        "triangleCount": 552,
+        "sourceBytes": 181656,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "emissive",
+          "metallic_roughness",
+          "normal"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0.006160063436254859,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_garden_bench",
+        "memberId": "source_1fd34c63d5d4676c",
+        "denotation": {
+          "conceptId": "bsc_000050",
+          "commitmentHash": "a8b51aefd6d8e10ff31206590d424bc922c774c761b62d37066f04a024c50665"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "20f9994f3136293e25d523819f8aa0053aafbb35e9b3a3ff9434257190ae066d",
+      "sourceRelativePath": "registry/source-assets/sha256/20/f9/20f9994f3136293e25d523819f8aa0053aafbb35e9b3a3ff9434257190ae066d.glb",
+      "assetId": "asset_20f9994f3136293e25d523819f8aa005",
+      "assetHash": "bd85d785ab67af0f2129bd83ce8ca3a28ad42829d14c1275b69229ba53e10db7",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "11cb9f20fc2c41b2e9c5b4159c875cd14d629b8362add6714956c0a27353f893"
+      },
+      "evidence": {
+        "measurementHash": "bd85d785ab67af0f2129bd83ce8ca3a28ad42829d14c1275b69229ba53e10db7",
+        "renderEvidenceHash": "086bca3c9226538931dbd68ea6465a1663cb39cef6ec2a98ec9edbf3845e1427",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/20f9994f3136293e25d523819f8aa0053aafbb35e9b3a3ff9434257190ae066d/contact-sheet.png",
+        "rgbViewHashes": [
+          "351e7eacc7155acf0ae991b4777c4781ccea708f00972cb3ce6fd68070e295fd",
+          "43c7a3a5ca84eca064968907053032e1e3686d0b3e723f3b2d5da881bd98676c",
+          "460a49f8e2d632c2fcfc3e4b4e3a135c77e32819ad829a3c834b5b631964e3d1",
+          "47948e4b577ec774862fc84ac5ca16ca6c836349c73e373b79d23a8e16613cae",
+          "56916dafdfd15a01f86328ece02f3cd8726c843d490588f910606031fcf90afb",
+          "5c847a0b49ad4cbe3aa4fc610b526c93ecaf0c3fb96c1d35801292fdf0add9e5",
+          "5cfa7bc458975d309bc2c88ca0b69a9c7a55d18e479f8eb6f8ac2870c3bce4b6",
+          "660ff0a36f5adb2ed71d8dd94717a3e194ee3dbbdc93c5e94d6d93023843a44e",
+          "77ffcf77095af36a3cd6735bcfa51bbebaad1922f9d41bbb9aa5563e61554857",
+          "86875d11650efb903af58005746444db72a5b04ff6d88afd1f3f087cf4284b16",
+          "a19918a29d1593cc6b4e06f540cbfcfe34d80011816687a250c3b00ac585816c",
+          "a6850e11db9ef7b76afc91460cbebc6ab98cbe6fbfad55c09693f9adf75980a4"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 1.437130630016327,
+          "y": 0.5126743614673615,
+          "z": 1.1270703673362732
+        },
+        "triangleCount": 795,
+        "sourceBytes": 493412,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_red_flowers",
+        "memberId": "source_20f9994f3136293e",
+        "denotation": {
+          "conceptId": "bsc_000101",
+          "commitmentHash": "9826c9d7ff925cb315f9f3342d5d6c52e18ab47a9d7cc4cb66e7aa5a9f989ec0"
+        },
+        "realizationForm": "aggregate",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "38b4ad677ecdc81bae0215650056f2ad2be5aec19e6d3b246816bc57a46a72a7",
+      "sourceRelativePath": "registry/source-assets/sha256/38/b4/38b4ad677ecdc81bae0215650056f2ad2be5aec19e6d3b246816bc57a46a72a7.glb",
+      "assetId": "asset_38b4ad677ecdc81bae0215650056f2ad",
+      "assetHash": "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "0a97a05ef0e9b880cf82827c203d4f3132e79b9a1789f4e10e4a7e5eb15458c0"
+      },
+      "evidence": {
+        "measurementHash": "61664253cd58f873ad1a7ec028fca576e23a17058e11cd9a79f58c38b014325f",
+        "renderEvidenceHash": "bb7d546ebc42221e297532747f8d6a727116deef4307cf154aeddfd8ea97c4a9",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/38b4ad677ecdc81bae0215650056f2ad2be5aec19e6d3b246816bc57a46a72a7/contact-sheet.png",
+        "rgbViewHashes": [
+          "085ffe440fab1efcee257ec9b09675f0d1fe2641363e5475c7fd5906c479c80e",
+          "4807f03199ac8feedc7bf4ae03c0cd926fe8d392adab16bb6361c78068053ee9",
+          "53424bba673175a6fd13732544fb1f6b91a2cd2342af75417ba672d83c959b8a",
+          "672db1ec25fb0d9a326b27ebd021d4ab181528d6a4d9b9951a15a9a22f06f0f8",
+          "816d1daad9f3aafda5d8f52dbfaca88d88beb32f9877f2c5d0665985060dabe8",
+          "83e67896acc1ba8aaf5297017bc62d7cbd1b3d38f44a428be24dcaa06794aceb",
+          "9c037767ed5b28ece5b55b4d2a82b002c039582dbf2326fbd2222a85d277d9b0",
+          "a4796fe94f66777f1ae3669e51a797c1f512a25a4eb3a0dad42622b0bb65eaef",
+          "af275d88603d3468d0bac2d95b36b0ad3252beb1efca27ae3f566bdc315484d9",
+          "c9bcf1620a456fb8cb93a69f7db9269ef52f12b25be98d71840eef395a41eaff",
+          "d20d9dad682367f9362cff3c943059522d8499d4ac0e8cda0c74435abf975122",
+          "d90bba60152ff7f389fc868e6f58c1c5a473a933ca852fde88fd6455e0a3a529"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 10.40673828125,
+          "y": 7.770934581756592,
+          "z": 5.590848922729492
+        },
+        "triangleCount": 1012,
+        "sourceBytes": 268728,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "emissive",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 7
+      },
+      "proposal": {
+        "entryHandle": "rural_stone_arch",
+        "memberId": "source_38b4ad677ecdc81b",
+        "denotation": {
+          "conceptId": "bsc_000012",
+          "commitmentHash": "0c42e1825af9a77cbae1bd3369676372a02ddc6d1278f0ee03d514bc4fc5667d"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "39b73cdb547db18cd92b605bca89e0f8bf2a306bc675b37d83f75b85ca9a18b2",
+      "sourceRelativePath": "registry/source-assets/sha256/39/b7/39b73cdb547db18cd92b605bca89e0f8bf2a306bc675b37d83f75b85ca9a18b2.glb",
+      "assetId": "asset_39b73cdb547db18cd92b605bca89e0f8",
+      "assetHash": "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "573b0708d5fd99019b599810132849d68a4ff5f3d55b6b5edc64f602f4b7e39e"
+      },
+      "evidence": {
+        "measurementHash": "b3acb89fa95652d6e0f50f9c4905cf892156735eff2775bb88649c52367df999",
+        "renderEvidenceHash": "29e3e8e292e5233858e7fe41a6bddfb4a4faf70dbc1b50ba780a83d3ac1761f6",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/39b73cdb547db18cd92b605bca89e0f8bf2a306bc675b37d83f75b85ca9a18b2/contact-sheet.png",
+        "rgbViewHashes": [
+          "03719b68cb78e3ba05819cf169a09e062aa7187f65908a1c32b79c9ad65f39a4",
+          "07e26b89a5aa080a13294d4f16d46601dde2e02b9c8a0466a3606c96acb0f456",
+          "27060ec3fc6ae34473b003c7582cf916c4b0691bd1eb9e833978fad3b47dee3c",
+          "5d272a743904e3ae16019a5e39b165a799af07b289a8ca7e2d3a52b522334e05",
+          "74a38677b8a2c6d329591a54dc1412f33d60203aff4b294051379ce9f44efad1",
+          "7ae655cfd40d9cce12dd39f3712b7f4570627fd229551cb4a8bc94dcc0bb0fbb",
+          "856f6480552cf593c2200131964b10fef958a549b448c197809ba705e14c9b3a",
+          "9f1c52fb848147186e5c2c9088bff50f187333b1c98156f3f14693ebc3d375a4",
+          "bce891e50210c46198b1895c2ac2b004af4038652545739e9c1785d845cdc2fa",
+          "e26a83ba2025bba98c928337c3efdfd84a7ea6cdc8e91d2964bc1372fd98ebb2",
+          "f01f546bb636962b1b64a7384ed88fa9901a0af8eb76690f00f33bf6afc0c2b3",
+          "fa73302be3b73c76b10c0944e07a99ac432affb4becab74c466beed8f64b444e"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 13.494843482971191,
+          "y": 9.105387916555628,
+          "z": 7.435111999511719
+        },
+        "triangleCount": 10206,
+        "sourceBytes": 1022344,
+        "partCount": 7,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0.23030754318460822,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 5
+      },
+      "proposal": {
+        "entryHandle": "rural_long_barn",
+        "memberId": "source_39b73cdb547db18c",
+        "denotation": {
+          "conceptId": "bsc_000022",
+          "commitmentHash": "e3d1fe5f674ff557f03ccb27871f406d77d8ce6ff272233a8cbba8e2ae72f842"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "4bfad99cee72ea91c2605508326cd3074bfec632c8b4e8ae004624a5ad349a6c",
+      "sourceRelativePath": "registry/source-assets/sha256/4b/fa/4bfad99cee72ea91c2605508326cd3074bfec632c8b4e8ae004624a5ad349a6c.glb",
+      "assetId": "asset_4bfad99cee72ea91c2605508326cd307",
+      "assetHash": "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "4cbf01098458a87471cd72942364af4de37906f1a3183cd75b9348aac88634fb"
+      },
+      "evidence": {
+        "measurementHash": "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5",
+        "renderEvidenceHash": "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/4bfad99cee72ea91c2605508326cd3074bfec632c8b4e8ae004624a5ad349a6c/contact-sheet.png",
+        "rgbViewHashes": [
+          "02216f6330353e7ae0665653ad5013994f4efffaae2141afb342e7930b992468",
+          "08292254a6af24a6092f3618eb8e8b37ceca12b24ca33bfa4b43e9027ae74ca2",
+          "1283ac3e584264511b0b755e09e036d0101974e303f09a2888b66a2f458a1570",
+          "1bfa4db2d3cb532a1c8bf8e819b4c3551a915dd240b55176bdb29ff62aa2e804",
+          "73bc79b2340ca46419d28c19e65a58c879f394a691667c9400ab4dc24cfaf6fb",
+          "73e25b7b9553f603c44c6d7b62b98fc64aaf94e04a89ad4034f7919c2e742be9",
+          "85285d8c7bc8662c2c52cbac691e12b3412e84b01f5df7e2d20363a926cb7b2a",
+          "cb24fc301308c35a6022ed26927a6c67bb6ac6dc4979148e5a6725e8453300fd",
+          "d14e49bd7421701917cac596ffc2dc79a8991fa15e932e36f038a8df51732534",
+          "d90d8cbabfaac740f49e763f393098b6828b6c98b86a63d69e16702ee90d9326",
+          "e8711047b49f9ba188e3b9128b92d9f833875965f31651df32f592bef80c4dd6",
+          "ed3a8605f2f09096c2a30966ad5c6f2d9086d18086862aa14a45cac1bf7e50c0"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 2.7879638671875,
+          "y": 2.6859591007232666,
+          "z": 3.1313629150390625
+        },
+        "triangleCount": 900,
+        "sourceBytes": 223364,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "emissive",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0.02802665764465928,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_canvas_shelter",
+        "memberId": "source_4bfad99cee72ea91",
+        "denotation": {
+          "conceptId": "bsc_000021",
+          "commitmentHash": "fa836e5762c547d60f6b40ed535230276615e2bfe536b310f2c2e2b5d9933013"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "50031169641cc60934f389813e23d6f43e3177228dbaef622159f7862bf27b57",
+      "sourceRelativePath": "registry/source-assets/sha256/50/03/50031169641cc60934f389813e23d6f43e3177228dbaef622159f7862bf27b57.glb",
+      "assetId": "asset_50031169641cc60934f389813e23d6f4",
+      "assetHash": "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      },
+      "evidence": {
+        "measurementHash": "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "renderEvidenceHash": "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/50031169641cc60934f389813e23d6f43e3177228dbaef622159f7862bf27b57/contact-sheet.png",
+        "rgbViewHashes": [
+          "4cb416c670e68df977f7d74a21e4ad191797fe4842f3cb0791241ddd8b2861fa",
+          "504c51f5cbf21aa45444860793fb302206ee7fc9a72765665ec180c05f5d4334",
+          "54195dda07d08d077d48dfe46772d42c5267d36a05715ae53bfda2ead1470bd1",
+          "62bdd64d1bcf7cbed552243a0467ec3ec50ef7eebf96767653c3d4d0f02a0f88",
+          "67c790aaeea788e37f6287de9865a23bcd93df92a7fdc9691da0a28d08a75caf",
+          "8058f12e515d4a75475a6767a970806a23851f7c84b45851bcb7bde513f9ec62",
+          "962a43102ac7c16702fc8253583fbb6edf602a45ba14854ada1f50965d853a46",
+          "a4b58a3d5a07bfd7e21e30b03fd3d52600a507f204581d0b5b9caf0526218429",
+          "ee018697a471783512003c66fbb8ed19aaa8500518b4c09850d94b1c51a96143",
+          "efd858c6911228e7dffe50e997cae1a1f90be74f55568bb6c19d56190e20b5ff",
+          "f485590b548596d486f6d826b4af1119fc2c50b07637caa849059e72cfb455dd",
+          "f797662747f6072f5df10437286142091d60338462dd3563ebab088e32745e7d"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 1.5284960269927979,
+          "y": 0.5995365977287292,
+          "z": 1.5310156345367432
+        },
+        "triangleCount": 630,
+        "sourceBytes": 77556,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_campfire_ring",
+        "memberId": "source_50031169641cc609",
+        "denotation": {
+          "conceptId": "bsc_000020",
+          "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+        },
+        "realizationForm": "aggregate",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "80d89bdd33643ab91629c455723b17697e46c1e86fe16c2b3d3915cb2b40172a",
+      "sourceRelativePath": "registry/source-assets/sha256/80/d8/80d89bdd33643ab91629c455723b17697e46c1e86fe16c2b3d3915cb2b40172a.glb",
+      "assetId": "asset_80d89bdd33643ab91629c455723b1769",
+      "assetHash": "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "3e3bd917e9ae34e454771450a92987798ddaa0d15dc71e11b1e3684c302f3c6f"
+      },
+      "evidence": {
+        "measurementHash": "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+        "renderEvidenceHash": "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/80d89bdd33643ab91629c455723b17697e46c1e86fe16c2b3d3915cb2b40172a/contact-sheet.png",
+        "rgbViewHashes": [
+          "2381ca884ac6ae370700e4aed1932d74cd9f8260f518557e92e088efe3700030",
+          "401b787d23a1482f646de9b2f3d17c71855d31b082b199e3a91bb78c4b55bfea",
+          "4a64acb5bb1a6fd57ac60f212be054d83e313a86f6197faaf802e9b53b6975bd",
+          "612acaee83bea76845bb832c38070edee82d700dddd28e04fcfeeea0e38d0110",
+          "7baa26f460e1e67ae219b34675d076c55e3d697ea0cf7f6f71dd64fe9580c554",
+          "7d8a9cc775dc36f62f842bad82b25b81de7efe33d778a96fdf19dbb5a6f48ae4",
+          "7ec9be8d502541d505871249cb50297eca10e6ce404cd6bcf8134e4dff4bd3c8",
+          "8652b5ad5b4f950d81306b3c2f05bf74830a7eadc59d96fa43c95e9c6003b8c2",
+          "91d4f531a60c9b8253ee264e2698adc5cf7a52a60602ee1d690775d99aa12ed3",
+          "963e3bf22e75e3824c27ef22b13e81ec77aeb4b236dadf3f02d8dee017f5a373",
+          "a14eb387683abf8c6886fa6469330aa2b3de4821a74ae4087482c77988688011",
+          "af0b8ed155ab970ecec275027391d4d5d497f52eb0a3e0032b40cb83306144ba"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 0.978583812713623,
+          "y": 0.5126743614673615,
+          "z": 0.6911385655403137
+        },
+        "triangleCount": 424,
+        "sourceBytes": 456992,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_small_red_flowers",
+        "memberId": "source_80d89bdd33643ab9",
+        "denotation": {
+          "conceptId": "bsc_000101",
+          "commitmentHash": "9826c9d7ff925cb315f9f3342d5d6c52e18ab47a9d7cc4cb66e7aa5a9f989ec0"
+        },
+        "realizationForm": "aggregate",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "8dca04af8ea5c8a3f60b07c0a3a9e462d2981b372dbd8779787743d7a2edb7ae",
+      "sourceRelativePath": "registry/source-assets/sha256/8d/ca/8dca04af8ea5c8a3f60b07c0a3a9e462d2981b372dbd8779787743d7a2edb7ae.glb",
+      "assetId": "asset_8dca04af8ea5c8a3f60b07c0a3a9e462",
+      "assetHash": "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "d57ae95961323dea16a7520b77f53a913fcdbe3572cf1a1a2b035852a64e1954"
+      },
+      "evidence": {
+        "measurementHash": "3351d0b558f1f46e789f7b1fa176387bab986eee2e9af39bf63007b67319fec3",
+        "renderEvidenceHash": "265af42171041f240945f2a3f5c36745340c7b91bc40c5f915f897eb11b13b04",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/8dca04af8ea5c8a3f60b07c0a3a9e462d2981b372dbd8779787743d7a2edb7ae/contact-sheet.png",
+        "rgbViewHashes": [
+          "06706a2238403ccf57ce669dcb32822cc2f9819046f88269836c596a262d1bc5",
+          "280c2375dbd1232cd9d45729de899f1b6c43729c44cc046224147be810cbd5bb",
+          "36a8e76b419dc7dead92fea9c17ab704536c2ef818a3e937bf63a19e10b63940",
+          "4478c9d035ccec14fb389058c1408e3aa80d2b23fde48981238c33d2aa5a7b6d",
+          "5560fdceaeeaaec1322b4a0cd24691f67fcb97ca1bf035fd7190b32043c6ebbc",
+          "577fd5915f9908a38e1d1e58cf5fe1f8bcc5790e650e5778b666dbb7db4d31d0",
+          "79f9b949f6de5f692151e47f0115a95dd3e6fb6e37f8c7a886269e9b2dc22c97",
+          "b01b3d0a520c660f22ac8fc8b6c2c3ea4b63a826d1ca5a25415664c5e6adf6c5",
+          "c320a2dc848041253a98da4ae448cc371e4b520de96170b1930142e3efffbbe3",
+          "c86cc615353895bc4d3b747af9783ab211a2e26253869f26af264cba69a3ae7b",
+          "ce885d698845f259a98499af1e607cb827eefcbd6dcc78727fb3a463ccf88651",
+          "f16c242c849817d961376dac8e44b9d02c2449df4d9bb3180574def14e580e13"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 9.76919937133789,
+          "y": 9.105387916555628,
+          "z": 7.435111999511719
+        },
+        "triangleCount": 8156,
+        "sourceBytes": 899836,
+        "partCount": 7,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0.2303091597277671,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 6
+      },
+      "proposal": {
+        "entryHandle": "rural_small_barn",
+        "memberId": "source_8dca04af8ea5c8a3",
+        "denotation": {
+          "conceptId": "bsc_000022",
+          "commitmentHash": "e3d1fe5f674ff557f03ccb27871f406d77d8ce6ff272233a8cbba8e2ae72f842"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "9abd293f935dd27a2b1ed1d572254970932b66b5b99304c1aa35574c18d59a46",
+      "sourceRelativePath": "registry/source-assets/sha256/9a/bd/9abd293f935dd27a2b1ed1d572254970932b66b5b99304c1aa35574c18d59a46.glb",
+      "assetId": "asset_9abd293f935dd27a2b1ed1d572254970",
+      "assetHash": "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411"
+      },
+      "evidence": {
+        "measurementHash": "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6",
+        "renderEvidenceHash": "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/9abd293f935dd27a2b1ed1d572254970932b66b5b99304c1aa35574c18d59a46/contact-sheet.png",
+        "rgbViewHashes": [
+          "07648ab5ab2ff7a91547bc7de0b73fb4c20afb6d513bceb2f2a9513fb6157e13",
+          "1c215fe32993a7eac0f06fb1e0c12a30d5d76281be2f13a4a5ba487760ba44cb",
+          "31c6528cf8fe50a1fdc9ef0bc12e1d4d6819abb8662669dfec85a0f0f3ef19e7",
+          "37d87f07a48cb6e6561ce35ffb04d3814eb7065d802c1651f5ab5b275138564a",
+          "3dfc07bcf0cf0215b85267dbdf247b0aa6cdaac1abe6dfddacb73fe33a7b4a7f",
+          "45b4af02e736a0dcf4ba98c746e9e04e070926f00edec41453611b9510976684",
+          "4c8307c8dcb4f53334993ad94b7b4c4573b7da98fa4d0045894dc2b6f77e68ce",
+          "b61ec24e5bd7a70e46e73d8dabf11172707d9629c13d797216f7e40ac8c84f5c",
+          "c50b29f72295de91c5f5584924b771674c3a24002a2ef600ee57610e95fc40bd",
+          "d9ed7b743ee804fad5fccfb448c6ed0172432c982d402c769bd5d1da959e2963",
+          "e5509e28bbebe35f40db4eac36c3558c362bdf1943fba81b48fa166a5fcf4f8a",
+          "ff06e5680c61106df9927bbd70a772c5f214499228cc568b1aa4e073205d5c7d"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 3.766616584500298,
+          "y": 11.48051731963642,
+          "z": 4.827282591024414
+        },
+        "triangleCount": 1075,
+        "sourceBytes": 482192,
+        "partCount": 3,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0.031415904173627496,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 2
+      },
+      "proposal": {
+        "entryHandle": "rural_wind_pump",
+        "memberId": "source_9abd293f935dd27a",
+        "denotation": {
+          "conceptId": "bsc_000021",
+          "commitmentHash": "fa836e5762c547d60f6b40ed535230276615e2bfe536b310f2c2e2b5d9933013"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "ad6546f15c50cfc3025d73ee219dda8f13acb10bb819534060bcc467314cf1aa",
+      "sourceRelativePath": "registry/source-assets/sha256/ad/65/ad6546f15c50cfc3025d73ee219dda8f13acb10bb819534060bcc467314cf1aa.glb",
+      "assetId": "asset_ad6546f15c50cfc3025d73ee219dda8f",
+      "assetHash": "d9db4ed071e3031d4336d2710feec82f034e9232b726e060b0da2db4c488acd4",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "59a0612e6be04e2c9cef567dd00e7c2caada992f62b74a9934159332c4b448bb"
+      },
+      "evidence": {
+        "measurementHash": "d9db4ed071e3031d4336d2710feec82f034e9232b726e060b0da2db4c488acd4",
+        "renderEvidenceHash": "188d10e02a7a88a796b294615fddbffd686adb95af0fb8b8924409be6cf5c4a4",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/ad6546f15c50cfc3025d73ee219dda8f13acb10bb819534060bcc467314cf1aa/contact-sheet.png",
+        "rgbViewHashes": [
+          "1114efd743d4293ba5b42fe76b799f5c8a6ea78f584e52545354ceaf0864845c",
+          "13a6929e30051761b030c17802368d770713dcf29b11de127f0444e0920df30b",
+          "2d2d00bf56b5de141487598103d6bb4af868525a50d60303419c22a0ccf9e817",
+          "446b85ffe0e8e0786e04d7c6894437f65cae241022f560e6bc134fbfe7fdf3ec",
+          "56e6cbeaf3899dfc2c6c73b0bf245612c1a9331e84357bc9a1d4c8dca409f849",
+          "7562827c2a64636030881bb34439e1c8c88bfc401caf9b3c31a4a68cf790d5ba",
+          "7acc7da7f9c38a74ebbefcc18c4d5827e094ae0b8776c2264c3b0f3d3c600c6d",
+          "88237e22fd782f0e049e4efb174fe7c4cd30bd1f16651bbb5b4dab9c3219b64e",
+          "88e91602d694580fb61ea419430ef6c4da9d4631e8f51b964716d53d334b790d",
+          "92a46ff533f5a0ed8d1a236c07cdcb6b9617b84eca27890c928661e5a40b8ea3",
+          "9b9cbd3819f368353f8a67a02740e1c3fb6025d9424b00226410bac291fdbfe5",
+          "f69a0cda63f97d040c554e492bf9f21abdb586a0fe6f52986465bcd9a142df11"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 1.9094145894050598,
+          "y": 0.9473758041858673,
+          "z": 1.4116939902305603
+        },
+        "triangleCount": 544,
+        "sourceBytes": 459808,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_square_hay",
+        "memberId": "source_ad6546f15c50cfc3",
+        "denotation": {
+          "conceptId": "bsc_000020",
+          "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "c0991d0de604cdfb93459f1a5050e7697aa711ac1c6da004c1c04067042fa652",
+      "sourceRelativePath": "registry/source-assets/sha256/c0/99/c0991d0de604cdfb93459f1a5050e7697aa711ac1c6da004c1c04067042fa652.glb",
+      "assetId": "asset_c0991d0de604cdfb93459f1a5050e769",
+      "assetHash": "bff85712896687d911408bfce47e375e35c7878092ac06434547a5efccfaa47a",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "5502e280d5d2d3e889f592ffaf5461086efe5c169f911071e0f105a82026a685"
+      },
+      "evidence": {
+        "measurementHash": "bff85712896687d911408bfce47e375e35c7878092ac06434547a5efccfaa47a",
+        "renderEvidenceHash": "26bb9159f2bad0de08e85159972b68019a5f879d73a4d4031ce8e12207afa5c5",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/c0991d0de604cdfb93459f1a5050e7697aa711ac1c6da004c1c04067042fa652/contact-sheet.png",
+        "rgbViewHashes": [
+          "1077321aae1eafc309eb56b60577e6de17c5c88c76e098837bddcb11d966fc71",
+          "18d9ae7243fa390dd9d999334da65fa6681adbe9dc844fc60757f5790deab66d",
+          "1b73bcb00427c759f7d1cbda4d90bff80a45b7c1522e7416c49565f2eaf355e9",
+          "7473b1ed6db6ab52055fd64b0bb646ffcbb2ee3c86f6124911e1857c8d373a08",
+          "7b84eaecf3c3be4f28ab613cc0fdc36c2a270c943d16c414cdc7a21f571da197",
+          "7d3ce745835c73aaf6607f487c10212d4eaa0c6d409f06ada6b25d7cded9c265",
+          "9bbf62db5f1d57c8fa0ac91991e6ea096e928b40fabd6237aa638a78ec5a4060",
+          "bafaea71e8251d24ce1d6337e3bf8bc4b9034d411baaf9b24e5dbbbe16b2b75d",
+          "c75e6cc5c1b15b9b7d310e76df68d362e3e32a31f7a5dd7b9341dabb3515d23a",
+          "dc26914c5e6d176a99c078e469dd8b07910010c5a0c4c010d788f53f3bcbc2ee",
+          "f68b4263ebb6824d360966b003f7f0d6f4a1f76c0b5f9f56dceb4694ac250be8",
+          "f9d526f59004422079e7af8c7acc6ee36daaa4269df9c807e432e99e215775aa"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 0.27230358123779297,
+          "y": 0.6000339984893799,
+          "z": 0.23582220077514648
+        },
+        "triangleCount": 504,
+        "sourceBytes": 155396,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "emissive",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0.02711319667287171,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_lantern",
+        "memberId": "source_c0991d0de604cdfb",
+        "denotation": {
+          "conceptId": "bsc_000068",
+          "commitmentHash": "20015e872a6a88a6ffed805fcfc3b0e2b87446edceff554b0677dbf02f1ffba1"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "d6a6a92c26fa9f32b1fa4e94d9f40b6b98a5c50ffd0bd25b66c9f65875c8b1e4",
+      "sourceRelativePath": "registry/source-assets/sha256/d6/a6/d6a6a92c26fa9f32b1fa4e94d9f40b6b98a5c50ffd0bd25b66c9f65875c8b1e4.glb",
+      "assetId": "asset_d6a6a92c26fa9f32b1fa4e94d9f40b6b",
+      "assetHash": "42f345321f8c0c942a7ce593670539924ec764b02a055a384f672a9a2962b906",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "969de45c00a2b0a7c250da79b7002d8216c943334a126bbdcb7c727e47a6c7e0"
+      },
+      "evidence": {
+        "measurementHash": "42f345321f8c0c942a7ce593670539924ec764b02a055a384f672a9a2962b906",
+        "renderEvidenceHash": "afe83b024ebaec09015715889511817b53bb3b91dbdc0a0e5daae277a13ddd9e",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/d6a6a92c26fa9f32b1fa4e94d9f40b6b98a5c50ffd0bd25b66c9f65875c8b1e4/contact-sheet.png",
+        "rgbViewHashes": [
+          "11882f6c936bd8c373633000b03571c11261557c6fc71cfddee296fa9c28130c",
+          "169fffecd65bbfadf90b35595b10a9024a080a7205306572c429bf6a5386a051",
+          "286225e6ee3723e71f391f4be46630d00a1b7661f6c3de89b8a4a0ffb50fa522",
+          "48c830506a744b5ef16f2bea3f29bde9c7c318dd646ac300cf8226734be39776",
+          "4ff1d118383f2e0d7bc594fbf234ce75d3b74bdbc660f76cfda3958bf4b0de58",
+          "6156c295af90d7980b954bdeeab1caba96b7433d927ecd0e211be31d25c00029",
+          "6ea44d51c850d219073da91966dcaf9fd7f056702a8d66cdb9ee9bc798a5e2b2",
+          "87fea347da13d95bb6c45ac06c5f123ca51435ec332bb4fe26145e25ffd2017f",
+          "92712d33c981e707074b0be8e79547b19c81d56e0e01dd302058dd51691d39e0",
+          "9c63566123a77432a922febb1cfd915dc5f2b1b7537299f29cb2616b0d53d0d1",
+          "9edba758d9fc8df702c9e5e8b90379116bd262fffdeb6a1502338c17d25b1cfa",
+          "cb4b715550561d8ea875991d6992c1dca3c1b6cee2a9206d61a958868d6a4255"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 1.2622528672218323,
+          "y": 1.5820061564445496,
+          "z": 1.218852162361145
+        },
+        "triangleCount": 936,
+        "sourceBytes": 482956,
+        "partCount": 1,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0,
+        "supportMeasurementMethod": "lower_extrema",
+        "collisionMode": "none",
+        "socketCount": 0
+      },
+      "proposal": {
+        "entryHandle": "rural_round_hay",
+        "memberId": "source_d6a6a92c26fa9f32",
+        "denotation": {
+          "conceptId": "bsc_000020",
+          "commitmentHash": "79bbcafd8531bd323c0bff040a32f168eaf40e9bc275a4c2c9e46ac77578781c"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    },
+    {
+      "sourceContentHash": "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62",
+      "sourceRelativePath": "registry/source-assets/sha256/e4/75/e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62.glb",
+      "assetId": "asset_e4756a09516ce646a991c33ba73a7ce7",
+      "assetHash": "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+      "rights": {
+        "licenseId": "commercial-use-permitted",
+        "commercialUsePermitted": true,
+        "redistributionPermitted": true,
+        "attribution": "Creator-provided commercial rights; no vendor attribution requested",
+        "evidenceHash": "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771"
+      },
+      "evidence": {
+        "measurementHash": "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "renderEvidenceHash": "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1",
+        "contactSheetRelativePath": ".basalt/catalog/review/previews/e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62/contact-sheet.png",
+        "rgbViewHashes": [
+          "0ea07cd362dcc1fb84ce99194d8f2c36ca3a54a87d545aac662a0e8fa946a12c",
+          "361e9c20b020439b0370c907fd0fc0ac2788b0135ee0cf47cf53a512dcfa35cb",
+          "3f5f7f5d1800f9678a314f03ff408409bae1886a8ced5e02ef13ee2e24901d90",
+          "40d2c00deeb10b2c8ddac11395c91150faff33c16797dcd1cdbbe7f09679b878",
+          "5adffae2ff283576f9add3aa0ff64d84008118063ac216dc752087b67f2dc4f3",
+          "5f4554f8321249fbee7397535bc85c25a964cee190d610b08f03ea41b14ccf5c",
+          "81a213fadae8ef5fc95bbb52ca496bbce05bb42ab0b6ae62efe936c36fe25300",
+          "910bbb612b5d6a2ce94b081a2994d35cae15a14c37ac156973a0b8780fccb8e9",
+          "ade266b26a267baef07ef62ff7ef14671a76f6f2a5412d52a2a131e87f9db0b4",
+          "c5c485b42eafa66c1c0a6f874ba33d9c04da6fcec9de446acb65da820d4b8a38",
+          "c7b3375943db994bbd1b1867c8f4a35f47e36ad42bd8140ebd81ceb7ee8a8af5",
+          "c7fa68879019039e8f03a47b80a0fb63201cc9c7b7d7abf95a55e145c6a42fa4"
+        ]
+      },
+      "metricSummary": {
+        "sourceFrame": {
+          "handedness": "right_handed",
+          "up": "+Y",
+          "forward": "-Z",
+          "unitsToMeters": 1
+        },
+        "sizeMeters": {
+          "x": 13.454835891723633,
+          "y": 9.824267581105232,
+          "z": 10.95150375366211
+        },
+        "triangleCount": 14834,
+        "sourceBytes": 1627744,
+        "partCount": 5,
+        "materialCount": 1,
+        "pbrChannels": [
+          "base_color",
+          "metallic_roughness"
+        ],
+        "primaryContact": "bottom",
+        "contactAreaSquareMeters": 0.3125467267818749,
+        "supportMeasurementMethod": "planar_patch_fit",
+        "collisionMode": "none",
+        "socketCount": 37
+      },
+      "proposal": {
+        "entryHandle": "rural_farmhouse",
+        "memberId": "source_e4756a09516ce646",
+        "denotation": {
+          "conceptId": "bsc_000022",
+          "commitmentHash": "e3d1fe5f674ff557f03ccb27871f406d77d8ce6ff272233a8cbba8e2ae72f842"
+        },
+        "realizationForm": "whole",
+        "placement": {
+          "support": "ground",
+          "contact": "bottom",
+          "interfaces": []
+        },
+        "styleProfileHandle": "stylized_rural_highlands",
+        "singletonSubstitutionSet": true
+      },
+      "criterionIds": [
+        "appearance_identity",
+        "external_resource_closure",
+        "geometry_health",
+        "installation_contract",
+        "material_readability",
+        "metric_contract",
+        "realization_identity",
+        "rights_contract",
+        "semantic_identity",
+        "source_integrity",
+        "style_contract"
+      ],
+      "reviewStatus": "pending_creator_review"
+    }
+  ],
+  "reviewerAuthorityRequired": "delegated_ai",
+  "compilerAuthority": false,
+  "hash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+}

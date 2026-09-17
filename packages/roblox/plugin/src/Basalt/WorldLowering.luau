@@ -565,14 +565,13 @@ end
 -- The generic compiler already constructs the route and final terrain together.
 -- Roblox may only correct the small residual introduced by its voxel surface;
 -- it must reject a discrepancy large enough to change the authored profile.
-local function resolveRouteFrames(route: any, endpointOverrides: any, recordTerrainTrace: boolean): any
+local function resolveRouteFrames(route: any, endpointOverrides: any, previousStationAdjustments: { number }?): any
 	local result: { [string]: any } = {}
 	if route.terrainTreatment.kind ~= "grade" or not routeUsesTerrain(route) then
-		local stationAdjustments: { number } = table.create(#route.travelSegments + 1, 0)
-		if endpointOverrides ~= nil then
-			stationAdjustments[1] = math.max(0, endpointOverrides.start or 0)
-			stationAdjustments[#stationAdjustments] = math.max(0, endpointOverrides.finish or 0)
-		end
+		local stationAdjustments = RouteGrounding.seedStations(
+			table.create(#route.travelSegments + 1, 0), previousStationAdjustments, endpointOverrides,
+			Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS, "route " .. route.routeId
+		)
 		for index, segment in ipairs(route.travelSegments) do
 			local resolved = routeFrame(
 				segment,
@@ -627,30 +626,19 @@ local function resolveRouteFrames(route: any, endpointOverrides: any, recordTerr
 			stationAdjustments[station[3]] = math.max(stationAdjustments[station[3]] or -math.huge, correction)
 		end
 	end
-	for index = 1, #stationAdjustments do
-		stationAdjustments[index] = math.max(0, stationAdjustments[index] or 0)
-		if stationAdjustments[index] > Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS then
-			fail(string.format(
-				"route %s requires %.4fm of Roblox residual correction, exceeding %.4fm",
-				route.routeId,
-				stationAdjustments[index] * Constants.STUD_METERS,
-				Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS * Constants.STUD_METERS
-			))
-		end
-	end
-	if endpointOverrides ~= nil then
-		stationAdjustments[1] = math.max(stationAdjustments[1], endpointOverrides.start or 0)
-		stationAdjustments[#stationAdjustments] = math.max(stationAdjustments[#stationAdjustments], endpointOverrides.finish or 0)
-	end
-	local converged = false
-	for iteration = 1, Constants.MAX_TERRAIN_CONFORMANCE_ITERATIONS do
-		local changed = false
-		for index, segment in ipairs(route.travelSegments) do
+	stationAdjustments = RouteGrounding.seedStations(
+		stationAdjustments, previousStationAdjustments, endpointOverrides,
+		Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS, "route " .. route.routeId
+	)
+	stationAdjustments = RouteGrounding.conformStations(
+		stationAdjustments,
+		function(index: number, start: number, finish: number): number
+			local segment = route.travelSegments[index]
 			local resolved = routeFrame(
 				segment,
 				route.thicknessMeters,
-				stationAdjustments[index],
-				stationAdjustments[index + 1]
+				start,
+				finish
 			)
 			local top = observeFramePlane(
 				resolved.frame,
@@ -659,24 +647,13 @@ local function resolveRouteFrames(route: any, endpointOverrides: any, recordTerr
 				context,
 				segment.segmentId
 			)
-			local deficit = targetClearance - top.minimumStuds
-			if deficit > 0.00001 then
-				stationAdjustments[index] += deficit
-				stationAdjustments[index + 1] += deficit
-				if stationAdjustments[index] > Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS
-					or stationAdjustments[index + 1] > Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS then
-					fail("route " .. route.routeId .. " cannot conform to Roblox terrain within the bounded residual")
-				end
-				changed = true
-			end
-		end
-		if not changed then
-			converged = true
-			break
-		end
-		if iteration == Constants.MAX_TERRAIN_CONFORMANCE_ITERATIONS then break end
-	end
-	if not converged then fail("route " .. route.routeId .. " residual conformance did not converge") end
+			return top.minimumStuds
+		end,
+		targetClearance,
+		Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS,
+		Constants.MAX_TERRAIN_CONFORMANCE_ITERATIONS,
+		"route " .. route.routeId
+	)
 	local policy = groundingPolicy(route.terrainTreatment, "route")
 	for index, segment in ipairs(route.travelSegments) do
 		local resolved = routeFrame(
@@ -728,9 +705,7 @@ local function resolveRouteFrames(route: any, endpointOverrides: any, recordTerr
 			segment.segmentId
 		)
 		resolved.groundingDepthStuds = groundingDepth
-		if recordTerrainTrace then
-			traceRouteTerrain("foundation", route, segment, resolved, top, bodyBottom, groundingBottom)
-		end
+		resolved.terrainObservation = { top = top, bodyBottom = bodyBottom, groundingBottom = groundingBottom }
 		result[segment.segmentId] = resolved
 	end
 	return { frames = result, stationAdjustments = stationAdjustments }
@@ -814,6 +789,10 @@ local function observeJunctionPlane(junction: any, y: number, context: any): any
 end
 
 local function resolveJunctionGeometry(junction: any, adjustmentStuds: number): any
+	if finite(adjustmentStuds, "junction terrain correction") < 0
+		or adjustmentStuds > Constants.TERRAIN_SURFACE_QUANTIZATION_ALLOWANCE_STUDS then
+		fail("route junction correction exceeds the bounded Roblox residual: " .. junction.junctionId)
+	end
 	if junction.terrainTreatment.kind ~= "grade" then
 		return { adjustmentStuds = adjustmentStuds, groundingDepthStuds = 0 }
 	end
@@ -879,32 +858,55 @@ local function resolveJunctionGeometry(junction: any, adjustmentStuds: number): 
 	return resolution
 end
 
+local function recordTerrainTrace(route: any, resolution: any): ()
+	for _, segment in ipairs(route.travelSegments) do
+		local resolved = resolution.frames[segment.segmentId]
+		local observation = resolved.terrainObservation
+		if observation then
+			traceRouteTerrain(
+				"foundation", route, segment, resolved,
+				observation.top, observation.bodyBottom, observation.groundingBottom
+			)
+		end
+	end
+end
+
 local function resolveFoundationRouteGeometry(foundation: any): (any, any)
 	local junctionAdjustments: { [string]: number } = {}
 	for _, junction in ipairs(foundation.routeJunctions) do
 		junctionAdjustments[junction.junctionId] = junctionTerrainCorrection(junction)
 	end
-	local coordination = RouteCoordination.resolve(
-		foundation.routeConstructions,
-		foundation.routeJunctions,
-		junctionAdjustments,
-		function(route: any, endpointOverrides: any): any
-			if route.status ~= "eligible" then fail("route construction is not eligible: " .. route.routeId) end
-			return resolveRouteFrames(route, endpointOverrides, false)
-		end,
-		Constants.MAX_ROUTE_JUNCTION_COORDINATION_ITERATIONS,
-		Constants.ROUTE_JUNCTION_COORDINATION_QUANTUM_STUDS
-	)
-	-- Tentative fixed-point passes must not consume the durable trace budget.
-	-- Re-resolve the accepted state once so diagnostics describe only geometry
-	-- that can actually be committed to the world.
-	local finalRouteResolutions = {}
-	for _, route in ipairs(foundation.routeConstructions) do
-		finalRouteResolutions[route.routeId] = resolveRouteFrames(
-			route,
-			coordination.routeOverrides[route.routeId],
-			true
+	local latestResolutions: { [string]: any } = {}
+	local coordinated, coordination = pcall(function(): any
+		return RouteCoordination.resolve(
+			foundation.routeConstructions,
+			foundation.routeJunctions,
+			junctionAdjustments,
+			function(route: any, endpointOverrides: any, previousStationAdjustments: any): any
+				if route.status ~= "eligible" then fail("route construction is not eligible: " .. route.routeId) end
+				local resolution = resolveRouteFrames(route, endpointOverrides, previousStationAdjustments)
+				latestResolutions[route.routeId] = resolution
+				return resolution
+			end,
+			Constants.MAX_ROUTE_JUNCTION_COORDINATION_ITERATIONS,
+			Constants.ROUTE_JUNCTION_COORDINATION_QUANTUM_STUDS
 		)
+	end)
+	if not coordinated then
+		-- A failed solve still needs the latest attempted geometry in its
+		-- incomplete report. Do not spend the trace budget on every trial pass.
+		for _, route in ipairs(foundation.routeConstructions) do
+			local resolution = latestResolutions[route.routeId]
+			if resolution then recordTerrainTrace(route, resolution) end
+		end
+		fail(tostring(coordination))
+	end
+	-- Tentative fixed-point passes must not consume the durable trace budget.
+	-- Retain the exact accepted frames; re-solving from baseline here would
+	-- discard the interior state and could separate endpoints from junctions.
+	local finalRouteResolutions = coordination.routeResolutions
+	for _, route in ipairs(foundation.routeConstructions) do
+		recordTerrainTrace(route, finalRouteResolutions[route.routeId])
 	end
 	local junctionResolutions = {}
 	for _, junction in ipairs(foundation.routeJunctions) do
@@ -1542,6 +1544,7 @@ end
 
 local function fitAssetModelToDeclaration(model: Model, entry: any): ()
 	model.Name = entry.instanceId
+	LoadedAsset.anchorGeometry(model)
 	local initialPivot = model:GetPivot()
 	local sourceBounds = entry.sourceBoundsMeters
 	if typeof(sourceBounds) ~= "table" then fail("instance has no measured source bounds") end
@@ -1594,13 +1597,10 @@ local function fitAssetModelToDeclaration(model: Model, entry: any): ()
 	local settledCenter, settledSize = ModelBounds.worldAabb(model)
 	if (settledCenter - expectedCenter).Magnitude > Constants.BOUND_TOLERANCE_STUDS or (settledSize - expectedSize).Magnitude > Constants.BOUND_TOLERANCE_STUDS then
 		fail(string.format(
-			"loaded asset bounds drifted for %s (Roblox %d): expected center %s size %s, observed center %s size %s",
-			entry.instanceId,
-			entry.robloxAssetId,
-			formatVectorMeters(expectedCenter),
+			"loaded bounds drifted: expected size %s, observed size %s; center error %s",
 			formatVectorMeters(expectedSize),
-			formatVectorMeters(settledCenter),
-			formatVectorMeters(settledSize)
+			formatVectorMeters(settledSize),
+			formatVectorMeters(settledCenter - expectedCenter)
 		))
 	end
 	verifyMaterialExpectations(model, entry.materialExpectations)
@@ -2098,11 +2098,7 @@ function WorldLowering.readback(transaction: any): any
 				formatVectorMeters(actualSize)
 			))
 		end
-		local hasPart = false
-		for _, descendant in ipairs(model:GetDescendants()) do
-			if descendant:IsA("BasePart") then hasPart = true break end
-		end
-		if not hasPart then fail("realized instance has no geometry: " .. expected.instanceId) end
+		LoadedAsset.verifyAnchoredGeometry(model)
 		table.insert(observations, { instanceId = expected.instanceId, realizedHash = expected.hash })
 	end
 	if pendingMeso ~= nil then

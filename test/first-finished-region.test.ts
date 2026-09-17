@@ -194,7 +194,7 @@ test("the first finished region integrates routes, construction, and admitted ca
         .map((entry) => entry.id);
       assert.deepEqual(blockerIds, [], `opening ${opening.openingId} has an offline blocker`);
     }
-  assert.equal(first.instances.length, 229);
+  assert.equal(first.instances.length, 230);
   assert.deepEqual([...new Set(first.instances.map((entry) => entry.intentId))].sort(), [
     "PlaceEastCanopyGrove",
     "PlaceEastFernFloor",

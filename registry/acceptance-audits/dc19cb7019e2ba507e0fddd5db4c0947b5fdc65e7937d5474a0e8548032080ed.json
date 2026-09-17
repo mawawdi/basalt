@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "dc19cb7019e2ba507e0fddd5db4c0947b5fdc65e7937d5474a0e8548032080ed",
+  "assetHash": "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+  "renderEvidenceHash": "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+  "assertionBundleHash": "204a276828c60530070292fcef66b9f29c02e08fc41011756cfbcd57be18ee98",
+  "entryHandle": "rural_coral_flower_clump",
+  "memberId": "source_dc19cb7019e2ba50",
+  "entryDeclarationHash": "925ed251a7ad47aa46c5859de34e9538e9ba5a434800fc58d1ca8cfbc0344819",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "84fc6d1d8b961e5989cd3a10b7c5efd8894c48b63b24f5a40bed904467af4827",
+        "89ba7b215df01ab9d15b5b58620c54dffa5ef2a5bde258d8317ca949ac3f9454",
+        "e19a5a6c5cf6de4e25b99a7d2026cbb011516893034e5c5f3b4bff4c411e6d6b"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Decorative flowering cluster compatible with the warm rural palette."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "920198563903633da67db50b6f0da87c3da9956f956bd348fd34b6d012107897"
+}

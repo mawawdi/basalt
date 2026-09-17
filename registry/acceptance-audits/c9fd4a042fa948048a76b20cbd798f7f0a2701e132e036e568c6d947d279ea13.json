@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "c9fd4a042fa948048a76b20cbd798f7f0a2701e132e036e568c6d947d279ea13",
+  "assetHash": "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4",
+  "renderEvidenceHash": "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+  "assertionBundleHash": "6d35e011008232f6e19226990e214e9b6478553b10978c57399d23608ba8402c",
+  "entryHandle": "rural_wooden_barrel",
+  "memberId": "source_c9fd4a042fa94804",
+  "entryDeclarationHash": "3c59daef36ad476db96f9167d322402696decd6fc48847aec05f15818af97896",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Static container exterior with original materials retained."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+        "60eda206be034f1a715f263f10c6a572389f2ec3955309e684fca9887694bb92",
+        "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Static container exterior with original materials retained."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "2b8af82e4f1cbafa8f20d6a2f6021e24c197533c3dccdfb03e99f9ecbf2b2a93"
+}

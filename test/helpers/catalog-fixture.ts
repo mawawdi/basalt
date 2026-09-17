@@ -21,7 +21,10 @@ import {
 
 const evidenceHash = contentHash("catalog-fixture-evidence");
 
-export async function catalogFixture(module: SemanticModule): Promise<{
+export async function catalogFixture(
+  module: SemanticModule,
+  verticalOffsetMeters = 0,
+): Promise<{
   asset: CatalogAssetArtifact;
   snapshot: CatalogSnapshot;
   requirement: CatalogRequirement;
@@ -59,14 +62,20 @@ export async function catalogFixture(module: SemanticModule): Promise<{
       unitsToMeters: q(1),
       canonicalRoot: transform(),
     },
-    bounds: { min: vector(-0.5, 0, -0.5), max: vector(0.5, 2, 0.5) },
+    bounds: {
+      min: vector(-0.5, verticalOffsetMeters, -0.5),
+      max: vector(0.5, verticalOffsetMeters + 2, 0.5),
+    },
     parts: [
       {
         partId: "trunk_and_canopy",
         geometryHash: contentHash("catalog-fixture-part"),
         role: "render_static",
         transform: transform(),
-        bounds: { min: vector(-0.5, 0, -0.5), max: vector(0.5, 2, 0.5) },
+        bounds: {
+          min: vector(-0.5, verticalOffsetMeters, -0.5),
+          max: vector(0.5, verticalOffsetMeters + 2, 0.5),
+        },
         triangleCount: 128,
         materialHashes: [contentHash("catalog-fixture-material")],
       },
@@ -89,7 +98,7 @@ export async function catalogFixture(module: SemanticModule): Promise<{
       companionAssetHashes: [],
       orientedBounds: [
         {
-          center: vector(0, 1, 0),
+          center: vector(0, verticalOffsetMeters + 1, 0),
           halfSize: vector(0.5, 1, 0.5),
           rotation: [0, 0, 0, 1],
         },

@@ -717,17 +717,18 @@ async function robloxImport(values: string[]): Promise<void> {
   );
   const bridge = new RobloxImportBridge({ workspaceRoot: repositoryRoot, manifest, credential });
   const port = await bridge.start();
+  const shutdown = async () => {
+    await bridge.stop();
+  };
+  process.once("SIGINT", () => void shutdown());
+  process.once("SIGTERM", () => void shutdown());
+  process.once("SIGHUP", () => void shutdown());
   print({
     status: "pending",
     worldBuildHash: worldBuild.worldBuildHash,
     port,
     discovery: "automatic",
   });
-  const shutdown = async () => {
-    await bridge.stop();
-  };
-  process.once("SIGINT", () => void shutdown());
-  process.once("SIGTERM", () => void shutdown());
   await new Promise<void>((resolveImport) => {
     const timer = setInterval(() => {
       if (bridge.state === "complete" || bridge.state === "incomplete") {
@@ -891,10 +892,15 @@ async function retainCatalogEvidence(
   }
   const reviewedArtifacts = [
     ...new Set(
-      acceptanceAudits.flatMap((audit) => [audit.reviewPacketHash, audit.reviewDecisionHash]),
+      acceptanceAudits.flatMap((audit) => [
+        audit.reviewPacketHash,
+        audit.reviewDecisionHash,
+        audit.visualReviewIndexHash,
+      ]),
     ),
   ].sort(compare);
   for (const artifactHash of reviewedArtifacts) {
+    if (retained.some((entry) => entry.artifactHash === artifactHash)) continue;
     const relativePath = `registry/evidence/${artifactHash}.json`;
     const raw = (await readJson(relativePath)) as { readonly kind?: unknown };
     const artifact =
@@ -902,7 +908,9 @@ async function retainCatalogEvidence(
         ? CATALOG_CREATOR_REVIEW_PACKET_SCHEMA.parse(raw)
         : raw?.kind === "CatalogCreatorReviewDecision"
           ? CATALOG_CREATOR_REVIEW_DECISION_SCHEMA.parse(raw)
-          : undefined;
+          : raw?.kind === "CatalogVisualReviewIndex"
+            ? CATALOG_VISUAL_REVIEW_INDEX_SCHEMA.parse(raw)
+            : undefined;
     if (!artifact || artifact.hash !== artifactHash)
       throw new Error(`Acceptance audit references invalid retained evidence ${artifactHash}`);
     const bytes = await readBoundedWorkspaceBytes(

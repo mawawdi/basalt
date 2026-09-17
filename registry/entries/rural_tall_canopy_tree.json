@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_tall_canopy_tree",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000003",
+      "commitmentHash": "941f3e31cb795011c5f16329a17dafef61bfe718fcb68d499694f965fedfb582"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "161bbf9229258873d87f489081248e72ce9971c75c8103a907b5e4b17d466f33"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+    "d6adc83c5712d54ffad8e67d4f28a608bf8a891c83537f974181e3743a51e6ee"
+  ],
+  "members": [
+    {
+      "memberId": "source_9210fd84d48b68b2",
+      "assetHash": "8e1be009d2f9fb86e9352f67cee358d4da73659510a0d1d7a20ce9c1f902e5fa",
+      "assertionBundleHash": "8b3d9a885642706d21b1240f78953460c9399889d1397ff55e77e65a67ab1874",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

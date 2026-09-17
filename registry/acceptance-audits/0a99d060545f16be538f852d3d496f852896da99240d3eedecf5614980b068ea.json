@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "0a99d060545f16be538f852d3d496f852896da99240d3eedecf5614980b068ea",
+  "assetHash": "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2",
+  "renderEvidenceHash": "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+  "assertionBundleHash": "2a52f7fb6f26e9d003adae782d2b2c934f04fe0c45640a7a1a89e0627742418a",
+  "entryHandle": "rural_market_stall",
+  "memberId": "source_0a99d060545f16be",
+  "entryDeclarationHash": "6dbf6c23e43dea95eae2241cd6fe5f55ed44e374c2f572e4a3e4cd8d270d29f0",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Complete open stall with attached display props; no vendor behavior."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "064187128cfa9ccd79766c9e5a9c449e3bba1db622f2560334fa46cb8ad90130",
+        "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+        "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Complete open stall with attached display props; no vendor behavior."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "c47e72b10059fa77ac94b22ced8f804aff1797c23736057d9d77b097c29cec4b"
+}

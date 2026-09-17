@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "0431d44485b9d89b0434b2ec76fecded7804594a133782246d75d7ad9525761f",
+  "assetHash": "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+  "renderEvidenceHash": "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a",
+  "assertionBundleHash": "c00ccc29be54b5209187588c7935f229261253b44ef0ce0c8171915fb32b2fd7",
+  "entryHandle": "rural_harvest_cart",
+  "memberId": "source_0431d44485b9d89b",
+  "entryDeclarationHash": "13f7adc8a9e38348437fc4c674cad22e7297b1e5e0e394fc23342d9a3a6f812e",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "9477257279293f824db799ec3750965c7b33ad3c06bd1e4fd4ab25247699b4c2",
+        "c792cf1343791ecea69487841e06ac6f2381938a4d733830aa86c67cf4d90331",
+        "e06f575beb2ee6aac5e10c41a459306175ba42be8b14df33d5e403271bc7695a"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Static cart with attached cargo, treated as one authored asset."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "2cbd0368b78c30cd305132512ae08f1d08011ee3248ca2279902535fbd53987b"
+}

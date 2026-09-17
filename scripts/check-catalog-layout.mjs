@@ -230,7 +230,11 @@ const visualEvidence = committed.retainedEvidence.filter(
 if (
   measurementEvidence.length !== 1 ||
   measurementEvidence[0]?.artifactHash !== committed.measurementSetHash ||
-  visualEvidence.length !== 1
+  visualEvidence.length < 1 ||
+  committed.acceptanceAudits.some(
+    (audit) =>
+      !visualEvidence.some((evidence) => evidence.artifactHash === audit.visualReviewIndexHash),
+  )
 )
   throw new Error("Catalog authority must retain exact measurement and visual-review evidence");
 for (const hash of referencedReviewHashes)

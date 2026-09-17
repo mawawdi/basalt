@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_water_trough",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000057",
+      "commitmentHash": "a79be54643085011df9a31fc7a208149a885827277124faea1c815195edd5932"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "1d15d412686e191b0dc3200f02d830fc40a202aba1d5fdd4f53d05879d254c45"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "a9d47d95b673618761500b1d896863616886a9d5e6a01cd73b85f26050d743a2",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+    "b2d6ba81a36e2e263ad23a797653fe804b08290d13f1615441f67c5053801173"
+  ],
+  "members": [
+    {
+      "memberId": "source_0ee5b66db05628b5",
+      "assetHash": "a9d47d95b673618761500b1d896863616886a9d5e6a01cd73b85f26050d743a2",
+      "assertionBundleHash": "599c03cb015baa50de960d7200f33f706d493d84e19fe6f04942cf766699811c",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

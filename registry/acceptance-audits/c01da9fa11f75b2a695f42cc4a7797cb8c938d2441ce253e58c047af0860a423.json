@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "c01da9fa11f75b2a695f42cc4a7797cb8c938d2441ce253e58c047af0860a423",
+  "assetHash": "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24",
+  "renderEvidenceHash": "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+  "assertionBundleHash": "753cbdb287e791ad9ebc8073ed87fffef9686f545a7813196f2b4e38a3d82660",
+  "entryHandle": "rural_leafy_shrub",
+  "memberId": "source_c01da9fa11f75b2a",
+  "entryDeclarationHash": "9621dd8e6420a3e4b3e9dd80fd19b5c5e9dca612802445cc3fc3443740c2b381",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "a28c29d496203f31e91948cd4bb23ee72ff0961497f07bc190b0063e8e6dcc1e",
+        "d20eef977c915070e895455d2a138d9bf54ff3236f08c1fa7fef4e80fa566aab",
+        "e56076dd15aa7713ac326721a52deaf733d60d8225b9bcc0bfb3a0b5aa137a24"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Inspected leaf texture projection is intact; retain source material resources."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "d1836b359f75dec1cfea3f3d4bfe90037af6a92b751007270ff33cd9d8b38c34"
+}

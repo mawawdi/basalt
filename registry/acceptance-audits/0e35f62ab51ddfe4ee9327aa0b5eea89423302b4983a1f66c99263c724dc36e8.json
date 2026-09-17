@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "0e35f62ab51ddfe4ee9327aa0b5eea89423302b4983a1f66c99263c724dc36e8",
+  "assetHash": "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f",
+  "renderEvidenceHash": "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+  "assertionBundleHash": "1a16ba4363fdef1b44761d2a7752944283bd5fa5c1941451e50f3fb2e5e374cf",
+  "entryHandle": "rural_orchard_spreading_tree",
+  "memberId": "source_0e35f62ab51ddfe4",
+  "entryDeclarationHash": "fd67bb84ac817dfa73d2fdacef7f851fb7a1a00933b340e10a51240dad7c9879",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. No fruit species or harvest behavior is inferred."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "af5176edd96fd47d47274c76b86f263613d3403ebfbedb88146ef6f7592cd26f",
+        "bf34652ef960f6306523dc14d363b27c00b2f4de081de4930c844586498349f3",
+        "f2dda1fdb0af63ad5516e952282251231427038442a7f4007025b1c634a35d1f"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. No fruit species or harvest behavior is inferred."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "0512c9f23a4f3141b720d174a8ebb9be202bdab14fcf316bb5f405993e465575"
+}

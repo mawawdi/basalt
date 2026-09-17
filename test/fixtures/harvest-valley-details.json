@@ -1,0 +1,256 @@
+{
+  "name": "Harvest Valley landscape and farm detail",
+  "batchId": "harvest-valley-details",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "rationale": "Thirty-one separately measured sources inspected in six canonical RGB views each. Add mature canopy, mixed woodland, orchard trees, groundcover, garden borders, static fence sections and agricultural props to the compact rural settlement. Defective texture projections were excluded. Source names were discovery hints; admission uses visible identity, exact dimensions, contact, resource integrity and existing broad concepts. Each source remains its own singleton entry.",
+  "assets": [
+    {
+      "sourceContentHash": "8fed9bdae5026714afbb9c41ab9b2077f8f89a7358639d8491d0c676e89cc32e",
+      "handle": "swing_tree",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Large branching tree with a dense olive-green canopy and an attached hanging wooden swing.",
+      "scopeNote": "Static tree-and-swing model; no swinging or seated interaction is asserted."
+    },
+    {
+      "sourceContentHash": "9210fd84d48b68b203161a5385fa0311927344e3c5e510bc8bcdae58d19d7ad1",
+      "handle": "tall_canopy_tree",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Tall slender branching tree with a broad uneven green crown.",
+      "scopeNote": "Preserve the measured 18.7-meter height and complete crown footprint."
+    },
+    {
+      "sourceContentHash": "f55ea891598a40fd5c61a8b9a5d3baf3326a920142d9c6c2522093ff6cf3d694",
+      "handle": "monument_tree",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Very tall forked tree with an open trunk and a spreading green crown.",
+      "scopeNote": "Preserve the measured 24.4-meter height; no climbing affordance is asserted."
+    },
+    {
+      "sourceContentHash": "d1f72248f92765ce6db8422668283e033093d4938e16b4acf5943a7a62cec356",
+      "handle": "old_broadleaf",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Broad gnarled tree with exposed roots and layered pale-green foliage.",
+      "scopeNote": "Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "sourceContentHash": "09c199c3ea03c5c922853fe77779feee5a429db277b914fd213f4838ddd9bce4",
+      "handle": "woodland_group",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Compact group of slender tree trunks beneath overlapping angular olive-green crowns.",
+      "scopeNote": "A precomposed group placed as one measured unit; its internal trees are not independent instances."
+    },
+    {
+      "sourceContentHash": "bd88ff9a4e6f50fec166b29a11d45cb668b8103ae30bff59221d43f7dc734f00",
+      "handle": "silver_birch",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "White-barked branching tree with separated clusters of dark blue-green leaves.",
+      "scopeNote": "Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "sourceContentHash": "3cac3330ca6dad97cfa45d22892d540f0e1959e41fa09cd55bee9473da5fba2c",
+      "handle": "slender_birch",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Slender white-barked tree with an asymmetric crown of dark green leaf clusters.",
+      "scopeNote": "Ground-supported tree with its full measured canopy footprint retained."
+    },
+    {
+      "sourceContentHash": "8d6ccba4a5a2842724ea1858d331d30227fd27420f2fff00297f22b09ecad75f",
+      "handle": "ridge_pine",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Tall conifer with layered dark-green triangular boughs and a short visible brown trunk.",
+      "scopeNote": "Healthy source color projection inspected in six canonical views."
+    },
+    {
+      "sourceContentHash": "93f1fea21951f095c024fe6f9a2087d95bc3f923cab521660be27688f51af6a1",
+      "handle": "meadow_pine",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Conifer with an exposed brown trunk and stacked tapering dark-green boughs.",
+      "scopeNote": "No snow or seasonal state is asserted."
+    },
+    {
+      "sourceContentHash": "0e35f62ab51ddfe4ee9327aa0b5eea89423302b4983a1f66c99263c724dc36e8",
+      "handle": "orchard_spreading_tree",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Small spreading tree with a thick brown trunk and dense bright-green rounded foliage.",
+      "scopeNote": "No fruit species or harvest behavior is inferred."
+    },
+    {
+      "sourceContentHash": "dbd6da5d29899feafc6d7604b454fba1bdbfa62543187d467991693b7e493a4b",
+      "handle": "fruit_tree",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Small orchard tree with a rounded olive-green crown and visible red fruit.",
+      "scopeNote": "Fruit remains attached source geometry; no picking or edible-property claim."
+    },
+    {
+      "sourceContentHash": "982223ccba91e97b6e202a37d7488cfe70f97d45cb544aaad8f69bbe27cc4b44",
+      "handle": "orchard_round_tree",
+      "conceptId": "bsc_000003",
+      "realizationForm": "whole",
+      "caption": "Small tree with a rounded angular green crown and a branching brown trunk.",
+      "scopeNote": "No fruit species or harvest behavior is inferred."
+    },
+    {
+      "sourceContentHash": "d49516baad865fd14eefe163322cd73ad83f7014c734649732b39f2cccb6f0ad",
+      "handle": "meadow_grass_patch",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Wide low patch of separated broad angular olive-green grass blades.",
+      "scopeNote": "Precomposed groundcover; blades are one placement unit."
+    },
+    {
+      "sourceContentHash": "32bd22f9a1b8430d54dbf69111307febf979ccd595e1b6b85a3cbf2e8009264f",
+      "handle": "dense_grass_patch",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Dense tufted patch of broad pointed olive-green grass blades.",
+      "scopeNote": "Precomposed groundcover; preserve source color and measured dimensions."
+    },
+    {
+      "sourceContentHash": "35e670c1396a9efdb5684ae9cf042cc30e86313b58074ea96d6a17022346cd6f",
+      "handle": "purple_flower_clump",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Small group of faceted purple blossoms on thick upright green stems.",
+      "scopeNote": "Decorative flowering cluster; no species or interaction claim."
+    },
+    {
+      "sourceContentHash": "dc19cb7019e2ba507e0fddd5db4c0947b5fdc65e7937d5474a0e8548032080ed",
+      "handle": "coral_flower_clump",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Small group of faceted coral-orange blossoms on thick green stems.",
+      "scopeNote": "Decorative flowering cluster compatible with the warm rural palette."
+    },
+    {
+      "sourceContentHash": "ed1f95afed4b4d163c675d2fb0f17f553be096a8c58a36a03e7a66ec38f80d57",
+      "handle": "trimmed_hedge",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Low rectangular dark-green trimmed hedge section with beveled edges.",
+      "scopeNote": "Bounded planted hedge section; no inferred assembly socket or joining guarantee."
+    },
+    {
+      "sourceContentHash": "c94b406c10803632aef07fe7b64251823b0cdabb025cf7d49a6ac5220eb6c48f",
+      "handle": "garden_hedge",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Long olive-green hedge section with an uneven faceted leafy surface.",
+      "scopeNote": "One bounded planting unit; exact measured size controls placement."
+    },
+    {
+      "sourceContentHash": "c01da9fa11f75b2a695f42cc4a7797cb8c938d2441ce253e58c047af0860a423",
+      "handle": "leafy_shrub",
+      "conceptId": "bsc_000004",
+      "realizationForm": "whole",
+      "caption": "Compact dark-green shrub with many small pointed textured leaves.",
+      "scopeNote": "Inspected leaf texture projection is intact; retain source material resources."
+    },
+    {
+      "sourceContentHash": "f463a8ba577b53bf691acded8cad7aabe4d14916ba281d0386d527be4449993e",
+      "handle": "rustic_fence",
+      "conceptId": "bsc_000025",
+      "realizationForm": "whole",
+      "caption": "Freestanding timber fence section with uneven horizontal rails and upright posts.",
+      "scopeNote": "Decorative boundary section; no assembly-kit, mating-socket or navigation guarantee."
+    },
+    {
+      "sourceContentHash": "3ce644aa4f49e87c3051ba770f2fa64f692dcbd0bd08a26bd0619afdafb4fc89",
+      "handle": "rail_fence",
+      "conceptId": "bsc_000025",
+      "realizationForm": "whole",
+      "caption": "Timber fence section with three horizontal rails and two squared posts.",
+      "scopeNote": "Independently placeable fence section; do not infer kit compatibility."
+    },
+    {
+      "sourceContentHash": "c7b22f55a0e825cad85122129410b49013445e28acb359604ee0cabeeaada4c7",
+      "handle": "field_gate",
+      "conceptId": "bsc_000025",
+      "realizationForm": "whole",
+      "caption": "Closed cross-braced timber gate between short rail-fence sections and posts.",
+      "scopeNote": "Static closed barrier; hinge operation and traversable opening are not asserted."
+    },
+    {
+      "sourceContentHash": "36f1bfb477d1076b4dc52408c00ecc88a12a640000d7380c3b428526d3267204",
+      "handle": "weathered_barrel",
+      "conceptId": "bsc_000059",
+      "realizationForm": "whole",
+      "caption": "Weathered dark wooden barrel with gray metal hoops and a closed plank lid.",
+      "scopeNote": "Static sealed container exterior; contents and interaction are not asserted."
+    },
+    {
+      "sourceContentHash": "c9fd4a042fa948048a76b20cbd798f7f0a2701e132e036e568c6d947d279ea13",
+      "handle": "wooden_barrel",
+      "conceptId": "bsc_000059",
+      "realizationForm": "whole",
+      "caption": "Warm-brown wooden barrel with broad pale metal hoops and a closed flat lid.",
+      "scopeNote": "Static container exterior with original materials retained."
+    },
+    {
+      "sourceContentHash": "0ee5b66db05628b5d8766a49b834636a200dcc36ef832e5e5a8fa5b5e48b2b50",
+      "handle": "water_trough",
+      "conceptId": "bsc_000057",
+      "realizationForm": "whole",
+      "caption": "Long shallow timber trough containing a flat blue-green surface.",
+      "scopeNote": "Contained surface is authored mesh appearance, not simulated or drinkable water."
+    },
+    {
+      "sourceContentHash": "d9fec8e5b6319156491e21b7ff21db0d6e5c29e766334288e50571db5a396ee3",
+      "handle": "wooden_wheelbarrow",
+      "conceptId": "bsc_000075",
+      "realizationForm": "whole",
+      "caption": "Empty wooden wheelbarrow with one gray wheel, two handles and support legs.",
+      "scopeNote": "Static equipment; wheel movement and load carrying are not asserted."
+    },
+    {
+      "sourceContentHash": "5cb227142116a5e911b92a998d4f4600e2761cc8cbdbd8ada322fd56f8d9920d",
+      "handle": "sack_group",
+      "conceptId": "bsc_000104",
+      "realizationForm": "aggregate",
+      "caption": "Cluster of four tied tan sacks with faceted bulging sides.",
+      "scopeNote": "Multiple soft containers retained as one placement unit; contents unknown."
+    },
+    {
+      "sourceContentHash": "97c13f73657e7ea7b11e2b67a16c7c9bd2a86cd5858124695a6a7995da409dfd",
+      "handle": "tied_sack",
+      "conceptId": "bsc_000064",
+      "realizationForm": "whole",
+      "caption": "Single tan sack with a bulging body and a gathered tied neck.",
+      "scopeNote": "Static soft container; contents unknown."
+    },
+    {
+      "sourceContentHash": "154862255c8771c20b3930642823621219373f875f035d2cedcb778eb7597dca",
+      "handle": "closed_crate",
+      "conceptId": "bsc_000058",
+      "realizationForm": "whole",
+      "caption": "Closed timber crate with inset plank panels and a framed square lid.",
+      "scopeNote": "No opening or stacking affordance is asserted."
+    },
+    {
+      "sourceContentHash": "4ad270dbefa4e65e9176ee345433383a6b645e08480f056f89f462977b8057fd",
+      "handle": "open_crate",
+      "conceptId": "bsc_000058",
+      "realizationForm": "whole",
+      "caption": "Open-topped brown timber crate with a visible empty interior and diagonal bracing.",
+      "scopeNote": "Visible opening only; no storage interaction or load capacity is asserted."
+    },
+    {
+      "sourceContentHash": "bef7af8928ecaa4b1add9cc859812e74de1ff691db59f36b63b2fde3e4191565",
+      "handle": "empty_handcart",
+      "conceptId": "bsc_000075",
+      "realizationForm": "whole",
+      "caption": "Empty wooden two-wheel handcart with a plank bed and long twin handles.",
+      "scopeNote": "Static cart; no wheel motion or towing connection is asserted."
+    }
+  ]
+}

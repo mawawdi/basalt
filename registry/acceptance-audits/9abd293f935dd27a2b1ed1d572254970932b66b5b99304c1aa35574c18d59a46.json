@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "9abd293f935dd27a2b1ed1d572254970932b66b5b99304c1aa35574c18d59a46",
+  "assetHash": "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6",
+  "renderEvidenceHash": "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+  "assertionBundleHash": "6145843f10acc5bb967c6a1b9a2d0fe3559c80e73e2dcff6748836a3d78769e5",
+  "entryHandle": "rural_wind_pump",
+  "memberId": "source_9abd293f935dd27a",
+  "entryDeclarationHash": "3cf46eb5d050055747339020c60552611a76c247e1cf603c8e8f675392899dcf",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "c7194db2f33cc5f4ca17a6e4895d6f460921352bad1474c5ff97f0d661e446f8",
+        "da4ef00a1fbef4d251c2eb892ce6218bfb4a1cb9e8e6840750d9022409ed5411",
+        "fd2799901e8058e9baf4058f07599aa32e0b51dc3fa02e4cff30f33b196f9be6"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Static rural landmark; rotor motion and pumping function are not asserted."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "6820b31c31a1add278b1ea53b8bf18999f9e99d00198664b069a2ab8ef480b52"
+}

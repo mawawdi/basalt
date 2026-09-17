@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_small_red_flowers",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000101",
+      "commitmentHash": "9826c9d7ff925cb315f9f3342d5d6c52e18ab47a9d7cc4cb66e7aa5a9f989ec0"
+    },
+    "realizationForm": "aggregate",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "fdbb56b7843dce1731825f22940a01bb2f1f9d19af4b9681ceda7ab8a297c22e"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+    "e8d9839667d8b36be455ee51dde5060523ab0caa5d0fc2f10a38dae469bdc431",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_80d89bdd33643ab9",
+      "assetHash": "b238cc502d0a16abc758f6746908371bc8c6616892f098c3f0cb75c6ec28c194",
+      "assertionBundleHash": "c5c7fd8deb38bda954e0812ce5b245676be42fb5fb3961c03f0235dbb2fb15e7",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

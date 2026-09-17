@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_silver_birch",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000003",
+      "commitmentHash": "941f3e31cb795011c5f16329a17dafef61bfe718fcb68d499694f965fedfb582"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "161bbf9229258873d87f489081248e72ce9971c75c8103a907b5e4b17d466f33"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f"
+  ],
+  "members": [
+    {
+      "memberId": "source_bd88ff9a4e6f50fe",
+      "assetHash": "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+      "assertionBundleHash": "8b8bd65b09a0491ee37bf8410dc36727010692771dcf198b5351fa9ff00accbf",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

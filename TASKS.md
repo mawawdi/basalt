@@ -5,6 +5,12 @@ implementation checklists. Completed cards are removed; Git history is the recor
 
 ## Now
 
+- [ ] **ROBLOX-HARVEST — Complete the catalog-only showcase gate.** Import the separate
+      112-meter Harvest Valley region using the captured and sealed Studio material bindings.
+      The compiled scene has 60 source models, thirteen connected
+      paths and no constructed buildings. Complete with exact connector readback and creator
+      acceptance of appearance and traversal in the farm court, campsite and ridge loop.
+
 - [ ] **CAT-QUALIFY — Qualify catalog retrieval at realistic scale.** Author and run the
       leakage-isolated pooled benchmark, then freeze retrieval channels, view count, metadata
       writer, and requirement validator. The filename-derived 192-asset answer key is retired. A
@@ -35,7 +41,7 @@ implementation checklists. Completed cards are removed; Git history is the recor
       disposition and the resulting catalog snapshot seals.
 
 - [ ] **ROBLOX-FIRST-REGION — Complete the integrated creator gate.** The expanded 96-meter
-      highland core is offline-eligible: 229 admitted catalog instances across eleven asset types,
+      highland core is offline-eligible: 230 admitted catalog instances across eleven asset types,
       more than 21 meters of terrain relief, seven connected route segments, lower-ravine and
       summit elevated crossings, four shared junctions, a trailhead gateway, a route-connected
       ridge pavilion, a cantilevered ravine overlook, and a route-connected 13.5-meter roofed
@@ -49,6 +55,11 @@ implementation checklists. Completed cards are removed; Git history is the recor
       regressions, not additional creator loops.
 
 ## Ready
+
+- [ ] **CAT-MATERIALS — Repair foliage texture projection.** Inspect the imported pine,
+      willow and birch material assignments against their original source materials. These
+      visibly defective models are excluded from Harvest Valley. Complete when corrected
+      source-derived artifacts pass multiview inspection and fresh Studio material readback.
 
 - [ ] **CONSTRUCTION-GEOMETRY — Qualify Manifold and richer construction.** Test
       deterministic profile extrusion and solid operations, including material preservation

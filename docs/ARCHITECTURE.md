@@ -101,6 +101,10 @@ stream until the authored target is reached or the attempt budget is exhausted. 
 containment and shared measured 3D occupancy prune each candidate; a rejected candidate does
 not silently consume one of the requested instances. Exhaustion retains explicit underfill
 diagnostics and never weakens the authored minimum or separation.
+Coordinates and yaw are independently sampled per candidate from its content hash, so a group
+does not share one rotation or form a low-discrepancy lattice. Collision is evaluated using
+that candidate's final orientation. `minimumSeparationMeters` adds a horizontal margin around
+measured bounds; it is not a center-to-center spacing parameter.
 
 ## Declarative construction
 
@@ -294,6 +298,17 @@ positive area from exact bottom topology; `lower_extrema` records deterministic 
 alignment with zero planar area when rounded, open, pointed, or card geometry has no planar
 base. The latter never implies stable support or ground-placement intent. Deformable support
 is refused, and the entry declaration plus creator review still select the installation mode.
+
+An explicitly delegated visual author may also supply a bounded catalog admission decision.
+Its packet requires `delegated_ai`, its decision records `delegated_visual_review` and the
+delegation statement, and its acceptance audits preserve that reviewer. It cannot claim
+independent creator review. The commit retains every referenced measurement, review packet,
+decision and render-index root, including roots from different admission batches. This authored
+path does not enable automatic model admission or qualify corpus execution.
+
+Requirements may narrow candidates with `allowedEntryHandles`. This filter never bypasses
+semantic, style, metric, rights or resource requirements. Single placement intents may specify
+`yawDegrees`; the compiler applies that rotation before computing occupancy and complete bounds.
 
 Runtime entry kinds are:
 

@@ -1,0 +1,152 @@
+{
+  "name": "Harvest Valley",
+  "batchId": "harvest-valley",
+  "rationale": "Eighteen visually inspected singleton entries selected for a coherent rural valley: complete exterior farm buildings, agricultural landmarks, market and campsite props, rock formation and flowering groundcover. Source names were discovery hints; visual and measured evidence decide admission.",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "assets": [
+    {
+      "sourceContentHash": "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62",
+      "handle": "farmhouse",
+      "conceptId": "bsc_000022",
+      "realizationForm": "whole",
+      "caption": "Weathered white two-story farmhouse with a wraparound porch, gray shingled gables and a brick chimney.",
+      "scopeNote": "Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "sourceContentHash": "39b73cdb547db18cd92b605bca89e0f8bf2a306bc675b37d83f75b85ca9a18b2",
+      "handle": "long_barn",
+      "conceptId": "bsc_000022",
+      "realizationForm": "whole",
+      "caption": "Long red timber barn with white cross-braced doors, small windows and a dark shingled roof.",
+      "scopeNote": "Complete exterior building; separate rendered wall and roof parts retained."
+    },
+    {
+      "sourceContentHash": "8dca04af8ea5c8a3f60b07c0a3a9e462d2981b372dbd8779787743d7a2edb7ae",
+      "handle": "small_barn",
+      "conceptId": "bsc_000022",
+      "realizationForm": "whole",
+      "caption": "Compact red timber barn with white door braces and a steep dark shingled roof.",
+      "scopeNote": "Complete exterior building; no gameplay or interior claim."
+    },
+    {
+      "sourceContentHash": "9abd293f935dd27a2b1ed1d572254970932b66b5b99304c1aa35574c18d59a46",
+      "handle": "wind_pump",
+      "conceptId": "bsc_000021",
+      "realizationForm": "whole",
+      "caption": "Slender gray metal wind-pump tower with a circular rotor and a long tail vane.",
+      "scopeNote": "Static rural landmark; rotor motion and pumping function are not asserted."
+    },
+    {
+      "sourceContentHash": "38b4ad677ecdc81bae0215650056f2ad2be5aec19e6d3b246816bc57a46a72a7",
+      "handle": "stone_arch",
+      "conceptId": "bsc_000012",
+      "realizationForm": "whole",
+      "caption": "Large gray-brown faceted rock arch with two broad feet and an irregular stone span.",
+      "scopeNote": "Scenic rock landmark; opening traversal is not inferred from its bounding box."
+    },
+    {
+      "sourceContentHash": "0e70fe0d8118bd048e161939db4b14bb39c23691bf82773e164d22f19b230276",
+      "handle": "stone_well",
+      "conceptId": "bsc_000027",
+      "realizationForm": "whole",
+      "caption": "Round stone well with a thick gray rim, timber supports and a horizontal winding spindle.",
+      "scopeNote": "Decorative well structure; no water or interaction is claimed."
+    },
+    {
+      "sourceContentHash": "0431d44485b9d89b0434b2ec76fecded7804594a133782246d75d7ad9525761f",
+      "handle": "harvest_cart",
+      "conceptId": "bsc_000075",
+      "realizationForm": "whole",
+      "caption": "Wooden two-wheel handcart loaded with produce, sacks and small containers.",
+      "scopeNote": "Static cart with attached cargo, treated as one authored asset."
+    },
+    {
+      "sourceContentHash": "ad6546f15c50cfc3025d73ee219dda8f13acb10bb819534060bcc467314cf1aa",
+      "handle": "square_hay",
+      "conceptId": "bsc_000020",
+      "realizationForm": "whole",
+      "caption": "Golden rectangular hay bale with tied bands and coarse angular straw tufts.",
+      "scopeNote": "Ground-supported bundled material; no stacking guarantee."
+    },
+    {
+      "sourceContentHash": "d6a6a92c26fa9f32b1fa4e94d9f40b6b98a5c50ffd0bd25b66c9f65875c8b1e4",
+      "handle": "round_hay",
+      "conceptId": "bsc_000020",
+      "realizationForm": "whole",
+      "caption": "Golden cylindrical hay bale with layered straw edges and a rough spiral-like top.",
+      "scopeNote": "Ground-supported bundle; preserve authored dimensions."
+    },
+    {
+      "sourceContentHash": "1fd34c63d5d4676cd99e9d1f886b65ef8a1bc00befda076f2a90da728e30f334",
+      "handle": "garden_bench",
+      "conceptId": "bsc_000050",
+      "realizationForm": "whole",
+      "caption": "Wood-slat garden bench with a backrest, dark curved arms and metal legs.",
+      "scopeNote": "Scenic seating furniture; seat interaction is not asserted."
+    },
+    {
+      "sourceContentHash": "20f9994f3136293e25d523819f8aa0053aafbb35e9b3a3ff9434257190ae066d",
+      "handle": "red_flowers",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Wide patch of small coral-red flowers on slender green stems at varied heights.",
+      "scopeNote": "One mesh containing several flowering plants; decorative groundcover."
+    },
+    {
+      "sourceContentHash": "80d89bdd33643ab91629c455723b17697e46c1e86fe16c2b3d3915cb2b40172a",
+      "handle": "small_red_flowers",
+      "conceptId": "bsc_000101",
+      "realizationForm": "aggregate",
+      "caption": "Small cluster of coral-red flowers with green stems and leaves.",
+      "scopeNote": "One mesh containing several flowering plants."
+    },
+    {
+      "sourceContentHash": "50031169641cc60934f389813e23d6f43e3177228dbaef622159f7862bf27b57",
+      "handle": "campfire_ring",
+      "conceptId": "bsc_000020",
+      "realizationForm": "aggregate",
+      "caption": "Unlit ring of gray stones surrounding loosely stacked split wooden logs.",
+      "scopeNote": "Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "sourceContentHash": "0b98e70256ac9a8da9be169d5112f6bc0f11f44f5614be292ecbb3b048249547",
+      "handle": "sunflower",
+      "conceptId": "bsc_000005",
+      "realizationForm": "whole",
+      "caption": "Tall single sunflower with angular yellow petals, a brown center and green leaves.",
+      "scopeNote": "One upright flowering plant with a measured bottom contact."
+    },
+    {
+      "sourceContentHash": "03a76159fc1c5a78e1294dde5f907e3e5fc16e57a00e0cad13219b87258004a7",
+      "handle": "mushrooms",
+      "conceptId": "bsc_000008",
+      "realizationForm": "aggregate",
+      "caption": "Small cluster of red-capped mushrooms with pale stems curving from a common ground patch.",
+      "scopeNote": "Decorative fungal cluster; no edible or interactive property."
+    },
+    {
+      "sourceContentHash": "4bfad99cee72ea91c2605508326cd3074bfec632c8b4e8ae004624a5ad349a6c",
+      "handle": "canvas_shelter",
+      "conceptId": "bsc_000021",
+      "realizationForm": "whole",
+      "caption": "Small cream canvas shelter on a timber frame with an open front and side gaps.",
+      "scopeNote": "Intentionally open shelter; no sealed interior or weatherproofing assertion."
+    },
+    {
+      "sourceContentHash": "c0991d0de604cdfb93459f1a5050e7697aa711ac1c6da004c1c04067042fa652",
+      "handle": "lantern",
+      "conceptId": "bsc_000068",
+      "realizationForm": "whole",
+      "caption": "Dark metal lantern with a peaked cap, framed glass sides and a small carrying ring.",
+      "scopeNote": "Static decorative light fixture; emission is not claimed."
+    },
+    {
+      "sourceContentHash": "0a99d060545f16be538f852d3d496f852896da99240d3eedecf5614980b068ea",
+      "handle": "market_stall",
+      "conceptId": "bsc_000021",
+      "realizationForm": "whole",
+      "caption": "Timber market stall with a rust-colored cloth awning and food containers on its counter.",
+      "scopeNote": "Complete open stall with attached display props; no vendor behavior."
+    }
+  ]
+}

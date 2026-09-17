@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_market_stall",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000021",
+      "commitmentHash": "fa836e5762c547d60f6b40ed535230276615e2bfe536b310f2c2e2b5d9933013"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "14ccaeb9b46f91d9baebb6ffe21c2ed0699939135962af318c6ca69af0fb7c23"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "56bd788b13bdd46ae2f475608d2d3a52038376d773d9cc887dcbb88e1c6fc7e5",
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_0a99d060545f16be",
+      "assetHash": "d6085b3696778dbaa2f602cb815089c50c291fc4ca058bf52f1500ba6ab063b2",
+      "assertionBundleHash": "2a52f7fb6f26e9d003adae782d2b2c934f04fe0c45640a7a1a89e0627742418a",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

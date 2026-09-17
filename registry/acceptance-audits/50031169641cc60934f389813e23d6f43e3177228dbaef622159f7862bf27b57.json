@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "50031169641cc60934f389813e23d6f43e3177228dbaef622159f7862bf27b57",
+  "assetHash": "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+  "renderEvidenceHash": "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+  "assertionBundleHash": "9e9fcd5812246189b96e8461a7002a3195b82ed081ee932f5ecf4cab999a6d43",
+  "entryHandle": "rural_campfire_ring",
+  "memberId": "source_50031169641cc609",
+  "entryDeclarationHash": "e0c1659ee8b62ec4bc2f238509d9227cc2383d29713f5807c8819c27297e0808",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Decorative campfire arrangement; no live flame, heat or interaction."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "5b28b48e4113fe52c6ac41370df8cb673ff87ddaf73797cedb3d33a5a9851477",
+        "762643fe80f277c677cd15a0b0bf2854b4d1e4d239b40f50c18b2830bf69dbfe",
+        "83f0bda77fcf8ce9e24ad1064af5e5912d8f173327fecd8b26aa34a6916cc44a"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Decorative campfire arrangement; no live flame, heat or interaction."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "ce2812c0362a6acfeb8ad194fe05a81e3cd9d4cf0dd749a8afd83d995c08568d"
+}

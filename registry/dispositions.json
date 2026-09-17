@@ -233,8 +233,12 @@
   },
   {
     "sourceContentHash": "03a76159fc1c5a78e1294dde5f907e3e5fc16e57a00e0cad13219b87258004a7",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_mushrooms",
+      "memberId": "source_03a76159fc1c5a78"
+    }
   },
   {
     "sourceContentHash": "03b0603364b98248ec73e4b8f3b21c8d1add77fbf2fe1ea301d44acdbd104b56",
@@ -268,8 +272,12 @@
   },
   {
     "sourceContentHash": "0431d44485b9d89b0434b2ec76fecded7804594a133782246d75d7ad9525761f",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_harvest_cart",
+      "memberId": "source_0431d44485b9d89b"
+    }
   },
   {
     "sourceContentHash": "0434bed9bba895cf39889885e105213e531f3004a2053544be9089a7ff886797",
@@ -658,8 +666,12 @@
   },
   {
     "sourceContentHash": "09c199c3ea03c5c922853fe77779feee5a429db277b914fd213f4838ddd9bce4",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_woodland_group",
+      "memberId": "source_09c199c3ea03c5c9"
+    }
   },
   {
     "sourceContentHash": "09c8234ed33a8de3e0767fe5c451efe2f2d8bcb6d27b8d48efc1d48270c1bb9e",
@@ -723,8 +735,12 @@
   },
   {
     "sourceContentHash": "0a99d060545f16be538f852d3d496f852896da99240d3eedecf5614980b068ea",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_market_stall",
+      "memberId": "source_0a99d060545f16be"
+    }
   },
   {
     "sourceContentHash": "0aa34dee90e956709700b4b48c8722a8475be5b952291d3fdf6a63dbec08e63c",
@@ -798,8 +814,12 @@
   },
   {
     "sourceContentHash": "0b98e70256ac9a8da9be169d5112f6bc0f11f44f5614be292ecbb3b048249547",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_sunflower",
+      "memberId": "source_0b98e70256ac9a8d"
+    }
   },
   {
     "sourceContentHash": "0ba8b4286dd061116e4d9e22bbd491bef6b07d6c6d73afa8076f20c82391dacf",
@@ -968,8 +988,12 @@
   },
   {
     "sourceContentHash": "0e35f62ab51ddfe4ee9327aa0b5eea89423302b4983a1f66c99263c724dc36e8",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_orchard_spreading_tree",
+      "memberId": "source_0e35f62ab51ddfe4"
+    }
   },
   {
     "sourceContentHash": "0e4ab883f10a0c2275e5fb7551f278b9164c1459b8a6d5f656ea73bfa8ae4c8e",
@@ -998,8 +1022,12 @@
   },
   {
     "sourceContentHash": "0e70fe0d8118bd048e161939db4b14bb39c23691bf82773e164d22f19b230276",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_stone_well",
+      "memberId": "source_0e70fe0d8118bd04"
+    }
   },
   {
     "sourceContentHash": "0e83499cf618f085ecc7fe5f2c5d25d78cf275e622afea9a18b6a498c4980261",
@@ -1013,8 +1041,12 @@
   },
   {
     "sourceContentHash": "0ee5b66db05628b5d8766a49b834636a200dcc36ef832e5e5a8fa5b5e48b2b50",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_water_trough",
+      "memberId": "source_0ee5b66db05628b5"
+    }
   },
   {
     "sourceContentHash": "0eeea2bffccf4e87ac37ee1fd346628c26236cc460665b227dea44f0a8acb206",
@@ -1498,8 +1530,12 @@
   },
   {
     "sourceContentHash": "154862255c8771c20b3930642823621219373f875f035d2cedcb778eb7597dca",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_closed_crate",
+      "memberId": "source_154862255c8771c2"
+    }
   },
   {
     "sourceContentHash": "154d2ebda5346fe97ca6f62f350872147c2d35e301d6707691a1db03ab192d05",
@@ -2248,8 +2284,12 @@
   },
   {
     "sourceContentHash": "1fd34c63d5d4676cd99e9d1f886b65ef8a1bc00befda076f2a90da728e30f334",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_garden_bench",
+      "memberId": "source_1fd34c63d5d4676c"
+    }
   },
   {
     "sourceContentHash": "1fe412faa480f196337a1ce281f64b549dd5ad899472f663da2ed6320a47ebdf",
@@ -2342,8 +2382,12 @@
   },
   {
     "sourceContentHash": "20f9994f3136293e25d523819f8aa0053aafbb35e9b3a3ff9434257190ae066d",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_red_flowers",
+      "memberId": "source_20f9994f3136293e"
+    }
   },
   {
     "sourceContentHash": "2105bcfb69a211356383fbacad8c860dfa2c3ad83c81b9f73e1c6c79cd2268e3",
@@ -3401,8 +3445,12 @@
   },
   {
     "sourceContentHash": "32bd22f9a1b8430d54dbf69111307febf979ccd595e1b6b85a3cbf2e8009264f",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_dense_grass_patch",
+      "memberId": "source_32bd22f9a1b8430d"
+    }
   },
   {
     "sourceContentHash": "32c2c3426360895f4826c10b48bcc90598827996bff5564d5d53b8a594439eef",
@@ -3581,8 +3629,12 @@
   },
   {
     "sourceContentHash": "35e670c1396a9efdb5684ae9cf042cc30e86313b58074ea96d6a17022346cd6f",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_purple_flower_clump",
+      "memberId": "source_35e670c1396a9efd"
+    }
   },
   {
     "sourceContentHash": "35f974cc2eafd9467896406da9df4b4c2a07b65c9ca4640c4144fa7885c492cc",
@@ -3675,8 +3727,12 @@
   },
   {
     "sourceContentHash": "36f1bfb477d1076b4dc52408c00ecc88a12a640000d7380c3b428526d3267204",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_weathered_barrel",
+      "memberId": "source_36f1bfb477d1076b"
+    }
   },
   {
     "sourceContentHash": "3704506b212025e34bdd60978f7bce3fd10501800ea8cc60131dfffe798e4e7e",
@@ -3764,8 +3820,12 @@
   },
   {
     "sourceContentHash": "38b4ad677ecdc81bae0215650056f2ad2be5aec19e6d3b246816bc57a46a72a7",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_stone_arch",
+      "memberId": "source_38b4ad677ecdc81b"
+    }
   },
   {
     "sourceContentHash": "38d79a36dd0aaa952ed6ca3cd85cfe49b735f8e91e1f08696f1ac93f2f49e090",
@@ -3864,8 +3924,12 @@
   },
   {
     "sourceContentHash": "39b73cdb547db18cd92b605bca89e0f8bf2a306bc675b37d83f75b85ca9a18b2",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_long_barn",
+      "memberId": "source_39b73cdb547db18c"
+    }
   },
   {
     "sourceContentHash": "39fd0ae14b7b32f56a5186c88eefec10e99889be7c57f354736bec627bbf5066",
@@ -4038,8 +4102,12 @@
   },
   {
     "sourceContentHash": "3cac3330ca6dad97cfa45d22892d540f0e1959e41fa09cd55bee9473da5fba2c",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_slender_birch",
+      "memberId": "source_3cac3330ca6dad97"
+    }
   },
   {
     "sourceContentHash": "3cc42a3b9ad791e8d140e4249e36e6492be906b30b790c22e7db00d0e40af743",
@@ -4048,8 +4116,12 @@
   },
   {
     "sourceContentHash": "3ce644aa4f49e87c3051ba770f2fa64f692dcbd0bd08a26bd0619afdafb4fc89",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_rail_fence",
+      "memberId": "source_3ce644aa4f49e87c"
+    }
   },
   {
     "sourceContentHash": "3d0ff61f740a14a520a2e81d886bd9e4acc2bbaa490a24635e8f8de4d30fb708",
@@ -5003,8 +5075,12 @@
   },
   {
     "sourceContentHash": "4ad270dbefa4e65e9176ee345433383a6b645e08480f056f89f462977b8057fd",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_open_crate",
+      "memberId": "source_4ad270dbefa4e65e"
+    }
   },
   {
     "sourceContentHash": "4ae3b746924e6fb846524d509f81b92f620701c1f0ddba1e299b80f5079bb3d7",
@@ -5103,8 +5179,12 @@
   },
   {
     "sourceContentHash": "4bfad99cee72ea91c2605508326cd3074bfec632c8b4e8ae004624a5ad349a6c",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_canvas_shelter",
+      "memberId": "source_4bfad99cee72ea91"
+    }
   },
   {
     "sourceContentHash": "4c0416c0d5bd39f09eb92399c73d44c14851da0ae3bf16b15f64499f9ac44947",
@@ -5348,8 +5428,12 @@
   },
   {
     "sourceContentHash": "50031169641cc60934f389813e23d6f43e3177228dbaef622159f7862bf27b57",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_campfire_ring",
+      "memberId": "source_50031169641cc609"
+    }
   },
   {
     "sourceContentHash": "5006e64661537cbef64d66a394696ed4e5beed1ea2f16f58be3de7ee96cd7462",
@@ -6182,8 +6266,12 @@
   },
   {
     "sourceContentHash": "5cb227142116a5e911b92a998d4f4600e2761cc8cbdbd8ada322fd56f8d9920d",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_sack_group",
+      "memberId": "source_5cb227142116a5e9"
+    }
   },
   {
     "sourceContentHash": "5cb68bcc1aee8620c4f4383cc2e0e99faff05c0d0048dfdba1c87c440aeb79c7",
@@ -8670,8 +8758,12 @@
   },
   {
     "sourceContentHash": "80d89bdd33643ab91629c455723b17697e46c1e86fe16c2b3d3915cb2b40172a",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_small_red_flowers",
+      "memberId": "source_80d89bdd33643ab9"
+    }
   },
   {
     "sourceContentHash": "80f1eb5b655f5812618d75b8460d3688db491a9d3d131ea7419810594a00da80",
@@ -9558,8 +9650,12 @@
   },
   {
     "sourceContentHash": "8d6ccba4a5a2842724ea1858d331d30227fd27420f2fff00297f22b09ecad75f",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_ridge_pine",
+      "memberId": "source_8d6ccba4a5a28427"
+    }
   },
   {
     "sourceContentHash": "8d858763dd394567ab9c573606ccbd50ca3d1d89f1336f72813960a764302c82",
@@ -9588,8 +9684,12 @@
   },
   {
     "sourceContentHash": "8dca04af8ea5c8a3f60b07c0a3a9e462d2981b372dbd8779787743d7a2edb7ae",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_small_barn",
+      "memberId": "source_8dca04af8ea5c8a3"
+    }
   },
   {
     "sourceContentHash": "8dd76ca7f559b98c776d03032a0e505db56ffe1340168bda01eca3756791bfd7",
@@ -9718,8 +9818,12 @@
   },
   {
     "sourceContentHash": "8fed9bdae5026714afbb9c41ab9b2077f8f89a7358639d8491d0c676e89cc32e",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_swing_tree",
+      "memberId": "source_8fed9bdae5026714"
+    }
   },
   {
     "sourceContentHash": "8ff072f5f48ea06981c01277386d3587e9a9f5557c9994a6aa07ee42401bcd22",
@@ -9808,8 +9912,12 @@
   },
   {
     "sourceContentHash": "9210fd84d48b68b203161a5385fa0311927344e3c5e510bc8bcdae58d19d7ad1",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_tall_canopy_tree",
+      "memberId": "source_9210fd84d48b68b2"
+    }
   },
   {
     "sourceContentHash": "921a891eaca4e0ba470e157e9f5800ce73fad3cc03b7927babe636c1cc31b3a4",
@@ -9898,8 +10006,12 @@
   },
   {
     "sourceContentHash": "93f1fea21951f095c024fe6f9a2087d95bc3f923cab521660be27688f51af6a1",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_meadow_pine",
+      "memberId": "source_93f1fea21951f095"
+    }
   },
   {
     "sourceContentHash": "93f329291cb419b2204f38a7814077382f874b9a89966f18fa897e90e8f03980",
@@ -10223,8 +10335,12 @@
   },
   {
     "sourceContentHash": "97c13f73657e7ea7b11e2b67a16c7c9bd2a86cd5858124695a6a7995da409dfd",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_tied_sack",
+      "memberId": "source_97c13f73657e7ea7"
+    }
   },
   {
     "sourceContentHash": "97ccfbc8b8f4189742d7d88707679dcfc74644927fcde5967c3b361a892b1b33",
@@ -10248,8 +10364,12 @@
   },
   {
     "sourceContentHash": "982223ccba91e97b6e202a37d7488cfe70f97d45cb544aaad8f69bbe27cc4b44",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_orchard_round_tree",
+      "memberId": "source_982223ccba91e97b"
+    }
   },
   {
     "sourceContentHash": "9828527e2e9de3f000dc646f25978fde0d4347ab2b2cf8828e7affaea3fd47b9",
@@ -10417,8 +10537,12 @@
   },
   {
     "sourceContentHash": "9abd293f935dd27a2b1ed1d572254970932b66b5b99304c1aa35574c18d59a46",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_wind_pump",
+      "memberId": "source_9abd293f935dd27a"
+    }
   },
   {
     "sourceContentHash": "9adca0eab1af667ff2149eeb4db69912f3598890b05d80d786937e2ecc9dcd49",
@@ -11545,8 +11669,12 @@
   },
   {
     "sourceContentHash": "ad6546f15c50cfc3025d73ee219dda8f13acb10bb819534060bcc467314cf1aa",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_square_hay",
+      "memberId": "source_ad6546f15c50cfc3"
+    }
   },
   {
     "sourceContentHash": "ad6cf71cec287960caf8af69c99a36e5a3db49fa1ef336a3d259e0595fe7c516",
@@ -12783,8 +12911,12 @@
   },
   {
     "sourceContentHash": "bd88ff9a4e6f50fec166b29a11d45cb668b8103ae30bff59221d43f7dc734f00",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_silver_birch",
+      "memberId": "source_bd88ff9a4e6f50fe"
+    }
   },
   {
     "sourceContentHash": "bd9796cb665ceb1bcabe927a9c21abee46bdb35acd9f3ede34ebc06695c9a2d6",
@@ -12873,8 +13005,12 @@
   },
   {
     "sourceContentHash": "bef7af8928ecaa4b1add9cc859812e74de1ff691db59f36b63b2fde3e4191565",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_empty_handcart",
+      "memberId": "source_bef7af8928ecaa4b"
+    }
   },
   {
     "sourceContentHash": "befe6de5f71b8995db4346c87a806231334fcd1391689a76a0c9db3c5fffaa6f",
@@ -12948,8 +13084,12 @@
   },
   {
     "sourceContentHash": "c01da9fa11f75b2a695f42cc4a7797cb8c938d2441ce253e58c047af0860a423",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_leafy_shrub",
+      "memberId": "source_c01da9fa11f75b2a"
+    }
   },
   {
     "sourceContentHash": "c026bc5681634fc983156015cc6d3b0b7514d7e10fd16658065d40ac482c45d7",
@@ -12963,8 +13103,12 @@
   },
   {
     "sourceContentHash": "c0991d0de604cdfb93459f1a5050e7697aa711ac1c6da004c1c04067042fa652",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_lantern",
+      "memberId": "source_c0991d0de604cdfb"
+    }
   },
   {
     "sourceContentHash": "c0b319a5df8b483cdafb47ea6212004efb3035942f6a6aba334f348be4c4f642",
@@ -13452,8 +13596,12 @@
   },
   {
     "sourceContentHash": "c7b22f55a0e825cad85122129410b49013445e28acb359604ee0cabeeaada4c7",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_field_gate",
+      "memberId": "source_c7b22f55a0e825ca"
+    }
   },
   {
     "sourceContentHash": "c7c651303540d54b4264892d83acc714ffe9feb9babe84b4a73c1966bf213451",
@@ -13537,8 +13685,12 @@
   },
   {
     "sourceContentHash": "c94b406c10803632aef07fe7b64251823b0cdabb025cf7d49a6ac5220eb6c48f",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_garden_hedge",
+      "memberId": "source_c94b406c10803632"
+    }
   },
   {
     "sourceContentHash": "c94d788434ce22a0d6cd438943be94e18487916bbce0c9000046a24d11a484d9",
@@ -13617,8 +13769,12 @@
   },
   {
     "sourceContentHash": "c9fd4a042fa948048a76b20cbd798f7f0a2701e132e036e568c6d947d279ea13",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_wooden_barrel",
+      "memberId": "source_c9fd4a042fa94804"
+    }
   },
   {
     "sourceContentHash": "c9fff0cca6be3c8440efd1cd360c0a04ccbe1753723cd9fec1ce50ce7c28d40a",
@@ -14176,8 +14332,12 @@
   },
   {
     "sourceContentHash": "d1f72248f92765ce6db8422668283e033093d4938e16b4acf5943a7a62cec356",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_old_broadleaf",
+      "memberId": "source_d1f72248f92765ce"
+    }
   },
   {
     "sourceContentHash": "d20793d8ad6556b734d1998f5f527f43073f1e565441f00d75b5846938415724",
@@ -14361,8 +14521,12 @@
   },
   {
     "sourceContentHash": "d49516baad865fd14eefe163322cd73ad83f7014c734649732b39f2cccb6f0ad",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_meadow_grass_patch",
+      "memberId": "source_d49516baad865fd1"
+    }
   },
   {
     "sourceContentHash": "d499bd44535fe70b93dfa4dae170dc6fe3b114412e722580162555adc5f59476",
@@ -14476,8 +14640,12 @@
   },
   {
     "sourceContentHash": "d6a6a92c26fa9f32b1fa4e94d9f40b6b98a5c50ffd0bd25b66c9f65875c8b1e4",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_round_hay",
+      "memberId": "source_d6a6a92c26fa9f32"
+    }
   },
   {
     "sourceContentHash": "d6b7370946c5f2036dd89edbc436e9e53bcb4a701eae0c28d8ff30f519d325ca",
@@ -14755,8 +14923,12 @@
   },
   {
     "sourceContentHash": "d9fec8e5b6319156491e21b7ff21db0d6e5c29e766334288e50571db5a396ee3",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_wooden_wheelbarrow",
+      "memberId": "source_d9fec8e5b6319156"
+    }
   },
   {
     "sourceContentHash": "da0b072d025cbb01e0e817b230f3e97ffb66f50071cd221e30152cd9b625d0f3",
@@ -14880,8 +15052,12 @@
   },
   {
     "sourceContentHash": "dbd6da5d29899feafc6d7604b454fba1bdbfa62543187d467991693b7e493a4b",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_fruit_tree",
+      "memberId": "source_dbd6da5d29899fea"
+    }
   },
   {
     "sourceContentHash": "dbf02586e914b254bab7c6a8fcd00465e2bd3a4db2efdb34d20270ddf583e7dc",
@@ -14905,8 +15081,12 @@
   },
   {
     "sourceContentHash": "dc19cb7019e2ba507e0fddd5db4c0947b5fdc65e7937d5474a0e8548032080ed",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_coral_flower_clump",
+      "memberId": "source_dc19cb7019e2ba50"
+    }
   },
   {
     "sourceContentHash": "dc32c2f5dcce0e84b4a48b05acd87af64ccf2b8e0e57a500c2acadefde225e22",
@@ -15420,8 +15600,12 @@
   },
   {
     "sourceContentHash": "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_farmhouse",
+      "memberId": "source_e4756a09516ce646"
+    }
   },
   {
     "sourceContentHash": "e49ba264a6177a12e45fb358fecf63d392472c3729b0987eda9a48351eb39107",
@@ -16043,8 +16227,12 @@
   },
   {
     "sourceContentHash": "ed1f95afed4b4d163c675d2fb0f17f553be096a8c58a36a03e7a66ec38f80d57",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_trimmed_hedge",
+      "memberId": "source_ed1f95afed4b4d16"
+    }
   },
   {
     "sourceContentHash": "ed2acef702b8cb4e13def0e70ccffb21a383c52b1365919fbee4679c0e64c17b",
@@ -16502,8 +16690,12 @@
   },
   {
     "sourceContentHash": "f463a8ba577b53bf691acded8cad7aabe4d14916ba281d0386d527be4449993e",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_rustic_fence",
+      "memberId": "source_f463a8ba577b53bf"
+    }
   },
   {
     "sourceContentHash": "f48250d561ad822ff7c0bc67879e4732a0b290323192e5438f77770af895cbea",
@@ -16587,8 +16779,12 @@
   },
   {
     "sourceContentHash": "f55ea891598a40fd5c61a8b9a5d3baf3326a920142d9c6c2522093ff6cf3d694",
-    "status": "incomplete",
-    "reason": "Awaiting authored visual, semantic, support, and placement review"
+    "status": "eligible",
+    "usage": {
+      "kind": "entry_member",
+      "entryHandle": "rural_monument_tree",
+      "memberId": "source_f55ea891598a40fd"
+    }
   },
   {
     "sourceContentHash": "f56489e6d18de0d2f54fdb961013e875da812dce9e5a207b298deb35cd2c2427",

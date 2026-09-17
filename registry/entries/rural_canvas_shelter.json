@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_canvas_shelter",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000021",
+      "commitmentHash": "fa836e5762c547d60f6b40ed535230276615e2bfe536b310f2c2e2b5d9933013"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "14ccaeb9b46f91d9baebb6ffe21c2ed0699939135962af318c6ca69af0fb7c23"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "2d0efc65aa18d29cc48ccf3b73f8cb97313bfd647f04460c6f705e5df357f096",
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_4bfad99cee72ea91",
+      "assetHash": "e0c7dec43495d3636ff2a46aa9c6743056be7ea2dad9d90e74d78b9c533b5ed5",
+      "assertionBundleHash": "4049cdeb6145a0a076cf1a5a83f718c8fc22c93f02ff62835650ed1abee7e2d0",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

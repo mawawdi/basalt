@@ -125,7 +125,7 @@ export const CATALOG_CREATOR_REVIEW_PACKET_SCHEMA = z
     selectionRationale: z.string().trim().min(1).max(2_048),
     reviewProcedure: z.array(z.string().trim().min(1).max(2_048)).min(1).max(32),
     candidates: z.array(CREATOR_REVIEW_CANDIDATE_SCHEMA).min(1).max(128),
-    reviewerAuthorityRequired: z.literal("creator"),
+    reviewerAuthorityRequired: z.enum(["creator", "delegated_ai"]),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -203,14 +203,25 @@ const SOURCE_REVIEW_DECISION_SCHEMA = z
       });
   });
 
+const CATALOG_REVIEWER_SCHEMA = z.discriminatedUnion("authority", [
+  z
+    .object({ authority: z.literal("creator"), reviewerId: z.string().trim().min(1).max(160) })
+    .strict(),
+  z
+    .object({
+      authority: z.literal("delegated_ai"),
+      reviewerId: z.string().trim().min(1).max(160),
+      delegationStatement: z.string().trim().min(32).max(2048),
+    })
+    .strict(),
+]);
+
 export const CATALOG_CREATOR_REVIEW_DECISION_SCHEMA = z
   .object({
     kind: z.literal("CatalogCreatorReviewDecision"),
     packetHash: HASH_SCHEMA,
-    reviewer: z
-      .object({ authority: z.literal("creator"), reviewerId: z.string().trim().min(1).max(160) })
-      .strict(),
-    reviewMethod: z.literal("independent_visual_review"),
+    reviewer: CATALOG_REVIEWER_SCHEMA,
+    reviewMethod: z.enum(["independent_visual_review", "delegated_visual_review"]),
     reviewerStatement: z.string().trim().min(32).max(2_048),
     reviewedAt: z.string().datetime({ offset: true }),
     styleProfileDecision: z.enum(["approved", "rejected"]),
@@ -220,6 +231,16 @@ export const CATALOG_CREATOR_REVIEW_DECISION_SCHEMA = z
   .strict()
   .superRefine((value, context) => {
     verifyArtifactHash(value, context);
+    if (
+      (value.reviewer.authority === "delegated_ai") !==
+      (value.reviewMethod === "delegated_visual_review")
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["reviewMethod"],
+        message:
+          "Delegated review must retain its AI provenance and cannot claim independent creator review",
+      });
     requireCanonicalValues(
       value.decisions,
       (entry) => entry.sourceContentHash,
@@ -244,9 +265,7 @@ export const CATALOG_ACCEPTANCE_AUDIT_SCHEMA = z
     batchId: ASCII_ID_SCHEMA,
     reviewPacketHash: HASH_SCHEMA,
     reviewDecisionHash: HASH_SCHEMA,
-    reviewer: z
-      .object({ authority: z.literal("creator"), reviewerId: z.string().trim().min(1).max(160) })
-      .strict(),
+    reviewer: CATALOG_REVIEWER_SCHEMA,
     admissionPolicyHash: HASH_SCHEMA,
     admissionRubricHash: HASH_SCHEMA,
     semanticModuleHash: HASH_SCHEMA,
@@ -335,6 +354,8 @@ export function validateCatalogCreatorReviewDecision(input: {
   const decision = CATALOG_CREATOR_REVIEW_DECISION_SCHEMA.parse(input.decision);
   const rubric = CATALOG_ADMISSION_RUBRIC_SCHEMA.parse(input.rubric);
   if (decision.packetHash !== packet.hash) throw new Error("Creator decision binds another packet");
+  if (decision.reviewer.authority !== packet.reviewerAuthorityRequired)
+    throw new Error("Admission reviewer does not match the packet's required authority");
   if (packet.admissionRubricHash !== rubric.hash)
     throw new Error("Creator review packet binds another admission rubric");
   if (

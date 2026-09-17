@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "d1f72248f92765ce6db8422668283e033093d4938e16b4acf5943a7a62cec356",
+  "assetHash": "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+  "renderEvidenceHash": "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+  "assertionBundleHash": "b1c8b9cac6d4341ed0726e49f2f573ca2cb906bfc17a8a56cf6b8f597ba94576",
+  "entryHandle": "rural_old_broadleaf",
+  "memberId": "source_d1f72248f92765ce",
+  "entryDeclarationHash": "ae995ab03ef35a0e1cbda2d908d4a1ffd668e82a3524a9d2c3fa5547afdfc9da",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Use the measured root contact; no walkable passage between roots is asserted."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "58578ee788a273104e073b99d5795057ea1fd4b83f4e138495977fa862f9aefe",
+        "774176d00c8ff94600ff024da0e9ed5b48fbb93e669c68cd131502e37208314c",
+        "cd86510ade6322c47ffbb90c086808dbb4b0129e75371fbfa0bc788ea9736016"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Use the measured root contact; no walkable passage between roots is asserted."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "e3c3a527bd14452e7b600f0e0266fd03c928a31f40bd8da8e02e54dfecd424a3"
+}

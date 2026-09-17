@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_mushrooms",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000008",
+      "commitmentHash": "93baf2f0a86c46be5884a104f3bf3acc7e766dcb9ad7e8c60b083d6a836f7bdb"
+    },
+    "realizationForm": "aggregate",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "4a22b2f342ad22e52abc4e70e7d6824e4edc0f5fcb31b712b37f20e3ad659e0f"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+    "9e20f5654c19220af5335d3bc8bff3ed2a185c5d6b33339ec3c714313d975d2a",
+    "be483686caff4368b33a46dbecbc5e61b7e24527be3d15b676a8f4f1e5a97b7b",
+    "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653"
+  ],
+  "members": [
+    {
+      "memberId": "source_03a76159fc1c5a78",
+      "assetHash": "be483686caff4368b33a46dbecbc5e61b7e24527be3d15b676a8f4f1e5a97b7b",
+      "assertionBundleHash": "f812966fbbbf9f424a14acb4ca3cac202558a155ccc19e3112f73513bfaad1c4",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

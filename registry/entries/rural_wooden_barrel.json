@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_wooden_barrel",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000059",
+      "commitmentHash": "38cb87abe93b432c17336a68c6ad60e5bcc350dc751e40e5277ebfa1b6e00c65"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "42b6d6b44b947b450d18a36604c1c689d330edf1ef30ae66e049c4e8493d71bd"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "0130d9cb999d2535df6733675c3ba4301829ad84162eaefebf4cb2ee0bd33307",
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f"
+  ],
+  "members": [
+    {
+      "memberId": "source_c9fd4a042fa94804",
+      "assetHash": "7558b955cce78449026dcba0ebb827e9944692e11f1937531c6482b47155c6c4",
+      "assertionBundleHash": "6d35e011008232f6e19226990e214e9b6478553b10978c57399d23608ba8402c",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

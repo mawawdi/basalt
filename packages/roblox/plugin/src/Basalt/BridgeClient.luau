@@ -83,6 +83,14 @@ function BridgeClient.getNext(): any
 	return request("/next", "GET", nil)
 end
 
+function BridgeClient.getBindingPacket(): any
+	return request("/binding-packet", "GET", nil)
+end
+
+function BridgeClient.postBindingCapture(decision: any): any
+	return request("/binding-capture", "POST", HttpService:JSONEncode(decision))
+end
+
 function BridgeClient.postReadback(readback: any): any
 	return request("/readback", "POST", HttpService:JSONEncode(readback))
 end

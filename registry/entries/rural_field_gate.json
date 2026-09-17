@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_field_gate",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000025",
+      "commitmentHash": "bb13da328a4da896f6c12650da2fd7dd3f927cd41acf1a59dbd5d44c6bdf2082"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "15cb2e48b19dc8954d9ccd77b36c3525faf0f580b862bb98e47a0b5dac2812dc"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "4111a871e8222bc8c5ff17ba615fcab0ab69842f1949ff7fc691e99051d6b730",
+    "4fb041761955875f5c7aa84fff0fd7dc6783fd7f9a34f0ef3087f300537d6864",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f"
+  ],
+  "members": [
+    {
+      "memberId": "source_c7b22f55a0e825ca",
+      "assetHash": "4fb041761955875f5c7aa84fff0fd7dc6783fd7f9a34f0ef3087f300537d6864",
+      "assertionBundleHash": "833c2957198c630769ab98f5d6ed91bc81bd02bf8ae83a615f0b56a554e34fba",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

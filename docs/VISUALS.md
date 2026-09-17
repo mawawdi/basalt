@@ -34,6 +34,36 @@ commit. Unrelated effect classes remain creator-owned and untouched. Mesh colors
 expectations remain governed by their catalog bindings; global grading cannot be used to
 disguise a defective asset texture.
 
+The Harvest Valley composition uses detailed catalog building exteriors and an authored rural
+palette, with terrain terraces beneath their complete footprints. Explicit entry selection and
+single-instance yaw preserve intended silhouettes and facade orientation. Previously admitted
+pine and willow models with visibly incorrect leaf texture projection are excluded from this
+composition; an admission record alone does not establish attractive appearance.
+
+Ground-supported catalog placements align the measured lower bound to the resolved surface;
+the source pivot is not assumed to lie at the feet. The fixture protects full building and
+fence footprints with final terrain pads after broad terrain shaping. Fence runs derive their
+spacing from measured envelopes, account for asymmetric pivots, and retain an explicit rear
+opening for the orchard path. These authored runs establish visible placement, not reusable
+socket or modular-kit compatibility.
+
+Planting follows the established pattern of authored density regions, individual orientation
+and geometry-aware separation used by [Houdini Scatter and Align](https://www.sidefx.com/docs/houdini/nodes/sop/scatteralign.html).
+Basalt reuses its existing polygon and cluster intents rather than adding a vegetation framework:
+the fixture declares irregular woods with mature canopy anchors and smaller birch and pine
+stands, compact colonies along woodland edges, flower beds beside buildings, fenced crops,
+orchard rows, farmyard prop groups, and empty pasture. The compiler owns seeded candidate
+placement and measured collision. Ground scatter, clusters and grids also exclude complete
+rotated bounds from grounded routes' clearance masks; this is separate from object-to-object
+occupancy. Authored singles still require explicit composition review. Total instance count is not a visual-quality gate; the mesh
+preview exposes the resulting composition for inspection.
+
+The bounded Three.js preview renders exact GLBs, compiled placements, route surfaces and sampled
+final terrain. It supports orbiting and reproducible camera captures. Approximate preview terrain
+shading and lighting are visual aids; creator-run Roblox appearance and traversal remain separate
+evidence. The fixed Studio asset-capture action observes unparented published models and returns
+exact material paths and texture IDs without modifying the place or inventing a visual verdict.
+
 ## Asset evidence
 
 Every source identity is measured independently of its semantic admission. Measurement
@@ -174,8 +204,8 @@ rejected instead of coerced. Required underfill is incomplete and visible in dia
 Route appearance is independent of route construction. A woodland trail, paved road, and
 boardwalk may share a destination while using different materials, colors, terrain
 treatments, and support behavior. Every grounded route emits a material mask and
-vegetation-clearance mask from its resolved footprint; an elevated route clears vegetation
-but preserves terrain and must explicitly choose no edge protection or sealed guardrails
+vegetation-clearance mask from its resolved footprint. Ground population consumes grounded
+route masks. Elevated routes emit a mask, preserve terrain and must explicitly choose no edge protection or sealed guardrails
 with posts and rails. Radius-constrained bends and authored junctions are composition
 evidence, not catalog assets. Smooth ordinary bends use deterministic five-degree-or-finer
 sampling and mitered native spans. Designed elevation profiles use one-degree-or-finer pitch

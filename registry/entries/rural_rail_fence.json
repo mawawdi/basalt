@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_rail_fence",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000025",
+      "commitmentHash": "bb13da328a4da896f6c12650da2fd7dd3f927cd41acf1a59dbd5d44c6bdf2082"
+    },
+    "realizationForm": "whole",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "15cb2e48b19dc8954d9ccd77b36c3525faf0f580b862bb98e47a0b5dac2812dc"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+    "a26d2556e66fafff521fef629a2bf057a2dedb2a20762ab57cae98158c1d9979",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f"
+  ],
+  "members": [
+    {
+      "memberId": "source_3ce644aa4f49e87c",
+      "assetHash": "728c0e4600760295c20d86fbb0bcc3c300e5581d738bcbbda993159bf63b9926",
+      "assertionBundleHash": "48f3f02aa62f2566eabc69877a4bcb57d3fea610753975209937e7c1441ce8b0",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

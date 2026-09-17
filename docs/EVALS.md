@@ -199,7 +199,7 @@ joint route/terrain clearance, junction grounding, and local invalidation. Run
 `.basalt/evals/route-corridor/`.
 
 The integrated first-region fixture is the creator-facing composition gate. Run
-`npm run eval:first-finished-region` to compile one 96-meter highland preserve containing 229 real
+`npm run eval:first-finished-region` to compile one 96-meter highland preserve containing 230 real
 admitted catalog instances across eleven asset types, more than 21 meters of terrain relief, seven
 connected route segments, lower-ravine and summit elevated crossings, four shared junctions, a
 trailhead gateway, a route-connected ridge pavilion, a cantilevered ravine overlook, and a
@@ -222,6 +222,16 @@ tower and route fixtures remain focused
 regressions rather than separate creator workflows. This region does not require Modal, a metadata
 worker, embeddings, or neural generation, and it makes no 40-square-kilometer completion claim.
 
+`npm run eval:harvest-valley` materializes a separate 112-meter exterior scene from 60 catalog
+models, thirteen grounded route segments and six junctions. Its regression checks deterministic
+compilation, required model coverage, explicit building orientation, connected route topology,
+complete region containment, measured-bottom alignment, complete flat footing for buildings and
+fences, continuous fence runs, clear path footprints, zero catalog gaps and zero constructed structures. This is an
+authored composition fixture, not an autonomous prompt-to-world or generalization benchmark.
+Asset binding capture proves only properties observed during a creator-run Studio operation.
+The region's `status.json` keeps compiler eligibility, Roblox lowering and the creator gate
+separate; the WebGL screenshots never establish `engine_verified`.
+
 The Studio gate additionally checks realized route parts and the junction against Roblox's
 actual smooth-terrain surface. The adapter coordinates bounded station and shared-junction
 residuals before creation, then raycasts the entire realized footprint for intrusion and
@@ -231,6 +241,18 @@ events report the authored grounding tolerance, half-voxel realization allowance
 tolerance, and effective maximum independently so engine quantization cannot silently weaken
 the compiler's exact-terrain requirement.
 Retaining a route marker or expected hash is insufficient.
+
+Connector regressions cover interior corrections retained across junction passes, four-way
+junctions with float32 heights, physical correction limits after shared-endpoint overrides,
+and rejection of regressing or divergent solvers. The accepted frames are retained directly;
+the connector does not rerun them from an uncorrected baseline. Failed coordination retains
+the latest resolved footprint observations in the incomplete report. Catalog geometry is
+explicitly anchored before placement, and readback rejects unanchored parts. A subprocess
+test exercises terminal hangup through the CLI and verifies that its import lock is released.
+Multipart placement bounds union the separately rotated measured part boxes; the compiler
+and connector regressions cover the oblique wind pump whose aggregate source box previously
+overstated its realized footprint. Bounds failures retain expected and observed sizes before
+the diagnostic truncation limit.
 
 Every observation carries approach, platform, and overview render descriptors tied to the
 exact world state and camera. The lightweight renderer is diagnostic evidence, not a visual

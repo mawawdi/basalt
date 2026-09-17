@@ -1,0 +1,36 @@
+{
+  "kind": "substitution_set",
+  "handle": "rural_woodland_group",
+  "semantic": {
+    "denotation": {
+      "conceptId": "bsc_000101",
+      "commitmentHash": "9826c9d7ff925cb315f9f3342d5d6c52e18ab47a9d7cc4cb66e7aa5a9f989ec0"
+    },
+    "realizationForm": "aggregate",
+    "fixedStates": [],
+    "affordances": [],
+    "surfaceTreatmentIds": [],
+    "dependencyClosureHash": "fdbb56b7843dce1731825f22940a01bb2f1f9d19af4b9681ceda7ab8a297c22e"
+  },
+  "placement": {
+    "support": "ground",
+    "contact": "bottom",
+    "interfaces": []
+  },
+  "styleProfileHandle": "stylized_rural_highlands",
+  "evidenceHashes": [
+    "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+    "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+    "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+    "d65afbba48c87cfe852a4710503d7dc42aa6bc4712c00a45a7fe1176fafb05a9"
+  ],
+  "members": [
+    {
+      "memberId": "source_09c199c3ea03c5c9",
+      "assetHash": "105b7b73dc82c45fef4984945477651c97a0fc48acd35efaf837f4c52af88a3c",
+      "assertionBundleHash": "1db53a923015855fe15133e894f3b55a7a83e228d9a9dc12048e5ec85cc5aa34",
+      "selectionWeight": 1,
+      "socketBindings": []
+    }
+  ]
+}

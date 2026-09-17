@@ -1,5 +1,6 @@
 --!strict
 local BridgeClient = require(script.Parent.BridgeClient)
+local AssetBindingCapture = require(script.Parent.AssetBindingCapture)
 local Constants = require(script.Parent.Constants)
 local ImportSequence = require(script.Parent.ImportSequence)
 local PluginPanel = require(script.Parent.PluginPanel)
@@ -141,6 +142,16 @@ function ConnectorRuntime.start(pluginInstance: Plugin): ()
 			return
 		end
 		session = status
+		if status.kind == "RobloxAssetBindingCapture" then
+			panel:setState({
+				title = if status.state == "complete" then "Asset materials captured" else "New catalog models",
+				detail = if status.state == "complete" then "The engine observations are saved. Return to Basalt to seal the bindings and import the region." else "Observe published models and their materials. Your place remains unchanged.",
+				tone = if status.state == "complete" then "success" else "active",
+				progress = if status.state == "complete" then 1 else 0,
+				primaryText = "Inspect assets", primaryEnabled = status.state ~= "complete", stopVisible = false,
+			})
+			return
+		end
 		if not importing
 			and status.state == "pending"
 			and typeof(status.progress) == "table"
@@ -197,6 +208,13 @@ function ConnectorRuntime.start(pluginInstance: Plugin): ()
 		cancelRequested = false
 		task.spawn(function()
 			local ok, outcome = pcall(function()
+				if session.kind == "RobloxAssetBindingCapture" then
+					local decision = AssetBindingCapture.capture(BridgeClient.getBindingPacket(), function(complete: number, total: number): ()
+						panel:setState({ title = "Inspecting catalog models", detail = tostring(complete) .. " / " .. tostring(total) .. " models observed", tone = "active", progress = complete / total,
+							primaryText = "Inspecting…", primaryEnabled = false, stopVisible = true, stopText = "Cancel", stopEnabled = true })
+					end, function(): boolean return cancelRequested or not alive end)
+					return { status = BridgeClient.postBindingCapture(decision) }
+				end
 				if restartRequired or session.state == "complete" or session.state == "incomplete" then
 					WorldLowering.rollback()
 					session = BridgeClient.restart()

@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-catalog",
+  "reviewPacketHash": "faf55c8af60c8b1d2e2653bdc83b84b62c508281dcf9c4cf2db5d92282564653",
+  "reviewDecisionHash": "62bf93bf4a4dae7bb71b1ed07e7d88a7c78aec9fb1588890119609ca649ce523",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "e4756a09516ce646a991c33ba73a7ce7d3c0962f01e6e2354bf06c9f170aaa62",
+  "assetHash": "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+  "renderEvidenceHash": "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1",
+  "assertionBundleHash": "1e428b5e9071e3ae8402864c7d26567b0fbec1dea18595b3aaa3f186bc6f3afd",
+  "entryHandle": "rural_farmhouse",
+  "memberId": "source_e4756a09516ce646",
+  "entryDeclarationHash": "174cfdb45714955d8b3e2e507ce233e47ff19d3f8a009c51f475441ea9df9fb2",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Exterior landmark only; no claim of enterable rooms or door clearance."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "3da01f70ee7e6904e77a7b1995cf79fe59c1a8c36a4e1f6ee1664ed285081771",
+        "5cffe9380f97791504c6944759c4e9fbc9d8eabcaae13d6b56ab74a116703b9b",
+        "e2e32d5b1a79b13850d826b36aff330fe99fe61324160f7c2016bce5bc09eef1"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Exterior landmark only; no claim of enterable rooms or door clearance."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "024ec399146373bbb634b84e3802cbf8dc88504ad3ad2db1d16fcc6b19c41d0c"
+}

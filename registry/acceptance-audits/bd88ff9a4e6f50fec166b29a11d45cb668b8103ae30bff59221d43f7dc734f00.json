@@ -1,0 +1,138 @@
+{
+  "kind": "CatalogAcceptanceAudit",
+  "batchId": "harvest-valley-details-catalog",
+  "reviewPacketHash": "b0a3508be4ab5aa71d39d5774f9b9171f03ff7ce17fcce681b27d78d476f124f",
+  "reviewDecisionHash": "3446cd9126c24818d4d0eb23f689e275134d2db61c49aa812a083b5e40644cb6",
+  "reviewer": {
+    "authority": "delegated_ai",
+    "reviewerId": "codex-showcase-curator",
+    "delegationStatement": "The creator explicitly requested another more complex and attractive region without primitive buildings, and instructed Codex to increase the catalog, use more variety and make the scene coherent. This bounded visual curation executes that request; the creator has not personally reviewed these assets."
+  },
+  "admissionPolicyHash": "aae122c1a6804770b6a99c0de4b3c55dcfbcd082334475a05d94ab784204e623",
+  "admissionRubricHash": "dfa4a3388fc7e6ad9e528cb8412eaf74a292f27f23699de23a9d66d4b9ba565a",
+  "semanticModuleHash": "ea6cf15ca12e7ec60fb0fad9872a0ba49f7bba7192f8b11092592e49afcbeef4",
+  "measurementSetHash": "ba51d4e7a66cfd360b43cdc2dad2fb7fac9a18594d5f9f4b976a8f33d75d2e25",
+  "visualReviewIndexHash": "00165262de7a7bd152208bcc2e29e5067d32472544756bdca4caae980a0227c9",
+  "sourceContentHash": "bd88ff9a4e6f50fec166b29a11d45cb668b8103ae30bff59221d43f7dc734f00",
+  "assetHash": "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+  "renderEvidenceHash": "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+  "assertionBundleHash": "8b8bd65b09a0491ee37bf8410dc36727010692771dcf198b5351fa9ff00accbf",
+  "entryHandle": "rural_silver_birch",
+  "memberId": "source_bd88ff9a4e6f50fe",
+  "entryDeclarationHash": "4cc93c141d66422d02f1cc0834d763a226103eb10f3a5e081cfc8b39a3ad6cad",
+  "styleProfileHandle": "stylized_rural_highlands",
+  "criteria": [
+    {
+      "criterionId": "appearance_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "Inspected multiview RGB evidence supports the concrete description; missing-roof and unrelated-style candidates were excluded. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "external_resource_closure",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "Exact retained GLB and measured material resources render successfully; source and rendered-view bytes are hash-checked. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "geometry_health",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "Measured nonempty bounded geometry and renderable parts; no claim of watertight topology or engine collision quality. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "installation_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "Measured Y-up bottom contact supports upright ground placement; terrain pads must cover the complete footprint. No sockets or enterable interior are asserted. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "material_readability",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "Source materials and canonical RGB/base-color evidence are retained and hash-checked; final Roblox appearance requires creator inspection. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "metric_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "Use the measured meter dimensions without scale changes; do not infer semantic clearances from the outer box. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "realization_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "The declared whole or aggregate matches the visible asset composition; none is claimed to be a modular kit. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "rights_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "The exact source rights record permits commercial use and redistribution. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "semantic_identity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "The existing broad denotation is supported by visible identity; narrower names remain search descriptions rather than new semantic commitments. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "source_integrity",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "The retained source bytes match the exact measured content hash. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    },
+    {
+      "criterionId": "style_contract",
+      "outcome": "pass",
+      "evidenceHashes": [
+        "294a75df8f8e803e8d3b826466eda7df28745c6e5266b694bcf3a984b929c9f4",
+        "78331ccf2fbe7da7b05e2353873152c04b9248c12e818e06af8ee549a8505d6b",
+        "e6097d0e4ed9883a324f38c3e6f4c36fff328cda035c3ba676d525f2587cecf1"
+      ],
+      "note": "Muted rural materials and stylized silhouettes fit the reviewed valley palette; no substitution equivalence is asserted. Broad tree identity only; species name is an authoring handle, not a biological guarantee."
+    }
+  ],
+  "outcome": "eligible",
+  "hash": "735126a98b9f875cfdaee19a216369d85a501ab3bb0f996710fcbe51cfb7919b"
+}
