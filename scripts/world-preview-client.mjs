@@ -16,8 +16,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
 document.body.appendChild(renderer.domElement);
 const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.2, 1500);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.maxPolarAngle = Math.PI * 0.49;
+let controls = new OrbitControls(camera, renderer.domElement);
 const center = new THREE.Vector3(
   (data.bounds.min.x + data.bounds.max.x) / 2,
   0,
@@ -60,9 +59,14 @@ for (const terrain of data.terrains) {
     positions.push(x, y, z);
     const variation =
       0.92 + 0.06 * Math.sin(x * 0.13) * Math.sin(z * 0.11) + 0.05 * Math.cos((x + z) * 0.27);
-    const color = new THREE.Color(material === "Ground" ? "#806a44" : "#66754a").multiplyScalar(
-      variation,
-    );
+    const terrainColors = {
+      Grass: "#66754a",
+      Ground: "#806a44",
+      LeafyGrass: "#627142",
+      Mud: "#665344",
+    };
+    // Approximate material colors only; the engine owns terrain textures and relief.
+    const color = new THREE.Color(terrainColors[material] ?? "#888888").multiplyScalar(variation);
     colors.push(color.r, color.g, color.b);
   }
   for (let z = 0; z < terrain.rows - 1; z += 1)
@@ -160,31 +164,32 @@ await Promise.all(
   }),
 );
 globalThis.basaltPreviewView = async (name) => {
-  const positions = {
-    overview: [0.74, 0.95, -0.74],
-    arrival: [0.1, 0.08, -0.29],
-    ridge: [0.44, 0.28, 0.47],
-  };
-  const targets = {
-    overview: [0, 0, 0],
-    arrival: [-0.06, 0.03, -0.04],
-    ridge: [0.03, 0.04, 0.01],
-  };
-  camera.position.copy(center).add(new THREE.Vector3(...positions[name]).multiplyScalar(extent));
-  controls.target.copy(center).add(new THREE.Vector3(...targets[name]).multiplyScalar(extent));
+  const view = data.cameras.find((v) => v.cameraId === name);
+  if (!view) throw new Error(`Unknown preview camera: ${name}`);
+  const p = view.positionMeters,
+    t = view.lookAtMeters,
+    u = view.up;
+  camera.position.set(p.x, p.y, p.z);
+  camera.up.set(u.x, u.y, u.z).normalize();
+  camera.fov = view.fieldOfViewDegrees;
+  camera.updateProjectionMatrix();
+  controls.dispose();
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(t.x, t.y, t.z);
   controls.update();
+  controls.addEventListener("change", () => renderer.render(scene, camera));
   renderer.render(scene, camera);
 };
-document
-  .querySelectorAll("[data-view]")
-  .forEach((button) =>
-    button.addEventListener("click", () => globalThis.basaltPreviewView(button.dataset.view)),
-  );
+for (const view of data.cameras) {
+  const button = document.createElement("button");
+  button.textContent = view.cameraId;
+  button.addEventListener("click", () => globalThis.basaltPreviewView(view.cameraId));
+  document.body.appendChild(button);
+}
 document.querySelector("#status").textContent =
   `${data.instances.length.toLocaleString()} instances · ${data.assets.length} catalog models · mesh preview, Studio verification pending`;
-await globalThis.basaltPreviewView("overview");
+await globalThis.basaltPreviewView(data.cameras[0].cameraId);
 globalThis.basaltPreviewReady = true;
-controls.addEventListener("change", () => renderer.render(scene, camera));
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();

@@ -8,7 +8,9 @@ import {
   type CompilationStatus,
 } from "@basalt/contracts";
 import {
+  ASSET_PLACEMENT_GEOMETRY_SCHEMA,
   resolveCatalogRequirements,
+  type AssetPlacementGeometry,
   type CatalogAssetArtifact,
   type CatalogSnapshot,
   type RealizationIntent,
@@ -70,6 +72,13 @@ import {
   verifyTerrainConstruction,
 } from "./terrain-foundation.js";
 import { compilationTasks } from "./task-graph.js";
+import { populationDensityAt } from "./population-density.js";
+import {
+  distributeVegetation,
+  isVegetationIntent,
+  vegetationGroundElevation,
+  type VegetationIntent,
+} from "./vegetation.js";
 
 export const REALIZATION_INTENT_KINDS = [
   "single",
@@ -120,6 +129,7 @@ export interface CompileBasaltWorldInput {
   readonly catalogSnapshot: CatalogSnapshot;
   readonly catalogAssets: readonly CatalogAssetArtifact[];
   readonly spatialPlan: SpatialWorldPlan;
+  readonly placementGeometry?: readonly AssetPlacementGeometry[];
 }
 
 export function compileBasaltWorld(input: CompileBasaltWorldInput): WorldBuild {
@@ -266,7 +276,9 @@ function compileBasaltWorldInternal(
   const microIntents = orderedIntents(input.spatialPlan.realizationIntents).filter(
     (intent) => intent.kind !== "assembly" && intent.kind !== "route_network",
   );
-  for (const intent of microIntents) realizeIntent(state, intent, "micro");
+  for (const intent of microIntents)
+    if (!isVegetationIntent(intent)) realizeIntent(state, intent, "micro");
+  realizeVegetation(state, microIntents.filter(isVegetationIntent));
   const microStatus = stageStatus(
     combineCompilationStatuses(foundation.status, resolution.status),
     state.microDiagnostics,
@@ -277,6 +289,21 @@ function compileBasaltWorldInternal(
     catalogResolutionHash: resolution.hash,
     mesoLayoutHash: meso.hash,
     instances: state.microInstances,
+    ...(state.placementGeometry.size > 0
+      ? {
+          measuredOccupancy: state.occupancy
+            .reservations()
+            .filter(
+              (reservation) =>
+                reservation.collisionEvidenceHash &&
+                state.microInstances.some(
+                  (instance) =>
+                    instance.instanceId === reservation.sourceInstanceId &&
+                    instance.evidenceHashes.includes(reservation.collisionEvidenceHash!),
+                ),
+            ),
+        }
+      : {}),
     diagnostics: state.microDiagnostics,
   });
   const statuses = [foundation.status, resolution.status, meso.status, micro.status];
@@ -580,6 +607,7 @@ interface CompilerState {
   readonly foundation: CompiledWorldFoundation;
   readonly entries: ReadonlyMap<string, SealedRuntimeCatalogEntry>;
   readonly assets: ReadonlyMap<string, CatalogAssetArtifact>;
+  readonly placementGeometry: ReadonlyMap<string, AssetPlacementGeometry>;
   readonly bindings: ReadonlyMap<string, ResolvedCatalogBinding>;
   readonly occupancy: OccupancyIndex;
   readonly mesoInstances: RealizedInstance[];
@@ -607,6 +635,11 @@ function createState(
     foundation,
     entries: uniqueMap(runtimeEntries, (entry) => entry.handle, "catalog entry"),
     assets: uniqueMap(input.catalogAssets, (entry) => entry.hash, "catalog asset"),
+    placementGeometry: uniqueMap(
+      input.placementGeometry ?? [],
+      (entry) => entry.assetHash,
+      "placement geometry",
+    ),
     bindings: uniqueMap(bindings, (entry) => entry.requirementId, "catalog binding"),
     occupancy: new OccupancyIndex(),
     mesoInstances: [],
@@ -730,7 +763,12 @@ function realizeIntent(
         routeClearanceConflictCount += 1;
         continue;
       }
-      const reservation = reservationFor(instance, source.asset, separationForIntent(intent) / 2);
+      const reservation = reservationFor(
+        instance,
+        source.asset,
+        separationForIntent(intent) / 2,
+        source.placementGeometry,
+      );
       if (state.occupancy.conflicts(reservation).length > 0) {
         occupancyConflictCount += 1;
         continue;
@@ -750,6 +788,145 @@ function realizeIntent(
   } catch (error) {
     diagnostics.push(
       `intent:${intent.intentId}:${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
+function realizeVegetation(state: CompilerState, intents: readonly VegetationIntent[]): void {
+  if (intents.length === 0) return;
+  const ready: VegetationIntent[] = [];
+  const blockers = new Map<string, OccupancyIndex>();
+  for (const intent of intents) {
+    const binding = state.bindings.get(intent.requirementId);
+    const entry = binding && state.entries.get(binding.entryHandle);
+    if (
+      !entry ||
+      entry.kind !== "substitution_set" ||
+      entry.placement.support !== "ground" ||
+      entry.placement.contact !== "bottom" ||
+      entry.memberAssets.some(
+        (member) =>
+          !state.placementGeometry.has(member.assetHash) ||
+          state.assets.get(member.assetHash)?.support.primaryContact !== "bottom",
+      )
+    ) {
+      state.microDiagnostics.push(
+        `intent:${intent.intentId}:vegetation requires a resolved ground entry and source-measured placement geometry for every member`,
+      );
+      continue;
+    }
+    ready.push(intent);
+    const index = new OccupancyIndex();
+    const boxes = [...intent.vegetation.clearings.map((clearing) => clearing.boundsMeters)];
+    for (const route of state.foundation.routeConstructions) {
+      if (route.surfaceId !== intent.surfaceId || route.treatmentKind === "elevated") continue;
+      const margin = Math.max(0, route.vegetationMask.halfWidthMeters - route.widthMeters / 2);
+      for (const segment of route.travelSegments)
+        boxes.push({
+          min: {
+            x: segment.boundsMeters.min.x - margin,
+            y: segment.boundsMeters.min.y,
+            z: segment.boundsMeters.min.z - margin,
+          },
+          max: {
+            x: segment.boundsMeters.max.x + margin,
+            y: segment.boundsMeters.max.y + intent.vegetation.routeClearanceHeightMeters,
+            z: segment.boundsMeters.max.z + margin,
+          },
+        });
+    }
+    // Overlapping exclusion volumes are a union; checkpoints do not require mutually disjoint reservations.
+    index.restore(
+      boxes.map((bounds, i) =>
+        sealOccupancyReservation({
+          sourceInstanceId: contentAddressedEntityId("VegetationExclusion", {
+            intentId: intent.intentId,
+            i,
+          }),
+          surfaceId: intent.surfaceId,
+          stratum: "vegetation_exclusion",
+          bounds,
+        }),
+      ),
+    );
+    blockers.set(intent.intentId, index);
+  }
+  try {
+    const summaries = distributeVegetation(ready, {
+      seed: state.input.spatialPlan.seed,
+      initialCanopy: state.microInstances,
+      heightAt: (surfaceId, x, z) => surfaceHeight(state, surfaceId, x, z),
+      place: (intent, candidate) => {
+        const binding = state.bindings.get(intent.requirementId)!;
+        const entry = state.entries.get(binding.entryHandle)!;
+        const source = resolveMember(state, entry, binding, candidate.hash)!;
+        const rotation = yawQuaternion(candidate.hash);
+        const surface = state.foundation.placementSurfaces.find(
+          (surface) => surface.surfaceId === intent.surfaceId,
+        )!;
+        const groundElevation = vegetationGroundElevation({
+          geometry: source.placementGeometry!,
+          x: candidate.x,
+          z: candidate.z,
+          yawRadians: 2 * Math.atan2(rotation[1], rotation[3]),
+          maximumReliefMeters: intent.vegetation.maximumSupportReliefMeters,
+          embedMeters: intent.vegetation.groundEmbedMeters,
+          heightAt: (x, z) =>
+            x < surface.bounds.min.x ||
+            x > surface.bounds.max.x ||
+            z < surface.bounds.min.z ||
+            z > surface.bounds.max.z
+              ? NaN
+              : surfaceHeight(state, intent.surfaceId, x, z),
+        });
+        if (groundElevation === undefined) return undefined;
+        const position = {
+          x: candidate.x,
+          z: candidate.z,
+          y:
+            groundElevation - transformedBounds(source.asset, { x: 0, y: 0, z: 0 }, rotation).min.y,
+        };
+        const instance = buildInstance(
+          intent,
+          entry,
+          source,
+          position,
+          intent.regionId,
+          intent.surfaceId,
+          undefined,
+          rotation,
+        );
+        try {
+          assertInstanceInsideRegion(state.input.spatialPlan, instance);
+        } catch {
+          return undefined;
+        }
+        const reservation = reservationFor(
+          instance,
+          source.asset,
+          intent.minimumSeparationMeters / 2,
+          source.placementGeometry,
+        );
+        if (
+          blockers.get(intent.intentId)!.conflicts(reservation).length > 0 ||
+          state.occupancy.conflicts(reservation).length > 0
+        )
+          return undefined;
+        state.occupancy.reserve(reservation);
+        state.microInstances.push(instance);
+        return instance;
+      },
+    });
+    for (const summary of summaries) {
+      const intent = ready.find((candidate) => candidate.intentId === summary.intentId)!;
+      if (summary.placed < intent.minimumCount)
+        state.microDiagnostics.push(
+          `intent:${intent.intentId}:placed ${summary.placed} of required ${intent.minimumCount} from ${summary.trials} bounded vegetation trials; density is not replenished`,
+        );
+    }
+  } catch (error) {
+    state.microDiagnostics.push(
+      `vegetation:${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -979,6 +1156,24 @@ function validateCatalogAssets(input: CompileBasaltWorldInput): void {
   const supplied = new Set(input.catalogAssets.map((entry) => entry.hash));
   for (const hash of input.catalogSnapshot.eligibleAssetArtifactHashes)
     if (!supplied.has(hash)) throw new Error(`Catalog asset artifact is unavailable: ${hash}`);
+  for (const suppliedGeometry of input.placementGeometry ?? []) {
+    const geometry = ASSET_PLACEMENT_GEOMETRY_SCHEMA.parse(suppliedGeometry);
+    const asset = input.catalogAssets.find((candidate) => candidate.hash === geometry.assetHash);
+    if (
+      !asset ||
+      asset.source.contentHash !== geometry.sourceContentHash ||
+      asset.geometryHash !== geometry.geometryHash ||
+      asset.deformation.mode !== "static"
+    )
+      throw new Error("Placement geometry is not bound to the supplied static asset measurement");
+    for (const band of geometry.bands)
+      for (const axis of ["x", "y", "z"] as const)
+        if (
+          band.min[axis] < dequantizeQ32_32(asset.bounds.min[axis]) - 2e-6 ||
+          band.max[axis] > dequantizeQ32_32(asset.bounds.max[axis]) + 2e-6
+        )
+          throw new Error("Placement geometry exceeds measured asset bounds");
+  }
 }
 
 function entryKindForIntent(kind: RealizationIntentKind): SealedRuntimeCatalogEntry["kind"] {
@@ -1800,6 +1995,7 @@ function realizeSocketAttachment(
   source: {
     member: SealedRuntimeCatalogEntry["memberAssets"][number];
     asset: CatalogAssetArtifact;
+    placementGeometry?: AssetPlacementGeometry;
   },
 ): { instance: RealizedInstance; hostInstanceId: string } {
   if (entry.kind !== "attachment_set")
@@ -1918,6 +2114,7 @@ function buildInstance(
   source: {
     member: SealedRuntimeCatalogEntry["memberAssets"][number];
     asset: CatalogAssetArtifact;
+    placementGeometry?: AssetPlacementGeometry;
   },
   position: WorldVector3,
   regionId?: string,
@@ -1961,7 +2158,11 @@ function buildInstance(
     },
     boundsMeters: bounds,
     ...(connection ? { connection } : {}),
-    evidenceHashes: [...entry.evidenceHashes, ...source.asset.measurementEvidenceHashes],
+    evidenceHashes: [
+      ...entry.evidenceHashes,
+      ...source.asset.measurementEvidenceHashes,
+      ...(source.placementGeometry ? [source.placementGeometry.hash] : []),
+    ],
   });
 }
 
@@ -1971,7 +2172,11 @@ function resolveMember(
   binding: ResolvedCatalogBinding | undefined,
   seed: string,
 ):
-  | { member: SealedRuntimeCatalogEntry["memberAssets"][number]; asset: CatalogAssetArtifact }
+  | {
+      member: SealedRuntimeCatalogEntry["memberAssets"][number];
+      asset: CatalogAssetArtifact;
+      placementGeometry?: AssetPlacementGeometry;
+    }
   | undefined {
   const candidates = entry.memberAssets;
   if (candidates.length === 0) {
@@ -1992,7 +2197,8 @@ function resolveMember(
     : undefined;
   const member = exact ?? weightedMember(candidates, contentHash(`${seed}:${entry.entryHash}`));
   const asset = state.assets.get(member.assetHash);
-  return asset ? { member, asset } : undefined;
+  const placementGeometry = asset && state.placementGeometry.get(asset.hash);
+  return asset ? { member, asset, ...(placementGeometry ? { placementGeometry } : {}) } : undefined;
 }
 
 function weightedMember(members: SealedRuntimeCatalogEntry["memberAssets"], hash: string) {
@@ -2036,38 +2242,78 @@ function transformedBounds(
     },
   };
 }
-function reservationFor(instance: RealizedInstance, asset: CatalogAssetArtifact, clearance = 0) {
-  const obbs: SpatialObb[] = asset.collision.orientedBounds.map((box) => ({
-    center: add(
-      instance.transformMeters.position,
-      rotate(fixedVector(box.center), instance.transformMeters.rotation),
-    ),
-    halfSize: {
-      x: dequantizeQ32_32(box.halfSize.x) + clearance,
-      y: dequantizeQ32_32(box.halfSize.y),
-      z: dequantizeQ32_32(box.halfSize.z) + clearance,
-    },
-    rotation: multiplyQuaternion(instance.transformMeters.rotation, box.rotation),
-  }));
+function reservationFor(
+  instance: RealizedInstance,
+  asset: CatalogAssetArtifact,
+  clearance = 0,
+  geometry?: AssetPlacementGeometry,
+) {
+  const useGeometry = geometry && asset.collision.mode === "none";
+  const obbs: SpatialObb[] = useGeometry
+    ? geometry.bands.map((box) => ({
+        center: add(
+          instance.transformMeters.position,
+          rotate(
+            {
+              x: (box.min.x + box.max.x) / 2,
+              y: (box.min.y + box.max.y) / 2,
+              z: (box.min.z + box.max.z) / 2,
+            },
+            instance.transformMeters.rotation,
+          ),
+        ),
+        halfSize: {
+          x: (box.max.x - box.min.x) / 2 + clearance,
+          y: (box.max.y - box.min.y) / 2,
+          z: (box.max.z - box.min.z) / 2 + clearance,
+        },
+        rotation: instance.transformMeters.rotation,
+      }))
+    : asset.collision.orientedBounds.map((box) => ({
+        center: add(
+          instance.transformMeters.position,
+          rotate(fixedVector(box.center), instance.transformMeters.rotation),
+        ),
+        halfSize: {
+          x: dequantizeQ32_32(box.halfSize.x) + clearance,
+          y: dequantizeQ32_32(box.halfSize.y),
+          z: dequantizeQ32_32(box.halfSize.z) + clearance,
+        },
+        rotation: multiplyQuaternion(instance.transformMeters.rotation, box.rotation),
+      }));
+  const padding = useGeometry ? 2e-6 : 0;
   const bounds = {
     min: {
-      x: instance.boundsMeters.min.x - clearance,
-      y: instance.boundsMeters.min.y,
-      z: instance.boundsMeters.min.z - clearance,
+      x: instance.boundsMeters.min.x - clearance - padding,
+      y: instance.boundsMeters.min.y - padding,
+      z: instance.boundsMeters.min.z - clearance - padding,
     },
     max: {
-      x: instance.boundsMeters.max.x + clearance,
-      y: instance.boundsMeters.max.y,
-      z: instance.boundsMeters.max.z + clearance,
+      x: instance.boundsMeters.max.x + clearance + padding,
+      y: instance.boundsMeters.max.y + padding,
+      z: instance.boundsMeters.max.z + clearance + padding,
     },
   };
+  // A local X/Z clearance rotates with each band. Its world-axis extent can exceed
+  // the nominal margin; broad phase must enclose every expanded narrow-phase corner.
+  if (useGeometry)
+    for (const box of obbs)
+      for (const x of [-box.halfSize.x, box.halfSize.x])
+        for (const y of [-box.halfSize.y, box.halfSize.y])
+          for (const z of [-box.halfSize.z, box.halfSize.z]) {
+            const point = add(box.center, rotate({ x, y, z }, box.rotation));
+            for (const axis of ["x", "y", "z"] as const) {
+              bounds.min[axis] = Math.min(bounds.min[axis], point[axis]);
+              bounds.max[axis] = Math.max(bounds.max[axis], point[axis]);
+            }
+          }
   return sealOccupancyReservation({
     sourceInstanceId: instance.instanceId,
     surfaceId: instance.surfaceId ?? "Environment",
     stratum: instance.sourceKind,
     bounds,
-    ...(asset.collision.evidenceHash
-      ? { collisionEvidenceHash: asset.collision.evidenceHash }
+    ...(useGeometry || asset.collision.evidenceHash
+      ? { collisionEvidenceHash: useGeometry ? geometry.hash : asset.collision.evidenceHash! }
       : {}),
     narrowPhaseObbs: obbs,
   });
@@ -2160,7 +2406,19 @@ function* scatterTargets(
   maximumAttempts: number,
   hash: string,
 ): Generator<Target> {
-  for (const point of candidatePointsInPolygon(intent.boundary, maximumAttempts, hash))
+  for (const point of candidatePointsInPolygon(intent.boundary, maximumAttempts, hash)) {
+    if (intent.densityField) {
+      const distance = Math.min(
+        ...intent.boundary.map((p, i) => {
+          const next = intent.boundary[(i + 1) % intent.boundary.length]!;
+          return pointSegmentDistance2d(point.x, point.z, p.u, p.v, next.u, next.v);
+        }),
+      );
+      if (
+        point.densitySample >= populationDensityAt(intent.densityField, point.x, point.z, distance)
+      )
+        continue;
+    }
     yield {
       position: {
         x: point.x,
@@ -2171,6 +2429,7 @@ function* scatterTargets(
       surfaceId: intent.surfaceId,
       rotation: point.rotation,
     };
+  }
 }
 
 function* clusterTargets(
@@ -2185,6 +2444,12 @@ function* clusterTargets(
     const angle = 2 * Math.PI * sample.v;
     const x = intent.center.u + Math.cos(angle) * intent.radiusMeters * radial;
     const z = intent.center.v + Math.sin(angle) * intent.radiusMeters * radial;
+    if (
+      intent.densityField &&
+      sample.densitySample >=
+        populationDensityAt(intent.densityField, x, z, intent.radiusMeters * (1 - radial))
+    )
+      continue;
     yield {
       position: {
         x,
@@ -2202,14 +2467,24 @@ function* candidatePointsInPolygon(
   boundary: readonly { u: number; v: number }[],
   maximumAttempts: number,
   hash: string,
-): Generator<{ x: number; z: number; rotation: [number, number, number, number] }> {
+): Generator<{
+  x: number;
+  z: number;
+  rotation: [number, number, number, number];
+  densitySample: number;
+}> {
   const minX = Math.min(...boundary.map((point) => point.u));
   const maxX = Math.max(...boundary.map((point) => point.u));
   const minZ = Math.min(...boundary.map((point) => point.v));
   const maxZ = Math.max(...boundary.map((point) => point.v));
   for (let attempt = 0; attempt < maximumAttempts; attempt += 1) {
-    const { u, v, rotation } = populationSample(hash, attempt);
-    const candidate = { x: minX + u * (maxX - minX), z: minZ + v * (maxZ - minZ), rotation };
+    const { u, v, rotation, densitySample } = populationSample(hash, attempt);
+    const candidate = {
+      x: minX + u * (maxX - minX),
+      z: minZ + v * (maxZ - minZ),
+      rotation,
+      densitySample,
+    };
     if (pointInIntentPolygon(candidate, boundary)) yield candidate;
   }
 }
@@ -2222,6 +2497,7 @@ function populationSample(seed: string, attempt: number) {
     u: Number.parseInt(hash.slice(0, 8), 16) / 0x1_0000_0000,
     v: Number.parseInt(hash.slice(8, 16), 16) / 0x1_0000_0000,
     rotation: yawQuaternion(hash.slice(16)),
+    densitySample: Number.parseInt(hash.slice(24, 32), 16) / 0x1_0000_0000,
   };
 }
 

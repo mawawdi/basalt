@@ -49,14 +49,46 @@ socket or modular-kit compatibility.
 
 Planting follows the established pattern of authored density regions, individual orientation
 and geometry-aware separation used by [Houdini Scatter and Align](https://www.sidefx.com/docs/houdini/nodes/sop/scatteralign.html).
-Basalt reuses its existing polygon and cluster intents rather than adding a vegetation framework:
-the fixture declares irregular woods with mature canopy anchors and smaller birch and pine
-stands, compact colonies along woodland edges, flower beds beside buildings, fenced crops,
+The Harvest Valley fixture uses shared vegetation communities to declare irregular woods
+with mature canopy anchors, smaller birch and pine stands, canopy-conditioned understory,
+and sparse meadow verges. Separate intents retain flower beds beside buildings, fenced crops,
 orchard rows, farmyard prop groups, and empty pasture. The compiler owns seeded candidate
 placement and measured collision. Ground scatter, clusters and grids also exclude complete
 rotated bounds from grounded routes' clearance masks; this is separate from object-to-object
-occupancy. Authored singles still require explicit composition review. Total instance count is not a visual-quality gate; the mesh
-preview exposes the resulting composition for inspection.
+occupancy. Authored singles still require explicit composition review. Total instance count
+is not a visual-quality gate; the mesh preview exposes the resulting composition for inspection.
+
+Population intents optionally bind a shared smooth density field and boundary fade. This
+modulates candidate probability. The ordinary scatter path replenishes toward a target and,
+without measured collision or packing evidence, reserves full visual boxes. The retained
+composition trials show that these controls alone do not establish a natural forest edge
+or usable clearing.
+
+The explicit vegetation path coordinates canopy, understory and ground-cover layers. Plant
+palettes share spatial fields; shrubs and ferns can prefer accepted canopy, while flowers can
+prefer open ground. These are authored community preferences, not ecological facts inferred
+from captions. Crown influence is a geometric field, not a sunlight simulation. Finite trials
+and variable spacing produce clumps and gaps without quota replenishment. Grounded routes
+reserve an authored clearance height; clearings reserve full 3D activity volumes. Canopies
+can overhang these volumes only when the measured occupied geometry stays clear.
+
+Source-derived height bands retain trunks and low branches while permitting plants in empty
+space beneath crowns. They do not shrink geometry based on a model's interpretation, change
+source meshes or redefine engine physics. A rotated bottom-envelope terrain probe rejects
+excessive support relief and allows a small authored embed rather than suspending wide roots
+from a center-only height sample. This sampled check does not certify every root contact.
+Refinement uses retained measured reservations.
+Terrain `paint` operations apply authored polygon material masks without moving the ground.
+Later paint wins on overlap; resolved route materials retain precedence. These discrete masks
+are sampled into the same sealed base field and passed through engine lowering, not preview
+decoration. Harvest Valley uses leafy woodland ground and soil beneath selected groves and
+crops. Native material relief remains an engine concern: Roblox's
+[terrain materials](https://create.roblox.com/docs/parts/terrain) affect appearance and shape,
+so a WebGL color patch does not establish the final contact or texture quality.
+The [vegetation assessment](research/vegetation-distribution.md) records the production and
+research baselines behind this bounded implementation. It does not establish generalized
+visual quality, automatic biome inference or streaming consistency. The comparison protocol
+and retained observations are documented in `EVALS.md`.
 
 The bounded Three.js preview renders exact GLBs, compiled placements, route surfaces and sampled
 final terrain. It supports orbiting and reproducible camera captures. Approximate preview terrain

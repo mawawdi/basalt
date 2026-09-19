@@ -5,6 +5,7 @@ import { subdivideWorldPlanToLots, type LotSubdivision } from "./lots.js";
 export * from "./contracts.js";
 export * from "./construction.js";
 export * from "./terrain.js";
+export * from "./vegetation.js";
 export * from "./routes.js";
 export * from "./route-horizontal.js";
 export * from "./lots.js";

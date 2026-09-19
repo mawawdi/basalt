@@ -5,3 +5,5 @@ export * from "./compiler.js";
 export * from "./construction.js";
 export * from "./route-construction.js";
 export * from "./terrain-foundation.js";
+export * from "./population-density.js";
+export * from "./vegetation.js";

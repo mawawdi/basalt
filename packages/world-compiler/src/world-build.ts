@@ -558,11 +558,32 @@ export const MICRO_REALIZATION_SCHEMA = z
     catalogResolutionHash: HASH_SCHEMA,
     mesoLayoutHash: HASH_SCHEMA,
     instances: z.array(REALIZED_INSTANCE_SCHEMA).max(1_000_000),
+    measuredOccupancy: z.array(OCCUPANCY_RESERVATION_SCHEMA).max(1_000_000).optional(),
     diagnostics: z.array(z.string().min(1).max(1024)).max(65_536),
     hash: HASH_SCHEMA,
   })
   .strict()
-  .superRefine((value, context) => verifyHash(value, "hash", context));
+  .superRefine((value, context) => {
+    verifyHash(value, "hash", context);
+    const instances = new Map(value.instances.map((instance) => [instance.instanceId, instance]));
+    const seen = new Set<string>();
+    for (const reservation of value.measuredOccupancy ?? []) {
+      const instance = instances.get(reservation.sourceInstanceId);
+      if (
+        !instance ||
+        seen.has(reservation.sourceInstanceId) ||
+        !reservation.collisionEvidenceHash ||
+        !instance.evidenceHashes.includes(reservation.collisionEvidenceHash)
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["measuredOccupancy"],
+          message:
+            "Measured occupancy must bind unique realized instances and their exact evidence",
+        });
+      seen.add(reservation.sourceInstanceId);
+    }
+  });
 export type MicroRealization = z.output<typeof MICRO_REALIZATION_SCHEMA>;
 
 export const COMPILATION_TASK_RESULT_SCHEMA = z
@@ -689,6 +710,20 @@ export const WORLD_BUILD_SCHEMA = z
   });
 export type WorldBuild = z.output<typeof WORLD_BUILD_SCHEMA>;
 
+/** Include foundation failures even when no realization-level diagnostic exists. */
+export function worldBuildDiagnostics(world: WorldBuild): string[] {
+  return [
+    ...new Set([
+      ...world.diagnostics,
+      ...world.foundation.diagnostics,
+      ...world.catalogResolution.diagnostics,
+      ...world.meso.diagnostics,
+      ...world.micro.diagnostics,
+      ...world.tasks.flatMap((task) => task.diagnostics),
+    ]),
+  ].sort(compareCanonicalStrings);
+}
+
 export function sealMesoLayout(input: Omit<MesoLayout, "kind" | "hash">): MesoLayout {
   const material = {
     kind: "MesoLayout" as const,
@@ -721,6 +756,13 @@ export function sealMicroRealization(
     kind: "MicroRealization" as const,
     ...input,
     instances: canonicalInstances(input.instances),
+    ...(input.measuredOccupancy
+      ? {
+          measuredOccupancy: [...input.measuredOccupancy].sort((a, b) =>
+            compareCanonicalStrings(a.id, b.id),
+          ),
+        }
+      : {}),
     diagnostics: [...input.diagnostics].sort(compareCanonicalStrings),
   };
   return deepFreezeJson(

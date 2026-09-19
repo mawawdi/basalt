@@ -5,6 +5,9 @@ contracts in `ARCHITECTURE.md` and the sealed registry win if rationale ever dri
 
 ## Current rationale
 
+- [Vegetation distribution assessment](research/vegetation-distribution.md) — current
+  scatter and occupancy limitations, production biome patterns, reusable sampling code,
+  and the distinction between point placement and layered landscape composition.
 - [Deterministic population placement](research/population-placement.md) — bounded candidate
   replenishment and measured-occupancy pruning for clusters and surface scatters.
 - [World construction and refinement](research/world-construction-and-refinement.md) —

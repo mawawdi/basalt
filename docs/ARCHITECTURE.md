@@ -96,7 +96,7 @@ Terrain and routes remain compilable when catalog-dependent stages are incomplet
 Structural grammars use explicit component roles, interfaces, topology, pitch, and
 coverage. Bounds or filenames never infer structural meaning.
 
-Cluster and surface-scatter population consumes a content-hash-seeded, bounded candidate
+Ordinary cluster and surface-scatter population consumes a content-hash-seeded, bounded candidate
 stream until the authored target is reached or the attempt budget is exhausted. Region
 containment and shared measured 3D occupancy prune each candidate; a rejected candidate does
 not silently consume one of the requested instances. Exhaustion retains explicit underfill
@@ -105,6 +105,47 @@ Coordinates and yaw are independently sampled per candidate from its content has
 does not share one rotation or form a low-discrepancy lattice. Collision is evaluated using
 that candidate's final orientation. `minimumSeparationMeters` adds a horizontal margin around
 measured bounds; it is not a center-to-center spacing parameter.
+
+An optional `PopulationDensityField` on either population intent applies smooth seeded
+world-space value noise and a boundary fade before geometric admission. Its bounded
+parameters control wavelength, contrast, minimum relative density and edge width. Shared
+parameters correlate spatial patches across intents. The field alone remains independent
+rejection sampling toward a target count.
+
+Surface scatter can instead bind an explicit `VegetationDistribution`. Static composition
+is realized first, then canopy, understory and ground cover. Within each layer, candidates
+from equal-priority species interleave by deterministic hash and share an adaptive spacing
+grid. Higher authored priorities can reserve mature anchors before smaller plants. A finite
+candidate density per square meter controls trials; `targetCount` is only a cost cap. Failed
+sites are not replenished to fill that cap, and unmet minima remain incomplete. This is
+bounded adaptive dart throwing, not Bridson active-list sampling or ecosystem simulation.
+
+Layers name their canopy dependencies. Their open/covered preference interpolates against
+the geometric influence of actual accepted canopy instances. Slope limits, 3D activity
+clearings with an exterior falloff, and explicit route clearance height constrain placement.
+Physical clearance and the authored center spacing remain separate. The sampler rejects
+more than 65,536 trials per intent or 262,144 per compilation; neither partition-invariant
+sampling nor million-instance throughput is established.
+Nine terrain probes across the rotated measured bottom envelope bound support relief.
+Accepted vegetation aligns to the lowest sampled support with an explicit shallow embed;
+excessive relief is rejected. This is a bounded grounding check, not continuous terrain
+intersection or deformation of roots to the terrain.
+
+`createVegetationIntents` in `world-planning` expands an authored area, palette, shared density
+field and protected clearings into the existing validated scatter intents. It wires dependent
+layers to that area's canopy and declared single-tree anchors. It neither selects catalog
+assets nor supplies transforms, and introduces no second persisted world format.
+
+The CLI measures `AssetPlacementGeometry` locally from hash-verified GLBs for the resolved
+plant palette. Triangle clipping into at most 64 height bands produces conservative packing
+envelopes, bound to exact source, asset and geometry hashes. Faces crossing a band are included
+even when none of their original vertices lie inside it. Animated geometry and stale evidence
+are refused. These measurements do not modify catalog entries or engine collision. Existing
+explicit collision geometry retains precedence. Instances bind the additional evidence;
+micro realization retains the measured occupancy reservations so refinement verification uses
+the same occupied geometry instead of reverting to solid crown boxes. Missing plant evidence
+is an explicit compilation gap. Source preparation is bounded to 512 models and 500,000
+triangles per measured model.
 
 ## Declarative construction
 
@@ -199,6 +240,14 @@ reruns dependent observations, preserves unrelated task hashes, and stops at eli
 policy rejection, or the iteration budget. Compilation and observation traces enumerate
 which tasks, checks, and cameras actually ran; deterministic full recompilation cannot
 masquerade as incremental reuse.
+
+`createRouteAlternativeProvider` tries each authorized alignment at most once for routes
+with compiler or observation failures. It preserves geometric tolerances and stops with no
+proposal when the finite alternatives are exhausted. The controller returns `incomplete`
+for that exhaustion, retains compiler incompleteness even if a narrower observation passes,
+and gives rejection precedence. This searches authored alternatives; it does not discover
+new alignments. The terrain-contact verifier measures exposed space beneath the route body,
+subtracting its thickness from top clearance consistently with the compiler.
 
 ### Roblox boundary
 

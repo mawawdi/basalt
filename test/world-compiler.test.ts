@@ -9,6 +9,7 @@ import {
   compileBasaltWorld,
   sampleTerrainFieldElevation,
   sealCompilationTaskResult,
+  worldBuildDiagnostics,
 } from "@basalt/world-compiler";
 import {
   sealSpatialWorldPlan,
@@ -32,6 +33,18 @@ test("foundation, resolution, and realization are deterministic and keep the pla
   const second = compileBasaltWorld(input);
   assert.equal(first.worldBuildHash, second.worldBuildHash);
   assert.equal(first.status, "eligible");
+  assert.deepEqual(
+    worldBuildDiagnostics({
+      ...first,
+      diagnostics: [],
+      foundation: {
+        ...first.foundation,
+        diagnostics: ["terrain contact failed", "terrain contact failed"],
+      },
+      meso: { ...first.meso, diagnostics: ["placement failed"] },
+    }),
+    ["placement failed", "terrain contact failed"],
+  );
   assert.equal(first.foundation.foundationInputHash, worldFoundationInputHash(fixture.plan));
   assert.equal(first.foundation.baseTerrainFields[0]?.samples.length, 9);
   assert.ok((first.foundation.routeConstructions[0]?.travelSegments.length ?? 0) > 1);

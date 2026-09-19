@@ -17,7 +17,7 @@ Engine's production PCG tooling likewise treats point production and bounds- or 
 self-pruning as separate operations.
 
 Basalt does not need to reproduce SciPy or Unreal's complete sampling stack. Its existing
-content-hash-seeded low-discrepancy sequence, measured 3D occupancy reservations, region checks,
+content-hash-seeded candidate sequence, measured 3D occupancy reservations, region checks,
 terrain sampling, and priority order are already the Basalt-specific authority. The missing
 commodity behavior was bounded replenishment after a candidate is pruned.
 
@@ -34,6 +34,12 @@ pass. Failed underfill now reports candidate, region-rejection, and occupancy-co
 The retained outdoor pilot is the regression case. Its formerly failing large-tree cluster now
 reaches all six targets; the complete pilot reaches 25 instances and an eligible world while
 preserving unrelated-placement stability under the prop requirement change.
+
+This rule establishes bounded replenishment, not a Poisson-disk distribution or convincing
+vegetation composition. The current implementation independently samples hash-seeded coordinates
+and yaw and optionally filters them through a smooth relative density field. The
+[vegetation distribution assessment](vegetation-distribution.md) records the remaining
+layering, activity-space and conservative tree-occupancy limitations.
 
 ## Sources
 

@@ -1,24 +1,28 @@
 // Local, read-only WebGL preview of exact catalog meshes and compiled terrain.
 // The renderer is an art-direction aid, never Roblox engine evidence.
 import { createServer } from "node:http";
-import { mkdir } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import puppeteer from "puppeteer";
-import { readBoundedWorkspaceBytes } from "@basalt/artifact-store";
-import { contentHash } from "@basalt/contracts";
+import { readBoundedWorkspaceBytes, writeCanonicalWorkspaceJson } from "@basalt/artifact-store";
+import { contentHash, stableJson } from "@basalt/contracts";
 import { WORLD_BUILD_SCHEMA, sampleTerrainFieldSurface } from "@basalt/world-compiler";
+import { defaultPreviewViews, parsePreviewViews } from "./world-preview-views.mjs";
 
 const options = new Map();
 for (let i = 2; i < process.argv.length; i += 2) options.set(process.argv[i], process.argv[i + 1]);
 const worldPath = options.get("--world");
 if (!worldPath)
   throw new Error(
-    "Usage: node scripts/preview-world.mjs --world <world-build.json> [--capture <directory>] [--port <port>]",
+    "Usage: node scripts/preview-world.mjs --world <world-build.json> [--views <world-bound-cameras.json>] [--capture <directory>] [--port <port>]",
   );
 const root = resolve(".");
 const readJson = async (path) =>
   JSON.parse((await readBoundedWorkspaceBytes(root, path, 256 * 1024 * 1024)).toString("utf8"));
 const world = WORLD_BUILD_SCHEMA.parse(await readJson(worldPath));
+const requestedViews = options.has("--views")
+  ? parsePreviewViews(await readJson(options.get("--views")), world.worldBuildHash)
+  : undefined;
 if (world.foundation.status !== "eligible")
   throw new Error("Preview requires eligible compiled terrain and paths");
 const catalog = await readJson("registry/catalog.json");
@@ -81,6 +85,28 @@ const terrains = world.foundation.terrainFields.map((field) => {
     }
   return { columns, rows, points };
 });
+const center = {
+  x: (world.foundation.boundsMeters.min.x + world.foundation.boundsMeters.max.x) / 2,
+  y: 0,
+  z: (world.foundation.boundsMeters.min.z + world.foundation.boundsMeters.max.z) / 2,
+};
+const nearest = terrains
+  .flatMap((t) => t.points)
+  .reduce((best, p) => {
+    const distance = Math.hypot(p[0] - center.x, p[2] - center.z);
+    return best === null || distance < best.distance ? { distance, height: p[1] } : best;
+  }, null);
+center.y = nearest?.height ?? 0;
+const cameras =
+  requestedViews ??
+  defaultPreviewViews(
+    world.worldBuildHash,
+    center,
+    Math.max(
+      world.foundation.boundsMeters.max.x - world.foundation.boundsMeters.min.x,
+      world.foundation.boundsMeters.max.z - world.foundation.boundsMeters.min.z,
+    ),
+  );
 const data = {
   hash: world.worldBuildHash,
   bounds: world.foundation.boundsMeters,
@@ -89,6 +115,7 @@ const data = {
   terrains,
   routes: world.foundation.routeConstructions,
   junctions: world.foundation.routeJunctions,
+  cameras,
 };
 files.set("/scene.json", { bytes: Buffer.from(JSON.stringify(data)), type: "application/json" });
 const modules = [
@@ -109,7 +136,7 @@ for (const [url, path] of modules)
   });
 files.set("/", {
   bytes: Buffer.from(
-    `<!doctype html><html><head><meta charset="utf-8"><title>Basalt world preview</title><style>body{margin:0;background:#bed2d5;overflow:hidden;font:13px system-ui;color:#fff}#caption{position:absolute;bottom:24px;left:28px;pointer-events:none;text-shadow:0 1px 5px #172020}#caption strong{display:block;font-size:24px;margin-bottom:5px}button{position:relative;margin:16px 0 0 16px;padding:9px 14px;border:0;border-radius:6px;background:#213332db;color:white;cursor:pointer}canvas{position:absolute;inset:0;z-index:-1}</style><script type="importmap">{"imports":{"three":"/three/three.module.js","three/addons/":"/three/addons/"}}</script></head><body><button data-view="overview">Overview</button><button data-view="arrival">Farm court</button><button data-view="ridge">Ridge</button><div id="caption"><strong>Basalt</strong><span id="status">Loading exact catalog meshes…</span></div><script type="module" src="/client.mjs"></script></body></html>`,
+    `<!doctype html><html><head><meta charset="utf-8"><title>Basalt world preview</title><style>body{margin:0;background:#bed2d5;overflow:hidden;font:13px system-ui;color:#fff}#caption{position:absolute;bottom:24px;left:28px;pointer-events:none;text-shadow:0 1px 5px #172020}#caption strong{display:block;font-size:24px;margin-bottom:5px}button{position:relative;margin:16px 0 0 16px;padding:9px 14px;border:0;border-radius:6px;background:#213332db;color:white;cursor:pointer}canvas{position:absolute;inset:0;z-index:-1}</style><script type="importmap">{"imports":{"three":"/three/three.module.js","three/addons/":"/three/addons/"}}</script></head><body><div id="caption"><strong>Basalt</strong><span id="status">Loading exact catalog meshes…</span></div><script type="module" src="/client.mjs"></script></body></html>`,
   ),
   type: "text/html",
 });
@@ -140,24 +167,40 @@ console.log(
 );
 if (options.has("--capture")) {
   const directory = resolve(options.get("--capture"));
-  await mkdir(directory, { recursive: true });
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--enable-unsafe-swiftshader"],
-    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  });
+  let browser;
   try {
+    await writeCanonicalWorkspaceJson(root, resolve(directory, "capture-request.json"), {
+      worldBuildHash: world.worldBuildHash,
+      cameras,
+    });
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ["--enable-unsafe-swiftshader"],
+      executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    });
     const page = await browser.newPage();
+    const errors = [];
     await page.setViewport({ width: 1920, height: 1200, deviceScaleFactor: 1 });
-    page.on("pageerror", (error) => console.error(error.message));
+    page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(url, { waitUntil: "networkidle0", timeout: 120_000 });
     await page.waitForFunction(() => globalThis.basaltPreviewReady === true, { timeout: 120_000 });
-    for (const view of ["overview", "arrival", "ridge"]) {
+    const images = [];
+    for (const { cameraId: view } of cameras) {
       await page.evaluate((name) => globalThis.basaltPreviewView(name), view);
-      await page.screenshot({ path: resolve(directory, `${view}.png`) });
+      const image = await page.screenshot();
+      await writeFile(resolve(directory, `${view}.png`), image, { flag: "wx" });
+      images.push({ file: `${view}.png`, hash: contentHash(image) });
     }
+    if (errors.length) throw new Error(`Preview browser errors: ${errors.join("; ")}`);
+    await writeCanonicalWorkspaceJson(root, resolve(directory, "capture.json"), {
+      evidence: "preview_only",
+      worldBuildHash: world.worldBuildHash,
+      cameras,
+      cameraHash: contentHash(stableJson(cameras)),
+      images,
+    });
   } finally {
-    await browser.close();
+    await browser?.close();
     server.close();
   }
 }

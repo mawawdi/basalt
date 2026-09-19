@@ -222,15 +222,28 @@ tower and route fixtures remain focused
 regressions rather than separate creator workflows. This region does not require Modal, a metadata
 worker, embeddings, or neural generation, and it makes no 40-square-kilometer completion claim.
 
-`npm run eval:harvest-valley` materializes a separate 112-meter exterior scene from 60 catalog
+`npm run eval:harvest-valley` materializes a separate 112-meter exterior scene from 58 catalog
 models, thirteen grounded route segments and six junctions. Its regression checks deterministic
 compilation, required model coverage, explicit building orientation, connected route topology,
-complete region containment, measured-bottom alignment, complete flat footing for buildings and
+complete region containment, ordinary measured-bottom alignment, bounded sampled support for
+layered vegetation, complete flat footing for buildings and
 fences, continuous fence runs, clear path footprints, zero catalog gaps and zero constructed structures. This is an
 authored composition fixture, not an autonomous prompt-to-world or generalization benchmark.
 Asset binding capture proves only properties observed during a creator-run Studio operation.
 The region's `status.json` keeps compiler eligibility, Roblox lowering and the creator gate
 separate; the WebGL screenshots never establish `engine_verified`.
+
+The layered planting comparison retains five identical cameras and all three inspected builds
+under `.basalt/evals/harvest-valley-comparison/`: the 873-instance baseline, a sparse-ridge
+development attempt, and the final 1,552-instance build. The final world hash is
+`d7ece6a4d4df825030285d7f29d361de689f0a7dd928f37c28ea9d32ab76d6f4`.
+All 150 authored single and grid placements retain their asset and transform hashes; terrain
+heights and route travel geometry are unchanged. Offline occupancy and all thirteen route
+contact checks are eligible. Ground material masks and the wild planting are changed.
+Same-agent image inspection finds more continuous woodland undergrowth and preserved orchard
+rows, but exposed roots on the retained landmark tree, sparse camp treatment and repeated
+silhouettes remain visible limitations. This comparison does not establish general visual
+acceptance or Roblox contact and collision behavior.
 
 The Studio gate additionally checks realized route parts and the junction against Roblox's
 actual smooth-terrain surface. The adapter coordinates bounded station and shared-junction
@@ -277,6 +290,145 @@ from the observed-world-state hash. Merely echoing expected hash attributes is i
 
 The creator performs the final Studio import, play, access, view, visual, and readback gate.
 Only that evidence may support `engine_verified`.
+
+## Timed regional authoring development pilot
+
+`scripts/generation-benchmark.mjs` measures an active agent using the existing compiler and
+preview tools against the five briefs in `test/fixtures/generation-briefs.json`. It follows the
+per-sample timing, error and retry evidence pattern in [Inspect's evaluation logs](https://inspect.aisi.org.uk/eval-logs.html);
+it does not integrate Inspect or implement a model runtime. The Basalt-specific checks bind
+reviews to compiled world and captured image hashes. Code, prepared catalog, measurements and
+reference plan hashes are frozen before starting. A changed frozen input rejects further
+execution. Setup is excluded and was not separately timed in the initial pilot.
+
+The target is 300 seconds to an agent-accepted preview. Cases have a 600-second stop budget,
+three compiler attempts, and population floors of 500 instances and 20 source models in a
+112-meter region. Floors bound scope; they do not establish comparable quality. The clock
+includes authoring, tool overhead, compilation, preview inspection and revisions. Compiler
+and capture durations use a monotonic clock. Unknown model-call and total-tool counts remain
+null. An eligible review requires every predeclared visual criterion to pass against the
+latest successful capture; uncertain evidence cannot pass. Failed attempts remain recorded.
+
+The initial pilot used the same agent to author briefs, plans and reviews, sequentially in
+shared context. It is development evidence, not an autonomous-agent evaluation, independent
+quality judgment or held-out test. Asset admission and Studio import were excluded. The plans
+reused the showcase's catalog requirements and contract skeleton; their simpler layouts do
+not establish a speedup at equivalent showcase quality.
+
+| Brief            | First preview | Compile attempts | Final development judgment                              |
+| ---------------- | ------------: | ---------------: | ------------------------------------------------------- |
+| Orchard market   |       142.3 s |                3 | Incomplete: uniform woods and broad flat spaces         |
+| Woodland retreat |       134.7 s |                2 | Incomplete: camp and arch close views obscured          |
+| Ridge homestead  |          None |                3 | Incomplete: two terrain-contact failures                |
+| Village common   |        93.3 s |                2 | Incomplete: mechanical woodland borders                 |
+| Arch meadow      |        97.8 s |                2 | Incomplete: exposed camp and hard vegetation boundaries |
+
+Four cases produced compiler-eligible previews within five minutes; none received an eligible
+visual review. Individual compiler attempts took 11–21 seconds. Cases stopped after 177–245
+seconds with unresolved quality or geometry issues; this does not prove improvement within
+the remaining budget impossible. The frozen baseline hash is
+`c3aa0fd3bcfc0b2d10c1a87ffc412538f57b4407f3e39b1520cb7804e7d2fef0`.
+Local evidence, all attempts and the original harness source are retained under
+`.basalt/evals/generation-latency/`. Post-pilot inspection captures are separate and do not
+change the recorded judgments or timings.
+
+The CLI now includes foundation, catalog, meso, micro and task diagnostics in its compilation
+summary. Preview cameras can be supplied independently of recompilation, bound to the exact
+world hash. These improvements address observed diagnostic and inspection gaps; they do not
+demonstrate a five-minute quality success or confer engine verification.
+
+The follow-up suite in `test/fixtures/composition-briefs.json` retains the same time and
+population budgets. It freezes the new density filter, bounded route-alternative provider,
+and a prepared contract helper under baseline hash
+`6851f46a529af0344bbafc1405147281d248a83afdd4d6946338519625189b5c`.
+The helper supplies contract construction only; each layout was authored after its clock
+started. This is a changed authoring workflow with different briefs, not a matched speed
+or quality comparison. Setup is excluded and was not separately timed.
+
+| Brief                 | First preview | Compile attempts | Final development judgment                                                   |
+| --------------------- | ------------: | ---------------: | ---------------------------------------------------------------------------- |
+| Meadow waystation     |       118.2 s |                3 | Incomplete: picnic furniture and barn approach crowding                      |
+| Birch ridge sanctuary |        94.1 s |                3 | Incomplete: shrubs crowd the camp; stand reads as an island                  |
+| Terraced orchard      |       107.0 s |                1 | Incomplete: perimeter planting, porch overlap and uncertain garden usability |
+
+All three reached compiler eligibility, but zero passed all visual criteria. Individual
+compiler attempts took approximately 5–7 seconds. The first two cases closed after 161.7
+and 272.7 seconds. The orchard closed after 356.7 seconds; its review clock includes context
+recovery and the user's request to investigate vegetation algorithms, without a timing
+adjustment. Its remaining authoring attempts were not used. All attempts, failed captures,
+camera descriptors, image hashes and judgments are retained in
+`.basalt/evals/region-composition/`; relevant frozen source copies are under `evidence/source/`.
+Reviews remain explicitly non-independent `delegated_ai` evidence.
+
+A separate development replay repairs the original ridge-homestead route failures in one
+bounded iteration using two manually authored alignments. Shallow forks had overlapped
+outside their junction footprints. The replay also exposed a refinement-verifier mismatch:
+it compared clearance above terrain against a body-gap limit without subtracting road
+thickness. The corrected replay is eligible with no foundation or observation diagnostics;
+it retains the original tolerances. Artifacts are under
+`.basalt/evals/region-composition-development/route-repair/body-gap-correction/`.
+This is a regression repair with supplied alternatives, not autonomous route discovery,
+an alteration of the original pilot score, or Studio verification.
+
+The third suite, `test/fixtures/layered-region-briefs.json`, freezes the layered sampler,
+vegetation authoring helper, terrain paint operations and prepared catalog under baseline hash
+`a1954b1b55b95d8950c7a2253ee1380a94f880cea05c117e8b93860dffaaecf2`.
+Each concrete layout was authored after its clock started. It uses the same 300-second target,
+600-second stop budget and three-attempt limit. Prepared helper and catalog setup are excluded.
+
+| Brief        | First preview | Compile attempts | Final elapsed | Development judgment                                        |
+| ------------ | ------------: | ---------------: | ------------: | ----------------------------------------------------------- |
+| Grove market |       103.8 s |                2 |       150.1 s | Incomplete: perimeter woods and uncertain camp-tree contact |
+| Pine hollow  |        86.0 s |                2 |       179.8 s | Eligible on the bounded visual checklist                    |
+| Orchard edge |       116.2 s |                2 |       456.6 s | Incomplete: sparse ground composition and stiff wood edge   |
+
+Pine hollow needed one orientation repair to face its arch toward the approach. Orchard edge
+needed a wider terrace blend; its total includes context recovery and review recording without
+a clock adjustment. These are three fresh layouts in shared context, authored and judged by the
+same agent, not an independent holdout. One bounded checklist pass is not a qualification of
+general showcase quality or an autonomous planning runtime. Asset admission and Studio import
+remain excluded. All attempts, captures, checks and timing are retained under
+`.basalt/evals/layered-region-authoring/`; failed cases retain their incomplete judgments.
+
+## Vegetation distribution comparison
+
+`scripts/vegetation-comparison.mjs` compares a retained scene with three predeclared seeds
+and all four supplied cameras. Terrain, routes, non-plant placements, palette and per-species
+instance caps are identical within each seed. The report retains all nine worlds, exact plans,
+source snapshots, measured packing geometry, replay hashes, occupancy observations and 36
+image receipts. The main artifact is `.basalt/evals/vegetation-comparison/index.html`.
+
+The current condition fills independent scatter quotas using conservative visual boxes.
+The adaptive condition adds bounded variable spacing, measured packing, grounding probes
+and clearings. The layered condition adds open/covered preferences based on accepted trees;
+its canopy is identical to the adaptive condition. Consequently only adaptive-to-layered
+isolates canopy preference. This is a density-budget comparison, not a matched-count test.
+
+All nine final compilations and their retained occupancy checks are eligible and replay
+identically. Terrain, route and static-placement hashes match within each seed. The three
+layered compilations take 3.66–3.78 seconds, excluding rendering and the 0.19-second one-time
+palette measurement. This is compiler execution time, not prompt-to-accepted-world latency.
+
+| Condition | Plant anchors inside activity clearings, summed | Shrubs/ferns under canopy influence, summed | Plants per seed |
+| --------- | ----------------------------------------------: | ------------------------------------------: | --------------- |
+| Current   |                                             157 |                             16 / 780 (2.1%) | 820, 809, 822   |
+| Adaptive  |                                               0 |                           164 / 780 (21.0%) | 927, 892, 901   |
+| Layered   |                                               0 |                           251 / 379 (66.2%) | 796, 759, 720   |
+
+Canopy influence above 0.5 supplies that diagnostic's membership rule. These counts confirm
+that the authored placement preferences changed behavior; they are not a naturalness score.
+Activity anchors are a simple output diagnostic; compiler placement additionally checks
+complete measured occupied geometry against the clearing volumes. Visual review finds a
+cleaner camp and better tree/undergrowth grouping, while bare-ground treatment and repeated
+plant silhouettes still limit the scene. Visual acceptance remains unestablished.
+
+The first development outputs remain under `.basalt/evals/vegetation-development/`.
+The full comparison before the support-footprint correction is retained under
+`.basalt/evals/vegetation-support-audit/`; its close-ups motivated the grounding correction.
+Those retained images and scores are not overwritten. All judgments remain same-agent
+development evidence. This single layout cannot establish generalized visual quality,
+independent acceptance, continuous root contact, chunk consistency, large-world performance
+or Roblox collision behavior.
 
 ## Regression discipline
 

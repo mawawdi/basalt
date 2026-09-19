@@ -233,14 +233,21 @@ function neighborClearanceCheck(input: {
         }),
         input.expectations.minimumNeighborClearanceMeters,
       );
+    const measured = new Map(
+      (input.worldBuild.micro.measuredOccupancy ?? []).map((reservation) => [
+        reservation.sourceInstanceId,
+        reservation,
+      ]),
+    );
     for (const instance of input.worldBuild.instances)
       occupancy.reserve(
-        sealOccupancyReservation({
-          sourceInstanceId: instance.instanceId,
-          surfaceId: instance.surfaceId ?? instance.regionId ?? "World",
-          stratum: instance.sourceKind,
-          bounds: instance.boundsMeters,
-        }),
+        measured.get(instance.instanceId) ??
+          sealOccupancyReservation({
+            sourceInstanceId: instance.instanceId,
+            surfaceId: instance.surfaceId ?? instance.regionId ?? "World",
+            stratum: instance.sourceKind,
+            bounds: instance.boundsMeters,
+          }),
         input.expectations.minimumNeighborClearanceMeters,
       );
   } catch (error) {
@@ -464,10 +471,9 @@ function routeTerrainContactChecks(worldBuild: WorldBuild): WorldObservationRepo
               ),
             )
           : 0;
-    const maximumGroundedGapMeters =
+    const maximumGroundedBodyGapMeters =
       route.terrainTreatment.kind === "grade"
-        ? route.terrainTreatment.surfaceRevealMeters +
-          route.terrainTreatment.groundingToleranceMeters
+        ? route.terrainTreatment.groundingToleranceMeters
         : null;
     if ((field || surface) && failures.length === 0)
       for (const probe of probes) {
@@ -496,12 +502,13 @@ function routeTerrainContactChecks(worldBuild: WorldBuild): WorldObservationRepo
           );
           break;
         }
+        const bodyGapMeters = Math.max(0, clearanceMeters - route.thicknessMeters);
         if (
-          maximumGroundedGapMeters !== null &&
-          clearanceMeters > maximumGroundedGapMeters + 1e-6
+          maximumGroundedBodyGapMeters !== null &&
+          bodyGapMeters > maximumGroundedBodyGapMeters + 1e-6
         ) {
           failures.push(
-            `grounded route gap ${clearanceMeters.toFixed(6)}m exceeds ${maximumGroundedGapMeters.toFixed(6)}m`,
+            `grounded route body gap ${bodyGapMeters.toFixed(6)}m exceeds ${maximumGroundedBodyGapMeters.toFixed(6)}m`,
           );
           break;
         }
@@ -516,7 +523,7 @@ function routeTerrainContactChecks(worldBuild: WorldBuild): WorldObservationRepo
         baseTerrainFieldHash: route.baseTerrainFieldHash,
         finalTerrainFieldHash: field?.hash,
         requiredClearanceMeters,
-        maximumGroundedGapMeters,
+        maximumGroundedBodyGapMeters,
         minimumObservedClearanceMeters,
         maximumObservedClearanceMeters,
         probeCount: probes.length,

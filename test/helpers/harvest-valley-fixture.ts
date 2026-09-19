@@ -1,4 +1,6 @@
 import type { CatalogRequirement, RealizationIntent } from "@basalt/catalog-model";
+import { readBoundedWorkspaceBytes } from "@basalt/artifact-store";
+import { measureAssetPlacementGeometry } from "@basalt/asset-inspection";
 import { contentHash, dequantizeQ32_32 } from "@basalt/contracts";
 import {
   createSemanticDependencyClosure,
@@ -6,8 +8,10 @@ import {
   type SemanticModule,
 } from "@basalt/semantic-kernel";
 import {
+  createVegetationIntents,
   sealSpatialWorldPlan,
   sealWorldVisualEnvironment,
+  type VegetationPaletteMember,
   type WorldRoute,
 } from "@basalt/world-planning";
 import { catalogFirstUseFixture } from "./catalog-first-use-fixture.js";
@@ -340,15 +344,15 @@ export async function harvestValleyFixture(module: SemanticModule) {
     {
       name: "RidgeWood",
       boundary: [
-        [42, 99],
-        [51, 96],
-        [57, 101],
-        [64, 100],
-        [70, 106],
-        [80, 103],
-        [86, 106],
-        [97, 102],
-        [107, 98],
+        [41, 94],
+        [50, 91],
+        [58, 96],
+        [65, 98],
+        [72, 99],
+        [80, 98],
+        [87, 97],
+        [95, 94],
+        [107, 93],
         [106, 109],
         [40, 109],
       ],
@@ -358,12 +362,12 @@ export async function harvestValleyFixture(module: SemanticModule) {
     {
       name: "EastBank",
       boundary: [
-        [101, 51],
+        [96, 51],
         [108, 48],
         [108, 90],
-        [100, 93],
-        [100, 79],
-        [97, 68],
+        [95, 93],
+        [96, 79],
+        [93, 68],
       ],
       tall: 18,
       young: 12,
@@ -384,15 +388,90 @@ export async function harvestValleyFixture(module: SemanticModule) {
       young: 16,
     },
   ];
-  for (const [i, wood] of woods.entries()) {
-    patch(
-      `${wood.name}MixedCanopy`,
-      "tree_tallround_01_ground",
-      wood.boundary,
-      Math.round(wood.tall * 0.3),
-      0.08,
-      430,
+  const clearings = [
+    {
+      boundsMeters: { min: { x: 56, y: -8, z: 9 }, max: { x: 70, y: 12, z: 29 } },
+      falloffMeters: 5,
+    },
+    {
+      boundsMeters: { min: { x: 44, y: -8, z: 59 }, max: { x: 68, y: 14, z: 87 } },
+      falloffMeters: 2,
+    },
+    {
+      boundsMeters: { min: { x: 17, y: -8, z: 58 }, max: { x: 28, y: 8, z: 74 } },
+      falloffMeters: 3,
+    },
+    {
+      boundsMeters: { min: { x: 40, y: -8, z: 37 }, max: { x: 87, y: 8, z: 59 } },
+      falloffMeters: 3,
+    },
+    {
+      boundsMeters: { min: { x: 67, y: 9, z: 85 }, max: { x: 81, y: 16, z: 97 } },
+      falloffMeters: 3,
+    },
+  ];
+  const anchorIds = [
+    "FarmShade",
+    "CampShade",
+    "WestMonument",
+    "EastMatureCanopy",
+    "SwingGrove",
+    "OldCampTree",
+    "DeepWoodGroup",
+  ];
+  const plant = (
+    plantId: string,
+    requirementId: string,
+    layer: VegetationPaletteMember["layer"],
+    maximumCount: number,
+    density: number,
+    minimum: number,
+    maximum: number,
+    open: number,
+    covered: number,
+    priority = 100,
+  ): VegetationPaletteMember => ({
+    plantId,
+    requirementId,
+    layer,
+    maximumCount,
+    minimumCount: 0,
+    priority,
+    candidateDensityPerSquareMeter: density,
+    spacingMeters: { minimum, maximum },
+    canopyResponse: { open, covered },
+  });
+  function community(
+    areaId: string,
+    boundary: [number, number][],
+    palette: VegetationPaletteMember[],
+    edgeFadeMeters: number,
+  ) {
+    intents.push(
+      ...createVegetationIntents({
+        areaId,
+        regionId: REGION,
+        surfaceId: SURFACE,
+        boundary: boundary.map(([u, v]) => ({ u, v })),
+        palette,
+        densityField: {
+          seed: 260924,
+          edgeFadeMeters,
+          wavelengthMeters: 18,
+          minimumDensity: 0.25,
+          patchContrast: 1.6,
+        },
+        canopyIntentIds: anchorIds,
+        clearings,
+        maximumSlopeDegrees: 32,
+        maximumSupportReliefMeters: 0.35,
+        groundEmbedMeters: 0.025,
+        routeClearanceHeightMeters: 3,
+        minimumSeparationMeters: 0.02,
+      }),
     );
+  }
+  for (const [i, wood] of woods.entries()) {
     const canopy = [
       "rural_silver_birch",
       "rural_ridge_pine",
@@ -400,49 +479,118 @@ export async function harvestValleyFixture(module: SemanticModule) {
       "rural_slender_birch",
       "tree_03_ground",
     ][i]!;
-    patch(`${wood.name}Canopy`, canopy, wood.boundary, wood.tall, 0.1, 420);
-    patch(
-      `${wood.name}Saplings`,
-      i % 2 ? "tree_round_03_ground" : "tree_round_04_ground",
+    community(
+      wood.name,
       wood.boundary,
-      wood.young,
-      0.06,
-      350,
+      [
+        plant(
+          "Mature",
+          "tree_tallround_01_ground",
+          "canopy",
+          Math.round(wood.tall * 0.4),
+          0.12,
+          3,
+          5.5,
+          1,
+          1,
+          300,
+        ),
+        plant("Canopy", canopy, "canopy", wood.tall, 0.22, 2.6, 4.2, 1, 1, 250),
+        plant(
+          "Saplings",
+          i % 2 ? "tree_round_03_ground" : "tree_round_04_ground",
+          "canopy",
+          wood.young,
+          0.2,
+          1.7,
+          2.8,
+          1,
+          1,
+          200,
+        ),
+        plant("Bushes", "plant_bush_03_ground", "understory", 12, 0.09, 1.2, 2.8, 0.08, 0.65),
+        plant("Shrubs", "rural_leafy_shrub", "understory", 65, 0.5, 0.5, 1.2, 0.12, 1),
+        plant("Ferns", "plant_fern_01_ground", "understory", 45, 0.35, 0.6, 1.5, 0.04, 1),
+        plant("Grass", "plant_grass_04_ground", "ground_cover", 180, 1.3, 0.25, 0.6, 0.75, 0.9),
+        plant(
+          "Meadow",
+          i % 2 ? "rural_meadow_grass_patch" : "rural_dense_grass_patch",
+          "ground_cover",
+          20,
+          0.12,
+          1.4,
+          2.6,
+          1,
+          0.3,
+        ),
+        plant("Mushrooms", "rural_mushrooms", "ground_cover", 12, 0.08, 0.4, 1.2, 0.01, 1),
+      ],
+      2,
     );
   }
-  // Each colony is small enough to read as one planted mass, not lawn confetti.
-  const colonies: [number, number, number][] = [
-    [34, 25, 3.2],
-    [25, 51, 3.2],
-    [12, 59, 3.2],
-    [23, 87.5, 2.8],
-    [36, 96, 3.5],
-    [51, 94, 3.1],
-    [101, 96, 3.3],
-    [94, 47, 3.3],
-    [78, 33, 3.5],
-    [73, 20, 3.3],
-    [34, 17, 3.1],
-    [63, 57, 3.3],
+  // Broader, sparse verge polygons replace repeated circular shrub colonies.
+  const verges: [number, number][][] = [
+    [
+      [27, 13],
+      [41, 17],
+      [42, 28],
+      [35, 28],
+      [30, 23],
+    ],
+    [
+      [8, 44],
+      [20, 43],
+      [28, 51],
+      [24, 58],
+      [14, 62],
+      [7, 56],
+    ],
+    [
+      [22, 84],
+      [38, 89],
+      [55, 92],
+      [59, 100],
+      [36, 105],
+      [24, 96],
+    ],
+    [
+      [74, 17],
+      [84, 25],
+      [97, 38],
+      [94, 49],
+      [85, 47],
+      [76, 35],
+    ],
+    [
+      [94, 78],
+      [105, 82],
+      [107, 101],
+      [91, 105],
+      [87, 98],
+    ],
   ];
-  for (const [i, [x, z, radius]] of colonies.entries()) {
-    cluster(`EdgeShrubs${i}`, "plant_bush_03_ground", x, z, radius, 4, 0.05, 180);
-    cluster(
-      `GrassClumps${i}`,
-      i % 2 ? "rural_meadow_grass_patch" : "rural_dense_grass_patch",
-      x + 1.2,
-      z - 1.5,
-      radius + 1.4,
-      4,
-      0.025,
-      170,
+  for (const [i, boundary] of verges.entries())
+    community(
+      `Verge${i}`,
+      boundary,
+      [
+        plant(
+          "Meadow",
+          i % 2 ? "rural_meadow_grass_patch" : "rural_dense_grass_patch",
+          "ground_cover",
+          12,
+          0.07,
+          1.6,
+          3,
+          0.65,
+          0.15,
+        ),
+        plant("Grass", "plant_grass_04_ground", "ground_cover", 65, 0.4, 0.4, 1, 0.5, 0.8),
+        plant("Shrubs", "rural_leafy_shrub", "understory", 18, 0.18, 0.7, 1.8, 0.03, 0.8),
+        plant("Flowers", "rural_small_red_flowers", "ground_cover", 8, 0.05, 0.5, 1.5, 0.6, 0.04),
+      ],
+      5,
     );
-    cluster(`EdgeFerns${i}`, "plant_fern_01_ground", x + 1.4, z - 0.8, radius + 0.5, 7, 0.03, 160);
-    cluster(`LeafyShrubs${i}`, "rural_leafy_shrub", x - 1, z + 0.5, radius + 0.8, 9, 0.02, 100);
-    cluster(`EdgeGrass${i}`, "plant_grass_04_ground", x + 0.4, z - 1, radius + 2.2, 16, 0.02, 50);
-    if (i % 4 === 0)
-      cluster(`Mushrooms${i}`, "rural_mushrooms", x - 1.5, z + 2, 1.5, 4, 0.025, 190);
-  }
   for (const [i, [x, z]] of [
     [83, 92],
     [7, 82],
@@ -745,6 +893,46 @@ export async function harvestValleyFixture(module: SemanticModule) {
           plateau(46, 61, 66, 85, 5.6, 1.2),
           plateau(29.8, 32.8, 36.3, 39.2, 2.7, 1.2),
           plateau(17, 57, 27, 73, 4, 1.2),
+          ...woods.map((wood) => ({
+            kind: "paint" as const,
+            polygon: wood.boundary.map(([x, z]) => ({ x, z })),
+            materialId: "LeafyGrass",
+          })),
+          ...[
+            [
+              [9, 18],
+              [17, 14],
+              [24, 20],
+              [23, 31],
+              [18, 43],
+              [10, 42],
+            ],
+            [
+              [88, 12],
+              [99, 11],
+              [103, 19],
+              [100, 31],
+              [94, 28],
+              [86, 23],
+            ],
+            [
+              [9, 79],
+              [16, 85],
+              [26, 96],
+              [26, 104],
+              [11, 102],
+            ],
+            [
+              [53, 64],
+              [62.5, 64],
+              [62.5, 73],
+              [53, 73],
+            ],
+          ].map((polygon) => ({
+            kind: "paint" as const,
+            polygon: polygon.map(([x, z]) => ({ x: x!, z: z! })),
+            materialId: "Ground",
+          })),
         ],
         materialId: "Grass",
       },
@@ -813,6 +1001,35 @@ export async function harvestValleyFixture(module: SemanticModule) {
       },
     ],
   });
+  const measuredRequirements = new Set(
+    intents
+      .filter(
+        (intent) =>
+          (intent.kind === "surface_scatter" && intent.vegetation) ||
+          anchorIds.includes(intent.intentId),
+      )
+      .map((intent) => intent.requirementId),
+  );
+  const geometryHashes = new Set(
+    base.catalogCommit.snapshot.entries.flatMap((entry) =>
+      entry.kind !== "collection" && measuredRequirements.has(entry.handle)
+        ? entry.memberAssets.map((member) => member.assetHash)
+        : [],
+    ),
+  );
+  const placementGeometry = [];
+  for (const hash of [...geometryHashes].sort()) {
+    const asset = base.measurements.assets.find((asset) => asset.hash === hash)!;
+    const source = base.catalogCommit.sourceManifest.assets.find(
+      (source) => source.contentHash === asset.source.contentHash,
+    )!;
+    placementGeometry.push(
+      measureAssetPlacementGeometry(
+        await readBoundedWorkspaceBytes(process.cwd(), source.relativePath, 32 * 1024 * 1024),
+        asset,
+      ),
+    );
+  }
   return {
     ...base,
     fenceRuns,
@@ -822,6 +1039,7 @@ export async function harvestValleyFixture(module: SemanticModule) {
       catalogSnapshot: base.catalogCommit.snapshot,
       catalogAssets: base.measurements.assets,
       spatialPlan: plan,
+      placementGeometry,
     },
   };
 }

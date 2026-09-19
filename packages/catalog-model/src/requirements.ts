@@ -72,6 +72,78 @@ const intentBase = {
 const point2 = z.object({ u: z.number().finite(), v: z.number().finite() }).strict();
 const count = z.number().int().positive().max(65_536);
 
+/** Relative spatial density; counts remain bounded independently. Shared seeds align layers. */
+export const POPULATION_DENSITY_FIELD_SCHEMA = z
+  .object({
+    seed: z.number().int().min(0).max(0xffff_ffff),
+    edgeFadeMeters: z.number().finite().positive().max(10_000),
+    wavelengthMeters: z.number().finite().positive().max(10_000),
+    minimumDensity: z.number().finite().min(0).max(1),
+    patchContrast: z.number().finite().min(1).max(8),
+  })
+  .strict();
+export type PopulationDensityField = z.output<typeof POPULATION_DENSITY_FIELD_SCHEMA>;
+
+const populationVector = z
+  .object({ x: z.number().finite(), y: z.number().finite(), z: z.number().finite() })
+  .strict();
+/** Authored plant-community policy. None of these values classify an asset or alter its geometry. */
+export const VEGETATION_DISTRIBUTION_SCHEMA = z
+  .object({
+    layer: z.enum(["canopy", "understory", "ground_cover"]),
+    candidateDensityPerSquareMeter: z.number().finite().positive().max(8),
+    spacingMeters: z
+      .object({
+        minimum: z.number().finite().positive().max(100),
+        maximum: z.number().finite().positive().max(100),
+      })
+      .strict()
+      .refine(
+        (value) => value.maximum >= value.minimum,
+        "Maximum spacing must cover minimum spacing",
+      ),
+    canopyIntentIds: z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u)).max(128),
+    canopyResponse: z
+      .object({ open: z.number().min(0).max(1), covered: z.number().min(0).max(1) })
+      .strict(),
+    maximumSlopeDegrees: z.number().finite().min(0).max(60),
+    maximumSupportReliefMeters: z.number().finite().nonnegative().max(1),
+    groundEmbedMeters: z.number().finite().nonnegative().max(0.25),
+    routeClearanceHeightMeters: z.number().finite().positive().max(20),
+    clearings: z
+      .array(
+        z
+          .object({
+            boundsMeters: z
+              .object({ min: populationVector, max: populationVector })
+              .strict()
+              .refine(
+                ({ min, max }) => min.x < max.x && min.y < max.y && min.z < max.z,
+                "Clearing must have positive volume",
+              ),
+            falloffMeters: z.number().finite().nonnegative().max(100),
+          })
+          .strict(),
+      )
+      .max(128),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (new Set(value.canopyIntentIds).size !== value.canopyIntentIds.length)
+      context.addIssue({
+        code: "custom",
+        path: ["canopyIntentIds"],
+        message: "Canopy references must be unique",
+      });
+    if (value.layer === "canopy" && value.canopyIntentIds.length > 0)
+      context.addIssue({
+        code: "custom",
+        path: ["canopyIntentIds"],
+        message: "Canopy is placed before dependent layers",
+      });
+  });
+export type VegetationDistribution = z.output<typeof VEGETATION_DISTRIBUTION_SCHEMA>;
+
 export const REALIZATION_INTENT_SCHEMA = z
   .discriminatedUnion("kind", [
     z
@@ -91,6 +163,8 @@ export const REALIZATION_INTENT_SCHEMA = z
         regionId: z.string().min(1).max(64),
         surfaceId: z.string().min(1).max(64),
         boundary: z.array(point2).min(3).max(512),
+        densityField: POPULATION_DENSITY_FIELD_SCHEMA.optional(),
+        vegetation: VEGETATION_DISTRIBUTION_SCHEMA.optional(),
         minimumCount: z.number().int().nonnegative(),
         targetCount: count,
         minimumSeparationMeters: z.number().finite().nonnegative(),
@@ -104,6 +178,7 @@ export const REALIZATION_INTENT_SCHEMA = z
         surfaceId: z.string().min(1).max(64),
         center: point2,
         radiusMeters: z.number().finite().positive(),
+        densityField: POPULATION_DENSITY_FIELD_SCHEMA.optional(),
         minimumCount: z.number().int().nonnegative(),
         targetCount: count,
         minimumSeparationMeters: z.number().finite().nonnegative(),
@@ -188,6 +263,12 @@ export const REALIZATION_INTENT_SCHEMA = z
         message: "Minimum count cannot exceed target count",
       });
     if (value.kind === "surface_scatter") {
+      if (value.vegetation && !value.densityField)
+        context.addIssue({
+          code: "custom",
+          path: ["densityField"],
+          message: "Vegetation requires an explicit shared landscape field",
+        });
       const area =
         value.boundary.reduce((sum, point, index) => {
           const next = value.boundary[(index + 1) % value.boundary.length]!;

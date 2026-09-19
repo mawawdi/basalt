@@ -1,0 +1,62 @@
+[
+  {
+    "cameraId": "overview",
+    "positionMeters": { "x": 139, "y": 112, "z": -27 },
+    "lookAtMeters": { "x": 56, "y": 6, "z": 56 },
+    "up": { "x": 0, "y": 1, "z": 0 },
+    "fieldOfViewDegrees": 52,
+    "regionIds": [],
+    "readabilityIntent": {
+      "kind": "art_directed",
+      "rationale": "Compare the complete valley, open pasture, orchard rows and woodland composition from a fixed camera."
+    }
+  },
+  {
+    "cameraId": "arrival",
+    "positionMeters": { "x": 64, "y": 10, "z": 22 },
+    "lookAtMeters": { "x": 49, "y": 8, "z": 46 },
+    "up": { "x": 0, "y": 1, "z": 0 },
+    "fieldOfViewDegrees": 60,
+    "regionIds": [],
+    "readabilityIntent": {
+      "kind": "art_directed",
+      "rationale": "Inspect the open arrival and farmhouse approach without moving the camera between builds."
+    }
+  },
+  {
+    "cameraId": "orchard",
+    "positionMeters": { "x": 79, "y": 17, "z": 86 },
+    "lookAtMeters": { "x": 54, "y": 6, "z": 73 },
+    "up": { "x": 0, "y": 1, "z": 0 },
+    "fieldOfViewDegrees": 58,
+    "regionIds": [],
+    "readabilityIntent": {
+      "kind": "art_directed",
+      "rationale": "Inspect ordered fruit trees, crops, fence joins and the deliberate orchard entrance."
+    }
+  },
+  {
+    "cameraId": "woodland",
+    "positionMeters": { "x": 28, "y": 7.5, "z": 39 },
+    "lookAtMeters": { "x": 15, "y": 6, "z": 25 },
+    "up": { "x": 0, "y": 1, "z": 0 },
+    "fieldOfViewDegrees": 60,
+    "regionIds": [],
+    "readabilityIntent": {
+      "kind": "art_directed",
+      "rationale": "Inspect ground contact, undergrowth and the woodland-to-meadow transition at human scale."
+    }
+  },
+  {
+    "cameraId": "camp",
+    "positionMeters": { "x": 34, "y": 10, "z": 63 },
+    "lookAtMeters": { "x": 18, "y": 7, "z": 70 },
+    "up": { "x": 0, "y": 1, "z": 0 },
+    "fieldOfViewDegrees": 60,
+    "regionIds": [],
+    "readabilityIntent": {
+      "kind": "art_directed",
+      "rationale": "Inspect the usable campsite, its approach, fence and shade edge."
+    }
+  }
+]

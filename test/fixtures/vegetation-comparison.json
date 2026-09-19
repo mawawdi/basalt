@@ -1,0 +1,136 @@
+{
+  "seeds": [57206, 57207, 57208],
+  "extraCameras": [
+    {
+      "cameraId": "woodland",
+      "positionMeters": { "x": 63, "y": 3.75, "z": 54 },
+      "lookAtMeters": { "x": 67, "y": 4.5, "z": 61 },
+      "up": { "x": 0, "y": 1, "z": 0 },
+      "fieldOfViewDegrees": 60,
+      "regionIds": [],
+      "readabilityIntent": {
+        "kind": "art_directed",
+        "rationale": "Inspect ground-level plant grouping, root contact and canopy transitions at a fixed terrain-relative viewpoint."
+      }
+    }
+  ],
+  "boundary": [
+    { "u": 4, "v": 4 },
+    { "u": 108, "v": 4 },
+    { "u": 108, "v": 108 },
+    { "u": 4, "v": 108 }
+  ],
+  "clearings": [
+    {
+      "boundsMeters": { "min": { "x": 27, "y": -3, "z": 28 }, "max": { "x": 47, "y": 5, "z": 47 } },
+      "falloffMeters": 6
+    },
+    {
+      "boundsMeters": { "min": { "x": 69, "y": 3, "z": 78 }, "max": { "x": 85, "y": 10, "z": 94 } },
+      "falloffMeters": 7
+    }
+  ],
+  "replaceRequirementIds": [
+    "rural_old_broadleaf",
+    "rural_tall_canopy_tree",
+    "rural_silver_birch",
+    "rural_slender_birch",
+    "rural_ridge_pine",
+    "rural_meadow_pine",
+    "tree_round_04_ground",
+    "tree_03_ground",
+    "plant_bush_03_ground",
+    "rural_leafy_shrub",
+    "plant_fern_01_ground",
+    "rural_meadow_grass_patch",
+    "plant_grass_04_ground",
+    "rural_mushrooms",
+    "rural_purple_flower_clump",
+    "rural_small_red_flowers",
+    "rural_coral_flower_clump",
+    "rural_dense_grass_patch"
+  ],
+  "palette": [
+    {
+      "requirementId": "rural_old_broadleaf",
+      "layer": "canopy",
+      "priority": 200,
+      "density": 0.009,
+      "cap": 14,
+      "spacing": [5, 10],
+      "response": [1, 1]
+    },
+    {
+      "requirementId": "rural_silver_birch",
+      "layer": "canopy",
+      "density": 0.03,
+      "cap": 42,
+      "spacing": [3.5, 7],
+      "response": [1, 1]
+    },
+    {
+      "requirementId": "rural_slender_birch",
+      "layer": "canopy",
+      "density": 0.025,
+      "cap": 36,
+      "spacing": [3, 6],
+      "response": [1, 1]
+    },
+    {
+      "requirementId": "rural_meadow_pine",
+      "layer": "canopy",
+      "density": 0.018,
+      "cap": 24,
+      "spacing": [3, 7],
+      "response": [1, 1]
+    },
+    {
+      "requirementId": "rural_leafy_shrub",
+      "layer": "understory",
+      "density": 0.14,
+      "cap": 120,
+      "spacing": [0.6, 2],
+      "response": [0.08, 1]
+    },
+    {
+      "requirementId": "plant_fern_01_ground",
+      "layer": "understory",
+      "density": 0.16,
+      "cap": 140,
+      "spacing": [0.7, 2],
+      "response": [0.04, 1]
+    },
+    {
+      "requirementId": "plant_grass_04_ground",
+      "layer": "ground_cover",
+      "density": 0.8,
+      "cap": 300,
+      "spacing": [0.3, 0.8],
+      "response": [0.65, 0.8]
+    },
+    {
+      "requirementId": "rural_dense_grass_patch",
+      "layer": "ground_cover",
+      "density": 0.6,
+      "cap": 260,
+      "spacing": [0.4, 1],
+      "response": [1, 0.3]
+    },
+    {
+      "requirementId": "rural_mushrooms",
+      "layer": "ground_cover",
+      "density": 0.06,
+      "cap": 50,
+      "spacing": [0.3, 1],
+      "response": [0.01, 1]
+    },
+    {
+      "requirementId": "rural_purple_flower_clump",
+      "layer": "ground_cover",
+      "density": 0.08,
+      "cap": 50,
+      "spacing": [0.4, 1.2],
+      "response": [1, 0.03]
+    }
+  ]
+}

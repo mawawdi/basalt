@@ -20,12 +20,15 @@ import { verifyRobloxBindingCoverage } from "./verify-roblox-binding-coverage.mj
 import { verifyRobloxUploadEvidence } from "./verify-roblox-upload-evidence.mjs";
 
 const root = resolve(".");
-const output = HARVEST_VALLEY_OUTPUT_ROOT;
+const outputFlag = process.argv.indexOf("--output");
+const output = outputFlag < 0 ? HARVEST_VALLEY_OUTPUT_ROOT : process.argv[outputFlag + 1];
+if (!output || output.startsWith("--")) throw new Error("--output needs a workspace directory");
 const json = async (path) => JSON.parse(await readFile(resolve(root, path), "utf8"));
 const fixture = await harvestValleyFixture(await loadSemanticRegistry());
 const world = compileBasaltWorld(fixture.compileInput);
 await writeJson(`${output}/spatial-plan.json`, fixture.plan);
 await writeJson(`${output}/world-build.json`, world);
+await writeJson(`${output}/placement-geometry.json`, fixture.compileInput.placementGeometry);
 if (world.status !== "eligible")
   throw new Error(
     JSON.stringify(

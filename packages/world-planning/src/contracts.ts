@@ -109,6 +109,13 @@ const regionSchema = z
 export const TERRAIN_OPERATION_SCHEMA = z.discriminatedUnion("kind", [
   z
     .object({
+      kind: z.literal("paint"),
+      polygon: WORLD_POLYGON_SCHEMA,
+      materialId: WORLD_ENTITY_ID_SCHEMA,
+    })
+    .strict(),
+  z
+    .object({
       kind: z.literal("raise"),
       center: WORLD_POINT2_SCHEMA,
       radiusMeters: positive,
@@ -1324,6 +1331,24 @@ function validateWorldPlan(value: SpatialWorldPlan, context: z.RefinementCtx): v
         });
   }
   for (const intent of value.realizationIntents) {
+    if (intent.kind === "surface_scatter" && intent.vegetation) {
+      for (const id of intent.vegetation.canopyIntentIds) {
+        const parent = value.realizationIntents.find((entry) => entry.intentId === id);
+        if (
+          !parent ||
+          !("regionId" in parent) ||
+          !("surfaceId" in parent) ||
+          parent.regionId !== intent.regionId ||
+          parent.surfaceId !== intent.surfaceId ||
+          (parent.kind !== "single" &&
+            !(parent.kind === "surface_scatter" && parent.vegetation?.layer === "canopy"))
+        )
+          context.addIssue({
+            code: "custom",
+            message: `Vegetation ${intent.intentId} references an unavailable canopy intent ${id}`,
+          });
+      }
+    }
     if (!requirements.has(intent.requirementId))
       context.addIssue({
         code: "custom",

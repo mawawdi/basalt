@@ -1,0 +1,44 @@
+{
+  "scope": "Development authoring pilot after density-field and bounded-route changes; prepared admitted catalog, same author/reviewer and shared context. Three fresh briefs, not an independent holdout or matched quality comparison.",
+  "targetSeconds": 300,
+  "stopSeconds": 600,
+  "maximumAttempts": 3,
+  "minimumInstances": 500,
+  "minimumModels": 20,
+  "sizeMeters": 112,
+  "cases": [
+    {
+      "id": "meadow-waystation",
+      "brief": "Make a rural traveler's waystation on the edge of a broad meadow. A barn, market and well should form a compact welcoming court beside the main trail, with a shady picnic clearing farther along a returning woodland loop. Keep the meadow open. Layer trees, shrubs, rocks and groundcover into irregular stands with soft transitions; do not fill the landscape uniformly. Use catalog buildings only.",
+      "checks": [
+        "Barn, market and well define a welcoming court",
+        "Court and shaded picnic clearing are connected by a walking loop",
+        "The meadow stays deliberately open",
+        "Woodland and groundcover have irregular, gradual edges",
+        "Path, buildings and props have convincing contact and clear circulation"
+      ]
+    },
+    {
+      "id": "birch-ridge-sanctuary",
+      "brief": "Make a wooded ridge sanctuary with no buildings. A canvas camp sits in a sheltered low clearing, while a stone arch and rock outcrop form a recognizable destination about five meters higher. A winding ascent and separate return form a loop. Mix birch and conifers in uneven stands, with ferns and flowers thinning into clearings, and frame the arch from the approach.",
+      "checks": [
+        "A sheltered canvas camp anchors the lower clearing",
+        "Arch and rock outcrop occupy a distinctly higher destination",
+        "A continuous ascent and return form a traversable loop",
+        "Mixed woodland and groundcover transition naturally into clearings",
+        "The approach reveals the arch and all major placements look grounded"
+      ]
+    },
+    {
+      "id": "terraced-orchard",
+      "brief": "Make a two-level orchard farm. Place the house and a shaded garden on a lower terrace, with a barn and wind pump on a working terrace about six meters higher. Between them place orderly fruit trees with a clearly open entrance. Connect the two yards with a gently winding approach and woodland return, avoiding shallow overlapping forks. Frame an open meadow with layered irregular woods. Use catalog buildings only.",
+      "checks": [
+        "House garden and upper working yard occupy distinct levels",
+        "Orderly fruit trees have a clear entrance",
+        "Ascent and return connect both yards without overlapping path gaps",
+        "Layered woodland frames open meadow with gradual transitions",
+        "Buildings, orchard and garden details feel coherent and grounded"
+      ]
+    }
+  ]
+}

@@ -5,11 +5,19 @@ implementation checklists. Completed cards are removed; Git history is the recor
 
 ## Now
 
-- [ ] **ROBLOX-HARVEST — Complete the catalog-only showcase gate.** Import the separate
-      112-meter Harvest Valley region using the captured and sealed Studio material bindings.
-      The compiled scene has 60 source models, thirteen connected
-      paths and no constructed buildings. Complete with exact connector readback and creator
-      acceptance of appearance and traversal in the farm court, campsite and ridge loop.
+- [ ] **REGION-AUTHORING — Reach showcase quality within five minutes.** Use the retained
+      development cases to qualify layered vegetation composition, protected activity areas and
+      building approaches. Harvest Valley now uses the layered sampler, reusable vegetation
+      authoring helper and terrain material masks while preserving all 150 authored placements,
+      terrain heights and route geometry. Three new briefs reached first previews in 86–116
+      seconds; one passed its bounded same-agent checklist in 180 seconds, while two retained
+      composition failures. Inspect the retained comparisons, correct sparse ground transitions
+      and mechanical woodland borders, then qualify unseen layouts with independent review.
+      Check measured vegetation collision, native ground materials and exposed landmark-tree
+      roots in Studio. The rationale and reusable baselines are in
+      `docs/research/vegetation-distribution.md`. Complete when fresh varied
+      briefs reach independently accepted showcase quality within 300 seconds from a prepared
+      catalog, retaining complete timing, failed attempts and exact view evidence.
 
 - [ ] **CAT-QUALIFY — Qualify catalog retrieval at realistic scale.** Author and run the
       leakage-isolated pooled benchmark, then freeze retrieval channels, view count, metadata

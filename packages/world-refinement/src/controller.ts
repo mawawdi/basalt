@@ -30,7 +30,7 @@ export interface RefinementProposalProvider {
     readonly worldBuild: WorldBuild;
     readonly observation: WorldObservationReport;
     readonly policy: RefinementPolicy;
-  }): Promise<WorldChangeProposal>;
+  }): Promise<WorldChangeProposal | undefined>;
 }
 
 export interface RefinementCompilationResult {
@@ -90,17 +90,21 @@ export async function runBoundedRefinement(input: {
   const initialPlanHash = plan.planHash;
   const iterations: RefinementRun["iterations"] = [];
   const diagnostics: string[] = [];
-  let terminal: "eligible" | "incomplete" | "rejected" = observation.geometricStatus;
+  const terminalStatus = () => {
+    if (worldBuild.status === "rejected" || observation.geometricStatus === "rejected")
+      return "rejected" as const;
+    return worldBuild.status === "eligible" ? observation.geometricStatus : worldBuild.status;
+  };
+  let terminal = terminalStatus();
 
-  for (
-    let index = 0;
-    observation.geometricStatus === "incomplete" && index < policy.maximumIterations;
-    index += 1
-  ) {
+  for (let index = 0; terminal === "incomplete" && index < policy.maximumIterations; index += 1) {
     try {
-      const proposal = WORLD_CHANGE_PROPOSAL_SCHEMA.parse(
-        await input.provider.propose({ plan, worldBuild, observation, policy }),
-      );
+      const candidate = await input.provider.propose({ plan, worldBuild, observation, policy });
+      if (candidate === undefined) {
+        diagnostics.push("No admissible refinement proposal remains");
+        break;
+      }
+      const proposal = WORLD_CHANGE_PROPOSAL_SCHEMA.parse(candidate);
       if (
         proposal.basePlanHash !== plan.planHash ||
         proposal.baseWorldBuildHash !== worldBuild.worldBuildHash
@@ -157,7 +161,7 @@ export async function runBoundedRefinement(input: {
       plan = nextPlan;
       worldBuild = nextWorldBuild;
       observation = nextObservation;
-      terminal = observation.geometricStatus;
+      terminal = terminalStatus();
     } catch (error) {
       terminal = "rejected";
       diagnostics.push(error instanceof Error ? error.message : String(error));

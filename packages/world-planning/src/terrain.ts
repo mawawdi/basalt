@@ -16,6 +16,7 @@ export function evaluateTerrainElevation(
     throw new Error("Terrain coordinates must be finite");
   let elevationMeters = plan.baseElevationMeters;
   for (const operation of plan.operations) {
+    if (operation.kind === "paint") continue;
     if (operation.kind === "raise") {
       const distance = Math.hypot(xMeters - operation.center.x, zMeters - operation.center.z);
       if (distance < operation.radiusMeters)
@@ -41,6 +42,21 @@ export function evaluateTerrainElevation(
     }
   }
   return elevationMeters;
+}
+
+/** Authored material masks change appearance only; later paint wins on overlap. */
+export function evaluateTerrainMaterial(
+  plan: TerrainPlan,
+  xMeters: number,
+  zMeters: number,
+): string {
+  if (!Number.isFinite(xMeters) || !Number.isFinite(zMeters))
+    throw new Error("Terrain coordinates must be finite");
+  let materialId = plan.materialId;
+  for (const operation of plan.operations)
+    if (operation.kind === "paint" && pointInPolygon({ x: xMeters, z: zMeters }, operation.polygon))
+      materialId = operation.materialId;
+  return materialId;
 }
 
 export function terrainPlanContainsHorizontalPoint(

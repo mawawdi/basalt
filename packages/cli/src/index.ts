@@ -70,7 +70,11 @@ import {
   sealSemanticModule,
   type SemanticModule,
 } from "@basalt/semantic-kernel";
-import { compileBasaltWorld, WORLD_BUILD_SCHEMA } from "@basalt/world-compiler";
+import {
+  compileBasaltWorld,
+  WORLD_BUILD_SCHEMA,
+  worldBuildDiagnostics,
+} from "@basalt/world-compiler";
 import { SPATIAL_WORLD_PLAN_SCHEMA } from "@basalt/world-planning";
 import {
   RobloxImportBridge,
@@ -85,6 +89,7 @@ import { runCatalogMetadataCommand } from "./catalog-metadata.js";
 import { runCatalogIndexCommand, runCatalogSearchCommand } from "./catalog-search.js";
 import { runCatalogContextCommand } from "./catalog-context.js";
 import { runCatalogQualifyCommand } from "./catalog-qualify.js";
+import { prepareWorldPlacementGeometry } from "./world-placement-geometry.js";
 
 const repositoryRoot = resolve(".");
 const args = process.argv.slice(2);
@@ -669,11 +674,20 @@ async function worldCompile(values: string[]): Promise<void> {
   );
   if (catalogCommit.measurementSetHash !== measurements.hash)
     throw new Error("Committed catalog binds a different measurement set");
+  const placementGeometry = await prepareWorldPlacementGeometry({
+    root: repositoryRoot,
+    plan,
+    semanticModule,
+    snapshot: catalogCommit.snapshot,
+    assets: measurements.assets,
+    sourceManifest: catalogCommit.sourceManifest,
+  });
   const worldBuild = compileBasaltWorld({
     semanticModule,
     catalogSnapshot: catalogCommit.snapshot,
     catalogAssets: measurements.assets,
     spatialPlan: plan,
+    placementGeometry,
   });
   await writeCanonicalJson(output, worldBuild);
   print({
@@ -681,6 +695,7 @@ async function worldCompile(values: string[]): Promise<void> {
     output: absolute(output),
     worldBuildHash: worldBuild.worldBuildHash,
     instances: worldBuild.instances.length,
+    diagnostics: worldBuildDiagnostics(worldBuild),
   });
 }
 

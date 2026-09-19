@@ -1,0 +1,66 @@
+{
+  "scope": "Development authoring pilot with a prepared admitted catalog; same agent authors and visually reviews all cases, sequentially in shared context.",
+  "targetSeconds": 300,
+  "stopSeconds": 600,
+  "maximumAttempts": 3,
+  "minimumInstances": 500,
+  "minimumModels": 20,
+  "sizeMeters": 112,
+  "cases": [
+    {
+      "id": "orchard-market",
+      "brief": "Create a warm rural orchard market. A broad open pedestrian lane should connect an arrival clearing, a market court and a farmhouse. Put a fenced orchard on one side with an obvious entrance, and a working barn on the other. Frame the settlement with layered woodland, retain deliberate empty spaces, and use small agricultural details without blocking circulation. Use catalog buildings only.",
+      "checks": [
+        "Market and farmhouse form a legible destination sequence",
+        "An orchard has orderly planting, a fence and an obvious entrance",
+        "Barn activity is separate from the pedestrian court",
+        "Woodland frames intentional open spaces",
+        "Buildings, fences and route edges have convincing contact"
+      ]
+    },
+    {
+      "id": "woodland-retreat",
+      "brief": "Create a secluded woodland retreat with no farm buildings. A winding trail should enter through dense mixed woods, open into a camp with a canvas shelter and fire circle, continue to a stone arch on a gentle rise, and return as a loop. Trees should occur in stands with groundcover and rocky edges, leaving the camp spacious and the trail clear. Make the arch a visible destination from at least one clearing.",
+      "checks": [
+        "There are no farm buildings",
+        "Shelter and fire circle define a spacious camp",
+        "A continuous loop links arrival, camp and stone arch",
+        "Mixed woods form stands instead of uniform scatter",
+        "The arch reads as a destination and contact looks convincing"
+      ]
+    },
+    {
+      "id": "ridge-homestead",
+      "brief": "Create a hillside homestead with two clearly different elevations. Place the farmhouse on a lower terrace and a barn with a wind pump on an upper working terrace. Connect them with a generous winding ascent and an alternative woodland return. Preserve a broad meadow view from the house, add an orchard and farm clutter, and avoid steep road cuts or objects perched on slopes. Use catalog buildings only.",
+      "checks": [
+        "House and upper working yard occupy distinct elevations",
+        "Ascent and return form a connected walking loop",
+        "House has an open meadow outlook",
+        "Orchard and agricultural details support the composition",
+        "Complete building footprints and paths fit the terrain"
+      ]
+    },
+    {
+      "id": "village-common",
+      "brief": "Create a small rural village common. Arrange a farmhouse, two different barns, a market and a well around a generous central green, connected by a perimeter walking loop with three clear approaches. Keep the middle free of trees and props. Add irregular wooded edges, garden borders, hay and carts around the buildings, and one quiet seating area. Use catalog buildings only; avoid a rigid uniform grid.",
+      "checks": [
+        "A generous central green stays free of trees and props",
+        "House, two barns, market and well create distinct edges",
+        "Three approaches join the perimeter walking loop",
+        "Detail belongs to building edges rather than the common",
+        "Wooded edges and seating create variety with convincing contact"
+      ]
+    },
+    {
+      "id": "arch-meadow",
+      "brief": "Create a scenic meadow reserve with no buildings. An open flowered meadow should occupy the center, with a stone arch and rock outcrop on a northern rise, a shaded picnic and camping pocket in the west, and a mixed birch and conifer grove in the east. Connect the three destinations with a flowing triangular walking circuit and an arrival spur. Keep the center mostly open and avoid evenly spaced isolated trees.",
+      "checks": [
+        "The center reads as an open meadow without buildings",
+        "Arch, camp and eastern grove are distinct destinations",
+        "A triangular circuit and arrival spur connect the destinations",
+        "Trees form varied stands with layered groundcover",
+        "Rock, shelter and route contact look convincing"
+      ]
+    }
+  ]
+}

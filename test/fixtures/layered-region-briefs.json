@@ -1,0 +1,44 @@
+{
+  "scope": "Development transfer after the Harvest Valley vegetation integration. Three freshly authored layouts from the prepared catalog, same author and reviewer, no independent holdout or engine acceptance. The 300-second target includes authoring, compilation, capture, visual review and repair; infrastructure setup is excluded.",
+  "targetSeconds": 300,
+  "stopSeconds": 600,
+  "maximumAttempts": 3,
+  "minimumInstances": 500,
+  "minimumModels": 20,
+  "sizeMeters": 112,
+  "cases": [
+    {
+      "id": "grove-market",
+      "brief": "Create a small woodland market beside a wide open meadow. A market stall, barn and well form a clear meeting place. Across the meadow, a shaded camp is connected by a returning walking loop. Keep the center open, use detailed catalog buildings, and layer woodland floor plants beneath irregular tree stands rather than planting repeated shrub circles.",
+      "checks": [
+        "The barn, market and well form a legible meeting place with room to move",
+        "The meadow center remains open and contrasts with wooded edges",
+        "The camp and market connect through a continuous returning loop",
+        "Tree stands and groundcover transition coherently into usable clearings",
+        "Major assets and plants look grounded and approaches remain clear"
+      ]
+    },
+    {
+      "id": "pine-hollow",
+      "brief": "Create a wooded hollow for camping, with an arch on a shoulder about four meters above it. Use no buildings or constructed towers. Two trails climb and return around a central grove. The lower camp should feel enclosed by mixed pines and broadleaf trees while keeping a usable fire circle. Groundcover should follow the woodland, and the arch should be visible from one trail approach.",
+      "checks": [
+        "The camp feels sheltered while its fire circle and entrance remain usable",
+        "The arch occupies a visibly higher destination",
+        "Two connected trails provide an ascent and return",
+        "Groundcover follows mixed woodland with readable gaps and transitions",
+        "The arch is visible from the approach and major roots and props look grounded"
+      ]
+    },
+    {
+      "id": "orchard-edge",
+      "brief": "Create an orchard at the boundary between a meadow and a birch wood. A farmhouse faces the lower arrival court, a barn sits on a terrace three meters higher, and an orderly six-tree orchard has a clear entrance between them. A main path and woodland return connect the yards. Preserve distinct cultivated rows, natural understory and open meadow; use detailed catalog exteriors only.",
+      "checks": [
+        "House and barn anchor distinct lower and upper yards",
+        "Six orchard trees retain orderly rows and an obvious entrance",
+        "Arrival, orchard and both yards have connected clear approaches",
+        "Birch woodland and understory frame a deliberately open meadow",
+        "Buildings, roots, props and ground materials look coherent and grounded"
+      ]
+    }
+  ]
+}

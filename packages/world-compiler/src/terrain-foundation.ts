@@ -9,6 +9,7 @@ import {
 import {
   WORLD_ENTITY_ID_SCHEMA,
   evaluateTerrainElevation,
+  evaluateTerrainMaterial,
   type TerrainPlan,
 } from "@basalt/world-planning";
 import type {
@@ -97,7 +98,7 @@ export function sealBaseTerrainFieldArtifact(plan: TerrainPlan): BaseTerrainFiel
         xMeters,
         zMeters,
         elevationMeters: evaluateTerrainElevation(plan, xMeters, zMeters),
-        materialId: plan.materialId,
+        materialId: evaluateTerrainMaterial(plan, xMeters, zMeters),
       });
     }
   const material = {
