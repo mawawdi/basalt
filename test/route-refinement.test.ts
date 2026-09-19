@@ -62,6 +62,9 @@ test("bounded route alternatives repair an overlap while preserving tolerances a
       maximumIterations: 2,
       constructionParameters: [],
       routeAlternatives: alternatives.length ? [{ routeId: upper.routeId, alternatives }] : [],
+      vegetation: [],
+      terrainPaint: [],
+      protectedIntentIds: [],
       protectedTaskHashes: [],
       requiredCheckKinds: ["terrain_contact"],
     });
@@ -141,6 +144,9 @@ test("refinement retains compiler incompleteness and stops on an observation rej
     maximumIterations: 1,
     constructionParameters: [],
     routeAlternatives: [],
+    vegetation: [],
+    terrainPaint: [],
+    protectedIntentIds: [],
     protectedTaskHashes: [],
     requiredCheckKinds: ["terrain_contact"],
   });
@@ -233,6 +239,9 @@ test("refinement measures the exposed route body gap consistently with the compi
     maximumIterations: 1,
     constructionParameters: [],
     routeAlternatives: [],
+    vegetation: [],
+    terrainPaint: [],
+    protectedIntentIds: [],
     protectedTaskHashes: [],
     requiredCheckKinds: ["terrain_contact"],
   });

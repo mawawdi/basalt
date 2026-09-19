@@ -90,6 +90,7 @@ import { runCatalogIndexCommand, runCatalogSearchCommand } from "./catalog-searc
 import { runCatalogContextCommand } from "./catalog-context.js";
 import { runCatalogQualifyCommand } from "./catalog-qualify.js";
 import { prepareWorldPlacementGeometry } from "./world-placement-geometry.js";
+import { runWorldAuthoringCommand } from "./world-authoring.js";
 
 const repositoryRoot = resolve(".");
 const args = process.argv.slice(2);
@@ -152,6 +153,8 @@ async function main(): Promise<void> {
   if (command === "catalog" && subcommand === "validate") return catalogValidate(rest);
   if (command === "catalog" && subcommand === "seal") return catalogSeal(rest);
   if (command === "world" && subcommand === "compile") return worldCompile(rest);
+  if (command === "world" && ["profile", "generate", "edit"].includes(subcommand ?? ""))
+    return runWorldAuthoringCommand(repositoryRoot, subcommand!, rest, await loadSemanticModule());
   if (command === "roblox" && subcommand === "install-plugin") return robloxInstallPlugin();
   if (command === "roblox" && subcommand === "import") return robloxImport(rest);
   if (command === undefined || command === "help" || command === "--help") return usage();
@@ -1230,6 +1233,9 @@ function usage(): void {
       "  basalt catalog qualify prepare|pool|validate|run|evaluate",
       "  basalt catalog validate|seal|commit",
       "  basalt world compile <plan> --catalog <committed-catalog>",
+      "  basalt world profile <authority-plan> --output <profile.json>",
+      "  basalt world generate <prompt> --model <OpenRouter-ID> --output <directory>",
+      "  basalt world edit <prompt> --from <directory> --model <OpenRouter-ID> --output <directory>",
       "  basalt roblox install-plugin",
       "  basalt roblox import <world-build>",
       "",

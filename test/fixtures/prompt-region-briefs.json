@@ -1,0 +1,25 @@
+{
+  "scope": "Live development pilot of one API model, prepared catalog and fixed authoring profile. The same model proposes and reviews; creator and engine acceptance remain separate.",
+  "model": "deepseek/deepseek-v4.1-flash",
+  "reasoningEffort": "low",
+  "generationBudgetSeconds": 300,
+  "editBudgetSeconds": 300,
+  "maximumAttemptsPerRun": 3,
+  "cases": [
+    {
+      "id": "wooded-refuge",
+      "prompt": "Create a coherent 112-meter low-poly wooded refuge. A sheltered campsite in the southwest has a canvas shelter, fire ring and a bench. A stone arch on a gently raised northeastern shoulder is the destination. Two connected winding trails provide ascent and return around an open central meadow. Mix tree species, with understory following woodland rather than filling the meadow. Include some woodland ground material variation. No buildings. Keep the campsite entrance and walking paths clear. Give an overview and useful close views of camp and arch.",
+      "edit": "Make the northern woodland denser and add a wider vegetation-free clearing around the campsite. Preserve every path, bench, shelter, fire ring and landmark placement exactly."
+    },
+    {
+      "id": "orchard-court",
+      "prompt": "Create a coherent 112-meter rural orchard court. A farmhouse and a barn face a usable working yard with a well and a few yard props. North of it, six fruit trees form two orderly rows of three with an obvious entrance, beside a small planted crop bed. A connected path loops through the yard and around the orchard. Irregular woodland occupies the eastern side, while the west remains an open meadow. Use catalog building exteriors and modest terrain relief; keep buildings and tree roots grounded. Include soil ground material below cultivation. Give an overview and close views of the yard and orchard.",
+      "edit": "Increase ground-cover density in the eastern woodland and change an existing woodland ground-material patch to LeafyGrass if one exists. Keep all cultivated rows, buildings, yard objects and routes exactly where they are."
+    },
+    {
+      "id": "woodland-rest",
+      "prompt": "Create a coherent 112-meter woodland rest stop. Two benches and a stone well form a small usable clearing. A wind pump stands on a separate low grassy shoulder connected to the clearing by a curved trail. A return trail makes a walkable loop. Arrange mixed woods as several connected irregular groves with openings and lower plants underneath, leaving a broad south-facing meadow. Use a few discrete woodland soil patches. No farmhouse or barn. Give an overview and close views that reveal both destinations and their approaches.",
+      "edit": "Open a larger vegetation clearing around the well and both benches, and reduce understory density near that rest area. Preserve the route loop, wind pump, well and benches exactly."
+    }
+  ]
+}

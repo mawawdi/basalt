@@ -5,19 +5,28 @@ implementation checklists. Completed cards are removed; Git history is the recor
 
 ## Now
 
-- [ ] **REGION-AUTHORING — Reach showcase quality within five minutes.** Use the retained
-      development cases to qualify layered vegetation composition, protected activity areas and
-      building approaches. Harvest Valley now uses the layered sampler, reusable vegetation
-      authoring helper and terrain material masks while preserving all 150 authored placements,
-      terrain heights and route geometry. Three new briefs reached first previews in 86–116
-      seconds; one passed its bounded same-agent checklist in 180 seconds, while two retained
-      composition failures. Inspect the retained comparisons, correct sparse ground transitions
-      and mechanical woodland borders, then qualify unseen layouts with independent review.
-      Check measured vegetation collision, native ground materials and exposed landmark-tree
-      roots in Studio. The rationale and reusable baselines are in
-      `docs/research/vegetation-distribution.md`. Complete when fresh varied
-      briefs reach independently accepted showcase quality within 300 seconds from a prepared
-      catalog, retaining complete timing, failed attempts and exact view evidence.
+- [ ] **REGION-AUTHORING — Reach showcase quality within five minutes.** Harvest Valley's
+      accepted playtest, exact build and completed import receipt are retained separately. The
+      prompt and edit commands now use a prepared measured palette, a bounded OpenRouter transport,
+      compiler checks and same-model image review. Edits protect static catalog placements and
+      routes while changing vegetation or existing ground-material patches. The three-brief
+      initial comparison reached eligible geometry for two scenes but visual acceptance for none.
+      Planting now uses spacing and species mixtures with an initial layer-presence check, routes
+      share named junctions, and single objects have bounded local placement search. Edits enumerate
+      exact authorized targets, retain failed-world diagnostics and check realized effects while
+      protecting static placements and route geometry. Review acceptance requires four pass verdicts
+      and no blocking repairs. Creator feedback on a sparse scene exposed an all-layer meadow
+      exclusion and tiny accents crowding out broad ground cover. Planning now separates meadow
+      cover from tree exclusions, prioritizes broad measured ground patches and supplies sampled
+      coverage feedback. The latest wooded-refuge generation reached same-model acceptance in
+      288.7 seconds, but its requested edit still failed and the combined case took 470.8 seconds.
+      Independent visual quality remains unestablished. Malformed reviews now retry the same
+      scene; this follow-up repair has offline regression coverage only.
+      Qualify the corrected workflow on all three briefs without manually authoring candidate JSON;
+      repair remaining failures and obtain independent quality review and creator-run engine evidence.
+      Complete when fresh varied
+      briefs and requested edits reach independently accepted showcase quality within 300 seconds
+      from a prepared catalog, retaining all failed attempts and exact view evidence.
 
 - [ ] **CAT-QUALIFY — Qualify catalog retrieval at realistic scale.** Author and run the
       leakage-isolated pooled benchmark, then freeze retrieval channels, view count, metadata

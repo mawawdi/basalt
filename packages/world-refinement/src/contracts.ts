@@ -10,6 +10,8 @@ import {
 } from "@basalt/contracts";
 import {
   WORLD_ENTITY_ID_SCHEMA,
+  WORLD_AABB_SCHEMA,
+  WORLD_POLYGON_SCHEMA,
   WORLD_POINT2_SCHEMA,
   WORLD_VECTOR3_SCHEMA,
 } from "@basalt/world-planning";
@@ -154,6 +156,39 @@ export type WorldObservationReport = z.output<typeof WORLD_OBSERVATION_REPORT_SC
 export const WORLD_CHANGE_SCHEMA = z.discriminatedUnion("kind", [
   z
     .object({
+      kind: z.literal("vegetation_density"),
+      intentId: WORLD_ENTITY_ID_SCHEMA,
+      candidateDensityPerSquareMeter: z.number().finite().positive(),
+      maximumCount: z.number().int().positive().max(65_536),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("vegetation_clearings"),
+      intentId: WORLD_ENTITY_ID_SCHEMA,
+      clearings: z
+        .array(
+          z
+            .object({
+              boundsMeters: WORLD_AABB_SCHEMA,
+              falloffMeters: z.number().finite().nonnegative().max(64),
+            })
+            .strict(),
+        )
+        .max(32),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("terrain_paint"),
+      terrainPlanId: WORLD_ENTITY_ID_SCHEMA,
+      operationIndex: z.number().int().nonnegative().max(65_535),
+      materialId: WORLD_ENTITY_ID_SCHEMA,
+      polygon: WORLD_POLYGON_SCHEMA,
+    })
+    .strict(),
+  z
+    .object({
       kind: z.literal("construction_parameter"),
       programId: WORLD_ENTITY_ID_SCHEMA,
       parameterId: WORLD_ENTITY_ID_SCHEMA,
@@ -230,6 +265,36 @@ export const REFINEMENT_POLICY_SCHEMA = z
     maximumIterations: z.number().int().positive().max(16),
     constructionParameters: z.array(CONSTRUCTION_PARAMETER_POLICY_SCHEMA).max(256),
     routeAlternatives: z.array(ROUTE_ALTERNATIVE_POLICY_SCHEMA).max(256),
+    vegetation: z
+      .array(
+        z
+          .object({
+            intentId: WORLD_ENTITY_ID_SCHEMA,
+            minimumDensity: z.number().finite().nonnegative(),
+            maximumDensity: z.number().finite().positive(),
+            maximumCount: z.number().int().nonnegative().max(65_536),
+            clearingBounds: WORLD_AABB_SCHEMA,
+          })
+          .strict()
+          .refine(
+            (v) => v.minimumDensity <= v.maximumDensity,
+            "Vegetation density range is inverted",
+          ),
+      )
+      .max(256),
+    terrainPaint: z
+      .array(
+        z
+          .object({
+            terrainPlanId: WORLD_ENTITY_ID_SCHEMA,
+            operationIndex: z.number().int().nonnegative().max(65_535),
+            allowedMaterialIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(32),
+            bounds: WORLD_AABB_SCHEMA,
+          })
+          .strict(),
+      )
+      .max(256),
+    protectedIntentIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(65_536),
     protectedTaskHashes: z.array(HASH_SCHEMA).max(65_536),
     requiredCheckKinds: z.array(WORLD_OBSERVATION_CHECK_KIND_SCHEMA).min(1),
     policyHash: HASH_SCHEMA,
@@ -255,6 +320,17 @@ export const REFINEMENT_POLICY_SCHEMA = z
       context,
     );
     requireUniqueCanonical(value.protectedTaskHashes, "protected task hashes", context);
+    requireUniqueCanonical(
+      value.vegetation.map((v) => v.intentId),
+      "vegetation policy",
+      context,
+    );
+    requireUniqueCanonical(
+      value.terrainPaint.map((v) => `${v.terrainPlanId}:${v.operationIndex}`),
+      "terrain paint policy",
+      context,
+    );
+    requireUniqueCanonical(value.protectedIntentIds, "protected intent IDs", context);
     requireUniqueCanonical(value.requiredCheckKinds, "required check kinds", context);
   });
 export type RefinementPolicy = z.output<typeof REFINEMENT_POLICY_SCHEMA>;
@@ -459,6 +535,21 @@ export function sealRefinementPolicy(
         `${right.programId}:${right.parameterId}`,
       ),
     ),
+    vegetation: [...input.vegetation].sort((a, b) =>
+      compareCanonicalStrings(a.intentId, b.intentId),
+    ),
+    terrainPaint: input.terrainPaint
+      .map((v) => ({
+        ...v,
+        allowedMaterialIds: [...new Set(v.allowedMaterialIds)].sort(compareCanonicalStrings),
+      }))
+      .sort((a, b) =>
+        compareCanonicalStrings(
+          `${a.terrainPlanId}:${a.operationIndex}`,
+          `${b.terrainPlanId}:${b.operationIndex}`,
+        ),
+      ),
+    protectedIntentIds: [...new Set(input.protectedIntentIds)].sort(compareCanonicalStrings),
     routeAlternatives: input.routeAlternatives
       .map((entry) => ({
         ...entry,
@@ -540,9 +631,18 @@ function aggregateStatus(statuses: readonly ("eligible" | "incomplete" | "reject
 }
 
 function changeIdentity(value: WorldChange): string {
-  return value.kind === "construction_parameter"
-    ? `construction:${value.programId}:${value.parameterId}`
-    : `route:${value.routeId}`;
+  switch (value.kind) {
+    case "construction_parameter":
+      return `construction:${value.programId}:${value.parameterId}`;
+    case "route_alternative":
+      return `route:${value.routeId}`;
+    case "vegetation_density":
+      return `density:${value.intentId}`;
+    case "vegetation_clearings":
+      return `clearings:${value.intentId}`;
+    case "terrain_paint":
+      return `paint:${value.terrainPlanId}:${value.operationIndex}`;
+  }
 }
 
 function verifyHash(value: Record<string, unknown>, context: z.RefinementCtx): void {

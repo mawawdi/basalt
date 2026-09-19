@@ -73,6 +73,9 @@ const policy = sealRefinementPolicy({
     },
   ],
   routeAlternatives: [],
+  vegetation: [],
+  terrainPaint: [],
+  protectedIntentIds: [],
   protectedTaskHashes: [protectedRegionTask.taskHash],
   requiredCheckKinds: [
     "containment",

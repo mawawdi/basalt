@@ -49,6 +49,31 @@ and limitations. It is inert research evidence, not a live fixture or compatibil
 
 ## Current conclusions
 
+- The regional planting interface reuses spacing-driven sampling and separate density modulation,
+  as exposed by [Houdini Scatter and Align](https://www.sidefx.com/docs/houdini/nodes/sop/scatteralign.html),
+  with measured overlap pruning already implemented by Basalt. The previous live pilot exposed
+  too many multiplicative probability controls to the model: canopy suppression and strong noise
+  produced empty groves whose required count was zero. A smaller spacing/species interface,
+  exact edit-target schemas and output-count feedback address that observed formulation failure.
+  This is an authoring and feedback correction, not a new scattering algorithm or a claim that
+  parameter changes alone establish visual quality.
+- Large-to-small overlap pruning is an established option in
+  [Unreal PCG Self Pruning](https://dev.epicgames.com/documentation/en-us/unreal-engine/procedural-content-generation-framework-node-reference-in-unreal-engine).
+  Basalt applies measured size priority within generated ground-cover layers so tiny accents
+  cannot consume every broad patch's footprint first. Canopy and understory remain separate
+  stages, and all measured geometry checks remain mandatory. This ordering does not solve
+  missing habitat domains: the rejected lawn-like pilot excluded every plant layer from its
+  central meadow. Planning must distinguish low cover from tall vegetation, and coverage
+  diagnostics must expose large empty domains without pretending to be an aesthetic score.
+- Prompt-driven authoring reuses the standard
+  [JSON-Schema structured-output request](https://openrouter.ai/docs/guides/features/structured-outputs)
+  and [chat completion transport](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion).
+  The closest baseline is a bounded proposal, local validation and repair loop; no separate agent
+  framework is needed for that transport. Basalt owns measured realization, protected edits,
+  retained visual evidence and engine verification. Provider schema support does not replace
+  local validation, and same-model review is development evidence rather than independent acceptance.
+  OpenRouter's [provider routing controls](https://openrouter.ai/blog/insights/evaluate-llm-provider-performance/)
+  supply throughput preference for the selected model; Basalt does not implement a second model router.
 - A durable semantic kernel and an open-vocabulary search layer solve different problems:
   search discovers candidates; admitted assertions authorize compilation.
 - Multiview factual metadata plus BM25 and SigLIP2 scales to nouns outside the kernel

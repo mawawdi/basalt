@@ -88,7 +88,9 @@ export function resolveHorizontalAlignment(
     const dot = clamp(incoming.x * outgoing.x + incoming.z * outgoing.z, -1, 1);
     const cross = incoming.x * outgoing.z - incoming.z * outgoing.x;
     const deflection = Math.acos(dot);
-    if (deflection <= 1e-8) continue;
+    // Normalization can round a forward collinear dot below one. The resulting
+    // acos noise must not turn a straight continuation into a reversal.
+    if (deflection <= 1e-8 || (dot > 0 && Math.abs(cross) <= 1e-9)) continue;
     if (Math.abs(cross) <= 1e-9 || Math.PI - deflection <= 1e-8)
       throw new Error(`Route ${input.routeId} reverses direction at vertex ${index.toString()}`);
     const trimMeters = input.bendRadiusMeters * Math.tan(deflection / 2);

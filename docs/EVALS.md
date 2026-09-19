@@ -430,6 +430,174 @@ development evidence. This single layout cannot establish generalized visual qua
 independent acceptance, continuous root contact, chunk consistency, large-world performance
 or Roblox collision behavior.
 
+## API prompt and edit development pilot
+
+`test/fixtures/prompt-region-briefs.json` declares three fresh briefs and one bounded edit per
+brief. `scripts/prompt-region-pilot.mjs <case> --output <directory>` freezes source, catalog,
+profile and prompt bytes before the first model request. Generation and edit each have a
+300-second stop limit and three attempts. The clock includes requests, schema rejection,
+compilation, capture, review and repair. `report` with the same output directory collects
+every retained attempt into a gallery; it does not choose only successful screenshots.
+
+The prepared profile contains measured catalog options and an empty region, not an authored
+answer. API models propose a compact composition; the compiler produces actual transforms.
+Each run retains request hashes, raw responses, available usage, elapsed time, compiler status
+and screenshot hashes. Each edit captures the exact starting world and edited world through
+matching cameras. Protected static placements retain their asset identities, transforms and
+measured bounds, and route travel geometry is compared exactly. Vegetation-only edits reuse
+the foundation but rerun the whole population task; their trace does not claim per-grove execution.
+
+The explicitly selected model is `deepseek/deepseek-v4.1-flash` through OpenRouter for both
+proposal and visual review. Visual judgments are same-model development evidence, not independent
+qualification, creator acceptance, gameplay validation or engine verification. A geometrically
+eligible world can be retained and edited even when its visual judgment remains incomplete.
+No process edits the candidate JSON manually between attempts. The API transport has no tools.
+
+The first live wooded-refuge run is retained under `.basalt/evals/prompt-region/wooded-refuge/`.
+It produced no plan: the first response exhausted 16,000 output tokens in reasoning after
+252 seconds, and the second request timed out at the total 300-second limit. This is an
+integration failure, not a world-quality measurement. It motivated explicit schema instructions
+and a recorded low-reasoning setting. Subsequent runs use a separate output root, preserving
+this failure and its original source snapshot.
+
+The explicit-schema, low-reasoning run under `schema-explicit/` also failed to produce a plan.
+It was terminated after approximately 350 seconds when body cancellation exceeded the intended
+deadline. The transport now races header/body reads against cancellation and does not await a
+stalled cancellation promise; an offline regression exercises both conditions. A separate
+30-second transport probe with reasoning disabled returned the requested JSON in 2.2 seconds
+with zero reasoning tokens. This establishes transport conformance only. The `direct-output/`
+pilot uses that explicit setting for all briefs and retains the two earlier failures separately.
+
+The first complete three-brief suite under `direct-output/` produced no geometrically eligible
+world to edit: wooded refuge stopped after three attempts at 178.8 seconds, orchard court after
+three at 113.5 seconds, and woodland rest hit the 300-second request deadline. These are failed
+development runs, not accepted layouts. The refuge exposed a real compiler defect: normalization
+rounded a forward collinear dot product below one, so an `acos` threshold mislabeled straight
+continuation as reversal. A targeted regression now accepts the diagonal continuation and still
+rejects genuine reversal. The orchard exposed a prompt-contract defect: ordinary assumptions
+were emitted as unsupported requirements. Proposal notes now have their own field, and the model
+receives actual terrain/route constraints and explicit composition capabilities. The
+`grounded-context/` suite uses those corrections, throughput routing and a 120-second per-call
+deadline without changing the three briefs or manually editing candidate layouts.
+
+That suite also exposed adapter errors: one-dimensional rows passed zero spacing to an unused
+grid axis, and paths narrower than the reference settings inherited an oversized junction.
+Draft expansion now supplies a positive unused-axis stride and bounds each derived junction
+radius by the participating path widths. Regression tests cover both. Wooded refuge and orchard
+court exhausted their three attempts; woodland rest was interrupted at 206.8 seconds for this
+framing audit. These attempts remain under `grounded-context/`. The final `spatial-feedback/`
+comparison adds measured placed-object bounds and, when the foundation is eligible, partial-world
+images to repair feedback. Partial images remain labeled with failed compiler status and cannot
+authorize a world or replace the requested content.
+
+The completed `spatial-feedback/` comparison produced the following development evidence.
+Times include each phase's requests, compilation, capture and review, but exclude preparation
+between phases; they are not acceptance times.
+
+| Brief         | Generation    | Geometric result                                        | Requested edit                                                             | Visual result                                             |
+| ------------- | ------------- | ------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Wooded refuge | 168.3 seconds | Eligible, 141 instances                                 | 57.6 seconds; eligible, 143 instances                                      | Incomplete: sparse planting and insufficient visible edit |
+| Orchard court | 132.1 seconds | Incomplete: crop/path conflicts and fence/hedge overlap | Not run without an eligible starting world                                 | Unassessed                                                |
+| Woodland rest | 205.4 seconds | Eligible, 35 instances                                  | 18.8 seconds; rejected changes named vegetation targets outside the policy | Incomplete: the woodland was largely empty                |
+
+Two of three briefs reached geometric eligibility; none reached visual acceptance. The wooded
+refuge edit preserved all 28 protected static instances, including their exact assets, transforms
+and bounds, and left route travel geometry unchanged. Its final instance count increased by only
+two, which does not establish the requested denser woodland or enlarged clearing. Candidate
+density parameters are not a promise of visible density after placement constraints. These
+results establish useful transport, repair and preservation behavior, not autonomous showcase
+quality or a five-minute quality guarantee.
+
+Review also repeated an obsolete arch-collision diagnosis after compilation succeeded and the
+new images showed the arch. The runtime now omits prior failures from fresh visual-review context.
+The comparison's rotated-grid failures also motivated deterministic expansion into individual
+placements. Both corrections have offline regression coverage; this live comparison predates
+them and does not qualify their combined behavior. All attempts and images remain in
+`.basalt/evals/prompt-region/spatial-feedback/index.html`; the earlier experiment roots above
+retain their own galleries and source snapshots.
+
+The spacing-control comparison retains the same three prompts, requested edits, model and time
+limits. Its authoring schema replaced freely combined trial probabilities with spacing, species
+weights and positive minimum counts. Edit schemas enumerate allowed targets and supply realized
+counts. The comparison checks geometric completion, missing requested vegetation, visible
+composition, measurable edit effects and exact preservation. A larger instance count alone cannot
+pass visual review. Source snapshots and all attempts are retained under
+`.basalt/evals/prompt-region/spacing-controls/`; no model calls run in the automated test suite.
+The first wooded-refuge run finished in 62.2 seconds with 220- and 476-instance incomplete
+attempts. It established canopy presence but exposed misplaced static objects, a steep route,
+and unnecessary model-authored species quotas that increased during repair. This was stopped
+after one brief. Its screenshots and failed proposals remain retained.
+
+The connected-composition comparison keeps the three briefs and model fixed, uses named route
+nodes, allows a declared three-meter local placement tolerance and requires presence of each
+selected plant species without exposing arbitrary minimum quotas to the model. Ordered planting
+remains exact. Evidence is retained under `.basalt/evals/prompt-region/connected-composition/`.
+Its wooded-refuge run placed 297–299 instances but failed all three attempts because the arch
+remained inside the path corridor. The same brief with low reasoning under `reasoned-composition/`
+produced eligible geometry with 1,267 instances on the first proposal (69.1 seconds). Generation
+plus review took 140.5 seconds. The model declared acceptance while listing required access
+repairs, so that visual claim is not sound acceptance evidence. Three edits took another 137.5
+seconds and failed because the widened clearing removed the last instances of selected species.
+Those per-species quotas were an inappropriate permanent constraint on later user edits.
+
+The measured-feedback comparison retains the same three briefs with low reasoning and checks
+initial presence per planting layer rather than persistent per-species quotas. Its review status
+is derived from the individual verdicts and an empty blocking-repair list. Edits retain detailed
+failed worlds and observations and compare density changes across competing species in the same
+layer. All results are retained under `.basalt/evals/prompt-region/measured-feedback/`.
+The wooded-refuge run exhausted the 16,000-token combined response allowance twice, then
+produced 547 instances with two required trees still conflicting with paths. The orchard's
+first attempt also truncated, using 15,723 tokens for reasoning. The operator stopped that
+comparison during its second orchard attempt; woodland-rest was not run. Interrupted cases
+remain visible in the gallery and cannot count as completed or accepted cases.
+
+The response-budget comparison keeps the prompts, model, schemas and spatial checks fixed,
+increases the combined allowance to 24,576 tokens and the individual call ceiling to 150 seconds,
+and retains the 300-second total limit for each generation/edit phase. Its artifacts are under
+`.basalt/evals/prompt-region/response-budget/`. This is a transport repair experiment; the
+additional allowance does not itself establish better composition or a qualified latency bound.
+Its first wooded-refuge proposal completed in 72.6 seconds and compiled 2,349 instances. The
+composition contained 116 canopy plants, 979 understory plants and 1,250 ground-cover instances,
+including 992 flowers but only eight broad meadow-grass patches. A 40 by 40 meter exclusion
+removed every layer from the central meadow. The creator questioned its sparse, non-organic
+appearance. Same-model review passed composition despite this failure, although it correctly
+left the run incomplete because the fire ring and destination approach were not established by
+the views. The operator stopped the comparison during the next proposal; the other briefs and
+requested edit were not run. This is rejected visual development evidence, not a successful
+showcase or a completed three-case comparison.
+
+The habitat-coverage experiment keeps the wooded-refuge brief, catalog and model fixed. It
+separates meadow cover from tree exclusions in the planning instructions, prioritizes larger
+measured ground-cover patches within their layer, softens boundary transitions and includes
+sampled spatial coverage in review and repair evidence. It retains every proposal under
+`.basalt/evals/prompt-region/habitat-coverage/`. These changes are evaluated together; the run
+cannot isolate their individual contribution or qualify the model.
+
+That experiment completed only wooded-refuge generation and its requested edit. The first
+proposal compiled 2,573 instances with a separate meadow ground-cover domain; ground-cover bounds
+coverage rose from 8.76% in the creator-rejected scene to 13.23%. Its reviewer response duplicated
+a criterion and failed schema validation, causing an unnecessary second scene proposal. The
+second proposal compiled 2,788 instances (192 canopy, 770 understory, 1,820 ground cover) with
+15.07% ground-cover bounds coverage and passed same-model review at 288.7 seconds. These sampled
+envelopes include mesh holes and exclude terrain materials; they are not measured leaf coverage
+or independent aesthetic acceptance. The scene still has visually weak terrain and vegetation
+transitions. The requested edit took another 179.1 seconds: two proposals repeated identical
+paint changes and were rejected, while the third changed terrain paint without changing any
+plant placements. Image review correctly left the edit incomplete. Neither northern woodland
+densification nor a wider vegetation-free campsite was established. The other two briefs were
+not run, and the combined generation/edit case took 470.8 seconds.
+
+The review contract now uses four required named properties instead of an array that can repeat
+criteria. Invalid review responses reuse the compiled candidate on the next bounded attempt;
+offline regressions cover generation and edit retries, including unchanged build hashes and
+retained edit-effect evidence. This correction was made after the habitat-coverage run and has
+not been live-qualified by that result.
+
+The accepted Harvest Valley baseline is separately retained under
+`.basalt/baselines/harvest-valley/`: exact plan, world, catalog, completed import receipt and
+an acceptance record quoting the creator's playtest feedback. This protects an accepted artifact;
+it does not qualify new layouts or promote their model judgments into engine evidence.
+
 ## Regression discipline
 
 Every important failure should become one of:

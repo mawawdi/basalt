@@ -61,6 +61,9 @@ test("observation tower refines through parameters and the affected dependency c
       },
     ],
     routeAlternatives: [],
+    vegetation: [],
+    terrainPaint: [],
+    protectedIntentIds: [],
     protectedTaskHashes: [protectedRegionTask.taskHash],
     requiredCheckKinds: [
       "containment",

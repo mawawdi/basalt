@@ -11,6 +11,7 @@
     { "path": "../neural-asset" },
     { "path": "../world-planning" },
     { "path": "../world-compiler" },
+    { "path": "../world-refinement" },
     { "path": "../roblox" }
   ]
 }

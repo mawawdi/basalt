@@ -757,7 +757,8 @@ function realizeIntent(
       if (
         (intent.kind === "surface_scatter" ||
           intent.kind === "cluster" ||
-          intent.kind === "surface_grid") &&
+          intent.kind === "surface_grid" ||
+          (intent.kind === "single" && intent.positionToleranceMeters !== undefined)) &&
         violatesGroundRouteClearance(state.foundation, instance)
       ) {
         routeClearanceConflictCount += 1;
@@ -921,7 +922,7 @@ function realizeVegetation(state: CompilerState, intents: readonly VegetationInt
       const intent = ready.find((candidate) => candidate.intentId === summary.intentId)!;
       if (summary.placed < intent.minimumCount)
         state.microDiagnostics.push(
-          `intent:${intent.intentId}:placed ${summary.placed} of required ${intent.minimumCount} from ${summary.trials} bounded vegetation trials; density is not replenished`,
+          `intent:${intent.intentId}:placed ${summary.placed} of required ${intent.minimumCount} from ${summary.trials} bounded vegetation trials; rejected ${summary.rejectedDensity} by density/clearing, ${summary.rejectedSpacing} by spacing, ${summary.rejectedSlope} by slope, ${summary.rejectedPlacement} by grounding/occupancy/region; density is not replenished`,
         );
     }
   } catch (error) {
@@ -1902,13 +1903,36 @@ function targetsForIntent(
   intent: Exclude<RealizationIntent, { kind: "assembly" }>,
 ): Iterable<Target> {
   const plan = state.input.spatialPlan;
-  if (intent.kind === "single")
-    return [
-      {
+  if (intent.kind === "single") {
+    const radius = intent.positionToleranceMeters ?? 0;
+    const centers = [{ x: intent.at.u, z: intent.at.v }];
+    // Nearest ring first; fixed finite trials retain authored yaw and never relax geometry.
+    if (radius > 0)
+      for (let ring = 1; ring <= 4; ring++)
+        for (let direction = 0; direction < 16; direction++) {
+          const angle = (direction * Math.PI) / 8;
+          centers.push({
+            x: intent.at.u + ((radius * ring) / 4) * Math.cos(angle),
+            z: intent.at.v + ((radius * ring) / 4) * Math.sin(angle),
+          });
+        }
+    const surface = state.foundation.placementSurfaces.find(
+      (s) => s.surfaceId === intent.surfaceId,
+    );
+    return centers
+      .filter(
+        (p) =>
+          surface &&
+          p.x >= surface.bounds.min.x &&
+          p.x <= surface.bounds.max.x &&
+          p.z >= surface.bounds.min.z &&
+          p.z <= surface.bounds.max.z,
+      )
+      .map((point) => ({
         position: {
-          x: intent.at.u,
-          y: surfaceHeight(state, intent.surfaceId, intent.at.u, intent.at.v),
-          z: intent.at.v,
+          x: point.x,
+          y: surfaceHeight(state, intent.surfaceId, point.x, point.z),
+          z: point.z,
         },
         regionId: intent.regionId,
         surfaceId: intent.surfaceId,
@@ -1922,8 +1946,8 @@ function targetsForIntent(
                 Math.cos((intent.yawDegrees * Math.PI) / 360),
               ] as [number, number, number, number],
             }),
-      },
-    ];
+      }));
+  }
   if (intent.kind === "wall_attachment") return [wallAttachmentTarget(state, intent)];
   if (intent.kind === "surface_scatter")
     return scatterTargets(

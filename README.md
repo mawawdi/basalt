@@ -309,6 +309,44 @@ It produces ordinary intents accepted by `sealSpatialWorldPlan`; the compiler ow
 plant transform. Terrain `paint` operations add polygon material patches independently
 of height operations, with route treatment taking precedence.
 
+For API-driven authoring, put `OPENROUTER_API_KEY` in the environment or the repository's
+`.env`, then select the model explicitly:
+
+```sh
+node bin/basalt.js world generate \
+  "Create a wooded campsite with an open meadow and a winding approach trail" \
+  --model deepseek/deepseek-v4.1-flash --output .basalt/worlds/wooded-camp
+node bin/basalt.js world edit \
+  "Make the woodland denser and widen the vegetation clearing around the campsite" \
+  --from .basalt/worlds/wooded-camp \
+  --model deepseek/deepseek-v4.1-flash --output .basalt/worlds/wooded-camp-edit
+```
+
+The prepared `registry/world-authoring/outdoor.json` supplies measured catalog choices and
+a 112-meter empty region, without a reference layout. A run retains each proposal, compiler
+failure, captured view, model review, token receipt and timing. Each command has a 300-second
+budget and at most three attempts; individual model calls stop at 150 seconds, and
+`--budget-seconds` accepts 10–600 for the total run. These are stop limits,
+not quality guarantees. Use a fresh output directory for every run. Inspect `report.json`
+and the attempt previews even when the command completes: `incomplete` is a retained result.
+Model visual eligibility does not establish creator acceptance or Studio verification.
+The transport defaults to low reasoning: the bounded comparison produced a valid 1,267-instance
+first proposal where disabled reasoning repeatedly failed the route/landmark constraints.
+`--reasoning-effort none|low|high` records an explicit override in the receipts. This is a
+development configuration, not a qualified model policy.
+OpenRouter routing prioritizes output throughput while keeping the selected model ID fixed.
+The 24,576-token response allowance includes both reasoning and JSON; truncation is a failed
+attempt, never a partially accepted plan.
+
+Edits currently allow bounded vegetation density, additional vegetation clearings and changes
+to existing terrain-material patches. Static catalog placements, route geometry and terrain
+heights are protected. A new profile can be prepared from an existing eligible authority plan
+with `world profile <plan.json> --output <profile.json>` and selected with `--profile`.
+Profile preparation removes the source layout. The API transport cannot execute tools or code.
+The profile fixes placement tolerance; ordered rows and grids remain exact. Planting uses spacing
+and species mixtures, while route joins use shared nodes. Edit schemas name only existing
+permitted targets, and a parameter-only change cannot establish a visible edit.
+
 The operator-driven generation pilot uses `node scripts/generation-benchmark.mjs` with
 `init`, `start <case>`, `compile <case>`, `capture <case>`, `review <case>`, `finish <case>`, and
 `report`. `init` freezes the prepared Harvest Valley inputs and five briefs; `start` begins the

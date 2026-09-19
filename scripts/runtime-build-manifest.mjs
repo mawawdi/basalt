@@ -31,6 +31,7 @@ const PRODUCT_PACKAGE_ROOTS = [
   "catalog-model",
   "world-planning",
   "world-compiler",
+  "world-refinement",
   "asset-production",
   "asset-inspection",
   "asset-factory",

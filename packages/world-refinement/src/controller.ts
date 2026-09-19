@@ -1,4 +1,4 @@
-import { compareCanonicalStrings } from "@basalt/contracts";
+import { compareCanonicalStrings, stableJson } from "@basalt/contracts";
 import {
   affectedCompilationTaskClosure,
   compilationTaskId,
@@ -55,6 +55,8 @@ export interface RefinementObservationResult {
 
 export async function runBoundedRefinement(input: {
   readonly initialPlan: SpatialWorldPlan;
+  /** A creator-requested edit must run even when the initial geometry already passes. */
+  readonly initialProposal?: WorldChangeProposal;
   readonly compiler: RefinementCompiler;
   readonly provider: RefinementProposalProvider;
   readonly observe: (input: {
@@ -97,9 +99,18 @@ export async function runBoundedRefinement(input: {
   };
   let terminal = terminalStatus();
 
-  for (let index = 0; terminal === "incomplete" && index < policy.maximumIterations; index += 1) {
+  for (
+    let index = 0;
+    (terminal === "incomplete" ||
+      (terminal === "eligible" && index === 0 && input.initialProposal !== undefined)) &&
+    index < policy.maximumIterations;
+    index += 1
+  ) {
     try {
-      const candidate = await input.provider.propose({ plan, worldBuild, observation, policy });
+      const candidate =
+        index === 0 && input.initialProposal !== undefined
+          ? input.initialProposal
+          : await input.provider.propose({ plan, worldBuild, observation, policy });
       if (candidate === undefined) {
         diagnostics.push("No admissible refinement proposal remains");
         break;
@@ -130,6 +141,7 @@ export async function runBoundedRefinement(input: {
         execution: compilation.execution,
       });
       enforceProtectedTasks(worldBuild, nextWorldBuild, policy);
+      enforceProtectedInstances(worldBuild, nextWorldBuild, policy);
       const nextObservationResult = await input.observe({
         worldBuild: nextWorldBuild,
         previousObservation: observation,
@@ -189,8 +201,16 @@ export function applyWorldChangeProposal(
   proposal: WorldChangeProposal,
   policy: RefinementPolicy,
 ): SpatialWorldPlan {
+  proposal = WORLD_CHANGE_PROPOSAL_SCHEMA.parse(proposal);
+  policy = REFINEMENT_POLICY_SCHEMA.parse(policy);
+  if (proposal.basePlanHash !== plan.planHash) throw new Error("Edit binds a stale plan");
+  for (const id of policy.protectedIntentIds)
+    if (!plan.realizationIntents.some((intent) => intent.intentId === id))
+      throw new Error(`Protected intent does not exist: ${id}`);
   const changedPrograms = new Map<string, Array<{ parameterId: string; value: number }>>();
   const changedRoutes = new Map<string, string>();
+  const intents = structuredClone(plan.realizationIntents);
+  const terrainPlans = structuredClone(plan.terrainPlans);
   for (const change of proposal.changes) {
     if (change.kind === "construction_parameter") {
       const rule = policy.constructionParameters.find(
@@ -213,11 +233,76 @@ export function applyWorldChangeProposal(
         ...(changedPrograms.get(change.programId) ?? []),
         { parameterId: change.parameterId, value: change.value },
       ]);
-    } else {
+    } else if (change.kind === "route_alternative") {
       const rule = policy.routeAlternatives.find((entry) => entry.routeId === change.routeId);
       if (!rule?.alternatives.some((entry) => entry.alternativeId === change.alternativeId))
         throw new Error("Route alternative is not whitelisted");
       changedRoutes.set(change.routeId, change.alternativeId);
+    } else if (change.kind === "terrain_paint") {
+      const rule = policy.terrainPaint.find(
+        (r) =>
+          r.terrainPlanId === change.terrainPlanId && r.operationIndex === change.operationIndex,
+      );
+      const terrain = terrainPlans.find((t) => t.terrainPlanId === change.terrainPlanId);
+      if (!rule || !terrain || terrain.operations[change.operationIndex]?.kind !== "paint")
+        throw new Error("Ground material edit is not whitelisted");
+      if (
+        !rule.allowedMaterialIds.includes(change.materialId) ||
+        change.polygon.length > 32 ||
+        change.polygon.some(
+          (p) =>
+            p.x < rule.bounds.min.x ||
+            p.x > rule.bounds.max.x ||
+            p.z < rule.bounds.min.z ||
+            p.z > rule.bounds.max.z,
+        )
+      )
+        throw new Error("Ground material edit exceeds its policy bound");
+      terrain.operations[change.operationIndex] = {
+        kind: "paint",
+        materialId: change.materialId,
+        polygon: change.polygon,
+      };
+    } else {
+      const rule = policy.vegetation.find((r) => r.intentId === change.intentId);
+      const intent = intents.find((i) => i.intentId === change.intentId);
+      if (
+        !rule ||
+        !intent ||
+        intent.kind !== "surface_scatter" ||
+        !intent.vegetation ||
+        policy.protectedIntentIds.includes(change.intentId)
+      )
+        throw new Error(
+          `Vegetation edit is not whitelisted: ${change.intentId}; use an existing editable intent ID from the policy`,
+        );
+      if (change.kind === "vegetation_density") {
+        if (
+          change.candidateDensityPerSquareMeter < rule.minimumDensity ||
+          change.candidateDensityPerSquareMeter > rule.maximumDensity ||
+          change.maximumCount > rule.maximumCount ||
+          change.maximumCount < intent.minimumCount
+        )
+          throw new Error("Vegetation density exceeds its policy bound");
+        intent.vegetation.candidateDensityPerSquareMeter = change.candidateDensityPerSquareMeter;
+        intent.targetCount = change.maximumCount;
+      } else {
+        if (
+          change.clearings.some((c) =>
+            (["x", "y", "z"] as const).some(
+              (axis) =>
+                c.boundsMeters.min[axis] < rule.clearingBounds.min[axis] ||
+                c.boundsMeters.max[axis] > rule.clearingBounds.max[axis],
+            ),
+          )
+        )
+          throw new Error("Vegetation clearing exceeds its policy bound");
+        // Requested clearings may add exclusions, never remove prior protection.
+        const combined = [...intent.vegetation.clearings, ...change.clearings];
+        intent.vegetation.clearings = [
+          ...new Map(combined.map((c) => [stableJson(c), c])).values(),
+        ];
+      }
     }
   }
   const {
@@ -230,6 +315,8 @@ export function applyWorldChangeProposal(
   } = plan;
   return sealSpatialWorldPlan({
     ...unchangedPlan,
+    realizationIntents: intents,
+    terrainPlans,
     constructionPrograms: plan.constructionPrograms.map((program) => {
       const changes = changedPrograms.get(program.programId);
       return changes ? replaceConstructionParameters(program, changes) : program;
@@ -249,15 +336,44 @@ function refinementSeedTasks(
   worldBuild: WorldBuild,
   proposal: WorldChangeProposal,
 ): readonly string[] {
-  const seeds = proposal.changes.map((change) =>
-    change.kind === "construction_parameter"
-      ? compilationTaskId("structure", "meso", change.programId)
-      : compilationTaskId("route", "route_construction", change.routeId),
-  );
+  const seeds = proposal.changes.map((change) => {
+    if (change.kind === "construction_parameter")
+      return compilationTaskId("structure", "meso", change.programId);
+    if (change.kind === "route_alternative")
+      return compilationTaskId("route", "route_construction", change.routeId);
+    if (change.kind === "terrain_paint")
+      return compilationTaskId("terrain", "terrain_base", change.terrainPlanId);
+    const micro = worldBuild.tasks.find((t) => t.scope === "world" && t.stage === "micro");
+    if (!micro) throw new Error("World has no population task");
+    return micro.taskId;
+  });
   const known = new Set(worldBuild.tasks.map((entry) => entry.taskId));
   for (const seed of seeds)
     if (!known.has(seed)) throw new Error(`Refinement target has no compilation task: ${seed}`);
   return [...new Set(seeds)].sort(compareCanonicalStrings);
+}
+
+function enforceProtectedInstances(
+  before: WorldBuild,
+  after: WorldBuild,
+  policy: RefinementPolicy,
+): void {
+  for (const id of policy.protectedIntentIds) {
+    const placements = (world: WorldBuild) =>
+      world.instances
+        .filter((i) => i.intentId === id)
+        .map((i) =>
+          stableJson({
+            assetHash: i.assetHash,
+            entryHandle: i.entryHandle,
+            transformMeters: i.transformMeters,
+            boundsMeters: i.boundsMeters,
+          }),
+        )
+        .sort(compareCanonicalStrings);
+    if (stableJson(placements(before)) !== stableJson(placements(after)))
+      throw new Error(`Protected placements changed: ${id}`);
+  }
 }
 
 function verifyCompilationExecution(input: {

@@ -22,10 +22,13 @@ export function observeWorldBuild(input: {
   readonly visualAssessment?: WorldObservationReport["visualAssessment"];
   readonly persistRender?: (contentHash: string, bytes: Uint8Array) => void;
 }): RefinementObservationResult & { readonly renderPayloads: ReadonlyMap<string, Uint8Array> } {
-  const rendered = renderWorldDiagnostics({
-    worldBuild: input.worldBuild,
-    cameras: input.cameras,
-  });
+  const rendered =
+    input.cameras.length === 0
+      ? { renders: [], payloads: new Map<string, Uint8Array>() }
+      : renderWorldDiagnostics({
+          worldBuild: input.worldBuild,
+          cameras: input.cameras,
+        });
   if (input.persistRender)
     for (const [hash, bytes] of rendered.payloads) input.persistRender(hash, bytes);
   const report = verifyWorldBuild({

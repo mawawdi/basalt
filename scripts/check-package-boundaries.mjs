@@ -27,6 +27,7 @@ const allowed = new Map(
       "spatial-core",
       "world-planning",
     ],
+    "world-refinement": ["contracts", "spatial-core", "world-compiler", "world-planning"],
     roblox: ["artifact-store", "contracts", "spatial-core", "world-compiler"],
     cli: [
       "artifact-store",
@@ -39,6 +40,7 @@ const allowed = new Map(
       "semantic-kernel",
       "world-compiler",
       "world-planning",
+      "world-refinement",
     ],
   }),
 );

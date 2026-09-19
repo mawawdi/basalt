@@ -89,7 +89,7 @@ embedding cannot invalidate a compiled world.
 - `world-compiler` realizes foundation, catalog bindings, meso structure, micro detail,
   and the sealed `WorldBuild` using meters only.
 - `world-refinement` consumes a compiler and exact world observations. It may propose only
-  policy-whitelisted parameter or route changes, recompiles the affected dependency
+  policy-whitelisted parameter, route, vegetation or ground-material changes, recompiles the affected dependency
   closure, and reports executed versus reused tasks.
 
 Terrain and routes remain compilable when catalog-dependent stages are incomplete.
@@ -234,8 +234,11 @@ clearance, style-profile consistency, and protected task hashes. Unsupported vis
 geometry is incomplete rather than approximated as conclusive. Access checks include the
 entry transition, landings, stair width, tread, riser, and headroom constraints.
 
-A `WorldChangeProposal` may change only policy-whitelisted construction parameters or route
-alternatives. The controller computes the affected task dependency closure, recompiles it,
+A `WorldChangeProposal` may change only policy-whitelisted construction parameters, route
+alternatives, vegetation density, added vegetation clearings, or existing terrain-material
+patches. Protected catalog intents retain their exact asset, transform and measured bounds.
+The controller accepts a requested initial proposal even when the starting geometry is already
+eligible. It computes the affected task dependency closure, recompiles it,
 reruns dependent observations, preserves unrelated task hashes, and stops at eligibility,
 policy rejection, or the iteration budget. Compilation and observation traces enumerate
 which tasks, checks, and cameras actually ran; deterministic full recompilation cannot
@@ -248,6 +251,84 @@ for that exhaustion, retains compiler incompleteness even if a narrower observat
 and gives rejection precedence. This searches authored alternatives; it does not discover
 new alignments. The terrain-contact verifier measures exposed space beneath the route body,
 subtracting its thickness from top clearance consistently with the compiler.
+
+### Prompt-driven regional authoring
+
+`RegionAuthoringProfile` provides an empty region, measured catalog choices, terrain defaults
+and route construction settings. `RegionDraft` is a transient proposal containing destinations,
+routes, terrain operations, planting areas and evidence cameras. `realizeRegionDraft` expands
+it into the existing sealed `SpatialWorldPlan`; no second compiled-world representation exists.
+Unknown requirements and unsupported requests fail before compilation. Models propose region
+composition; the existing terrain, route, grounding and population solvers own final transforms.
+Nonblocking proposal notes remain separate from genuinely unrepresentable user requirements.
+Planning context includes the terrain's base elevation and exact route construction constraints.
+Draft expansion owns unused-axis grid strides and derives junction radii from the participating
+path widths. Rotated grids expand into individual placements with rotated offsets and asset
+orientations; their footing covers the full rotated arrangement. These details are not additional
+model responsibilities.
+
+Profiles bind the exact catalog snapshot used to prepare their measured palette; a changed
+snapshot requires profile preparation again. The CLI's provider-neutral `WorldPlanner`
+interface performs one JSON-Schema request at a time.
+The OpenRouter adapter implements that transport using ordinary HTTP, with no model tool loop
+or executable output. Local schemas, catalog authority, compilation and geometric verifiers
+remain authoritative. The runtime bounds attempts and elapsed time, captures actual source-mesh
+previews, and retains request hashes, raw responses, usage and failed attempts. Visual review
+is explicitly same-model evidence; edit review receives matching before-and-after views.
+The response schema is included both in the request format and the model-visible instructions.
+The transport records its output allowance and selected reasoning setting with every request.
+It prioritizes OpenRouter throughput, allows 24,576 combined reasoning/output tokens, and caps
+each call at 150 seconds within the total run budget.
+Repair feedback includes the measured bounds of already placed objects. Incomplete populations
+can supply partial mesh previews when terrain and paths are eligible, but their failed compiler
+status remains authoritative. Those images assist repair and never establish acceptance.
+Fresh visual review receives the current compiler status and diagnostics, without earlier
+attempt failures that may already have been resolved.
+Regional planting proposals specify patch scale, desired center spacing, relative species
+weights and instance caps. Expansion derives bounded trial density,
+a shared moderate density field and canopy preference. Canopy establishes independently of
+existing canopy. This authoring surface reuses the existing sampler; it does not replace its
+measured occupancy, grounding or finite-trial limits. The authoring runtime requires each requested
+planting layer to establish initially. These composition checks are separate from persistent
+compiler minimum counts, so a later clearing can remove a species. Explicit authored minimums
+still fail compilation with density, spacing, slope and placement rejection counts.
+Ground-cover expansion prioritizes measured broad patches before small accents
+within that layer, and planting boundaries fade over a patch-scale-dependent transition up to
+eight meters. The planning context exposes dimensions and projected bounds area directly.
+Each attempt also records a 128 by 128 sample of projected vegetation envelopes, summarized by
+layer and sixteen spatial tiles. This exposes large empty domains and count/coverage mismatches;
+mesh holes, actual leaf area and terrain textures are unresolved, so it is diagnostic evidence,
+not a density requirement or aesthetic score. Meadow ground cover and tree exclusions use separate
+ordinary planting domains; no asset-name classifier decides where grass belongs.
+Routes reference shared named nodes and interior waypoints; draft expansion rejects disconnected
+regional route graphs. Shared endpoints come from one coordinate declaration. The prepared profile
+also declares a bounded position tolerance for individual placements. The existing population
+realizer tries the authored center followed by 64 candidates on four concentric rings, retaining
+yaw and checking region, measured occupancy and route clearance. Grids remain exact. A generated
+footing covers the permitted displacement; an exhausted search remains incomplete. Exact-point
+intents can still declare no positional freedom.
+An empty camera list requests geometric observation only;
+the separate WebGL capture supplies visual evidence for these runs.
+
+The initial outdoor edit policy protects all non-vegetation intents and route travel geometry.
+It permits density and added clearing changes for existing vegetation intents, plus replacement
+of existing paint polygons with whitelisted materials. It cannot add planting areas or edit
+trees placed as individual objects or cultivated rows. Vegetation edits invalidate the current
+whole-world population task and world output; this is not per-plant or per-grove execution.
+Paint edits invalidate the terrain task and its dependent closure. New runs use absent output
+directories and never overwrite accepted worlds.
+Edit response schemas enumerate the exact permitted targets and operation kinds. Compact edit
+context supplies observed plant counts, spatial bounds, existing clearings and each target's
+numeric limits. A change that affects neither realized placements nor terrain cannot pass the
+edit gate. Density edits report before/after counts; a requested increase or decrease without
+that measured direction remains incomplete unless a simultaneous clearing requires a spatial
+comparison. Image review still decides whether a measurable change satisfies the visual request.
+Acceptance is derived from four named review properties (instruction following, composition,
+grounding and access), each passing, and no blocking repairs. The model cannot supply an overall
+pass that contradicts its own required repairs. A malformed or missing review retries the same
+compiled candidate within the existing attempt and time budgets; it does not regenerate the
+scene. A valid negative review supplies repair feedback for a new proposal. Failed refinement
+keeps the resulting plan, world, observation and detailed compiler diagnostics for that proposal.
 
 ### Roblox boundary
 

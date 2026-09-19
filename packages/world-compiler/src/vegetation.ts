@@ -58,6 +58,10 @@ export interface VegetationPlacementSummary {
   readonly trials: number;
   considered: number;
   placed: number;
+  rejectedDensity: number;
+  rejectedSpacing: number;
+  rejectedSlope: number;
+  rejectedPlacement: number;
 }
 
 /**
@@ -103,7 +107,16 @@ export function distributeVegetation(
       if (insideBoundary(intent.boundary, x, z)) points.push({ x, z, hash });
     }
     candidates.set(intent.intentId, points);
-    summaries.set(intent.intentId, { intentId: intent.intentId, trials, considered: 0, placed: 0 });
+    summaries.set(intent.intentId, {
+      intentId: intent.intentId,
+      trials,
+      considered: 0,
+      placed: 0,
+      rejectedDensity: 0,
+      rejectedSpacing: 0,
+      rejectedSlope: 0,
+      rejectedPlacement: 0,
+    });
   }
   const canopy = [...context.initialCanopy];
   for (const layer of ["canopy", "understory", "ground_cover"] as const) {
@@ -140,12 +153,18 @@ export function distributeVegetation(
         populationDensityAt(intent.densityField, x, z, boundaryDistance(intent.boundary, x, z)) *
         response *
         clearingFalloff(policy, x, y, z);
-      if (unit(candidate.hash, 16) >= density) continue;
+      if (unit(candidate.hash, 16) >= density) {
+        summary.rejectedDensity++;
+        continue;
+      }
       const radius =
         policy.spacingMeters.minimum +
         (policy.spacingMeters.maximum - policy.spacingMeters.minimum) * (1 - density);
       const scope = `${intent.regionId}/${intent.surfaceId}`;
-      if (grid.conflicts(scope, x, z, radius)) continue;
+      if (grid.conflicts(scope, x, z, radius)) {
+        summary.rejectedSpacing++;
+        continue;
+      }
       const delta = 0.25;
       const gradientX =
         (context.heightAt(intent.surfaceId, x + delta, z) -
@@ -158,11 +177,16 @@ export function distributeVegetation(
       if (
         (Math.atan(Math.hypot(gradientX, gradientZ)) * 180) / Math.PI >
         policy.maximumSlopeDegrees + 1e-9
-      )
+      ) {
+        summary.rejectedSlope++;
         continue;
+      }
       summary.considered++;
       const instance = context.place(intent, candidate);
-      if (!instance) continue;
+      if (!instance) {
+        summary.rejectedPlacement++;
+        continue;
+      }
       summary.placed++;
       grid.add(scope, x, z, radius);
       if (layer === "canopy") canopy.push(instance);

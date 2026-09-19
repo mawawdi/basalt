@@ -247,6 +247,41 @@ test("bend radius is a hard horizontal construction constraint", async () => {
   );
 });
 
+test("diagonal collinear route controls continue forward while real reversals remain invalid", async () => {
+  const base = await basePlan();
+  const plan = reseal(base, {
+    routes: [
+      groundedRoute({
+        routeId: "Diagonal",
+        alignmentMeters: [
+          { x: 2, z: 2 },
+          { x: 6, z: 10 },
+          { x: 10, z: 18 },
+        ],
+      }),
+    ],
+  });
+  const foundation = sealCompiledWorldFoundation(compileWorldPlan(plan));
+  assert.equal(foundation.status, "eligible");
+  assert.equal(foundation.routeConstructions[0]!.bends.length, 0);
+  assert.throws(
+    () =>
+      reseal(base, {
+        routes: [
+          groundedRoute({
+            routeId: "Reversal",
+            alignmentMeters: [
+              { x: 2, z: 2 },
+              { x: 6, z: 10 },
+              { x: 2, z: 2 },
+            ],
+          }),
+        ],
+      }),
+    /reverses direction/,
+  );
+});
+
 test("ordinary route bends use angle-bounded mitered spans without exposed seams", async () => {
   const base = await basePlan();
   const routeBase = groundedRoute({

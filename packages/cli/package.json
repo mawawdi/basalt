@@ -3,6 +3,14 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./world-authoring": {
+      "types": "./dist/world-authoring.d.ts",
+      "default": "./dist/world-authoring.js"
+    },
+    "./world-planner": {
+      "types": "./dist/world-planner.d.ts",
+      "default": "./dist/world-planner.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
@@ -19,6 +27,7 @@
     "@basalt/semantic-kernel": "*",
     "@basalt/world-compiler": "*",
     "@basalt/world-planning": "*",
+    "@basalt/world-refinement": "*",
     "zod": "4.5.4"
   }
 }

@@ -18,6 +18,8 @@
     { "path": "packages/neural-asset" },
     { "path": "packages/world-planning" },
     { "path": "packages/world-compiler" },
+    { "path": "packages/world-refinement" },
+    { "path": "packages/cli" },
     { "path": "packages/roblox" }
   ]
 }

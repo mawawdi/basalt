@@ -154,6 +154,8 @@ export const REALIZATION_INTENT_SCHEMA = z
         surfaceId: z.string().min(1).max(64),
         at: point2,
         yawDegrees: z.number().finite().min(0).lt(360).optional(),
+        /** Explicit local placement freedom. Absent means an exact authored point. */
+        positionToleranceMeters: z.number().finite().min(0).max(8).optional(),
       })
       .strict(),
     z
