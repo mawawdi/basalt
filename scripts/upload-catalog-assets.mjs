@@ -45,8 +45,8 @@ const uploadItemSchema = z
 const uploadPacketSchema = z
   .object({
     kind: z.literal("CatalogFirstUseRobloxUploadPacket"),
-    missingBindings: z.array(uploadItemSchema).max(100_000),
-    admittedAssets: z.array(uploadItemSchema).max(100_000),
+    missingBindings: z.array(uploadItemSchema),
+    admittedAssets: z.array(uploadItemSchema),
     hash: HASH_SCHEMA,
   })
   .passthrough();

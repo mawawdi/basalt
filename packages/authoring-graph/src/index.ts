@@ -116,7 +116,7 @@ const recordInputSchema = z
     id: entityId,
     recordKind: entityId,
     ownerId: entityId.optional(),
-    dependencies: z.array(entityId).max(4096),
+    dependencies: z.array(entityId),
     content: spatialJsonSchema,
   })
   .strict();
@@ -125,8 +125,8 @@ const authoringWorkspaceSchema = z
   .object({
     kind: z.literal("AuthoringWorkspace"),
     projectId: z.string().min(1).max(256),
-    intentHandles: z.array(entityId).max(4096),
-    records: z.array(authoringRecordSchema).max(100_000),
+    intentHandles: z.array(entityId),
+    records: z.array(authoringRecordSchema),
     head: hashSchema,
   })
   .strict();

@@ -72,7 +72,7 @@ export const CATALOG_EVIDENCE_REFERENCE_SCHEMA = z
     evidenceKind: CATALOG_EVIDENCE_ARTIFACT_KIND_SCHEMA,
     artifactHash: HASH_SCHEMA,
     implementationHash: HASH_SCHEMA,
-    inputHashes: z.array(HASH_SCHEMA).max(256),
+    inputHashes: z.array(HASH_SCHEMA),
   })
   .strict()
   .superRefine((value, context) =>
@@ -85,8 +85,8 @@ export const CATALOG_EVIDENCE_CHANNEL_RECEIPT_SCHEMA = z
     kind: z.literal("CatalogEvidenceChannelReceipt"),
     channel: CATALOG_EVIDENCE_CHANNEL_SCHEMA,
     status: COMPILATION_STATUS_SCHEMA,
-    references: z.array(CATALOG_EVIDENCE_REFERENCE_SCHEMA).max(64),
-    diagnostics: z.array(z.string().trim().min(1).max(2048)).max(256),
+    references: z.array(CATALOG_EVIDENCE_REFERENCE_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(2048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -154,7 +154,7 @@ export const CATALOG_ASSET_EVIDENCE_SET_SCHEMA = z
     sourceContentHash: HASH_SCHEMA,
     sourceManifestHash: HASH_SCHEMA,
     channels: z.array(CATALOG_EVIDENCE_CHANNEL_RECEIPT_SCHEMA).length(7),
-    diagnostics: z.array(z.string().trim().min(1).max(2048)).max(2048),
+    diagnostics: z.array(z.string().trim().min(1).max(2048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })

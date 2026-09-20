@@ -56,8 +56,8 @@ export const CATALOG_AUTHORED_METADATA_BATCH_SCHEMA = z
     visualReviewIndexHash: HASH_SCHEMA,
     producer: AUTHOR_SCHEMA,
     authoringMethod: z.literal("bound_visual_and_measurement_authoring"),
-    sourceArtifactHashes: z.array(HASH_SCHEMA).max(32),
-    entries: z.array(AUTHORED_METADATA_BATCH_ENTRY_SCHEMA).min(1).max(128),
+    sourceArtifactHashes: z.array(HASH_SCHEMA),
+    entries: z.array(AUTHORED_METADATA_BATCH_ENTRY_SCHEMA).min(1),
     compilerAuthority: z.literal(false),
     qualificationExecutionAuthorized: z.literal(false),
     hash: HASH_SCHEMA,
@@ -125,7 +125,7 @@ export const CATALOG_AUTHORED_METADATA_REVIEW_SCHEMA = z
     basisArtifactHash: HASH_SCHEMA.optional(),
     reviewerStatement: z.string().trim().min(32).max(2_048),
     reviewedAt: z.string().datetime({ offset: true }),
-    decisions: z.array(AUTHORED_METADATA_REVIEW_DECISION_SCHEMA).min(1).max(128),
+    decisions: z.array(AUTHORED_METADATA_REVIEW_DECISION_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -207,8 +207,8 @@ export const CATALOG_AUTHORED_SEARCH_METADATA_SET_SCHEMA = z
     visualReviewIndexHash: HASH_SCHEMA,
     producer: AUTHOR_SCHEMA,
     reviewCoverage: z.enum(["none", "complete", "uncertainty_and_sample"]),
-    records: z.array(CATALOG_AUTHORED_SEARCH_METADATA_RECORD_SCHEMA).min(1).max(128),
-    rejectedSourceContentHashes: z.array(HASH_SCHEMA).max(128),
+    records: z.array(CATALOG_AUTHORED_SEARCH_METADATA_RECORD_SCHEMA).min(1),
+    rejectedSourceContentHashes: z.array(HASH_SCHEMA),
     compilerAuthority: z.literal(false),
     qualificationExecutionAuthorized: z.literal(false),
     hash: HASH_SCHEMA,
@@ -306,7 +306,7 @@ const AUTHORED_METADATA_SET_REFERENCE_SCHEMA = z
 export const CATALOG_AUTHORED_METADATA_SET_MANIFEST_SCHEMA = z
   .object({
     kind: z.literal("CatalogAuthoredMetadataSetManifest"),
-    sets: z.array(AUTHORED_METADATA_SET_REFERENCE_SCHEMA).max(10_000),
+    sets: z.array(AUTHORED_METADATA_SET_REFERENCE_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()

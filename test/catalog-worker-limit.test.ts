@@ -15,9 +15,6 @@ import {
   CATALOG_SEARCH_METADATA_JSON_SCHEMA,
   CATALOG_SEARCH_METADATA_JSON_SCHEMA_HASH,
   CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS,
-  CATALOG_WORKER_MAX_ASSETS_PER_SHARD,
-  CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD,
-  CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD,
   MAX_LOCAL_CATALOG_WORKERS,
   catalogWorkerResultHashMatches,
   catalogWorkerOutputIsComplete,
@@ -125,7 +122,7 @@ test("worker result hashes verify the raw envelope before schema normalization",
   );
 });
 
-test("metadata shards bind exact budgets and preserve TypeScript numeric hashing", async () => {
+test("metadata checkpoints bind exact evidence without corpus cardinality ceilings", async () => {
   const workerPath = "workers/catalog-metadata/worker.py";
   const workerImplementationHash = createHash("sha256")
     .update(await readFile(workerPath))
@@ -224,9 +221,26 @@ test("metadata shards bind exact budgets and preserve TypeScript numeric hashing
       }),
     /budget evidenceBytes/iu,
   );
-  assert.equal(CATALOG_WORKER_MAX_ASSETS_PER_SHARD, 8);
-  assert.equal(CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD, 192);
-  assert.equal(CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD, 64 * 1024 * 1024);
+  const largeEvidenceItems = items.map((item) => ({
+    ...item,
+    views: item.views.map((view) => ({ ...view, rgbSizeBytes: 6 * 1024 * 1024 })),
+  }));
+  const largeEvidenceMaterial = {
+    ...material,
+    items: largeEvidenceItems,
+    inputBudget: {
+      assetCount: 1,
+      evidenceFileCount: 12,
+      evidenceBytes: 72 * 1024 * 1024,
+      preprocessedPixelCeiling: 12 * CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS ** 2,
+    },
+  };
+  assert.doesNotThrow(() =>
+    CATALOG_METADATA_WORKER_JOB_SCHEMA.parse({
+      ...largeEvidenceMaterial,
+      hash: contentHash(stableJson(largeEvidenceMaterial)),
+    }),
+  );
 
   const temporaryRoot = `.basalt/test-metadata-worker-hash-${process.pid}`;
   await mkdir(temporaryRoot, { recursive: false });

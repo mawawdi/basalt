@@ -1,16 +1,11 @@
 import { z } from "zod";
 
-/**
- * Spatial identifiers are deliberately independent from gameplay schemas. The
- * cap fits content-addressed sealed world IDs without encoding hierarchy in
- * their spelling.
- */
+/** Spatial identifiers are deliberately independent from gameplay schemas. */
 export const worldEntityId = z
   .string()
   .min(1)
-  .max(512)
   .regex(
-    /^[A-Za-z][A-Za-z0-9_-]{0,511}$/u,
+    /^[A-Za-z][A-Za-z0-9_-]*$/u,
     "World identifiers must start with a letter and contain only ASCII letters, digits, underscores or hyphens",
   );
 

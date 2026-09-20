@@ -23,6 +23,7 @@ export interface VegetationPaletteMember {
 
 export interface VegetationArea {
   readonly areaId: string;
+  readonly habitatFieldId: string;
   readonly regionId: string;
   readonly surfaceId: string;
   readonly boundary: ScatterIntent["boundary"];
@@ -30,7 +31,9 @@ export interface VegetationArea {
   readonly palette: readonly VegetationPaletteMember[];
   /** Existing authored canopy anchors, on this same region and surface. */
   readonly canopyIntentIds: readonly string[];
-  readonly clearings: VegetationDistribution["clearings"];
+  readonly clearings: readonly (VegetationDistribution["clearings"][number] & {
+    readonly layers: readonly VegetationDistribution["layer"][];
+  })[];
   readonly maximumSlopeDegrees: number;
   readonly maximumSupportReliefMeters: number;
   readonly groundEmbedMeters: number;
@@ -43,8 +46,7 @@ export interface VegetationArea {
  * selection, placement, new persisted contract, or inferred ecological claims.
  */
 export function createVegetationIntents(input: VegetationArea): readonly ScatterIntent[] {
-  if (input.palette.length < 1 || input.palette.length > 128)
-    throw new Error("Vegetation palette must contain 1–128 members");
+  if (input.palette.length < 1) throw new Error("Vegetation palette must contain members");
   const ids = input.palette.map((member) => `${input.areaId}_${member.plantId}`);
   if (new Set(ids).size !== ids.length) throw new Error("Vegetation plant IDs must be unique");
   const canopyIntentIds = [
@@ -66,6 +68,8 @@ export function createVegetationIntents(input: VegetationArea): readonly Scatter
         minimumSeparationMeters: input.minimumSeparationMeters,
         densityField: member.densityField ?? input.densityField,
         vegetation: {
+          areaId: input.areaId,
+          habitatFieldId: input.habitatFieldId,
           layer: member.layer,
           candidateDensityPerSquareMeter: member.candidateDensityPerSquareMeter,
           spacingMeters: member.spacingMeters,
@@ -75,7 +79,9 @@ export function createVegetationIntents(input: VegetationArea): readonly Scatter
           maximumSupportReliefMeters: input.maximumSupportReliefMeters,
           groundEmbedMeters: input.groundEmbedMeters,
           routeClearanceHeightMeters: input.routeClearanceHeightMeters,
-          clearings: input.clearings,
+          clearings: input.clearings
+            .filter((clearing) => clearing.layers.includes(member.layer))
+            .map(({ layers: _layers, ...clearing }) => clearing),
         },
       }) as ScatterIntent,
   );

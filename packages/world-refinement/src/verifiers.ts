@@ -442,20 +442,7 @@ function routeTerrainContactChecks(worldBuild: WorldBuild): WorldObservationRepo
     const probeSpacingMeters = field
       ? terrainFieldMinimumSpacing(baseField!) / 2
       : Math.max(0.01, route.widthMeters / 4);
-    const probeBudget = 100_000;
-    const probes: Point[] = [];
-    for (const segment of route.travelSegments) {
-      const segmentProbes = routeSurfaceProbes(
-        segment.vertices.map((entry) => entry.positionMeters) as [Point, Point, Point, Point],
-        probeSpacingMeters,
-        probeBudget - probes.length,
-      );
-      if (!segmentProbes) {
-        failures.push(`route surface probe budget ${probeBudget} would be exceeded`);
-        break;
-      }
-      probes.push(...segmentProbes);
-    }
+    let probeCount = 0;
     let minimumObservedClearanceMeters: number | null = null;
     let maximumObservedClearanceMeters: number | null = null;
     const requiredClearanceMeters =
@@ -475,44 +462,52 @@ function routeTerrainContactChecks(worldBuild: WorldBuild): WorldObservationRepo
       route.terrainTreatment.kind === "grade"
         ? route.terrainTreatment.groundingToleranceMeters
         : null;
-    if ((field || surface) && failures.length === 0)
-      for (const probe of probes) {
-        const terrainElevationMeters = field
-          ? sampleTerrainFieldElevation(
-              field,
-              baseField!,
-              worldBuild.foundation.routeConstructions,
-              worldBuild.foundation.routeJunctions,
-              probe.x,
-              probe.z,
-            )
-          : surface!.bounds.max.y;
-        const clearanceMeters = probe.y - terrainElevationMeters;
-        minimumObservedClearanceMeters =
-          minimumObservedClearanceMeters === null
-            ? clearanceMeters
-            : Math.min(minimumObservedClearanceMeters, clearanceMeters);
-        maximumObservedClearanceMeters =
-          maximumObservedClearanceMeters === null
-            ? clearanceMeters
-            : Math.max(maximumObservedClearanceMeters, clearanceMeters);
-        if (clearanceMeters + 1e-6 < requiredClearanceMeters) {
-          failures.push(
-            `route surface clearance ${clearanceMeters.toFixed(6)}m is below ${requiredClearanceMeters.toFixed(6)}m`,
-          );
-          break;
-        }
-        const bodyGapMeters = Math.max(0, clearanceMeters - route.thicknessMeters);
-        if (
-          maximumGroundedBodyGapMeters !== null &&
-          bodyGapMeters > maximumGroundedBodyGapMeters + 1e-6
-        ) {
-          failures.push(
-            `grounded route body gap ${bodyGapMeters.toFixed(6)}m exceeds ${maximumGroundedBodyGapMeters.toFixed(6)}m`,
-          );
-          break;
+    if ((field || surface) && failures.length === 0) {
+      routeSegments: for (const segment of route.travelSegments) {
+        const probes = routeSurfaceProbes(
+          segment.vertices.map((entry) => entry.positionMeters) as [Point, Point, Point, Point],
+          probeSpacingMeters,
+        );
+        for (const probe of probes) {
+          probeCount += 1;
+          const terrainElevationMeters = field
+            ? sampleTerrainFieldElevation(
+                field,
+                baseField!,
+                worldBuild.foundation.routeConstructions,
+                worldBuild.foundation.routeJunctions,
+                probe.x,
+                probe.z,
+              )
+            : surface!.bounds.max.y;
+          const clearanceMeters = probe.y - terrainElevationMeters;
+          minimumObservedClearanceMeters =
+            minimumObservedClearanceMeters === null
+              ? clearanceMeters
+              : Math.min(minimumObservedClearanceMeters, clearanceMeters);
+          maximumObservedClearanceMeters =
+            maximumObservedClearanceMeters === null
+              ? clearanceMeters
+              : Math.max(maximumObservedClearanceMeters, clearanceMeters);
+          if (clearanceMeters + 1e-6 < requiredClearanceMeters) {
+            failures.push(
+              `route surface clearance ${clearanceMeters.toFixed(6)}m is below ${requiredClearanceMeters.toFixed(6)}m`,
+            );
+            break routeSegments;
+          }
+          const bodyGapMeters = Math.max(0, clearanceMeters - route.thicknessMeters);
+          if (
+            maximumGroundedBodyGapMeters !== null &&
+            bodyGapMeters > maximumGroundedBodyGapMeters + 1e-6
+          ) {
+            failures.push(
+              `grounded route body gap ${bodyGapMeters.toFixed(6)}m exceeds ${maximumGroundedBodyGapMeters.toFixed(6)}m`,
+            );
+            break routeSegments;
+          }
         }
       }
+    }
     return check(
       `TerrainContact_${route.routeId}`,
       "terrain_contact",
@@ -526,7 +521,7 @@ function routeTerrainContactChecks(worldBuild: WorldBuild): WorldObservationRepo
         maximumGroundedBodyGapMeters,
         minimumObservedClearanceMeters,
         maximumObservedClearanceMeters,
-        probeCount: probes.length,
+        probeCount,
         failures,
       },
       failures.length === 0
@@ -553,11 +548,10 @@ function terrainFieldMinimumSpacing(
   return spacing;
 }
 
-function routeSurfaceProbes(
+function* routeSurfaceProbes(
   vertices: readonly [Point, Point, Point, Point],
   maximumSpacingMeters: number,
-  maximumProbeCount: number,
-): Point[] | undefined {
+): Generator<Point> {
   if (!Number.isFinite(maximumSpacingMeters) || maximumSpacingMeters <= 0)
     throw new Error("Route surface probe spacing must be positive");
   const [startLeft, startRight, endLeft, endRight] = vertices;
@@ -575,16 +569,20 @@ function routeSurfaceProbes(
         maximumSpacingMeters,
     ),
   );
-  if ((longitudinalSections + 1) * (lateralSections + 1) > maximumProbeCount) return undefined;
-  const result: Point[] = [];
+  const probeCount = (longitudinalSections + 1) * (lateralSections + 1);
+  if (
+    !Number.isSafeInteger(longitudinalSections) ||
+    !Number.isSafeInteger(lateralSections) ||
+    !Number.isSafeInteger(probeCount)
+  )
+    throw new Error("Route surface probe count exceeds exact integer representation");
   for (let longitudinal = 0; longitudinal <= longitudinalSections; longitudinal += 1) {
     const along = longitudinal / longitudinalSections;
     const left = lerpPoint(startLeft, endLeft, along);
     const right = lerpPoint(startRight, endRight, along);
     for (let lateral = 0; lateral <= lateralSections; lateral += 1)
-      result.push(lerpPoint(left, right, lateral / lateralSections));
+      yield lerpPoint(left, right, lateral / lateralSections);
   }
-  return result;
 }
 
 function visibilityPrimitive(element: ConstructedElement): SupportedVisibilityPrimitive {

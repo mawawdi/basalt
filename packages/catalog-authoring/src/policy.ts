@@ -17,7 +17,7 @@ const RISK_TARGET_SCHEMA = z
     subjectKind: CATALOG_REVIEW_SUBJECT_KIND_SCHEMA,
     maximumDefectRateMillionths: z.number().int().positive().max(1_000_000),
     confidenceMillionths: z.number().int().positive().max(999_999),
-    acceptanceNumber: z.number().int().nonnegative().max(100),
+    acceptanceNumber: z.number().int().nonnegative().safe(),
   })
   .strict();
 
@@ -28,7 +28,7 @@ export const CATALOG_ADMISSION_POLICY_SCHEMA = z
     policyId: ASCII_ID_SCHEMA,
     automaticAdmissionEnabled: z.literal(false),
     automaticallyAdmissibleEntryKinds: z.array(CATALOG_ENTRY_KIND_SCHEMA).length(0),
-    riskTargets: z.array(RISK_TARGET_SCHEMA).min(1).max(128),
+    riskTargets: z.array(RISK_TARGET_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -71,13 +71,10 @@ export const CATALOG_SEARCH_POLICY_SCHEMA = z
   .object({
     kind: z.literal("CatalogSearchPolicy"),
     policyId: ASCII_ID_SCHEMA,
+    origin: z.string().trim().min(1),
     fieldWeights: SEARCH_FIELD_WEIGHTS_SCHEMA,
-    lexicalCandidateLimit: z.literal(200),
-    embeddingCandidateLimit: z.literal(200),
-    reciprocalRankConstant: z.literal(60),
+    reciprocalRankConstant: z.number().int().positive().safe(),
     fusionNormalization: z.literal("per_document_available_channels"),
-    maximumResults: z.literal(100),
-    maximumValidationCandidates: z.literal(8),
     tokenizerImplementationHash: HASH_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -90,7 +87,7 @@ export const CATALOG_CANDIDATE_DECISION_POLICY_SCHEMA = z
   .object({
     kind: z.literal("CatalogCandidateDecisionPolicy"),
     policyId: ASCII_ID_SCHEMA,
-    minimumValidatedCandidates: z.number().int().min(1).max(8),
+    minimumValidatedCandidates: z.number().int().min(1).safe(),
     minimumMatchCount: z.literal(1),
     uncertainOutcome: z.literal("evidence_insufficient"),
     allMismatchOutcome: z.literal("no_suitable_match"),
@@ -106,7 +103,6 @@ export const CATALOG_SUBSTITUTION_PROPOSAL_POLICY_SCHEMA = z
   .object({
     kind: z.literal("CatalogSubstitutionProposalPolicy"),
     policyId: ASCII_ID_SCHEMA,
-    maximumCandidatePoolSize: z.number().int().positive().max(32),
     minimumImageTextSimilarityMillionths: z.number().int().min(-1_000_000).max(1_000_000),
     minimumShapeSimilarityMillionths: z.number().int().min(-1_000_000).max(1_000_000),
     maximumAxisRatioMillionths: z.number().int().min(1_000_000).max(100_000_000),

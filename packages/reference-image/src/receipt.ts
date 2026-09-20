@@ -28,7 +28,7 @@ export const REFERENCE_IMAGE_RECEIPT_SCHEMA = z
     status: COMPILATION_STATUS_SCHEMA,
     adapterId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
     modelImplementationHash: HASH_SCHEMA,
-    outputs: z.array(REFERENCE_IMAGE_OUTPUT_SCHEMA).max(32),
+    outputs: z.array(REFERENCE_IMAGE_OUTPUT_SCHEMA),
     resourceUse: z
       .object({
         wallMilliseconds: z.number().int().nonnegative(),
@@ -36,7 +36,7 @@ export const REFERENCE_IMAGE_RECEIPT_SCHEMA = z
         outputTokens: z.number().int().nonnegative(),
       })
       .strict(),
-    diagnostics: z.array(z.string().trim().min(1).max(2048)).max(256),
+    diagnostics: z.array(z.string().trim().min(1).max(2048)),
     compilerAuthority: z.literal(false),
     receiptHash: HASH_SCHEMA,
   })

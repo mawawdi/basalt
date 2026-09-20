@@ -21,11 +21,7 @@ import {
 const sourceArtifact = z
   .object({
     artifactHash: HASH_SCHEMA,
-    bytes: z
-      .number()
-      .int()
-      .positive()
-      .max(512 * 1024 * 1024),
+    bytes: z.number().int().positive().safe(),
     mediaType: z.string().regex(/^[a-z0-9.+-]+\/[a-z0-9.+-]+$/u),
   })
   .strict();
@@ -53,8 +49,8 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
       .object({
         mode: z.enum(["static", "rigid_animation", "skinned"]),
         measuredPose: z.enum(["static", "rest_pose"]),
-        animationCount: z.number().int().nonnegative().max(1_000_000),
-        skinCount: z.number().int().nonnegative().max(1_000_000),
+        animationCount: z.number().int().nonnegative().safe(),
+        skinCount: z.number().int().nonnegative().safe(),
       })
       .strict(),
     coordinateFrame: z
@@ -67,43 +63,37 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
       })
       .strict(),
     bounds: CATALOG_AABB_FIXED_SCHEMA,
-    parts: z
-      .array(
-        z
-          .object({
-            partId: z.string().min(1).max(128),
-            geometryHash: HASH_SCHEMA,
-            role: z.enum(["render_static", "render_interactive", "collision_proxy"]),
-            transform,
-            bounds: CATALOG_AABB_FIXED_SCHEMA,
-            triangleCount: z.number().int().nonnegative().max(20_000_000),
-            materialHashes: z.array(HASH_SCHEMA).max(512),
-          })
-          .strict(),
-      )
-      .max(4096),
-    materials: z
-      .array(
-        z
-          .object({
-            appearanceHash: HASH_SCHEMA,
-            payloadHashes: z.array(HASH_SCHEMA).max(16),
-            pbrChannels: z
-              .array(
-                z.enum([
-                  "base_color",
-                  "metallic_roughness",
-                  "normal",
-                  "occlusion",
-                  "opacity",
-                  "emissive",
-                ]),
-              )
-              .max(6),
-          })
-          .strict(),
-      )
-      .max(512),
+    parts: z.array(
+      z
+        .object({
+          partId: z.string().min(1).max(128),
+          geometryHash: HASH_SCHEMA,
+          role: z.enum(["render_static", "render_interactive", "collision_proxy"]),
+          transform,
+          bounds: CATALOG_AABB_FIXED_SCHEMA,
+          triangleCount: z.number().int().nonnegative().safe(),
+          materialHashes: z.array(HASH_SCHEMA),
+        })
+        .strict(),
+    ),
+    materials: z.array(
+      z
+        .object({
+          appearanceHash: HASH_SCHEMA,
+          payloadHashes: z.array(HASH_SCHEMA),
+          pbrChannels: z.array(
+            z.enum([
+              "base_color",
+              "metallic_roughness",
+              "normal",
+              "occlusion",
+              "opacity",
+              "emissive",
+            ]),
+          ),
+        })
+        .strict(),
+    ),
     support: z
       .object({
         primaryContact: z.enum(["bottom", "lateral_wall", "top_ceiling", "socket_only", "unknown"]),
@@ -116,47 +106,43 @@ export const CATALOG_ASSET_ARTIFACT_SCHEMA = z
     collision: z
       .object({
         mode: z.enum(["none", "companion", "part_obbs"]),
-        companionAssetHashes: z.array(HASH_SCHEMA).max(128),
-        orientedBounds: z
-          .array(
-            z
-              .object({
-                center: CATALOG_VECTOR3_FIXED_SCHEMA,
-                halfSize: CATALOG_VECTOR3_FIXED_SCHEMA,
-                rotation: z
-                  .tuple([
-                    z.number().finite(),
-                    z.number().finite(),
-                    z.number().finite(),
-                    z.number().finite(),
-                  ])
-                  .refine(
-                    (value) => Math.abs(Math.hypot(...value) - 1) <= 1e-6,
-                    "Collision rotation must be normalized",
-                  ),
-              })
-              .strict(),
-          )
-          .max(4096),
+        companionAssetHashes: z.array(HASH_SCHEMA),
+        orientedBounds: z.array(
+          z
+            .object({
+              center: CATALOG_VECTOR3_FIXED_SCHEMA,
+              halfSize: CATALOG_VECTOR3_FIXED_SCHEMA,
+              rotation: z
+                .tuple([
+                  z.number().finite(),
+                  z.number().finite(),
+                  z.number().finite(),
+                  z.number().finite(),
+                ])
+                .refine(
+                  (value) => Math.abs(Math.hypot(...value) - 1) <= 1e-6,
+                  "Collision rotation must be normalized",
+                ),
+            })
+            .strict(),
+        ),
         evidenceHash: HASH_SCHEMA.optional(),
       })
       .strict(),
-    sockets: z
-      .array(
-        z
-          .object({
-            socketId: z.string().min(1).max(128),
-            localOriginMeters: CATALOG_VECTOR3_FIXED_SCHEMA,
-            normal: CATALOG_VECTOR3_FIXED_SCHEMA,
-            up: CATALOG_VECTOR3_FIXED_SCHEMA,
-            boundaryRadiusMeters: NONNEGATIVE_Q32_SCHEMA,
-            evidenceHash: HASH_SCHEMA,
-          })
-          .strict(),
-      )
-      .max(4096),
+    sockets: z.array(
+      z
+        .object({
+          socketId: z.string().min(1).max(128),
+          localOriginMeters: CATALOG_VECTOR3_FIXED_SCHEMA,
+          normal: CATALOG_VECTOR3_FIXED_SCHEMA,
+          up: CATALOG_VECTOR3_FIXED_SCHEMA,
+          boundaryRadiusMeters: NONNEGATIVE_Q32_SCHEMA,
+          evidenceHash: HASH_SCHEMA,
+        })
+        .strict(),
+    ),
     socketMeasurementRefusal: z.string().trim().min(1).max(512).optional(),
-    measurementEvidenceHashes: z.array(HASH_SCHEMA).max(4096),
+    measurementEvidenceHashes: z.array(HASH_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -339,8 +325,8 @@ export const CATALOG_MEASUREMENT_SET_SCHEMA = z
     kind: z.literal("CatalogMeasurementSet"),
     status: COMPILATION_STATUS_SCHEMA,
     sourceManifestHash: HASH_SCHEMA,
-    assets: z.array(CATALOG_ASSET_ARTIFACT_SCHEMA).max(100_000),
-    diagnostics: z.array(CATALOG_MEASUREMENT_DIAGNOSTIC_SCHEMA).max(100_000),
+    assets: z.array(CATALOG_ASSET_ARTIFACT_SCHEMA),
+    diagnostics: z.array(CATALOG_MEASUREMENT_DIAGNOSTIC_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()

@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import puppeteer from "puppeteer";
 import { readBoundedWorkspaceBytes, writeCanonicalWorkspaceJson } from "@basalt/artifact-store";
 import { contentHash, stableJson } from "@basalt/contracts";
+import { REGION_EXECUTION_POLICY_SCHEMA } from "@basalt/cli/world-authoring";
 import { WORLD_BUILD_SCHEMA, sampleTerrainFieldSurface } from "@basalt/world-compiler";
 import { defaultPreviewViews, parsePreviewViews } from "./world-preview-views.mjs";
 
@@ -17,8 +18,21 @@ if (!worldPath)
     "Usage: node scripts/preview-world.mjs --world <world-build.json> [--views <world-bound-cameras.json>] [--capture <directory>] [--port <port>]",
   );
 const root = resolve(".");
+const executionPolicyPath =
+  options.get("--execution-policy") ?? "registry/world-authoring/execution.json";
+const executionPolicy = REGION_EXECUTION_POLICY_SCHEMA.parse(
+  JSON.parse(
+    (await readBoundedWorkspaceBytes(root, executionPolicyPath, Number.MAX_SAFE_INTEGER)).toString(
+      "utf8",
+    ),
+  ),
+);
 const readJson = async (path) =>
-  JSON.parse((await readBoundedWorkspaceBytes(root, path, 256 * 1024 * 1024)).toString("utf8"));
+  JSON.parse(
+    (
+      await readBoundedWorkspaceBytes(root, path, executionPolicy.workspace.maximumArtifactBytes)
+    ).toString("utf8"),
+  );
 const world = WORLD_BUILD_SCHEMA.parse(await readJson(worldPath));
 const requestedViews = options.has("--views")
   ? parsePreviewViews(await readJson(options.get("--views")), world.worldBuildHash)
@@ -32,7 +46,7 @@ const evidence = catalog.retainedEvidence.find((entry) => entry.kind === "Catalo
 const measurementBytes = await readBoundedWorkspaceBytes(
   root,
   evidence.relativePath,
-  256 * 1024 * 1024,
+  executionPolicy.workspace.maximumArtifactBytes,
 );
 if (contentHash(measurementBytes) !== evidence.bytesHash)
   throw new Error("Retained measurements changed");
@@ -45,7 +59,11 @@ for (const instance of world.instances) {
   const source = catalog.sourceManifest.assets.find(
     (entry) => entry.contentHash === asset.source.contentHash,
   );
-  const bytes = await readBoundedWorkspaceBytes(root, source.relativePath, 32 * 1024 * 1024);
+  const bytes = await readBoundedWorkspaceBytes(
+    root,
+    source.relativePath,
+    executionPolicy.workspace.maximumArtifactBytes,
+  );
   if (contentHash(bytes) !== source.contentHash)
     throw new Error(`Preview source changed: ${source.relativePath}`);
   if (
@@ -64,10 +82,14 @@ const terrains = world.foundation.terrainFields.map((field) => {
   );
   const xs = [...new Set(base.samples.map((p) => p.xMeters))].sort((a, b) => a - b);
   const zs = [...new Set(base.samples.map((p) => p.zMeters))].sort((a, b) => a - b);
-  const columns = Math.ceil((xs.at(-1) - xs[0]) / 2) + 1;
-  const rows = Math.ceil((zs.at(-1) - zs[0]) / 2) + 1;
-  if (columns * rows > 100_000)
-    throw new Error("Preview a bounded world partition (maximum 100,000 terrain vertices)");
+  const columns =
+    Math.ceil((xs.at(-1) - xs[0]) / executionPolicy.preview.terrainSampleSpacingMeters) + 1;
+  const rows =
+    Math.ceil((zs.at(-1) - zs[0]) / executionPolicy.preview.terrainSampleSpacingMeters) + 1;
+  if (columns * rows > executionPolicy.preview.maximumTerrainVertices)
+    throw new Error(
+      `${executionPolicy.preview.policyId} exhausted its ${executionPolicy.preview.maximumTerrainVertices}-terrain-vertex allocation (${executionPolicy.preview.origin}); visual evidence is incomplete`,
+    );
   const points = [];
   for (let z = 0; z < rows; z += 1)
     for (let x = 0; x < columns; x += 1) {
@@ -131,7 +153,11 @@ const modules = [
 ];
 for (const [url, path] of modules)
   files.set(url, {
-    bytes: await readBoundedWorkspaceBytes(root, path, 16 * 1024 * 1024),
+    bytes: await readBoundedWorkspaceBytes(
+      root,
+      path,
+      executionPolicy.workspace.maximumArtifactBytes,
+    ),
     type: "text/javascript",
   });
 files.set("/", {
@@ -169,10 +195,15 @@ if (options.has("--capture")) {
   const directory = resolve(options.get("--capture"));
   let browser;
   try {
-    await writeCanonicalWorkspaceJson(root, resolve(directory, "capture-request.json"), {
-      worldBuildHash: world.worldBuildHash,
-      cameras,
-    });
+    await writeCanonicalWorkspaceJson(
+      root,
+      resolve(directory, "capture-request.json"),
+      {
+        worldBuildHash: world.worldBuildHash,
+        cameras,
+      },
+      { maxBytes: executionPolicy.workspace.maximumArtifactBytes },
+    );
     browser = await puppeteer.launch({
       headless: true,
       args: ["--enable-unsafe-swiftshader"],
@@ -180,25 +211,49 @@ if (options.has("--capture")) {
     });
     const page = await browser.newPage();
     const errors = [];
-    await page.setViewport({ width: 1920, height: 1200, deviceScaleFactor: 1 });
+    await page.setViewport({
+      width: executionPolicy.preview.imageWidthPixels,
+      height: executionPolicy.preview.imageHeightPixels,
+      deviceScaleFactor: executionPolicy.preview.deviceScaleFactor,
+    });
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.goto(url, { waitUntil: "networkidle0", timeout: 120_000 });
-    await page.waitForFunction(() => globalThis.basaltPreviewReady === true, { timeout: 120_000 });
+    await page.goto(url, {
+      waitUntil: "networkidle0",
+      timeout: executionPolicy.previewTimeoutMilliseconds,
+    });
+    await page.waitForFunction(() => globalThis.basaltPreviewReady === true, {
+      timeout: executionPolicy.previewTimeoutMilliseconds,
+    });
     const images = [];
     for (const { cameraId: view } of cameras) {
       await page.evaluate((name) => globalThis.basaltPreviewView(name), view);
       const image = await page.screenshot();
+      if (image.byteLength > executionPolicy.workspace.maximumPreviewImageBytes)
+        throw new Error(
+          `${executionPolicy.policyId} exhausted its ${executionPolicy.workspace.maximumPreviewImageBytes}-byte preview-image allocation while capturing ${view}; visual evidence is incomplete`,
+        );
       await writeFile(resolve(directory, `${view}.png`), image, { flag: "wx" });
       images.push({ file: `${view}.png`, hash: contentHash(image) });
     }
     if (errors.length) throw new Error(`Preview browser errors: ${errors.join("; ")}`);
-    await writeCanonicalWorkspaceJson(root, resolve(directory, "capture.json"), {
-      evidence: "preview_only",
-      worldBuildHash: world.worldBuildHash,
-      cameras,
-      cameraHash: contentHash(stableJson(cameras)),
-      images,
-    });
+    await writeCanonicalWorkspaceJson(
+      root,
+      resolve(directory, "capture.json"),
+      {
+        evidence: "preview_only",
+        worldBuildHash: world.worldBuildHash,
+        cameras,
+        cameraHash: contentHash(stableJson(cameras)),
+        images,
+        executionPolicy: {
+          policyId: executionPolicy.policyId,
+          origin: executionPolicy.origin,
+          preview: executionPolicy.preview,
+          maximumPreviewImageBytes: executionPolicy.workspace.maximumPreviewImageBytes,
+        },
+      },
+      { maxBytes: executionPolicy.workspace.maximumArtifactBytes },
+    );
   } finally {
     await browser?.close();
     server.close();

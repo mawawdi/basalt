@@ -37,7 +37,7 @@ export const CATALOG_SEARCH_METADATA_SHARD_SCHEMA = z
   .object({
     kind: z.literal("CatalogSearchMetadataShard"),
     prefix: z.string().regex(/^[a-f0-9]{2}$/u),
-    records: z.array(CATALOG_SEARCH_METADATA_RECORD_SCHEMA).min(1).max(100_000),
+    records: z.array(CATALOG_SEARCH_METADATA_RECORD_SCHEMA).min(1),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -67,12 +67,8 @@ const SHARD_DESCRIPTOR_SCHEMA = z
       .regex(/^registry\/evidence\/catalog-search-metadata\/[a-f0-9]{2}\.json$/u),
     artifactHash: HASH_SCHEMA,
     bytesHash: HASH_SCHEMA,
-    bytes: z
-      .number()
-      .int()
-      .positive()
-      .max(64 * 1024 * 1024),
-    recordCount: z.number().int().positive().max(100_000),
+    bytes: z.number().int().positive().safe(),
+    recordCount: z.number().int().positive().safe(),
   })
   .strict();
 
@@ -89,8 +85,8 @@ export const CATALOG_SEARCH_REGISTRY_SCHEMA = z
     writerModelId: z.string().trim().min(1).max(256),
     writerModelCommitHash: MODEL_COMMIT_SCHEMA,
     writerViewSet: z.enum(["canonical_twelve", "cardinal_four"]),
-    recordCount: z.number().int().positive().max(100_000),
-    shards: z.array(SHARD_DESCRIPTOR_SCHEMA).min(1).max(256),
+    recordCount: z.number().int().positive().safe(),
+    shards: z.array(SHARD_DESCRIPTOR_SCHEMA).min(1),
     binaryPayloadPolicy: z.literal("local_content_addressed"),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,

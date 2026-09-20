@@ -2,5 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "rootDir": "src", "outDir": "dist" },
   "include": ["src/**/*.ts"],
-  "references": [{ "path": "../contracts" }, { "path": "../semantic-kernel" }]
+  "references": [
+    { "path": "../contracts" },
+    { "path": "../spatial-core" },
+    { "path": "../semantic-kernel" }
+  ]
 }

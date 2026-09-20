@@ -15,6 +15,7 @@ import {
   WORLD_POINT2_SCHEMA,
   WORLD_VECTOR3_SCHEMA,
 } from "@basalt/world-planning";
+import { HORIZONTAL_MASK_SCHEMA } from "@basalt/spatial-core";
 
 export const WORLD_OBSERVATION_CHECK_KINDS = [
   "containment",
@@ -36,7 +37,7 @@ export const WORLD_OBSERVATION_CHECK_SCHEMA = z
     subjectId: WORLD_ENTITY_ID_SCHEMA,
     status: COMPILATION_STATUS_SCHEMA,
     evidenceHash: HASH_SCHEMA,
-    diagnostic: z.string().trim().min(1).max(1_024).optional(),
+    diagnostic: z.string().trim().min(1).optional(),
   })
   .strict();
 
@@ -47,14 +48,12 @@ export const WORLD_DIAGNOSTIC_CAMERA_SCHEMA = z
     positionMeters: WORLD_VECTOR3_SCHEMA,
     lookAtMeters: WORLD_VECTOR3_SCHEMA,
     up: WORLD_VECTOR3_SCHEMA,
-    verticalFieldOfViewDegrees: z.number().finite().min(10).max(120),
-    widthPixels: z.number().int().min(32).max(512),
-    heightPixels: z.number().int().min(32).max(512),
+    verticalFieldOfViewDegrees: z.number().finite().gt(0).lt(180),
+    widthPixels: z.number().int().positive().safe(),
+    heightPixels: z.number().int().positive().safe(),
   })
   .strict()
   .superRefine((value, context) => {
-    if (value.widthPixels * value.heightPixels > 262_144)
-      context.addIssue({ code: "custom", message: "Diagnostic render exceeds its pixel budget" });
     if (
       Math.hypot(
         value.lookAtMeters.x - value.positionMeters.x,
@@ -68,13 +67,46 @@ export const WORLD_DIAGNOSTIC_CAMERA_SCHEMA = z
   });
 export type WorldDiagnosticCamera = z.output<typeof WORLD_DIAGNOSTIC_CAMERA_SCHEMA>;
 
+export const DIAGNOSTIC_RENDER_EXECUTION_POLICY_SCHEMA = z
+  .object({
+    policyId: WORLD_ENTITY_ID_SCHEMA,
+    origin: z.string().trim().min(1),
+    maximumPixelsPerCamera: z.number().int().positive().safe(),
+    maximumTerrainTrianglesPerField: z.number().int().min(2).safe(),
+  })
+  .strict();
+export type DiagnosticRenderExecutionPolicy = z.output<
+  typeof DIAGNOSTIC_RENDER_EXECUTION_POLICY_SCHEMA
+>;
+
+const TERRAIN_RENDER_SAMPLING_SCHEMA = z
+  .object({
+    terrainFieldHash: HASH_SCHEMA,
+    requestedTriangleCount: z.number().int().nonnegative().safe(),
+    renderedTriangleCount: z.number().int().nonnegative().safe(),
+    status: z.enum(["complete", "simplified"]),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (
+      (value.status === "complete") !==
+      (value.renderedTriangleCount === value.requestedTriangleCount)
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Terrain render sampling status does not match its triangle counts",
+      });
+  });
+
 export const WORLD_DIAGNOSTIC_RENDER_SCHEMA = z
   .object({
     renderId: WORLD_ENTITY_ID_SCHEMA,
     worldBuildHash: HASH_SCHEMA,
     camera: WORLD_DIAGNOSTIC_CAMERA_SCHEMA,
+    executionPolicy: DIAGNOSTIC_RENDER_EXECUTION_POLICY_SCHEMA,
+    terrainSampling: z.array(TERRAIN_RENDER_SAMPLING_SCHEMA),
     rendererImplementationHash: HASH_SCHEMA,
-    geometryEvidenceHashes: z.array(HASH_SCHEMA).min(1).max(100_000),
+    geometryEvidenceHashes: z.array(HASH_SCHEMA).min(1),
     payload: CONTENT_DESCRIPTOR_SCHEMA.extend({
       kind: z.literal("diagnostic_render"),
       mediaType: z.literal("image/x-portable-pixmap"),
@@ -96,8 +128,8 @@ const WORLD_VISUAL_ASSESSMENT_SCHEMA = z
   .object({
     status: z.enum(["unassessed", "eligible", "incomplete", "rejected"]),
     assessor: z.enum(["creator", "model", "none"]),
-    evidenceHashes: z.array(HASH_SCHEMA).max(256),
-    diagnostics: z.array(z.string().trim().min(1).max(1_024)).max(256),
+    evidenceHashes: z.array(HASH_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1)),
   })
   .strict()
   .superRefine((value, context) => {
@@ -120,10 +152,10 @@ export const WORLD_OBSERVATION_REPORT_SCHEMA = z
     kind: z.literal("WorldObservationReport"),
     worldBuildHash: HASH_SCHEMA,
     geometricStatus: COMPILATION_STATUS_SCHEMA,
-    checks: z.array(WORLD_OBSERVATION_CHECK_SCHEMA).min(1).max(65_536),
-    diagnosticRenders: z.array(WORLD_DIAGNOSTIC_RENDER_SCHEMA).max(8),
+    checks: z.array(WORLD_OBSERVATION_CHECK_SCHEMA).min(1),
+    diagnosticRenders: z.array(WORLD_DIAGNOSTIC_RENDER_SCHEMA),
     visualAssessment: WORLD_VISUAL_ASSESSMENT_SCHEMA,
-    diagnostics: z.array(z.string().trim().min(1).max(1_024)).max(65_536),
+    diagnostics: z.array(z.string().trim().min(1)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -159,30 +191,42 @@ export const WORLD_CHANGE_SCHEMA = z.discriminatedUnion("kind", [
       kind: z.literal("vegetation_density"),
       intentId: WORLD_ENTITY_ID_SCHEMA,
       candidateDensityPerSquareMeter: z.number().finite().positive(),
-      maximumCount: z.number().int().positive().max(65_536),
+      spacingMeters: z
+        .object({
+          minimum: z.number().finite().positive(),
+          maximum: z.number().finite().positive(),
+        })
+        .strict()
+        .refine((value) => value.minimum <= value.maximum, "Vegetation spacing is inverted"),
+      maximumCount: z.number().int().positive().safe(),
     })
     .strict(),
   z
     .object({
       kind: z.literal("vegetation_clearings"),
       intentId: WORLD_ENTITY_ID_SCHEMA,
-      clearings: z
-        .array(
-          z
-            .object({
-              boundsMeters: WORLD_AABB_SCHEMA,
-              falloffMeters: z.number().finite().nonnegative().max(64),
-            })
-            .strict(),
-        )
-        .max(32),
+      clearings: z.array(
+        z
+          .object({
+            mask: HORIZONTAL_MASK_SCHEMA,
+            verticalRangeMeters: z
+              .object({ minimum: z.number().finite(), maximum: z.number().finite() })
+              .strict()
+              .refine(
+                (value) => value.minimum < value.maximum,
+                "Clearing vertical range is inverted",
+              ),
+            falloffMeters: z.number().finite().nonnegative(),
+          })
+          .strict(),
+      ),
     })
     .strict(),
   z
     .object({
       kind: z.literal("terrain_paint"),
       terrainPlanId: WORLD_ENTITY_ID_SCHEMA,
-      operationIndex: z.number().int().nonnegative().max(65_535),
+      operationIndex: z.number().int().nonnegative().safe(),
       materialId: WORLD_ENTITY_ID_SCHEMA,
       polygon: WORLD_POLYGON_SCHEMA,
     })
@@ -210,8 +254,8 @@ export const WORLD_CHANGE_PROPOSAL_SCHEMA = z
     kind: z.literal("WorldChangeProposal"),
     basePlanHash: HASH_SCHEMA,
     baseWorldBuildHash: HASH_SCHEMA,
-    changes: z.array(WORLD_CHANGE_SCHEMA).min(1).max(32),
-    rationale: z.string().trim().min(1).max(2_048),
+    changes: z.array(WORLD_CHANGE_SCHEMA).min(1),
+    rationale: z.string().trim().min(1),
     providerId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
     providerImplementationHash: HASH_SCHEMA,
     compilerAuthority: z.literal(false),
@@ -243,12 +287,11 @@ const ROUTE_ALTERNATIVE_POLICY_SCHEMA = z
         z
           .object({
             alternativeId: WORLD_ENTITY_ID_SCHEMA,
-            alignmentMeters: z.array(WORLD_POINT2_SCHEMA).min(2).max(65_536),
+            alignmentMeters: z.array(WORLD_POINT2_SCHEMA).min(2),
           })
           .strict(),
       )
-      .min(1)
-      .max(32),
+      .min(1),
   })
   .strict()
   .superRefine((value, context) =>
@@ -262,40 +305,29 @@ const ROUTE_ALTERNATIVE_POLICY_SCHEMA = z
 export const REFINEMENT_POLICY_SCHEMA = z
   .object({
     kind: z.literal("RefinementPolicy"),
-    maximumIterations: z.number().int().positive().max(16),
-    constructionParameters: z.array(CONSTRUCTION_PARAMETER_POLICY_SCHEMA).max(256),
-    routeAlternatives: z.array(ROUTE_ALTERNATIVE_POLICY_SCHEMA).max(256),
-    vegetation: z
-      .array(
-        z
-          .object({
-            intentId: WORLD_ENTITY_ID_SCHEMA,
-            minimumDensity: z.number().finite().nonnegative(),
-            maximumDensity: z.number().finite().positive(),
-            maximumCount: z.number().int().nonnegative().max(65_536),
-            clearingBounds: WORLD_AABB_SCHEMA,
-          })
-          .strict()
-          .refine(
-            (v) => v.minimumDensity <= v.maximumDensity,
-            "Vegetation density range is inverted",
-          ),
-      )
-      .max(256),
-    terrainPaint: z
-      .array(
-        z
-          .object({
-            terrainPlanId: WORLD_ENTITY_ID_SCHEMA,
-            operationIndex: z.number().int().nonnegative().max(65_535),
-            allowedMaterialIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(32),
-            bounds: WORLD_AABB_SCHEMA,
-          })
-          .strict(),
-      )
-      .max(256),
-    protectedIntentIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(65_536),
-    protectedTaskHashes: z.array(HASH_SCHEMA).max(65_536),
+    maximumIterations: z.number().int().positive().safe(),
+    constructionParameters: z.array(CONSTRUCTION_PARAMETER_POLICY_SCHEMA),
+    routeAlternatives: z.array(ROUTE_ALTERNATIVE_POLICY_SCHEMA),
+    vegetation: z.array(
+      z
+        .object({
+          intentId: WORLD_ENTITY_ID_SCHEMA,
+          clearingBounds: WORLD_AABB_SCHEMA,
+        })
+        .strict(),
+    ),
+    terrainPaint: z.array(
+      z
+        .object({
+          terrainPlanId: WORLD_ENTITY_ID_SCHEMA,
+          operationIndex: z.number().int().nonnegative().safe(),
+          allowedMaterialIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
+          bounds: WORLD_AABB_SCHEMA,
+        })
+        .strict(),
+    ),
+    protectedIntentIds: z.array(WORLD_ENTITY_ID_SCHEMA),
+    protectedTaskHashes: z.array(HASH_SCHEMA),
     requiredCheckKinds: z.array(WORLD_OBSERVATION_CHECK_KIND_SCHEMA).min(1),
     policyHash: HASH_SCHEMA,
   })
@@ -337,13 +369,15 @@ export type RefinementPolicy = z.output<typeof REFINEMENT_POLICY_SCHEMA>;
 
 const REFINEMENT_ITERATION_SCHEMA = z
   .object({
-    index: z.number().int().nonnegative().max(15),
+    index: z.number().int().nonnegative().safe(),
     beforeWorldBuildHash: HASH_SCHEMA,
     proposalHash: HASH_SCHEMA,
     afterWorldBuildHash: HASH_SCHEMA,
-    seedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(65_536),
-    affectedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(65_536),
-    changedTaskHashes: z.array(HASH_SCHEMA).max(65_536),
+    seedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA),
+    affectedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA),
+    executedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA),
+    reusedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA),
+    changedTaskHashes: z.array(HASH_SCHEMA),
     compilationExecutionHash: HASH_SCHEMA,
     observationHash: HASH_SCHEMA,
     observationExecutionHash: HASH_SCHEMA,
@@ -352,6 +386,8 @@ const REFINEMENT_ITERATION_SCHEMA = z
   .superRefine((value, context) => {
     requireUniqueCanonical(value.seedTaskIds, "refinement seed tasks", context);
     requireUniqueCanonical(value.affectedTaskIds, "refinement affected tasks", context);
+    requireUniqueCanonical(value.executedTaskIds, "refinement executed tasks", context);
+    requireUniqueCanonical(value.reusedTaskIds, "refinement reused tasks", context);
     requireUniqueCanonical(value.changedTaskHashes, "refinement changed tasks", context);
     if (value.seedTaskIds.some((entry) => !value.affectedTaskIds.includes(entry)))
       context.addIssue({
@@ -369,10 +405,10 @@ export const REFINEMENT_COMPILATION_EXECUTION_SCHEMA = z
     kind: z.literal("RefinementCompilationExecution"),
     inputPlanHash: HASH_SCHEMA,
     previousWorldBuildHash: HASH_SCHEMA.optional(),
-    requestedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(65_536),
-    affectedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(65_536),
-    executedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(65_536),
-    reusedTasks: z.array(REUSED_TASK_SCHEMA).max(1_000_000),
+    requestedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA),
+    affectedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
+    executedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
+    reusedTasks: z.array(REUSED_TASK_SCHEMA),
     outputWorldBuildHash: HASH_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -414,9 +450,9 @@ export const REFINEMENT_OBSERVATION_EXECUTION_SCHEMA = z
     kind: z.literal("RefinementObservationExecution"),
     worldBuildHash: HASH_SCHEMA,
     previousObservationHash: HASH_SCHEMA.optional(),
-    affectedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(65_536),
-    executedCheckIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(65_536),
-    executedCameraIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(8),
+    affectedTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
+    executedCheckIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
+    executedCameraIds: z.array(WORLD_ENTITY_ID_SCHEMA),
     reportHash: HASH_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -440,9 +476,9 @@ export const REFINEMENT_RUN_SCHEMA = z
     finalPlanHash: HASH_SCHEMA,
     finalWorldBuildHash: HASH_SCHEMA,
     policyHash: HASH_SCHEMA,
-    iterations: z.array(REFINEMENT_ITERATION_SCHEMA).max(16),
+    iterations: z.array(REFINEMENT_ITERATION_SCHEMA),
     finalObservationHash: HASH_SCHEMA,
-    diagnostics: z.array(z.string().trim().min(1).max(1_024)).max(256),
+    diagnostics: z.array(z.string().trim().min(1)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })

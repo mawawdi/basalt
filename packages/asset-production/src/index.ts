@@ -19,10 +19,9 @@ export const ASSET_FINISHING_PROFILE_SCHEMA = z
           "render_asset_previews",
         ]),
       )
-      .min(1)
-      .max(16),
+      .min(1),
     wholeSceneRendering: z.literal(false),
-    maxPreviewPixels: z.number().int().positive().max(4_194_304),
+    maxPreviewPixels: z.number().int().positive().safe(),
     profileHash: HASH_SCHEMA,
   })
   .strict();

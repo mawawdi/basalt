@@ -59,7 +59,7 @@ export const CONSTRUCTION_SCALAR_SCHEMA = z.discriminatedUnion("kind", [
     .strict(),
 ]);
 export const CONSTRUCTION_INTEGER_SCHEMA = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("literal"), value: z.number().int().positive().max(65_536) }).strict(),
+  z.object({ kind: z.literal("literal"), value: z.number().int().positive().safe() }).strict(),
   z.object({ kind: z.literal("integer_parameter"), parameterId: entityId }).strict(),
 ]);
 export type ConstructionScalar = z.output<typeof CONSTRUCTION_SCALAR_SCHEMA>;
@@ -95,7 +95,7 @@ const CYLINDER_OPERATION_SCHEMA = z
     centerMeters: constructionVector,
     radiusMeters: CONSTRUCTION_SCALAR_SCHEMA,
     heightMeters: CONSTRUCTION_SCALAR_SCHEMA,
-    sides: z.number().int().min(8).max(128),
+    sides: z.number().int().min(3).safe(),
     templateOnly: z.boolean(),
   })
   .strict();
@@ -180,7 +180,7 @@ export const CONSTRUCTION_OPERATION_SCHEMA = z.discriminatedUnion("kind", [
 ]);
 export type ConstructionOperation = z.output<typeof CONSTRUCTION_OPERATION_SCHEMA>;
 
-/** A bounded, declarative construction graph. It contains no expressions or callbacks. */
+/** A declarative construction graph. It contains no expressions or callbacks. */
 export const CONSTRUCTION_PROGRAM_SCHEMA = z
   .object({
     kind: z.literal("ConstructionProgram"),
@@ -211,9 +211,9 @@ export const CONSTRUCTION_PROGRAM_SCHEMA = z
         yawQuarterTurns: z.number().int().min(0).max(3),
       })
       .strict(),
-    parameters: z.array(CONSTRUCTION_PARAMETER_SCHEMA).max(256),
-    operations: z.array(CONSTRUCTION_OPERATION_SCHEMA).min(1).max(8_192),
-    contributionEvidenceHashes: z.array(HASH_SCHEMA).max(256),
+    parameters: z.array(CONSTRUCTION_PARAMETER_SCHEMA),
+    operations: z.array(CONSTRUCTION_OPERATION_SCHEMA).min(1),
+    contributionEvidenceHashes: z.array(HASH_SCHEMA),
     programHash: HASH_SCHEMA,
   })
   .strict()

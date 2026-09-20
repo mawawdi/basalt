@@ -72,21 +72,26 @@ export function absolute(root: string, path: string): string {
 }
 
 export async function readText(root: string, path: string): Promise<string> {
-  return Buffer.from(await readBoundedWorkspaceBytes(root, path, 64 * 1024))
+  const bytes = await fileSize(root, path);
+  return Buffer.from(await readBoundedWorkspaceBytes(root, path, Math.max(1, bytes)))
     .toString("utf8")
     .trim();
 }
 
 export async function readTextExact(root: string, path: string): Promise<string> {
-  return Buffer.from(await readBoundedWorkspaceBytes(root, path, 64 * 1024)).toString("utf8");
+  const bytes = await fileSize(root, path);
+  return Buffer.from(await readBoundedWorkspaceBytes(root, path, Math.max(1, bytes))).toString(
+    "utf8",
+  );
 }
 
 export async function fileSize(root: string, path: string): Promise<number> {
-  return getBoundedWorkspaceFileSize(root, path, 64 * 1024 * 1024);
+  return getBoundedWorkspaceFileSize(root, path, Number.MAX_SAFE_INTEGER);
 }
 
 export async function fileHash(root: string, path: string): Promise<string> {
-  return sha256(await readBoundedWorkspaceBytes(root, path, 64 * 1024 * 1024));
+  const bytes = await fileSize(root, path);
+  return sha256(await readBoundedWorkspaceBytes(root, path, Math.max(1, bytes)));
 }
 
 export function sha256(value: Uint8Array | string): string {

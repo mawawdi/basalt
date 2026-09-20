@@ -5,9 +5,11 @@ import { compileBasaltWorld, populationDensityAt } from "@basalt/world-compiler"
 import { sealSpatialWorldPlan } from "@basalt/world-planning";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 import { worldFixture } from "./helpers/world-fixture.js";
+import { TEST_WORLD_EXECUTION_POLICY } from "./helpers/execution-policy.js";
 
 test("density fields have smooth edges, shared spatial patches, and explicit bounds", () => {
   const field = {
+    fieldId: "SharedHabitat",
     seed: 72,
     edgeFadeMeters: 4,
     wavelengthMeters: 8,
@@ -52,6 +54,7 @@ test("density affects candidate admission without relaxing occupancy, route clea
     targetCount: 6,
     minimumSeparationMeters: 0.1,
     densityField: {
+      fieldId: "FeatheredHabitat",
       seed: 72,
       edgeFadeMeters: 4,
       wavelengthMeters: 5,
@@ -68,6 +71,7 @@ test("density affects candidate admission without relaxing occupancy, route clea
         ...body,
         realizationIntents: [{ ...intent, densityField }],
       }),
+      executionPolicy: TEST_WORLD_EXECUTION_POLICY,
     });
   const first = compile(intent.densityField);
   assert.equal(first.status, "eligible", first.diagnostics.join("; "));

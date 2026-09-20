@@ -45,10 +45,7 @@ export const SOURCE_NAME_HINT_NORMALIZER_IMPLEMENTATION_HASH = contentHash(
   stableJson(NORMALIZER_POLICY),
 );
 
-const SOURCE_NAME_TOKEN_SCHEMA = z
-  .string()
-  .regex(/^[a-z0-9]+$/u)
-  .max(256);
+const SOURCE_NAME_TOKEN_SCHEMA = z.string().regex(/^[a-z0-9]+$/u);
 
 export const CATALOG_SOURCE_NAME_HINT_OBSERVATION_SCHEMA = z
   .object({
@@ -59,7 +56,7 @@ export const CATALOG_SOURCE_NAME_HINT_OBSERVATION_SCHEMA = z
       .max(4096)
       .refine((value) => !/[\\/]/u.test(value), "A filename observation cannot contain a path"),
     normalizedStem: z.string().max(4096),
-    tokens: z.array(SOURCE_NAME_TOKEN_SCHEMA).max(256),
+    tokens: z.array(SOURCE_NAME_TOKEN_SCHEMA),
   })
   .strict()
   .superRefine((value, context) => {
@@ -80,8 +77,8 @@ export const CATALOG_SOURCE_NAME_HINT_SCHEMA = z
     sourceContentHash: HASH_SCHEMA,
     normalizerImplementationHash: HASH_SCHEMA,
     interpretation: z.enum(["single_normalized_name", "multiple_normalized_names"]),
-    observations: z.array(CATALOG_SOURCE_NAME_HINT_OBSERVATION_SCHEMA).min(1).max(256),
-    diagnostics: z.array(z.string().trim().min(1).max(2048)).max(256),
+    observations: z.array(CATALOG_SOURCE_NAME_HINT_OBSERVATION_SCHEMA).min(1),
+    diagnostics: z.array(z.string().trim().min(1).max(2048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -115,8 +112,8 @@ export const CATALOG_SOURCE_NAME_HINT_SET_SCHEMA = z
     status: COMPILATION_STATUS_SCHEMA,
     sourceManifestHash: HASH_SCHEMA,
     normalizerImplementationHash: HASH_SCHEMA,
-    items: z.array(CATALOG_SOURCE_NAME_HINT_SCHEMA).min(1).max(100_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2048)).max(100_000),
+    items: z.array(CATALOG_SOURCE_NAME_HINT_SCHEMA).min(1),
+    diagnostics: z.array(z.string().trim().min(1).max(2048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })

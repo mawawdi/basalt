@@ -37,9 +37,9 @@ export const LOT_SUBDIVISION_SCHEMA = z
     kind: z.literal("LotSubdivision"),
     policy: LOT_SUBDIVISION_POLICY_SCHEMA,
     inputHash: HASH_SCHEMA,
-    lots: z.array(lotSchema).max(100_000),
+    lots: z.array(lotSchema),
     status: z.enum(["eligible", "incomplete"]),
-    diagnostics: z.array(z.string().min(1).max(1024)).max(4096),
+    diagnostics: z.array(z.string().min(1)),
     hash: HASH_SCHEMA,
   })
   .strict()

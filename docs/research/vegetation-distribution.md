@@ -4,7 +4,7 @@ Research inspected on 2026-09-19. This document is non-authoritative rationale a
 comparison of candidate approaches. Implemented behavior belongs to `ARCHITECTURE.md`
 and `VISUALS.md`; execution status and completion gates belong only to `TASKS.md`.
 
-Basalt's vegetation problem is broader than random point placement. The current compiler
+Basalt's vegetation problem is broader than random point placement. The compiler
 can place objects deterministically, respect routes, and reject occupied space, but that
 does not establish a convincing forest. The strongest practical baseline is a layered,
 art-directed vegetation distribution: shared landscape fields, canopy placement,
@@ -13,11 +13,11 @@ a useful sampling component within that design. It is not a complete composition
 
 ## Initial audit before the layered pilot
 
-- `packages/world-compiler/src/compiler.ts` samples hash-seeded candidates independently
+- The pre-layering `packages/world-compiler/src/compiler.ts` path sampled hash-seeded candidates independently
   for each `surface_scatter` polygon or `cluster` disk. It processes intents by priority,
   rejects region, route and occupancy conflicts, and replenishes candidates toward an
   authored target count. Its `cluster` is a disk-shaped sampling domain, not an ecological
-  parent-and-offspring process. This is bounded rejection sampling, not Bridson's
+  parent-and-offspring process. That was rejection sampling, not Bridson's
   active-list Poisson-disk algorithm.
 - `population-density.ts` now supplies smooth value noise and boundary attenuation.
   Several layers can share a field, but each still fills a separate count target and
@@ -152,9 +152,9 @@ described below covers only part of it; the recommendation is not evidence of vi
    evidence supports them. Low branches and rooted trunks still occupy space. A model's
    claim that an asset is a tree never authorizes reducing its collision bounds.
 6. **Treat natural density as density.** Coverage and instances per area determine the
-   intended population, with explicit cost caps and bounded attempts. Exact counts still
-   suit orchard rows and specific landmarks. Repeatedly filling a forest quota must not
-   erase its clearings or defeat its density field.
+   intended population, with explicit resource allocations and resumable evaluation.
+   Exact counts still suit orchard rows and specific landmarks. Repeatedly filling a
+   forest quota must not erase its clearings or defeat its density field.
 
 The planner's useful output is a small landscape specification: for example, a birch
 stand above the path, an open picnic clearing, sparse saplings at its boundary, and
@@ -188,19 +188,33 @@ and separate unseen layouts are necessary before claiming generalized improvemen
 The research recommendation and its qualification gate are tracked by `REGION-AUTHORING`
 in `TASKS.md`; no ecosystem library has been installed or promoted by this assessment.
 
-## Bounded implementation
+## Implemented regional baseline
 
-The implemented pilot reuses the layered scatter, exclusion-volume and geometric-envelope
-patterns described above. It uses finite adaptive dart throwing with a spatial neighbor grid,
-not the external Poisson library or a reimplementation of the Houdini ecosystem stack.
-Equal-priority species compete in one deterministic candidate order within each layer.
-Undergrowth responds to accepted canopy; density trials stop instead of filling every quota.
+The implementation reuses the layered scatter, exclusion-volume and geometric-envelope patterns
+described above. It uses adaptive dart throwing with a spatial neighbor grid, not the external
+Poisson library or a reimplementation of the Houdini ecosystem stack. Equal-priority species
+compete in one deterministic candidate order within each layer. Undergrowth responds to accepted
+canopy; rejected sites are not replenished merely to fill a quota.
+
+Candidate generation is incremental. It writes bounded sorted runs to a content-addressed
+checkpoint and performs a canonical multiway merge while retaining shared spacing and occupancy
+state. Batch size and merge fan-in are execution policy and cannot alter the completed ordering.
+If the current allocation ends before all logical candidates are produced, the world is
+`incomplete`, emits no partial population, and the next execution resumes at the exact candidate
+offset. This follows the established external-sort run/merge pattern documented by
+[GNU Coreutils `sort`](https://www.gnu.org/software/coreutils/manual/html_node/The-sort-command.html)
+and [STXXL's external sorting design](https://stxxl.org/tags/1.4.1/design_algo_sorting.html).
+Those systems establish run formation followed by a deterministic multiway merge, with memory
+and merge fan-in treated as execution resources. Basalt adds one shared placement-admission pass
+over the merged canonical stream because biological spacing, route clearance and occupancy span
+runs. It also owns content identity, resumable offsets and the no-partial-promotion rule.
 
 Static GLB triangles are clipped into height bands to measure packing geometry. These
 envelopes preserve low branches and trunks and remain distinct from catalog admission and
-engine collision. They are retained through refinement verification. Regional compilation
-is bounded; tile halos, partition invariance, biological succession, explicit sunlight and
-large-world performance are outside the demonstrated behavior.
+engine collision. They are retained through refinement verification. The regional implementation
+has no semantic area, species, or instance cap. Tile halos, chunk-partition invariance, biological
+succession, explicit sunlight, million-instance capacity and large-world performance remain outside
+the demonstrated behavior.
 
 The same-scene comparison and its limits are recorded in `EVALS.md`. The development setup
 keeps terrain, routes, fixed props, palette, seeds, cameras and per-species caps constant.

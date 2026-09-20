@@ -10,7 +10,7 @@ const allowed = new Map(
     "artifact-store": ["contracts"],
     "spatial-core": ["contracts"],
     "semantic-kernel": ["contracts"],
-    "catalog-model": ["contracts", "semantic-kernel"],
+    "catalog-model": ["contracts", "semantic-kernel", "spatial-core"],
     "catalog-authoring": ["contracts", "catalog-model", "semantic-kernel"],
     "asset-inspection": ["catalog-model", "contracts", "spatial-core"],
     "asset-production": ["contracts"],

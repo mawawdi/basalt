@@ -71,7 +71,7 @@ const REVIEW_EVIDENCE_AUDIT_FINDING_SCHEMA = z
         z.enum(["base_color", "emissive", "metallic_roughness", "normal", "occlusion", "opacity"]),
       )
       .max(6),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).min(1).max(8),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)).min(1),
   })
   .strict()
   .superRefine((value, context) => {
@@ -89,7 +89,7 @@ export const CATALOG_REVIEW_EVIDENCE_AUDIT_SCHEMA = z
     sourceNameHintSetHash: HASH_SCHEMA,
     auditedSourceCount: z.number().int().positive(),
     collisionSuffixPolicy: z.literal("explicit_suffix_marks_non_renderable_companion_only"),
-    findings: z.array(REVIEW_EVIDENCE_AUDIT_FINDING_SCHEMA).max(100_000),
+    findings: z.array(REVIEW_EVIDENCE_AUDIT_FINDING_SCHEMA),
     appearanceAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -289,7 +289,7 @@ export const CATALOG_DESCRIPTION_EVIDENCE_DEFECTS = [
 export const CATALOG_DESCRIPTION_EVIDENCE_USABILITY_SCHEMA = z
   .object({
     status: z.enum(["usable", "defective"]),
-    defectKinds: z.array(z.enum(CATALOG_DESCRIPTION_EVIDENCE_DEFECTS)).max(8),
+    defectKinds: z.array(z.enum(CATALOG_DESCRIPTION_EVIDENCE_DEFECTS)),
     note: z.string().trim().min(16).max(2_048).nullable(),
   })
   .strict()
@@ -315,7 +315,7 @@ const DESCRIPTION_PROPOSAL_ASSET_SCHEMA = z
       .regex(/^registry\/source-assets\/sha256\/[a-f0-9]{2}\/[a-f0-9]{2}\/[a-f0-9]{64}\.glb$/u),
     leakageGroupHash: HASH_SCHEMA,
     split: z.literal("development"),
-    selectionTags: z.array(CATALOG_QUALIFICATION_SELECTION_TAG_SCHEMA).min(1).max(16),
+    selectionTags: z.array(CATALOG_QUALIFICATION_SELECTION_TAG_SCHEMA).min(1),
     evidenceUsability: CATALOG_DESCRIPTION_EVIDENCE_USABILITY_SCHEMA,
     visibleDescription: CATALOG_VISIBLE_DESCRIPTION_ASSESSMENT_SCHEMA,
     evidence: DESCRIPTION_REVIEW_EVIDENCE_SCHEMA,
@@ -323,7 +323,7 @@ const DESCRIPTION_PROPOSAL_ASSET_SCHEMA = z
       .object({
         artifactHash: HASH_SCHEMA,
         authority: z.literal("none"),
-        observations: z.array(z.string().trim().min(1).max(4_096)).min(1).max(256),
+        observations: z.array(z.string().trim().min(1).max(4_096)).min(1),
       })
       .strict()
       .superRefine((value, context) =>
@@ -745,7 +745,7 @@ export const CATALOG_QUALIFICATION_DEVELOPMENT_QUERY_SET_SCHEMA = z
         retrievalChannels: z
           .array(z.enum(["basename_only", "hybrid", "image_text_only", "metadata_only"]))
           .length(4),
-        resultDepthPerChannel: z.number().int().min(5).max(100),
+        resultDepthPerChannel: z.number().int().min(5).safe(),
         backgroundPopulation: z.literal("full_measured_basename_searchable_corpus"),
         poolConstruction: z.literal("canonical_union_with_unscored_manual_recall_seeds"),
         unjudgedPolicy: z.literal("unknown_not_negative"),
@@ -759,7 +759,7 @@ export const CATALOG_QUALIFICATION_DEVELOPMENT_QUERY_SET_SCHEMA = z
           context,
         ),
       ),
-    queries: z.array(DEVELOPMENT_QUERY_SCHEMA).min(12).max(48),
+    queries: z.array(DEVELOPMENT_QUERY_SCHEMA).min(12),
     nextStage: z.literal("candidate_pooling"),
     qualificationExecutionAuthorized: z.literal(false),
     hash: HASH_SCHEMA,
@@ -924,14 +924,14 @@ const DEVELOPMENT_POOL_RETRIEVAL_SCHEMA = z
     channel: CATALOG_QUALIFICATION_POOLING_CHANNEL_SCHEMA,
     executedQueryHash: HASH_SCHEMA,
     resultSetHash: HASH_SCHEMA,
-    rankedSourceContentHashes: z.array(HASH_SCHEMA).max(100),
+    rankedSourceContentHashes: z.array(HASH_SCHEMA),
   })
   .strict();
 
 const DEVELOPMENT_POOL_APPEARANCE_SCHEMA = z
   .object({
     channel: CATALOG_QUALIFICATION_POOLING_CHANNEL_SCHEMA,
-    rank: z.number().int().positive().max(100),
+    rank: z.number().int().positive().safe(),
     resultSetHash: HASH_SCHEMA,
   })
   .strict();
@@ -973,8 +973,8 @@ const DEVELOPMENT_QUERY_POOL_SCHEMA = z
     queryId: z.string().regex(/^[a-z][a-z0-9_]{0,95}$/u),
     requestHash: HASH_SCHEMA,
     retrievals: z.array(DEVELOPMENT_POOL_RETRIEVAL_SCHEMA).length(4),
-    manualRecallSeeds: z.array(DEVELOPMENT_MANUAL_RECALL_SEED_SCHEMA).max(32),
-    candidates: z.array(DEVELOPMENT_POOL_CANDIDATE_SCHEMA).min(1).max(132),
+    manualRecallSeeds: z.array(DEVELOPMENT_MANUAL_RECALL_SEED_SCHEMA),
+    candidates: z.array(DEVELOPMENT_POOL_CANDIDATE_SCHEMA).min(1),
   })
   .strict()
   .superRefine((value, context) => {
@@ -1074,8 +1074,8 @@ export const CATALOG_QUALIFICATION_DEVELOPMENT_CANDIDATE_POOL_SCHEMA = z
       })
       .strict(),
     indexHash: HASH_SCHEMA,
-    resultDepthPerChannel: z.number().int().min(5).max(100),
-    queryPools: z.array(DEVELOPMENT_QUERY_POOL_SCHEMA).min(12).max(48),
+    resultDepthPerChannel: z.number().int().min(5).safe(),
+    queryPools: z.array(DEVELOPMENT_QUERY_POOL_SCHEMA).min(12),
     pooledPairCount: z.number().int().positive(),
     reviewedCohortCandidateCount: z.number().int().nonnegative(),
     backgroundCandidateCount: z.number().int().positive(),
@@ -1294,7 +1294,7 @@ const DEVELOPMENT_RELEVANCE_QUERY_DECISION_SCHEMA = z
     requestHash: HASH_SCHEMA,
     requestDisposition: z.enum(["accepted", "rejected_for_reauthoring"]),
     requestIssue: z.string().trim().min(16).max(1_024).nullable(),
-    judgments: z.array(DEVELOPMENT_RELEVANCE_JUDGMENT_SCHEMA).max(132),
+    judgments: z.array(DEVELOPMENT_RELEVANCE_JUDGMENT_SCHEMA),
   })
   .strict()
   .superRefine((value, context) => {
@@ -1338,7 +1338,7 @@ export const CATALOG_QUALIFICATION_DEVELOPMENT_RELEVANCE_DECISION_SCHEMA = z
     reviewerStatement: z.string().trim().min(32).max(2_048),
     reviewedAt: z.string().datetime({ offset: true }),
     coverage: z.literal("complete"),
-    queries: z.array(DEVELOPMENT_RELEVANCE_QUERY_DECISION_SCHEMA).min(12).max(48),
+    queries: z.array(DEVELOPMENT_RELEVANCE_QUERY_DECISION_SCHEMA).min(12),
     relevanceJudgmentAuthority: z.enum(["creator", "delegated_ai"]),
     validatorVerdictsReviewed: z.literal(false),
     nextStage: z.enum(["query_reauthoring", "validator_execution_and_review"]),
@@ -1547,8 +1547,8 @@ export const CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_CASE_SET_SCHEMA = z
         ),
       })
       .strict(),
-    cases: z.array(DEVELOPMENT_VALIDATOR_CASE_SCHEMA).min(24).max(96),
-    caseCount: z.number().int().min(24).max(96),
+    cases: z.array(DEVELOPMENT_VALIDATOR_CASE_SCHEMA).min(24),
+    caseCount: z.number().int().min(24).safe(),
     proposedVerdictCounts: z
       .object({
         match: z.number().int().nonnegative(),
@@ -1810,7 +1810,7 @@ export const CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_DECISION_SCHEMA = z
     reviewerStatement: z.string().trim().min(32).max(2_048),
     reviewedAt: z.string().datetime({ offset: true }),
     coverage: z.literal("complete"),
-    cases: z.array(DEVELOPMENT_VALIDATOR_CASE_DECISION_SCHEMA).min(24).max(96),
+    cases: z.array(DEVELOPMENT_VALIDATOR_CASE_DECISION_SCHEMA).min(24),
     validatorVerdictAuthority: z.enum(["creator", "delegated_ai"]),
     nextStage: z.enum(["validator_case_reauthoring", "validator_execution"]),
     qualificationExecutionAuthorized: z.literal(false),
@@ -1933,7 +1933,7 @@ export const CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_VERDICT_SET_SCHEMA = z
     relevanceDecisionHash: HASH_SCHEMA,
     decisionArtifactHash: HASH_SCHEMA,
     verdictAuthority: z.enum(["creator", "delegated_ai"]),
-    cases: z.array(DEVELOPMENT_VALIDATOR_VERDICT_SCHEMA).min(24).max(96),
+    cases: z.array(DEVELOPMENT_VALIDATOR_VERDICT_SCHEMA).min(24),
     verdictCounts: z
       .object({
         match: z.number().int().nonnegative(),
@@ -2092,9 +2092,9 @@ export const CATALOG_QUALIFICATION_DEVELOPMENT_VALIDATOR_COMPARISON_SCHEMA = z
     validationSchemaHash: HASH_SCHEMA,
     preprocessingImplementationHash: HASH_SCHEMA,
     workerImplementationHash: HASH_SCHEMA,
-    models: z.array(DEVELOPMENT_VALIDATOR_MODEL_SCHEMA).min(2).max(8),
-    runs: z.array(DEVELOPMENT_VALIDATOR_RUN_SCHEMA).min(48).max(768),
-    metrics: z.array(DEVELOPMENT_VALIDATOR_METRICS_SCHEMA).min(2).max(8),
+    models: z.array(DEVELOPMENT_VALIDATOR_MODEL_SCHEMA).min(2),
+    runs: z.array(DEVELOPMENT_VALIDATOR_RUN_SCHEMA).min(48),
+    metrics: z.array(DEVELOPMENT_VALIDATOR_METRICS_SCHEMA).min(2),
     promotionAuthorized: z.literal(false),
     nextStage: z.literal("independent_reaudit_or_holdout_authoring"),
     qualificationExecutionAuthorized: z.literal(false),

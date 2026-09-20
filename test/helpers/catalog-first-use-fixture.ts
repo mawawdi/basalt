@@ -42,10 +42,10 @@ export async function catalogFirstUseFixture(module: SemanticModule) {
     throw new Error("The retained measurements bind another catalog commit");
 
   const requirements = [
-    requirement(module, "OutdoorTrees", "bsc_000003", 24),
-    requirement(module, "OutdoorRocks", "bsc_000012", 16),
-    requirement(module, "OutdoorGroundcover", "bsc_000005", 48),
-    requirement(module, "OutdoorProps", "bsc_000018", 4),
+    requirement(module, "OutdoorTrees", "bsc_000003"),
+    requirement(module, "OutdoorRocks", "bsc_000012"),
+    requirement(module, "OutdoorGroundcover", "bsc_000005"),
+    requirement(module, "OutdoorProps", "bsc_000018"),
   ];
   const regionConcept = requireConcept(module, "bsc_000316");
   const regionClosure = createSemanticDependencyClosure({
@@ -231,7 +231,6 @@ function requirement(
   module: SemanticModule,
   requirementId: string,
   conceptId: string,
-  maximumInstances: number,
 ): CatalogRequirement {
   const concept = requireConcept(module, conceptId);
   const closure = createSemanticDependencyClosure({
@@ -261,7 +260,6 @@ function requirement(
     budget: {
       maximumTriangles: 5_000_000,
       maximumSourceBytes: 512 * 1024 * 1024,
-      maximumInstances,
     },
     required: true,
   };

@@ -29,12 +29,12 @@ const SMOKE_ASSET_SCHEMA = z
     leakageGroupHash: HASH_SCHEMA,
     split: CATALOG_SMOKE_SPLIT_SCHEMA,
     stratum: CATALOG_SMOKE_STRATUM_SCHEMA,
-    acceptablePrimaryNouns: z.array(z.string().trim().min(1).max(160)).min(1).max(16),
-    acceptableStyleTerms: z.array(z.string().trim().min(1).max(160)).min(1).max(16),
+    acceptablePrimaryNouns: z.array(z.string().trim().min(1).max(160)).min(1),
+    acceptableStyleTerms: z.array(z.string().trim().min(1).max(160)).min(1),
     acceptableSourceRoles: z.array(CATALOG_SOURCE_ROLE_HINT_SCHEMA).min(1).max(5),
     misleadingName: z.boolean(),
     outsideSemanticKernel: z.boolean(),
-    visibleDefects: z.array(z.string().trim().min(1).max(160)).max(16),
+    visibleDefects: z.array(z.string().trim().min(1).max(160)),
   })
   .strict()
   .superRefine((value, context) => {
@@ -52,8 +52,8 @@ const SMOKE_QUERY_SCHEMA = z
     queryId: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/u),
     split: CATALOG_SMOKE_SPLIT_SCHEMA,
     text: z.string().trim().min(1).max(512),
-    styleTerms: z.array(z.string().trim().min(1).max(160)).max(16),
-    relevantSourceContentHashes: z.array(HASH_SCHEMA).min(1).max(32),
+    styleTerms: z.array(z.string().trim().min(1).max(160)),
+    relevantSourceContentHashes: z.array(HASH_SCHEMA).min(1),
   })
   .strict()
   .superRefine((value, context) => {

@@ -31,11 +31,42 @@ export interface ResolvedConstructionPlacement {
   readonly surfaceId?: string;
 }
 
+export interface ConstructionExecutionPolicy {
+  readonly policyId: string;
+  readonly origin: string;
+  readonly maximumConstructedElements: number;
+}
+
+export class ConstructionResourceExhaustedError extends Error {
+  readonly code = "construction_resource_exhausted";
+  constructor(
+    readonly policy: ConstructionExecutionPolicy,
+    readonly programId: string,
+    readonly operationId: string,
+    readonly requestedElements: number,
+    readonly emittedElements: number,
+  ) {
+    super(
+      `Construction allocation ${policy.policyId} (${policy.origin}) permits ${policy.maximumConstructedElements} elements; ` +
+        `${programId}/${operationId} requested ${requestedElements} more after ${emittedElements} were emitted`,
+    );
+    this.name = "ConstructionResourceExhaustedError";
+  }
+}
+
 export function realizeConstructionProgram(
   programInput: ConstructionProgram,
   placement: ResolvedConstructionPlacement,
+  executionPolicy: ConstructionExecutionPolicy,
 ): ConstructedStructureArtifact {
   const program = CONSTRUCTION_PROGRAM_SCHEMA.parse(programInput);
+  if (!executionPolicy.policyId.trim() || !executionPolicy.origin.trim())
+    throw new Error("Construction execution policy must record its identity and origin");
+  if (
+    !Number.isSafeInteger(executionPolicy.maximumConstructedElements) ||
+    executionPolicy.maximumConstructedElements <= 0
+  )
+    throw new Error("Construction element allocation must be a positive safe integer");
   const parameters = constructionParameterMap(program);
   const operations = new Map(
     program.operations.map((entry) => [entry.operationId, entry] as const),
@@ -48,7 +79,22 @@ export function realizeConstructionProgram(
   const elements: ConstructedElement[] = [];
   const elementsByOperation = new Map<string, ConstructedElement[]>();
   const openings: ConstructedOpeningArtifact[] = [];
+  const reserveElements = (operationId: string, requestedElements: number) => {
+    if (!Number.isSafeInteger(requestedElements) || requestedElements < 0)
+      throw new Error(
+        `Construction ${program.programId}/${operationId} has an invalid element count`,
+      );
+    if (elements.length + requestedElements > executionPolicy.maximumConstructedElements)
+      throw new ConstructionResourceExhaustedError(
+        executionPolicy,
+        program.programId,
+        operationId,
+        requestedElements,
+        elements.length,
+      );
+  };
   const addElement = (operationId: string, element: ConstructedElement) => {
+    reserveElements(operationId, 1);
     elements.push(element);
     elementsByOperation.set(operationId, [
       ...(elementsByOperation.get(operationId) ?? []),
@@ -67,8 +113,9 @@ export function realizeConstructionProgram(
       if (!source || (source.kind !== "box" && source.kind !== "cylinder"))
         throw new Error(`Repeat ${operation.operationId} has no primitive template`);
       const count = resolveConstructionInteger(operation.count, parameters);
-      if (!Number.isSafeInteger(count) || count < 1 || count > 65_536)
-        throw new Error(`Repeat ${operation.operationId} count is outside its bounded range`);
+      if (!Number.isSafeInteger(count) || count < 1)
+        throw new Error(`Repeat ${operation.operationId} count must be a positive safe integer`);
+      reserveElements(operation.operationId, count);
       const step = rotateLocalVector(resolveVector(operation.stepMeters, program), program);
       for (let index = 0; index < count; index += 1)
         addElement(
@@ -92,6 +139,8 @@ export function realizeConstructionProgram(
       continue;
     }
     if (operation.kind === "stair_run") {
+      const stepCount = resolvedStairDimensions(program, operation).stepCount;
+      reserveElements(operation.operationId, stepCount);
       for (const element of realizeStairs(program, placement, operation))
         addElement(operation.operationId, element);
     }
@@ -437,7 +486,6 @@ function realizeStairs(
   if ([width, run, rise].some((value) => value <= 0))
     throw new Error(`Stair run ${operation.operationId} requires positive dimensions`);
   const count = dimensions.stepCount;
-  if (count > 65_536) throw new Error(`Stair run ${operation.operationId} exceeds its step budget`);
   const tread = dimensions.treadDepth;
   const riser = dimensions.riserHeight;
   return Array.from({ length: count }, (_, index) => {

@@ -315,7 +315,7 @@ For API-driven authoring, put `OPENROUTER_API_KEY` in the environment or the rep
 ```sh
 node bin/basalt.js world generate \
   "Create a wooded campsite with an open meadow and a winding approach trail" \
-  --model deepseek/deepseek-v4.1-flash --output .basalt/worlds/wooded-camp
+  --model deepseek/deepseek-v4.1-flash --seed 1 --output .basalt/worlds/wooded-camp
 node bin/basalt.js world edit \
   "Make the woodland denser and widen the vegetation clearing around the campsite" \
   --from .basalt/worlds/wooded-camp \
@@ -324,21 +324,28 @@ node bin/basalt.js world edit \
 
 The prepared `registry/world-authoring/outdoor.json` supplies measured catalog choices and
 a 112-meter empty region, without a reference layout. A run retains each proposal, compiler
-failure, captured view, model review, token receipt and timing. Each command has a 300-second
-budget and at most three attempts; individual model calls stop at 150 seconds, and
-`--budget-seconds` accepts 10–600 for the total run. These are stop limits,
-not quality guarantees. Use a fresh output directory for every run. Inspect `report.json`
+failure, captured view, model review, token receipt and timing. The required generation seed is
+creator or evaluation input and is fixed in the layout response schema; the planner cannot replace
+it. Edits inherit the verified base plan seed.
+The default execution allocations
+come from `registry/world-authoring/execution.json`; that artifact records their units and origin.
+Request and preview timeouts cancel transport work, while semantic attempts, rendering,
+construction, and sampling allocations stop with retained `incomplete` evidence. They do not
+truncate a logical request or establish quality. Use a fresh output directory for every run. Inspect `report.json`
 and the attempt previews even when the command completes: `incomplete` is a retained result.
 Model visual eligibility does not establish creator acceptance or Studio verification.
-The transport defaults to low reasoning: the bounded comparison produced a valid 1,267-instance
+The transport defaults to low reasoning: the development comparison produced a valid 1,267-instance
 first proposal where disabled reasoning repeatedly failed the route/landmark constraints.
 `--reasoning-effort none|low|high` records an explicit override in the receipts. This is a
 development configuration, not a qualified model policy.
 OpenRouter routing prioritizes output throughput while keeping the selected model ID fixed.
-The 24,576-token response allowance includes both reasoning and JSON; truncation is a failed
-attempt, never a partially accepted plan.
+The active transport policy records its response allowance, response-byte allocation, reasoning
+mode, upstream provider when reported, usage, and failures. Truncation is a failed request, never
+a partially accepted plan. Provider credit exhaustion is retained with requested and available
+output-token values and stops as resumable `incomplete` evidence; it does not trigger a smaller
+semantic world or an unchanged repair loop.
 
-Edits currently allow bounded vegetation density, additional vegetation clearings and changes
+Edits currently allow policy-whitelisted vegetation density, additional vegetation clearings and changes
 to existing terrain-material patches. Static catalog placements, route geometry and terrain
 heights are protected. A new profile can be prepared from an existing eligible authority plan
 with `world profile <plan.json> --output <profile.json>` and selected with `--profile`.
@@ -347,18 +354,11 @@ The profile fixes placement tolerance; ordered rows and grids remain exact. Plan
 and species mixtures, while route joins use shared nodes. Edit schemas name only existing
 permitted targets, and a parameter-only change cannot establish a visible edit.
 
-The operator-driven generation pilot uses `node scripts/generation-benchmark.mjs` with
-`init`, `start <case>`, `compile <case>`, `capture <case>`, `review <case>`, `finish <case>`, and
-`report`. `init` freezes the prepared Harvest Valley inputs and five briefs; `start` begins the
-clock before the agent writes the case's `spatial-plan.json`. The harness supplies no layout.
-Results default to `.basalt/evals/generation-latency/`; `report` writes a JSON report and
-an `index.html` showing retained attempts and reviews. Finished runs cannot be resumed or
-overwritten. The review protocol and limitations are in [EVALS.md](docs/EVALS.md).
-Use `--output <directory> --suite <briefs.json>` on every command for a separate pilot,
-such as `test/fixtures/composition-briefs.json`. A case's optional `cameras.json` contains
-camera descriptors; capture binds them to the newly compiled world and retains the exact
-packet alongside its images. A prepared `authoring-tools.mjs` in the pilot root, when
-present at initialization, is included in the frozen input hashes.
+The retained prompt-region evaluation uses `node scripts/prompt-region-pilot.mjs`; it exercises
+the same `world generate` and `world edit` commands users run, keeps every proposal and review,
+and writes one evidence index. The former operator-authored benchmark was removed because its
+separate compile counters and universal population floors described a different workflow and
+could not verify prompt-to-world behavior.
 
 The deterministic observation-tower fixture can be materialized with
 `npm run eval:tower`. It writes both world builds, diagnostic renders, refinement traces,

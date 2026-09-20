@@ -65,7 +65,7 @@ const SEARCH_TOKEN_SCHEMA = z.string().trim().min(1).max(160);
 const SEARCH_FIELD_TOKEN_SCHEMA = z
   .object({
     field: z.enum(CATALOG_SEARCH_FIELD_NAMES),
-    tokens: z.array(SEARCH_TOKEN_SCHEMA).max(512),
+    tokens: z.array(SEARCH_TOKEN_SCHEMA),
   })
   .strict();
 
@@ -73,11 +73,7 @@ const DOCUMENT_METRIC_SCHEMA = z
   .object({
     sizeMeters: CATALOG_VECTOR3_FIXED_SCHEMA,
     triangleCount: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-    sourceBytes: z
-      .number()
-      .int()
-      .nonnegative()
-      .max(512 * 1024 * 1024),
+    sourceBytes: z.number().int().nonnegative().safe(),
   })
   .strict();
 
@@ -131,8 +127,8 @@ export const CATALOG_SEARCH_DOCUMENT_SCHEMA = z
       .optional(),
     metric: DOCUMENT_METRIC_SCHEMA,
     rights: DOCUMENT_RIGHTS_SCHEMA,
-    imageTextEmbeddingRow: z.number().int().nonnegative().max(100_000).optional(),
-    shapeEmbeddingRow: z.number().int().nonnegative().max(100_000).optional(),
+    imageTextEmbeddingRow: z.number().int().nonnegative().safe().optional(),
+    shapeEmbeddingRow: z.number().int().nonnegative().safe().optional(),
     missingEvidence: z
       .array(z.enum(["image_text_embedding", "metadata", "shape_embedding"]))
       .max(3),
@@ -184,7 +180,7 @@ export const CATALOG_SEARCH_INDEX_SCHEMA = z
     visualReviewIndexHash: HASH_SCHEMA.optional(),
     sourceNameHintSetHash: HASH_SCHEMA,
     metadataSetHash: HASH_SCHEMA.optional(),
-    authoredMetadataSetHashes: z.array(HASH_SCHEMA).max(10_000),
+    authoredMetadataSetHashes: z.array(HASH_SCHEMA),
     imageTextEmbeddingMatrixHash: HASH_SCHEMA.optional(),
     shapeEmbeddingMatrixHash: HASH_SCHEMA.optional(),
     searchPolicyHash: HASH_SCHEMA,
@@ -201,9 +197,9 @@ export const CATALOG_SEARCH_INDEX_SCHEMA = z
         shapeEmbedding: z.number().int().nonnegative(),
       })
       .strict(),
-    documents: z.array(CATALOG_SEARCH_DOCUMENT_SCHEMA).max(100_000),
-    excludedSources: z.array(CATALOG_SEARCH_EXCLUDED_SOURCE_SCHEMA).max(100_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(100_000),
+    documents: z.array(CATALOG_SEARCH_DOCUMENT_SCHEMA),
+    excludedSources: z.array(CATALOG_SEARCH_EXCLUDED_SOURCE_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -273,12 +269,7 @@ const SEARCH_CONSTRAINTS_SCHEMA = z
   .object({
     maximumSizeMeters: CATALOG_VECTOR3_FIXED_SCHEMA.optional(),
     maximumTriangles: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
-    maximumSourceBytes: z
-      .number()
-      .int()
-      .nonnegative()
-      .max(512 * 1024 * 1024)
-      .optional(),
+    maximumSourceBytes: z.number().int().nonnegative().safe().optional(),
     commercialUseRequired: z.boolean(),
     redistributionRequired: z.boolean(),
   })
@@ -289,7 +280,7 @@ export const CATALOG_SEARCH_QUERY_SCHEMA = z
     kind: z.literal("CatalogSearchQuery"),
     text: z.string().trim().min(1).max(2_048),
     referenceSourceContentHash: HASH_SCHEMA.optional(),
-    styleTerms: z.array(SEARCH_TOKEN_SCHEMA).max(32),
+    styleTerms: z.array(SEARCH_TOKEN_SCHEMA),
     rankingMode: z.enum([
       "automatic",
       "basename_only",
@@ -299,8 +290,8 @@ export const CATALOG_SEARCH_QUERY_SCHEMA = z
       "shape_only",
     ]),
     constraints: SEARCH_CONSTRAINTS_SCHEMA,
-    limit: z.number().int().positive().max(100),
-    validationLimit: z.number().int().nonnegative().max(8),
+    limit: z.number().int().positive().safe(),
+    validationLimit: z.number().int().nonnegative().safe(),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -325,7 +316,7 @@ export type CatalogSearchQuery = z.output<typeof CATALOG_SEARCH_QUERY_SCHEMA>;
 const FILTERED_CANDIDATE_SCHEMA = z
   .object({
     sourceContentHash: HASH_SCHEMA,
-    reasons: z.array(z.string().min(1).max(128)).min(1).max(8),
+    reasons: z.array(z.string().min(1).max(128)).min(1),
   })
   .strict();
 
@@ -347,14 +338,14 @@ const SEARCH_RESULT_SCHEMA = z
     renderEvidenceHash: HASH_SCHEMA.optional(),
     channelRanks: z
       .object({
-        basenameLexical: z.number().int().positive().max(100_000).optional(),
-        imageTextRetrieval: z.number().int().positive().max(100_000).optional(),
-        metadataLexical: z.number().int().positive().max(100_000).optional(),
-        shapeSimilarity: z.number().int().positive().max(100_000).optional(),
+        basenameLexical: z.number().int().positive().safe().optional(),
+        imageTextRetrieval: z.number().int().positive().safe().optional(),
+        metadataLexical: z.number().int().positive().safe().optional(),
+        shapeSimilarity: z.number().int().positive().safe().optional(),
       })
       .strict(),
     fusedScoreBillionths: z.number().int().positive().max(1_000_000_000),
-    fusedRank: z.number().int().positive().max(100),
+    fusedRank: z.number().int().positive().safe(),
     rankingChannels: z
       .array(
         z.enum([
@@ -414,9 +405,9 @@ export const CATALOG_SEARCH_RESULT_SET_SCHEMA = z
     query: CATALOG_SEARCH_QUERY_SCHEMA,
     indexHash: HASH_SCHEMA,
     queryEmbeddingReceiptHash: HASH_SCHEMA.optional(),
-    results: z.array(SEARCH_RESULT_SCHEMA).max(100),
-    filteredCandidates: z.array(FILTERED_CANDIDATE_SCHEMA).max(100_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(100_000),
+    results: z.array(SEARCH_RESULT_SCHEMA),
+    filteredCandidates: z.array(FILTERED_CANDIDATE_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -814,7 +805,6 @@ export function executeCatalogSearch(input: {
         ? [
             {
               rank: basenameRank.get(document.sourceContentHash),
-              limit: policy.lexicalCandidateLimit,
             },
           ]
         : []),
@@ -822,7 +812,6 @@ export function executeCatalogSearch(input: {
         ? [
             {
               rank: metadataRank.get(document.sourceContentHash),
-              limit: policy.lexicalCandidateLimit,
             },
           ]
         : []),
@@ -830,7 +819,6 @@ export function executeCatalogSearch(input: {
         ? [
             {
               rank: imageTextRank.get(document.sourceContentHash),
-              limit: policy.embeddingCandidateLimit,
             },
           ]
         : []),
@@ -838,7 +826,6 @@ export function executeCatalogSearch(input: {
         ? [
             {
               rank: shapeRank.get(document.sourceContentHash),
-              limit: policy.embeddingCandidateLimit,
             },
           ]
         : []),
@@ -848,9 +835,7 @@ export function executeCatalogSearch(input: {
       channels.reduce(
         (sum, channel) =>
           sum +
-          (channel.rank !== undefined && channel.rank <= channel.limit
-            ? 1 / (policy.reciprocalRankConstant + channel.rank)
-            : 0),
+          (channel.rank !== undefined ? 1 / (policy.reciprocalRankConstant + channel.rank) : 0),
         0,
       ) / channels.length;
     if (score > 0) fused.set(document.sourceContentHash, score);
@@ -860,16 +845,13 @@ export function executeCatalogSearch(input: {
       ([leftHash, leftScore], [rightHash, rightScore]) =>
         rightScore - leftScore || compareCanonicalStrings(leftHash, rightHash),
     )
-    .slice(0, Math.min(query.limit, policy.maximumResults));
+    .slice(0, query.limit);
   const results = ordered.map(([sourceHash, fusedScore], indexValue) => {
     const document = documentsBySource.get(sourceHash)!;
-    const basenameLexical = boundedRank(basenameRank.get(sourceHash), policy.lexicalCandidateLimit);
-    const metadataLexical = boundedRank(metadataRank.get(sourceHash), policy.lexicalCandidateLimit);
-    const imageTextRetrieval = boundedRank(
-      imageTextRank.get(sourceHash),
-      policy.embeddingCandidateLimit,
-    );
-    const shapeSimilarity = boundedRank(shapeRank.get(sourceHash), policy.embeddingCandidateLimit);
+    const basenameLexical = basenameRank.get(sourceHash);
+    const metadataLexical = metadataRank.get(sourceHash);
+    const imageTextRetrieval = imageTextRank.get(sourceHash);
+    const shapeSimilarity = shapeRank.get(sourceHash);
     const metadataEvidence = document.metadataEvidence;
     const rankingChannels = [
       ...(basenameLexical ? ["basename_lexical" as const] : []),
@@ -928,10 +910,6 @@ export function executeCatalogSearch(input: {
 
 function rankMap(ranking: readonly { readonly sourceContentHash: string }[]): Map<string, number> {
   return new Map(ranking.map((entry, index) => [entry.sourceContentHash, index + 1]));
-}
-
-function boundedRank(rank: number | undefined, limit: number): number | undefined {
-  return rank !== undefined && rank <= limit ? rank : undefined;
 }
 
 function documentFields(

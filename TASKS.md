@@ -5,28 +5,30 @@ implementation checklists. Completed cards are removed; Git history is the recor
 
 ## Now
 
-- [ ] **REGION-AUTHORING — Reach showcase quality within five minutes.** Harvest Valley's
-      accepted playtest, exact build and completed import receipt are retained separately. The
-      prompt and edit commands now use a prepared measured palette, a bounded OpenRouter transport,
-      compiler checks and same-model image review. Edits protect static catalog placements and
-      routes while changing vegetation or existing ground-material patches. The three-brief
-      initial comparison reached eligible geometry for two scenes but visual acceptance for none.
-      Planting now uses spacing and species mixtures with an initial layer-presence check, routes
-      share named junctions, and single objects have bounded local placement search. Edits enumerate
-      exact authorized targets, retain failed-world diagnostics and check realized effects while
-      protecting static placements and route geometry. Review acceptance requires four pass verdicts
-      and no blocking repairs. Creator feedback on a sparse scene exposed an all-layer meadow
-      exclusion and tiny accents crowding out broad ground cover. Planning now separates meadow
-      cover from tree exclusions, prioritizes broad measured ground patches and supplies sampled
-      coverage feedback. The latest wooded-refuge generation reached same-model acceptance in
-      288.7 seconds, but its requested edit still failed and the combined case took 470.8 seconds.
-      Independent visual quality remains unestablished. Malformed reviews now retry the same
-      scene; this follow-up repair has offline regression coverage only.
-      Qualify the corrected workflow on all three briefs without manually authoring candidate JSON;
-      repair remaining failures and obtain independent quality review and creator-run engine evidence.
-      Complete when fresh varied
-      briefs and requested edits reach independently accepted showcase quality within 300 seconds
-      from a prepared catalog, retaining all failed attempts and exact view evidence.
+- [ ] **REGION-AUTHORING — Qualify prompt-to-region generation and compound editing.** Harvest
+      Valley's accepted playtest, exact build and completed import receipt remain retained. The
+      prompt and edit commands use a prepared measured palette, an execution-policy-bound OpenRouter
+      transport, compiler checks, objective verification, and same-model image review. Logical
+      objectives, planting areas, palette size, cameras, and edit operations do not inherit scene
+      cardinality ceilings. Candidate allocation, rendering, construction, request, and retry limits
+      are named execution policy; exhaustion retains evidence and returns `incomplete`. Vegetation
+      candidate runs are content-addressed and resumable, and canonical merging makes completed
+      results independent of batch size. Edits bind prompt spans to typed objectives, preserve
+      verified placements outside their masks, and check physical effects for every objective.
+      Layer-specific clearings preserve low cover where trees are excluded. Malformed reviews retry
+      the same capture, while repeated proposals and unchanged failures stop with actionable
+      evidence. All three declared briefs and two fresh briefs, plus their compound edits, compiled
+      from retained model proposals and reached same-model acceptance under declared seeds. An
+      independent delegated-AI review nevertheless marked the visual set incomplete:
+      route-to-destination contact, clustered prop composition, ground-patch shaping, open-space
+      composition and evidence-camera occlusion remain unresolved. A current-source wooded-refuge
+      generation is eligible with 761 instances; its edit stopped before geometry on explicit
+      OpenRouter credit exhaustion, which is retained as resumable execution evidence rather than
+      counted as an edit failure. Timing and cost live only in the regional performance record.
+      Repair the documented composition gaps and rerun fresh independent review without
+      hand-authoring candidate JSON. Complete when
+      varied generation and compound edits satisfy every objective, preserve protected content,
+      reach independent visual acceptance, and pass creator-run Roblox import and play evidence.
 
 - [ ] **CAT-QUALIFY — Qualify catalog retrieval at realistic scale.** Author and run the
       leakage-isolated pooled benchmark, then freeze retrieval channels, view count, metadata
@@ -53,7 +55,7 @@ implementation checklists. Completed cards are removed; Git history is the recor
 
 - [ ] **KIT-ADMIT — Admit the first contextual modular kits.** Inspect the Dungeon and
       Office context packets and author evidence-backed assembly, attachment, route, and
-      substitution entries. The bounded Office pilot currently abstains because attributed
+      substitution entries. The Office pilot currently abstains because attributed
       assembly purpose and mate evidence are absent. Complete when every reviewed source has one
       disposition and the resulting catalog snapshot seals.
 

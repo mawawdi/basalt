@@ -21,6 +21,7 @@ import {
   towerDiagnosticCameras,
   towerExpectations,
 } from "./helpers/observation-tower-fixture.js";
+import { TEST_DIAGNOSTIC_RENDER_EXECUTION_POLICY } from "./helpers/execution-policy.js";
 
 test("observation tower refines through parameters and the affected dependency closure", async () => {
   const semanticModule = await loadSemanticRegistry();
@@ -109,12 +110,23 @@ test("observation tower refines through parameters and the affected dependency c
       },
     },
     observe({ worldBuild, previousObservation, affectedTaskIds }) {
+      const requiredViews = towerDiagnosticCameras(currentPlan);
+      const coverageViews = requiredViews.map((camera, index) => ({
+        ...camera,
+        cameraId: `TowerCoverageCamera_${index}`,
+        positionMeters: {
+          x: camera.positionMeters.x + (index + 1) * 0.75,
+          y: camera.positionMeters.y + 0.5,
+          z: camera.positionMeters.z - (index + 1) * 0.5,
+        },
+      }));
       return observeWorldBuild({
         plan: currentPlan,
         worldBuild,
         policy,
         expectations: towerExpectations(worldBuild),
-        cameras: towerDiagnosticCameras(currentPlan),
+        cameras: [...requiredViews, ...coverageViews],
+        diagnosticRenderExecutionPolicy: TEST_DIAGNOSTIC_RENDER_EXECUTION_POLICY,
         affectedTaskIds,
         ...(previousObservation ? { previousObservation } : {}),
       });
@@ -125,7 +137,7 @@ test("observation tower refines through parameters and the affected dependency c
   assert.equal(result.run.status, "eligible");
   assert.equal(result.run.iterations.length, 1);
   assert.equal(result.observation.visualAssessment.status, "unassessed");
-  assert.equal(result.observation.diagnosticRenders.length, 3);
+  assert.equal(result.observation.diagnosticRenders.length, 6);
   assert.ok(result.observation.checks.every((entry) => entry.status === "eligible"));
   assert.equal(
     result.observation.checks.find((entry) => entry.kind === "terrain_contact")?.status,

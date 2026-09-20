@@ -53,8 +53,6 @@ export function measureAssetPlacementGeometry(
 export function measureTriangleHeightBands(mesh: NormalizedMesh): AssetPlacementGeometry["bands"] {
   if (mesh.vertices.length === 0 || mesh.triangles.length === 0)
     throw new Error("Placement geometry is empty");
-  if (mesh.triangles.length > 500_000)
-    throw new Error("Placement geometry exceeds the bounded measurement triangle budget");
   let minimumY = Infinity,
     maximumY = -Infinity;
   for (const vertex of mesh.vertices) {
@@ -63,33 +61,48 @@ export function measureTriangleHeightBands(mesh: NormalizedMesh): AssetPlacement
     minimumY = Math.min(minimumY, vertex.y);
     maximumY = Math.max(maximumY, vertex.y);
   }
-  const count = Math.max(1, Math.min(64, Math.ceil((maximumY - minimumY) / 0.35)));
+  const count = Math.max(1, Math.ceil((maximumY - minimumY) / 0.35));
+  if (!Number.isSafeInteger(count))
+    throw new Error("Placement band count exceeds exact integer representation");
   const height = Math.max(1e-6, maximumY - minimumY) / count;
-  const result: AssetPlacementGeometry["bands"] = [];
-  for (let index = 0; index < count; index++) {
-    const low = minimumY + index * height,
-      high = minimumY + (index + 1) * height;
-    const min = { x: Infinity, y: Infinity, z: Infinity },
-      max = { x: -Infinity, y: -Infinity, z: -Infinity };
-    for (const triangle of mesh.triangles) {
-      const points = triangle.map((i) => mesh.vertices[i]);
-      if (points.some((point) => point === undefined))
-        throw new Error("Invalid placement triangle");
-      const clipped = clipY(clipY(points as GeometryVector3[], low, true), high, false);
+  const measured = Array.from({ length: count }, () => ({
+    min: { x: Infinity, y: Infinity, z: Infinity },
+    max: { x: -Infinity, y: -Infinity, z: -Infinity },
+  }));
+  for (const triangle of mesh.triangles) {
+    const points = triangle.map((index) => mesh.vertices[index]);
+    if (points.some((point) => point === undefined)) throw new Error("Invalid placement triangle");
+    const trianglePoints = points as GeometryVector3[];
+    const triangleMinimumY = Math.min(...trianglePoints.map((point) => point.y));
+    const triangleMaximumY = Math.max(...trianglePoints.map((point) => point.y));
+    const firstBand = Math.max(
+      0,
+      Math.min(count - 1, Math.floor((triangleMinimumY - minimumY) / height)),
+    );
+    const lastBand = Math.max(
+      firstBand,
+      Math.min(count - 1, Math.floor((triangleMaximumY - minimumY) / height)),
+    );
+    for (let index = firstBand; index <= lastBand; index++) {
+      const low = minimumY + index * height;
+      const high = minimumY + (index + 1) * height;
+      const clipped = clipY(clipY(trianglePoints, low, true), high, false);
       for (const point of clipped)
         for (const axis of ["x", "y", "z"] as const) {
-          min[axis] = Math.min(min[axis], point[axis]);
-          max[axis] = Math.max(max[axis], point[axis]);
+          measured[index]!.min[axis] = Math.min(measured[index]!.min[axis], point[axis]);
+          measured[index]!.max[axis] = Math.max(measured[index]!.max[axis], point[axis]);
         }
     }
-    if (Number.isFinite(min.x)) {
-      for (const axis of ["x", "y", "z"] as const) {
-        min[axis] -= 1e-6;
-        max[axis] += 1e-6;
-      }
-      result.push({ min, max });
-    }
   }
+  const result: AssetPlacementGeometry["bands"] = [];
+  for (const band of measured)
+    if (Number.isFinite(band.min.x)) {
+      for (const axis of ["x", "y", "z"] as const) {
+        band.min[axis] -= 1e-6;
+        band.max[axis] += 1e-6;
+      }
+      result.push(band);
+    }
   if (result.length === 0) throw new Error("Placement geometry has no bounded triangles");
   return result;
 }

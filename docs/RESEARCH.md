@@ -5,6 +5,9 @@ contracts in `ARCHITECTURE.md` and the sealed registry win if rationale ever dri
 
 ## Current rationale
 
+- [Region authoring performance](research/region-authoring-performance.md) — the single record
+  for phase duration, provider calls, token usage, reported cost, retries, cache state, workload,
+  outcomes, and retained raw-receipt identities.
 - [Vegetation distribution assessment](research/vegetation-distribution.md) — current
   scatter and occupancy limitations, production biome patterns, reusable sampling code,
   and the distinction between point placement and layered landscape composition.

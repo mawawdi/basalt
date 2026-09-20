@@ -99,4 +99,9 @@ test("bounded workspace reads fail closed on symlinks and escaped paths", async 
     readBoundedWorkspaceBytes(root, join(outside, "secret.json"), 1024),
     /escapes/u,
   );
+  await assert.rejects(
+    readBoundedWorkspaceBytes(root, "declared/absent.json", 1024),
+    (error: NodeJS.ErrnoException) =>
+      error.code === "ENOENT" && error.message === "Artifact file is missing",
+  );
 });

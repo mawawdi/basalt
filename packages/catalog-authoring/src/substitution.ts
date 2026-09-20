@@ -23,7 +23,7 @@ const CANDIDATE_SCHEMA = z
     semanticAdmissionAvailable: z.boolean(),
     placementEvidenceAvailable: z.boolean(),
     outcome: z.enum(["candidate", "incompatible", "incomplete"]),
-    reasons: z.array(z.string().trim().min(1).max(256)).max(16),
+    reasons: z.array(z.string().trim().min(1).max(256)),
   })
   .strict()
   .superRefine((value, context) => {
@@ -49,8 +49,8 @@ export const CATALOG_SUBSTITUTION_PROPOSAL_SET_SCHEMA = z
     status: COMPILATION_STATUS_SCHEMA,
     searchResultSetHash: HASH_SCHEMA,
     policyHash: HASH_SCHEMA,
-    candidates: z.array(CANDIDATE_SCHEMA).max(32),
-    diagnostics: z.array(z.string().trim().min(1).max(1_024)).max(128),
+    candidates: z.array(CANDIDATE_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(1_024)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -64,12 +64,6 @@ export const CATALOG_SUBSTITUTION_PROPOSAL_SET_SCHEMA = z
       context,
     );
     requireCanonicalValues(value.diagnostics, String, "substitution diagnostics", context);
-    if (value.candidates.length > 32)
-      context.addIssue({
-        code: "custom",
-        path: ["candidates"],
-        message: "Substitution proposals are bounded to 32 candidates",
-      });
     const expected = value.diagnostics.length === 0 ? "eligible" : "incomplete";
     if (value.status !== expected)
       context.addIssue({
@@ -89,10 +83,6 @@ export function buildCatalogSubstitutionProposalSet(input: {
 }): CatalogSubstitutionProposalSet {
   const searchResults = CATALOG_SEARCH_RESULT_SET_SCHEMA.parse(input.searchResults);
   const policy = CATALOG_SUBSTITUTION_PROPOSAL_POLICY_SCHEMA.parse(input.policy);
-  if (input.evidence.length > policy.maximumCandidatePoolSize)
-    throw new Error(
-      `Substitution proposal exceeds its ${policy.maximumCandidatePoolSize}-candidate bound`,
-    );
   const searched = new Set(searchResults.results.map((entry) => entry.sourceContentHash));
   const candidates = input.evidence.map((entry) => {
     if (!searched.has(entry.sourceContentHash))

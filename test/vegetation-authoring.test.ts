@@ -5,6 +5,7 @@ import { createVegetationIntents, type VegetationArea } from "@basalt/world-plan
 test("community authoring wires canopy lineage without supplying placements or coupling to a catalog", () => {
   const area: VegetationArea = {
     areaId: "Slope",
+    habitatFieldId: "SharedSlopeHabitat",
     regionId: "Region",
     surfaceId: "Surface",
     boundary: [
@@ -14,6 +15,7 @@ test("community authoring wires canopy lineage without supplying placements or c
       { u: 0, v: 20 },
     ],
     densityField: {
+      fieldId: "SharedSlopeHabitat",
       seed: 42,
       edgeFadeMeters: 3,
       wavelengthMeters: 12,
@@ -67,7 +69,7 @@ test("community authoring wires canopy lineage without supplying placements or c
     () => createVegetationIntents({ ...area, palette: [area.palette[0]!, area.palette[0]!] }),
     /unique/u,
   );
-  assert.throws(() => createVegetationIntents({ ...area, palette: [] }), /1–128/u);
+  assert.throws(() => createVegetationIntents({ ...area, palette: [] }), /palette/u);
   assert.throws(() => createVegetationIntents({ ...area, areaId: "invalid space" }));
-  assert.throws(() => createVegetationIntents({ ...area, maximumSupportReliefMeters: 2 }));
+  assert.doesNotThrow(() => createVegetationIntents({ ...area, maximumSupportReliefMeters: 2 }));
 });

@@ -37,7 +37,7 @@ export const NEURAL_ASSET_BATCH_SCHEMA = z
     kind: z.literal("NeuralAssetBatch"),
     batchId: z.string().regex(/^NeuralAssetBatch_[a-f0-9]{47}$/u),
     fulfillmentPlanHash: HASH_SCHEMA,
-    requests: z.array(NEURAL_ASSET_GENERATION_REQUEST_SCHEMA).min(1).max(4096),
+    requests: z.array(NEURAL_ASSET_GENERATION_REQUEST_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()

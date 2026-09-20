@@ -19,7 +19,7 @@ const placementCandidate = z
     surfaceId: WORLD_ENTITY_ID_SCHEMA,
     pointMeters: WORLD_POINT2_SCHEMA,
     score: z.number().finite(),
-    evidenceHashes: z.array(HASH_SCHEMA).max(64),
+    evidenceHashes: z.array(HASH_SCHEMA),
   })
   .strict();
 export const REGION_COMPOSITION_SCHEMA = z
@@ -27,7 +27,7 @@ export const REGION_COMPOSITION_SCHEMA = z
     kind: z.literal("RegionComposition"),
     planHash: HASH_SCHEMA,
     regionId: WORLD_ENTITY_ID_SCHEMA,
-    candidates: z.array(placementCandidate).max(100_000),
+    candidates: z.array(placementCandidate),
     hash: HASH_SCHEMA,
   })
   .strict()

@@ -6,8 +6,10 @@ import {
   type WorldBuild,
 } from "@basalt/world-compiler";
 import {
+  DIAGNOSTIC_RENDER_EXECUTION_POLICY_SCHEMA,
   WORLD_DIAGNOSTIC_CAMERA_SCHEMA,
   sealWorldDiagnosticRender,
+  type DiagnosticRenderExecutionPolicy,
   type WorldDiagnosticCamera,
   type WorldDiagnosticRender,
 } from "./contracts.js";
@@ -31,6 +33,7 @@ export const WORLD_DIAGNOSTIC_RENDERER_IMPLEMENTATION_HASH = contentHash(
       "route_junction_cylinder",
       "vertical_cylinder",
     ],
+    terrainSampling: "execution_policy_bound_uniform_grid",
     shading: "normal_depth_material_hash",
     encoding: "ppm_p6",
   }),
@@ -44,23 +47,34 @@ export const WORLD_DIAGNOSTIC_RENDERER_IMPLEMENTATION_HASH = contentHash(
 export function renderWorldDiagnostics(input: {
   readonly worldBuild: WorldBuild;
   readonly cameras: readonly WorldDiagnosticCamera[];
+  readonly executionPolicy: DiagnosticRenderExecutionPolicy;
 }): {
   readonly renders: readonly WorldDiagnosticRender[];
   readonly payloads: ReadonlyMap<string, Uint8Array>;
 } {
-  if (input.cameras.length === 0 || input.cameras.length > 8)
-    throw new Error("Diagnostic rendering requires between one and eight cameras");
-  const primitives = renderPrimitives(input.worldBuild);
+  if (input.cameras.length === 0) throw new Error("Diagnostic rendering requires a camera");
+  const executionPolicy = DIAGNOSTIC_RENDER_EXECUTION_POLICY_SCHEMA.parse(input.executionPolicy);
+  const renderedGeometry = renderPrimitives(
+    input.worldBuild,
+    executionPolicy.maximumTerrainTrianglesPerField,
+  );
+  const primitives = renderedGeometry.primitives;
   if (primitives.length === 0) throw new Error("Diagnostic rendering requires realized geometry");
   const payloads = new Map<string, Uint8Array>();
   const renders = input.cameras.map((cameraInput) => {
     const camera = WORLD_DIAGNOSTIC_CAMERA_SCHEMA.parse(cameraInput);
+    if (camera.widthPixels * camera.heightPixels > executionPolicy.maximumPixelsPerCamera)
+      throw new Error(
+        `Diagnostic render resource allocation exhausted for ${camera.cameraId}: ${camera.widthPixels * camera.heightPixels} pixels requested, ${executionPolicy.maximumPixelsPerCamera} allocated`,
+      );
     const payload = renderPpm(camera, primitives);
     const contentHashValue = createHash("sha256").update(payload).digest("hex");
     payloads.set(contentHashValue, payload);
     return sealWorldDiagnosticRender({
       worldBuildHash: input.worldBuild.worldBuildHash,
       camera,
+      executionPolicy,
+      terrainSampling: [...renderedGeometry.terrainSampling],
       rendererImplementationHash: WORLD_DIAGNOSTIC_RENDERER_IMPLEMENTATION_HASH,
       geometryEvidenceHashes: primitives.map((entry) => entry.hash),
       payload: {
@@ -98,7 +112,18 @@ type RenderPrimitive =
       readonly hash: string;
     };
 
-function renderPrimitives(worldBuild: WorldBuild): RenderPrimitive[] {
+function renderPrimitives(
+  worldBuild: WorldBuild,
+  maximumTerrainTrianglesPerField: number,
+): {
+  readonly primitives: readonly RenderPrimitive[];
+  readonly terrainSampling: readonly {
+    readonly terrainFieldHash: string;
+    readonly requestedTriangleCount: number;
+    readonly renderedTriangleCount: number;
+    readonly status: "complete" | "simplified";
+  }[];
+} {
   const constructed = worldBuild.meso.constructedStructures.flatMap((structure) =>
     structure.elements.map((element) => primitiveFromElement(element)),
   );
@@ -202,18 +227,31 @@ function renderPrimitives(worldBuild: WorldBuild): RenderPrimitive[] {
     color: appearanceColor(junction.appearance),
     hash: junction.hash,
   }));
-  const terrain = worldBuild.foundation.terrainFields.flatMap((field) =>
-    terrainPrimitives(worldBuild, field),
+  const terrainResults = worldBuild.foundation.terrainFields.map((field) =>
+    terrainPrimitives(worldBuild, field, maximumTerrainTrianglesPerField),
   );
-  return [...constructed, ...instances, ...routes, ...junctions, ...terrain].sort((left, right) =>
-    left.hash < right.hash ? -1 : left.hash > right.hash ? 1 : 0,
-  );
+  const terrain = terrainResults.flatMap((entry) => entry.primitives);
+  return {
+    primitives: [...constructed, ...instances, ...routes, ...junctions, ...terrain].sort(
+      (left, right) => (left.hash < right.hash ? -1 : left.hash > right.hash ? 1 : 0),
+    ),
+    terrainSampling: terrainResults.map((entry) => entry.sampling),
+  };
 }
 
 function terrainPrimitives(
   worldBuild: WorldBuild,
   field: WorldBuild["foundation"]["terrainFields"][number],
-): RenderPrimitive[] {
+  maximumTriangleCount: number,
+): {
+  readonly primitives: readonly RenderPrimitive[];
+  readonly sampling: {
+    readonly terrainFieldHash: string;
+    readonly requestedTriangleCount: number;
+    readonly renderedTriangleCount: number;
+    readonly status: "complete" | "simplified";
+  };
+} {
   const base = worldBuild.foundation.baseTerrainFields.find(
     (candidate) => candidate.hash === field.baseTerrainFieldHash,
   );
@@ -236,7 +274,10 @@ function terrainPrimitives(
   );
   const xCount = boundedDiagnosticAxisCount(baseXs.at(-1)! - baseXs[0]!, desiredSpacing);
   const zCount = boundedDiagnosticAxisCount(baseZs.at(-1)! - baseZs[0]!, desiredSpacing);
-  const scale = Math.max(1, Math.ceil(Math.sqrt(((xCount - 1) * (zCount - 1)) / 16_384)));
+  const requestedTriangleCount = 2 * (xCount - 1) * (zCount - 1);
+  if (!Number.isSafeInteger(requestedTriangleCount))
+    throw new Error(`Diagnostic terrain ${field.terrainPlanId} exceeds numeric representation`);
+  const scale = Math.max(1, Math.ceil(Math.sqrt(requestedTriangleCount / maximumTriangleCount)));
   const xs = uniformCoordinates(baseXs[0]!, baseXs.at(-1)!, Math.max(2, Math.ceil(xCount / scale)));
   const zs = uniformCoordinates(baseZs[0]!, baseZs.at(-1)!, Math.max(2, Math.ceil(zCount / scale)));
   const triangles: RenderPrimitive[] = [];
@@ -286,7 +327,15 @@ function terrainPrimitives(
           ),
         });
     }
-  return triangles;
+  return {
+    primitives: triangles,
+    sampling: {
+      terrainFieldHash: field.hash,
+      requestedTriangleCount,
+      renderedTriangleCount: triangles.length,
+      status: triangles.length === requestedTriangleCount ? "complete" : "simplified",
+    },
+  };
 }
 
 function minimumSpacing(values: readonly number[]): number {

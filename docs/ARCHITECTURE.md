@@ -96,8 +96,8 @@ Terrain and routes remain compilable when catalog-dependent stages are incomplet
 Structural grammars use explicit component roles, interfaces, topology, pitch, and
 coverage. Bounds or filenames never infer structural meaning.
 
-Ordinary cluster and surface-scatter population consumes a content-hash-seeded, bounded candidate
-stream until the authored target is reached or the attempt budget is exhausted. Region
+Ordinary cluster and surface-scatter population consumes a content-hash-seeded candidate
+stream until the authored target is reached or its named execution allocation is exhausted. Region
 containment and shared measured 3D occupancy prune each candidate; a rejected candidate does
 not silently consume one of the requested instances. Exhaustion retains explicit underfill
 diagnostics and never weakens the authored minimum or separation.
@@ -107,7 +107,7 @@ that candidate's final orientation. `minimumSeparationMeters` adds a horizontal 
 measured bounds; it is not a center-to-center spacing parameter.
 
 An optional `PopulationDensityField` on either population intent applies smooth seeded
-world-space value noise and a boundary fade before geometric admission. Its bounded
+world-space value noise and a boundary fade before geometric admission. Its authored
 parameters control wavelength, contrast, minimum relative density and edge width. Shared
 parameters correlate spatial patches across intents. The field alone remains independent
 rejection sampling toward a target count.
@@ -115,17 +115,21 @@ rejection sampling toward a target count.
 Surface scatter can instead bind an explicit `VegetationDistribution`. Static composition
 is realized first, then canopy, understory and ground cover. Within each layer, candidates
 from equal-priority species interleave by deterministic hash and share an adaptive spacing
-grid. Higher authored priorities can reserve mature anchors before smaller plants. A finite
-candidate density per square meter controls trials; `targetCount` is only a cost cap. Failed
-sites are not replenished to fill that cap, and unmet minima remain incomplete. This is
-bounded adaptive dart throwing, not Bridson active-list sampling or ecosystem simulation.
+grid. Higher authored priorities reserve measured larger forms before smaller accents. A finite
+candidate density per square meter defines the logical work implied by an area; `targetCount` is
+an authored population objective. Candidate evaluations are written as content-addressed sorted
+runs and merged in canonical order while sharing spacing and occupancy state across runs. Batch
+size and merge fan-in are execution choices and cannot alter a completed result. An exhausted
+allocation retains its checkpoint, emits no partial population, and reports `incomplete`; a later
+invocation resumes from the exact candidate offset. Failed sites are not replenished merely to fill
+a quota. This is adaptive dart throwing, not Bridson active-list sampling or ecosystem simulation.
 
 Layers name their canopy dependencies. Their open/covered preference interpolates against
 the geometric influence of actual accepted canopy instances. Slope limits, 3D activity
 clearings with an exterior falloff, and explicit route clearance height constrain placement.
-Physical clearance and the authored center spacing remain separate. The sampler rejects
-more than 65,536 trials per intent or 262,144 per compilation; neither partition-invariant
-sampling nor million-instance throughput is established.
+Physical clearance and authored biological spacing remain separate. The sampler has no semantic
+area, species, intent, or instance ceiling. This does not establish chunk-partition invariance or
+million-instance throughput; those require separate capacity measurements.
 Nine terrain probes across the rotated measured bottom envelope bound support relief.
 Accepted vegetation aligns to the lowest sampled support with an explicit shallow embed;
 excessive relief is rejected. This is a bounded grounding check, not continuous terrain
@@ -136,16 +140,23 @@ field and protected clearings into the existing validated scatter intents. It wi
 layers to that area's canopy and declared single-tree anchors. It neither selects catalog
 assets nor supplies transforms, and introduces no second persisted world format.
 
-The CLI measures `AssetPlacementGeometry` locally from hash-verified GLBs for the resolved
-plant palette. Triangle clipping into at most 64 height bands produces conservative packing
+The CLI measures `AssetPlacementGeometry` locally from hash-verified GLBs for every resolved
+plant asset. Triangle clipping into height bands produces conservative packing
 envelopes, bound to exact source, asset and geometry hashes. Faces crossing a band are included
 even when none of their original vertices lie inside it. Animated geometry and stale evidence
 are refused. These measurements do not modify catalog entries or engine collision. Existing
 explicit collision geometry retains precedence. Instances bind the additional evidence;
 micro realization retains the measured occupancy reservations so refinement verification uses
 the same occupied geometry instead of reverting to solid crown boxes. Missing plant evidence
-is an explicit compilation gap. Source preparation is bounded to 512 models and 500,000
-triangles per measured model.
+is an explicit compilation gap. Measurements are cached independently by verified asset and source
+hash. There is no model-count or triangle-count admission ceiling; workspace byte limits remain
+execution policy and exact-integer overflow is rejected.
+
+Catalog measurement is incremental by verified source-content hash, rights, unit scale and
+renderable role. An unchanged record is reused byte-for-byte; changed or missing sources alone enter
+the worker queue. The queue has no corpus-cardinality field. Executor lifetime, worker concurrency
+and workspace bytes are operational policy, and exhaustion leaves an incomplete measurement set
+instead of silently omitting later sources.
 
 ## Declarative construction
 
@@ -196,6 +207,13 @@ profiles retain their measured relief but still receive gap-closing profile mite
 explicit stepped construction remains discrete. Segment bounds include the complete sloped
 underside. A bend that cannot fit its adjacent spans is rejected at plan sealing rather than
 silently sharpened.
+
+Terrain material paint is also resolved before engine lowering. Each paint operation carries an
+explicit hard or organic edge profile. Organic profiles use a seeded continuous world-space field
+with authored wavelength and displacement, so execution resolution does not choose the art
+direction and rectangular support pads do not have to become rectangular visible surfaces.
+Vegetation clearings consume the same horizontal mask contract and add only vertical range, layer
+selection, and falloff. The compiler excludes complete measured plant bounds against that mask.
 Shared junctions own one position and elevation; connected profiles receive a bounded flat
 landing at the junction before grade validation. Junction travel-surface appearance is
 separate from the terrain material graded beneath it, so a timber landing does not paint the
@@ -205,9 +223,10 @@ Only eligible grounded treatments enter `TerrainFieldArtifact`. This artifact is
 composition of the exact base hash plus ordered route and junction hashes, not a dense copy
 of the whole world. Sampling grades beneath actual travel polygons, uses the lowest safe
 bed where fixed spans overlap, blends shoulders against the base field, and grades a shared
-junction disk after its participants. The foundation gate probes a 5-by-5 grid over every
-travel span and the full junction perimeter. It checks both minimum reveal and maximum
-permitted grounding gap; exceeding the explicit probe budget is `incomplete`.
+junction disk after its participants. The foundation and observation gates stream probes over
+every travel span and junction at spacing derived from the sealed terrain grid. They check both
+minimum reveal and maximum permitted grounding gap. Route size and width do not encounter a
+probe-count ceiling; counts beyond exact integer representation are invalid.
 
 The dependency order is acyclic:
 
@@ -220,7 +239,7 @@ junctions, final terrain, dependent observations, and their ancestors. Placement
 anchors consume the exact final composition. Derived roadbeds and sampled elevations never
 mutate the immutable `SpatialWorldPlan`.
 
-## Bounded observation and refinement
+## Observation and refinement
 
 `WorldObservationReport` separates deterministic geometric status from visual assessment.
 The engine-neutral diagnostic renderer emits bounded approach, overview, and platform PPM
@@ -268,44 +287,79 @@ orientations; their footing covers the full rotated arrangement. These details a
 model responsibilities.
 
 Profiles bind the exact catalog snapshot used to prepare their measured palette; a changed
-snapshot requires profile preparation again. The CLI's provider-neutral `WorldPlanner`
-interface performs one JSON-Schema request at a time.
+snapshot requires profile preparation again. Each palette member carries its authored visible
+description and evidence hash, measured dimensions, retained render-evidence hashes, and admitted
+style profile. The requirement identifier remains an opaque output reference and does not become a
+description. A prepared palette is one scene-authoring selection and has no schema cardinality
+ceiling. It can be rebuilt against a different admitted selection when a brief exposes a real scene
+gap; it is not the catalog or a permanent product-wide asset list.
+
+The CLI's provider-neutral `WorldPlanner` interface performs one JSON-Schema request at a time.
 The OpenRouter adapter implements that transport using ordinary HTTP, with no model tool loop
 or executable output. Local schemas, catalog authority, compilation and geometric verifiers
-remain authoritative. The runtime bounds attempts and elapsed time, captures actual source-mesh
-previews, and retains request hashes, raw responses, usage and failed attempts. Visual review
+remain authoritative. Named execution policy controls requests, retries, rendering, construction,
+and candidate allocations without changing semantic validity. The runtime captures actual source-mesh
+previews and retains request hashes, transport configuration, actual model and upstream provider
+when reported, raw responses, usage, cost and failures. Visual review
 is explicitly same-model evidence; edit review receives matching before-and-after views.
 The response schema is included both in the request format and the model-visible instructions.
-The transport records its output allowance and selected reasoning setting with every request.
-It prioritizes OpenRouter throughput, allows 24,576 combined reasoning/output tokens, and caps
-each call at 150 seconds within the total run budget.
+The transport records purpose-specific output-token allocations, response-byte allocation, selected
+reasoning setting, routing preference, and timeout with each run. Provider-directed retry occurs
+only when the provider supplies a bounded retry delay. A final HTTP 402 is classified as structured
+`resource_exhaustion` evidence containing the provider resource name, requested and available
+output-token counts, units, origin and reason; it stops semantic repair immediately and remains
+resumable rather than repeating an unchanged request. The active values live in
+`registry/world-authoring/execution.json`; they are operational evidence rather than world limits.
+
+Capacity boundaries are classified at their owning layer. Finite coordinates, valid polygons,
+unique identities, probability domains and safe-integer representation are mathematical invariants.
+Roblox voxel, payload and instance constraints belong only to the Roblox adapter and return a typed
+lowering gap when exceeded. Route widths, habitat density, species choice, camera coverage and scene
+cardinality are authored design. Request bytes, response tokens, timeouts, preview resolution,
+candidate batches, solver work, cache bytes and retries are execution resources. Every run retains
+the effective policy, its units in the field names, its stated origin and an exhaustion diagnostic;
+resource exhaustion yields `incomplete` evidence and cannot silently truncate the authored world.
+
+Logical edits may contain any number of objectives. When their complete linked proposal would exceed
+the transport's measured text-byte allocation, the runtime groups objectives by semantic target,
+packs groups by actual serialized request bytes, and issues linked requests. It validates the merged
+operations against the original complete request and rejects conflicting cross-batch parameters.
+Transport batching therefore cannot redefine, truncate, or partially satisfy the edit.
 Repair feedback includes the measured bounds of already placed objects. Incomplete populations
 can supply partial mesh previews when terrain and paths are eligible, but their failed compiler
 status remains authoritative. Those images assist repair and never establish acceptance.
 Fresh visual review receives the current compiler status and diagnostics, without earlier
 attempt failures that may already have been resolved.
+Generation seals structural layout before planting. If planting alone fails, the next semantic
+attempt reuses the exact layout and records that reuse rather than moving valid destinations, routes
+or activity spaces. A layout failure still requires a new layout proposal.
 Regional planting proposals specify patch scale, desired center spacing, relative species
-weights and instance caps. Expansion derives bounded trial density,
+weights and population objectives. Expansion derives candidate density,
 a shared moderate density field and canopy preference. Canopy establishes independently of
 existing canopy. This authoring surface reuses the existing sampler; it does not replace its
-measured occupancy, grounding or finite-trial limits. The authoring runtime requires each requested
+measured occupancy, grounding or candidate-evaluation allocation. The authoring runtime requires each requested
 planting layer to establish initially. These composition checks are separate from persistent
 compiler minimum counts, so a later clearing can remove a species. Explicit authored minimums
 still fail compilation with density, spacing, slope and placement rejection counts.
 Ground-cover expansion prioritizes measured broad patches before small accents
-within that layer, and planting boundaries fade over a patch-scale-dependent transition up to
-eight meters. The planning context exposes dimensions and projected bounds area directly.
-Each attempt also records a 128 by 128 sample of projected vegetation envelopes, summarized by
-layer and sixteen spatial tiles. This exposes large empty domains and count/coverage mismatches;
+within that layer. Each planting area authors its own transition width, patch scale, density floor,
+and contrast; no universal planting contrast or maximum transition width is injected. The planning
+context exposes dimensions and projected bounds area directly.
+Each attempt also records a policy-selected sample of projected vegetation envelopes, summarized by
+layer and policy-selected spatial tiles. This exposes large empty domains and count/coverage mismatches;
 mesh holes, actual leaf area and terrain textures are unresolved, so it is diagnostic evidence,
 not a density requirement or aesthetic score. Meadow ground cover and tree exclusions use separate
 ordinary planting domains; no asset-name classifier decides where grass belongs.
 Routes reference shared named nodes and interior waypoints; draft expansion rejects disconnected
 regional route graphs. Shared endpoints come from one coordinate declaration. The prepared profile
-also declares a bounded position tolerance for individual placements. The existing population
-realizer tries the authored center followed by 64 candidates on four concentric rings, retaining
-yaw and checking region, measured occupancy and route clearance. Grids remain exact. A generated
-footing covers the permitted displacement; an exhausted search remains incomplete. Exact-point
+also declares an authored position tolerance for individual placements. The population realizer
+tries the authored center followed by a prefix-stable low-discrepancy disk sequence whose evaluation
+allocation and origin are explicit execution policy. It retains yaw and checks region, measured
+occupancy and route clearance. Natural vegetation uses the route vegetation mask, while authored
+landmarks and props remain outside the physical travel surface; biological spacing and physical
+collision therefore stay distinct. Increasing the allocation extends the same sequence. Grids remain
+exact. A generated footing covers the permitted displacement; an exhausted search names the policy
+and remains incomplete. Exact-point
 intents can still declare no positional freedom.
 An empty camera list requests geometric observation only;
 the separate WebGL capture supplies visual evidence for these runs.
@@ -317,18 +371,48 @@ trees placed as individual objects or cultivated rows. Vegetation edits invalida
 whole-world population task and world output; this is not per-plant or per-grove execution.
 Paint edits invalidate the terrain task and its dependent closure. New runs use absent output
 directories and never overwrite accepted worlds.
+
+`RegionEditRequest` freezes every objective, exact prompt span, spatial target, affected layer,
+explicit clearing-transition requirement (or `unspecified`), and preservation requirement before
+any change is proposed. `RegionEditProposal` contains grouped
+semantic operations against those targets. Deterministic expansion derives
+`PopulationPlacementConstraints` from the verified base build: retained physical placements outside
+the regeneration masks, the source hashes they bind, and one current flattened snapshot for replay.
+Models cannot author trusted locks. A stale catalog, terrain, geometry, plan, or source-world binding
+is rejected. Success compares physical placements in protected space even when intent-derived IDs
+change, and records the compiler tasks actually executed and reused.
+
 Edit response schemas enumerate the exact permitted targets and operation kinds. Compact edit
 context supplies observed plant counts, spatial bounds, existing clearings and each target's
-numeric limits. A change that affects neither realized placements nor terrain cannot pass the
-edit gate. Density edits report before/after counts; a requested increase or decrease without
-that measured direction remains incomplete unless a simultaneous clearing requires a spatial
-comparison. Image review still decides whether a measurable change satisfies the visual request.
+numeric limits. Every frozen objective receives its own realized-effect verdict; one successful material
+or clearing change cannot conceal a failed density objective. Density edits report before/after counts; a requested increase or decrease without
+that measured direction remains incomplete. A decrease or clearing whose verified base population is
+already at the requested lower bound is recorded as `already_satisfied`; it cannot stand in for an
+unrealized increase or for another objective. Image review still decides whether a measurable change
+satisfies the visual request.
 Acceptance is derived from four named review properties (instruction following, composition,
 grounding and access), each passing, and no blocking repairs. The model cannot supply an overall
 pass that contradicts its own required repairs. A malformed or missing review retries the same
-compiled candidate within the existing attempt and time budgets; it does not regenerate the
+compiled candidate within the declared malformed-response allocation; it does not regenerate the
 scene. A valid negative review supplies repair feedback for a new proposal. Failed refinement
 keeps the resulting plan, world, observation and detailed compiler diagnostics for that proposal.
+
+Review cameras have no semantic count ceiling. Capture keeps every image and local diagnostic, then
+partitions model input by the declared image transport batch size. Each batch names supplied and
+omitted hashes; a final linked synthesis sees every batch judgment and the complete hash manifest for
+the unchanged scene. Malformed batch or synthesis output retries the same captured candidate. A
+repeated proposal or identical failure fingerprint stops with retained `incomplete` evidence rather
+than consuming another geometry attempt.
+
+Review evidence retains the complete `WorldBuild` locally. Exact route tessellation is represented
+to the model by a content hash, segment count, complete bounds, maximum observed grade and a local
+evidence pointer; the request explicitly names those omitted vertices. This reduces transport cost
+without a silent first-N truncation and leaves the exact geometry retrievable for a targeted review.
+
+The WebGL preview samples the compiled terrain, materials, routes and instances under a named preview
+execution policy. Vertex allocation, sampling spacing, viewport and byte limits are recorded with the
+capture. Exhaustion makes visual evidence incomplete; it never drops terrain silently or substitutes
+a decorative surface that will not be imported.
 
 ### Roblox boundary
 
@@ -475,8 +559,9 @@ stage allowed to conclude `suitable_match`, `evidence_insufficient`, or
 cannot emit admitted assertions or entries. Unknown nouns remain open vocabulary and
 surface a semantic gap when compilation needs a commitment.
 
-Context interpretation is a separate bounded operation over 2–32 assets. Group proposals
-may use basename stems, metric/interface compatibility, or bounded retrieval. Requests may
+Context interpretation is a separate non-authoritative operation over an evidence-defined asset
+group with no logical cardinality ceiling. Group proposals may use basename stems,
+metric/interface compatibility, or retrieval. Requests may
 also bind attributed source prefabs, demonstrated assemblies, component transforms,
 parent/child relationships, authored roles, or documentation by exact identity and evidence
 hash. Pack and directory identity are excluded. The result can propose components, mates,
@@ -492,10 +577,10 @@ artifacts before dispatch, and evaluation follows every evidence hash back to it
 candidate pool, model configuration, result set, validator receipt, and decision. Model selection
 is sealed before the holdout attempt, and corpus metadata stages recheck the frozen lineage.
 
-Metadata jobs use deterministic resource-bounded shards: at most eight assets, 192
-evidence files, 64 MiB of evidence bytes, and a fixed preprocessed-pixel ceiling at a
-384-pixel long edge. A shard is a resumable checkpoint and transport unit, not a model
-batch. Remote execution is an explicit optional transport rather than a catalog dependency;
+Metadata generation uses one content-addressed asset checkpoint at a time. Corpus size produces
+more independently cached checkpoints instead of larger semantic artifacts or rejected catalogs.
+Image preprocessing retains the declared 384-pixel long edge and every job records exact file,
+byte and preprocessed-pixel input totals. Remote execution is an explicit optional transport rather than a catalog dependency;
 only one remote GPU worker and no more than four local CPU tasks may run.
 
 The starting-catalog lane accepts bounded agent-authored metadata as a separate evidence kind.

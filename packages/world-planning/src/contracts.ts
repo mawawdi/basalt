@@ -7,12 +7,20 @@ import {
   deepFreezeJson,
   stableJson,
 } from "@basalt/contracts";
-import { CATALOG_REQUIREMENT_SCHEMA, REALIZATION_INTENT_SCHEMA } from "@basalt/catalog-model";
+import {
+  CATALOG_REQUIREMENT_SCHEMA,
+  ENTRY_HANDLE_SCHEMA,
+  MEMBER_ID_SCHEMA,
+  REALIZATION_INTENT_SCHEMA,
+} from "@basalt/catalog-model";
 import {
   SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA,
   UPPER_SORT_SCHEMA,
 } from "@basalt/semantic-kernel";
-import { COMPILER_RENDER_READABILITY_INTENT_SCHEMA } from "@basalt/spatial-core";
+import {
+  COMPILER_RENDER_READABILITY_INTENT_SCHEMA,
+  HORIZONTAL_MASK_SCHEMA,
+} from "@basalt/spatial-core";
 import { CONSTRUCTION_PROGRAM_SCHEMA } from "./construction.js";
 import { resolveHorizontalAlignment } from "./route-horizontal.js";
 
@@ -42,11 +50,135 @@ export type WorldPoint2 = z.output<typeof WORLD_POINT2_SCHEMA>;
 export const WORLD_POLYGON_SCHEMA = z
   .array(WORLD_POINT2_SCHEMA)
   .min(3)
-  .max(4096)
   .superRefine((points, context) => {
     if (Math.abs(polygonArea(points)) <= 1e-9)
       context.addIssue({ code: "custom", message: "World polygon has zero area" });
   });
+
+const POPULATION_ROTATION_SCHEMA = z
+  .tuple([finite, finite, finite, finite])
+  .refine((value) => Math.abs(Math.hypot(...value) - 1) <= 1e-6, "Rotation must be normalized");
+
+export const POPULATION_PLACEMENT_LOCK_SCHEMA = z
+  .object({
+    lockId: WORLD_ENTITY_ID_SCHEMA,
+    intentId: WORLD_ENTITY_ID_SCHEMA,
+    requirementId: WORLD_ENTITY_ID_SCHEMA,
+    entryHandle: ENTRY_HANDLE_SCHEMA,
+    memberId: MEMBER_ID_SCHEMA,
+    assetHash: HASH_SCHEMA,
+    transformMeters: z
+      .object({
+        position: WORLD_VECTOR3_SCHEMA,
+        rotation: POPULATION_ROTATION_SCHEMA,
+        scale: z.literal(1),
+      })
+      .strict(),
+    physicalHash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const { lockId: _lockId, physicalHash: _physicalHash, ...physical } = value;
+    const expectedHash = contentHash(stableJson(physical));
+    if (value.physicalHash !== expectedHash)
+      context.addIssue({
+        code: "custom",
+        path: ["physicalHash"],
+        message: "Placement lock hash mismatch",
+      });
+    if (value.lockId !== contentAddressedEntityId("PlacementLock", physical))
+      context.addIssue({ code: "custom", path: ["lockId"], message: "Placement lock ID mismatch" });
+  });
+export type PopulationPlacementLock = z.output<typeof POPULATION_PLACEMENT_LOCK_SCHEMA>;
+
+export const POPULATION_REGENERATION_MASK_SCHEMA = z
+  .object({
+    objectiveId: WORLD_ENTITY_ID_SCHEMA,
+    areaId: WORLD_ENTITY_ID_SCHEMA,
+    layers: z.array(z.enum(["canopy", "understory", "ground_cover"])).min(1),
+    boundsMeters: WORLD_AABB_SCHEMA,
+    transitionMeters: nonnegative,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (new Set(value.layers).size !== value.layers.length)
+      context.addIssue({ code: "custom", path: ["layers"], message: "Mask layers must be unique" });
+  });
+export type PopulationRegenerationMask = z.output<typeof POPULATION_REGENERATION_MASK_SCHEMA>;
+
+export const POPULATION_PLACEMENT_CONSTRAINTS_SCHEMA = z
+  .object({
+    kind: z.literal("PopulationPlacementConstraints"),
+    sourceWorldBuildHash: HASH_SCHEMA,
+    catalogSnapshotHash: HASH_SCHEMA,
+    retainedPlacements: z.array(POPULATION_PLACEMENT_LOCK_SCHEMA),
+    regenerationMasks: z.array(POPULATION_REGENERATION_MASK_SCHEMA),
+    hash: HASH_SCHEMA,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const { hash: _hash, ...material } = value;
+    if (value.hash !== contentHash(stableJson(material)))
+      context.addIssue({
+        code: "custom",
+        path: ["hash"],
+        message: "Population constraints hash mismatch",
+      });
+    if (
+      new Set(value.retainedPlacements.map((entry) => entry.lockId)).size !==
+      value.retainedPlacements.length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["retainedPlacements"],
+        message: "Placement locks must be unique",
+      });
+  });
+export type PopulationPlacementConstraints = z.output<
+  typeof POPULATION_PLACEMENT_CONSTRAINTS_SCHEMA
+>;
+
+export function sealPopulationPlacementConstraints(input: {
+  readonly sourceWorldBuildHash: string;
+  readonly catalogSnapshotHash: string;
+  readonly retainedPlacements: readonly Omit<PopulationPlacementLock, "lockId" | "physicalHash">[];
+  readonly regenerationMasks: readonly PopulationRegenerationMask[];
+}): PopulationPlacementConstraints {
+  const retainedPlacements = input.retainedPlacements
+    .map((entry) => {
+      const physicalHash = contentHash(stableJson(entry));
+      return {
+        ...entry,
+        lockId: contentAddressedEntityId("PlacementLock", entry),
+        physicalHash,
+      };
+    })
+    .sort((left, right) => compareCanonicalStrings(left.lockId, right.lockId));
+  const regenerationMasks = input.regenerationMasks
+    .map((entry) => ({
+      ...entry,
+      layers: [...entry.layers].sort(compareCanonicalStrings),
+    }))
+    .sort((left, right) =>
+      compareCanonicalStrings(
+        `${left.objectiveId}:${left.areaId}:${stableJson(left.layers)}:${stableJson(left.boundsMeters)}`,
+        `${right.objectiveId}:${right.areaId}:${stableJson(right.layers)}:${stableJson(right.boundsMeters)}`,
+      ),
+    );
+  const material = {
+    kind: "PopulationPlacementConstraints" as const,
+    sourceWorldBuildHash: input.sourceWorldBuildHash,
+    catalogSnapshotHash: input.catalogSnapshotHash,
+    retainedPlacements,
+    regenerationMasks,
+  };
+  return deepFreezeJson(
+    POPULATION_PLACEMENT_CONSTRAINTS_SCHEMA.parse({
+      ...material,
+      hash: contentHash(stableJson(material)),
+    }),
+  );
+}
 
 export const WORLD_REGION_VOLUME_SCHEMA = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("box"), bounds: WORLD_AABB_SCHEMA }).strict(),
@@ -102,7 +234,7 @@ const regionSchema = z
     regionId: WORLD_ENTITY_ID_SCHEMA,
     semanticEntityId: WORLD_ENTITY_ID_SCHEMA,
     volume: WORLD_REGION_VOLUME_SCHEMA,
-    refinementPriority: z.number().int().min(-1_000_000).max(1_000_000),
+    refinementPriority: z.number().int().safe(),
   })
   .strict();
 
@@ -110,7 +242,7 @@ export const TERRAIN_OPERATION_SCHEMA = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("paint"),
-      polygon: WORLD_POLYGON_SCHEMA,
+      mask: HORIZONTAL_MASK_SCHEMA,
       materialId: WORLD_ENTITY_ID_SCHEMA,
     })
     .strict(),
@@ -143,7 +275,7 @@ export const TERRAIN_PLAN_SCHEMA = z
   .object({
     terrainPlanId: WORLD_ENTITY_ID_SCHEMA,
     surfaceId: WORLD_ENTITY_ID_SCHEMA,
-    regionIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(4096),
+    regionIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
     boundsMeters: z
       .object({
         x: z.object({ minimum: finite, maximum: finite }).strict(),
@@ -152,12 +284,12 @@ export const TERRAIN_PLAN_SCHEMA = z
       .strict(),
     resolution: z
       .object({
-        columns: z.number().int().min(2).max(8192),
-        rows: z.number().int().min(2).max(8192),
+        columns: z.number().int().min(2).safe(),
+        rows: z.number().int().min(2).safe(),
       })
       .strict(),
     baseElevationMeters: finite,
-    operations: z.array(TERRAIN_OPERATION_SCHEMA).max(65_536),
+    operations: z.array(TERRAIN_OPERATION_SCHEMA),
     materialId: WORLD_ENTITY_ID_SCHEMA,
   })
   .strict()
@@ -188,7 +320,7 @@ export const ROUTE_ELEVATION_REFERENCE_SCHEMA = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("terrain_clearance"),
-      clearanceMeters: nonnegative.max(1_000),
+      clearanceMeters: nonnegative,
     })
     .strict(),
   z
@@ -208,15 +340,15 @@ export const ROUTE_ELEVATION_CONTROL_SCHEMA = z
   .strict();
 
 const groundedRouteTreatment = {
-  surfaceRevealMeters: nonnegative.max(10),
-  crossfallRatio: finite.min(-0.25).max(0.25),
-  maximumGradeRatio: positive.max(4),
-  shoulderWidthMeters: nonnegative.max(100),
-  blendWidthMeters: nonnegative.max(1_000),
-  maximumCutDepthMeters: nonnegative.max(1_000),
-  maximumFillDepthMeters: nonnegative.max(1_000),
-  groundingToleranceMeters: nonnegative.max(10),
-  vegetationClearanceMeters: nonnegative.max(1_000),
+  surfaceRevealMeters: nonnegative,
+  crossfallRatio: finite,
+  maximumGradeRatio: positive,
+  shoulderWidthMeters: nonnegative,
+  blendWidthMeters: nonnegative,
+  maximumCutDepthMeters: nonnegative,
+  maximumFillDepthMeters: nonnegative,
+  groundingToleranceMeters: nonnegative,
+  vegetationClearanceMeters: nonnegative,
   terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
 };
 
@@ -225,10 +357,10 @@ const elevatedEdgeProtection = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("guardrail"),
-      heightMeters: positive.max(10),
-      railThicknessMeters: positive.max(2),
-      postSpacingMeters: positive.max(100),
-      postRadiusMeters: positive.max(1),
+      heightMeters: positive,
+      railThicknessMeters: positive,
+      postSpacingMeters: positive,
+      postRadiusMeters: positive,
       appearance: ROUTE_APPEARANCE_SCHEMA,
     })
     .strict(),
@@ -250,18 +382,18 @@ export const ROUTE_CONSTRUCTION_TREATMENT_SCHEMA = z.discriminatedUnion("kind", 
     .object({
       kind: z.literal("cut_fill"),
       ...groundedRouteTreatment,
-      maximumGradeChangePerMeter: nonnegative.max(4),
+      maximumGradeChangePerMeter: nonnegative,
     })
     .strict(),
   z
     .object({
       kind: z.literal("elevated"),
-      maximumGradeRatio: positive.max(4),
-      minimumGroundClearanceMeters: nonnegative.max(1_000),
-      supportSpacingMeters: positive.max(1_000),
-      supportRadiusMeters: positive.max(100),
-      maximumSupportHeightMeters: positive.max(10_000),
-      vegetationClearanceMeters: nonnegative.max(1_000),
+      maximumGradeRatio: positive,
+      minimumGroundClearanceMeters: nonnegative,
+      supportSpacingMeters: positive,
+      supportRadiusMeters: positive,
+      maximumSupportHeightMeters: positive,
+      vegetationClearanceMeters: nonnegative,
       supportAppearance: ROUTE_APPEARANCE_SCHEMA,
       edgeProtection: elevatedEdgeProtection,
     })
@@ -269,16 +401,16 @@ export const ROUTE_CONSTRUCTION_TREATMENT_SCHEMA = z.discriminatedUnion("kind", 
   z
     .object({
       kind: z.literal("stepped"),
-      surfaceRevealMeters: nonnegative.max(10),
-      maximumRiserHeightMeters: positive.max(10),
-      minimumTreadDepthMeters: positive.max(100),
-      landingIntervalMeters: positive.max(1_000),
-      shoulderWidthMeters: nonnegative.max(100),
-      blendWidthMeters: nonnegative.max(1_000),
-      maximumCutDepthMeters: nonnegative.max(1_000),
-      maximumFillDepthMeters: nonnegative.max(1_000),
-      groundingToleranceMeters: nonnegative.max(10),
-      vegetationClearanceMeters: nonnegative.max(1_000),
+      surfaceRevealMeters: nonnegative,
+      maximumRiserHeightMeters: positive,
+      minimumTreadDepthMeters: positive,
+      landingIntervalMeters: positive,
+      shoulderWidthMeters: nonnegative,
+      blendWidthMeters: nonnegative,
+      maximumCutDepthMeters: nonnegative,
+      maximumFillDepthMeters: nonnegative,
+      groundingToleranceMeters: nonnegative,
+      vegetationClearanceMeters: nonnegative,
       terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
     })
     .strict(),
@@ -288,15 +420,15 @@ export const WORLD_ROUTE_SCHEMA = z
   .object({
     routeId: WORLD_ENTITY_ID_SCHEMA,
     semanticEntityId: WORLD_ENTITY_ID_SCHEMA,
-    regionIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(4096),
+    regionIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
     surfaceId: WORLD_ENTITY_ID_SCHEMA,
-    alignmentMeters: z.array(WORLD_POINT2_SCHEMA).min(2).max(65_536),
-    elevationControls: z.array(ROUTE_ELEVATION_CONTROL_SCHEMA).min(2).max(4_096),
+    alignmentMeters: z.array(WORLD_POINT2_SCHEMA).min(2),
+    elevationControls: z.array(ROUTE_ELEVATION_CONTROL_SCHEMA).min(2),
     widthMeters: positive,
     thicknessMeters: positive,
-    bendRadiusMeters: positive.max(10_000),
-    maximumSegmentLengthMeters: positive.max(1_000),
-    terrainPriority: z.number().int().min(-1_000_000).max(1_000_000),
+    bendRadiusMeters: positive,
+    maximumSegmentLengthMeters: positive,
+    terrainPriority: z.number().int().safe(),
     appearance: ROUTE_APPEARANCE_SCHEMA,
     construction: ROUTE_CONSTRUCTION_TREATMENT_SCHEMA,
     closed: z.boolean(),
@@ -422,9 +554,9 @@ export const ROUTE_JUNCTION_SCHEMA = z
     kind: z.enum(["intersection", "entrance"]),
     positionMeters: WORLD_POINT2_SCHEMA,
     surfaceElevation: ROUTE_ELEVATION_REFERENCE_SCHEMA,
-    participants: z.array(routeEndpoint).min(1).max(32),
-    maximumSnapDistanceMeters: nonnegative.max(1_000),
-    radiusMeters: positive.max(1_000),
+    participants: z.array(routeEndpoint).min(1),
+    maximumSnapDistanceMeters: nonnegative,
+    radiusMeters: positive,
     appearance: ROUTE_APPEARANCE_SCHEMA,
     terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
     targetHash: HASH_SCHEMA.optional(),
@@ -463,11 +595,11 @@ export const LOT_SUBDIVISION_POLICY_SCHEMA = z
   .object({
     policyId: WORLD_ENTITY_ID_SCHEMA,
     regionId: WORLD_ENTITY_ID_SCHEMA,
-    cellMeters: positive.max(1000),
-    minimumLotMeters: positive.max(10_000),
-    maximumLotMeters: positive.max(10_000),
-    routeMarginMeters: nonnegative.max(1000),
-    maximumLots: z.number().int().positive().max(100_000),
+    cellMeters: positive,
+    minimumLotMeters: positive,
+    maximumLotMeters: positive,
+    routeMarginMeters: nonnegative,
+    maximumLots: z.number().int().positive().safe(),
   })
   .strict()
   .refine((value) => value.minimumLotMeters <= value.maximumLotMeters, "Lot range is inverted");
@@ -476,7 +608,7 @@ export type LotSubdivisionPolicy = z.output<typeof LOT_SUBDIVISION_POLICY_SCHEMA
 const structuralSlotSchema = z
   .object({
     slotId: WORLD_ENTITY_ID_SCHEMA,
-    floorIndex: z.number().int().nonnegative().max(255),
+    floorIndex: z.number().int().nonnegative().safe(),
     roleSchemeId: z.string().regex(/^brs_[0-9]{6}$/u),
     roleId: z.string().regex(/^bro_[0-9]{6}$/u),
     minimumCount: z.number().int().nonnegative(),
@@ -484,15 +616,15 @@ const structuralSlotSchema = z
   })
   .strict();
 const structuralCellReference = z
-  .object({ slotId: WORLD_ENTITY_ID_SCHEMA, ordinal: z.number().int().nonnegative().max(65_535) })
+  .object({ slotId: WORLD_ENTITY_ID_SCHEMA, ordinal: z.number().int().nonnegative().safe() })
   .strict();
 export const STRUCTURAL_PROGRAM_SCHEMA = z
   .object({
     programId: WORLD_ENTITY_ID_SCHEMA,
     regionId: WORLD_ENTITY_ID_SCHEMA,
-    floorCount: z.number().int().positive().max(256),
-    floorHeightMeters: positive.max(1000),
-    slots: z.array(structuralSlotSchema).min(1).max(4096),
+    floorCount: z.number().int().positive().safe(),
+    floorHeightMeters: positive,
+    slots: z.array(structuralSlotSchema).min(1),
     placements: z
       .array(
         z
@@ -500,97 +632,86 @@ export const STRUCTURAL_PROGRAM_SCHEMA = z
             cell: structuralCellReference,
             lattice: z
               .object({
-                x: z.number().int().min(-65_535).max(65_535),
-                y: z.number().int().min(-65_535).max(65_535),
-                z: z.number().int().min(-65_535).max(65_535),
+                x: z.number().int().safe(),
+                y: z.number().int().safe(),
+                z: z.number().int().safe(),
                 yawQuarterTurns: z.number().int().min(0).max(3),
               })
               .strict(),
           })
           .strict(),
       )
-      .min(1)
-      .max(65_536),
-    connections: z
-      .array(
-        z
-          .object({
-            connectionId: WORLD_ENTITY_ID_SCHEMA,
-            host: structuralCellReference
-              .extend({ interfaceId: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/u) })
-              .strict(),
-            child: structuralCellReference
-              .extend({ interfaceId: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/u) })
-              .strict(),
-          })
-          .strict(),
-      )
-      .max(262_144),
-    constructedSurfaces: z
-      .array(
-        z
-          .object({
-            surfaceId: WORLD_ENTITY_ID_SCHEMA,
-            kind: z.enum(["constructed_floor", "constructed_wall", "constructed_ceiling"]),
-            source: structuralCellReference,
-            localNormal: WORLD_VECTOR3_SCHEMA.refine(
-              (value) => Math.hypot(value.x, value.y, value.z) > 1e-9,
-              "Constructed surface normal cannot be zero",
-            ),
-          })
-          .strict(),
-      )
-      .max(65_536),
-    portals: z
-      .array(
-        z
-          .object({
-            portalId: WORLD_ENTITY_ID_SCHEMA,
-            source: structuralCellReference,
-            socketId: z.string().trim().min(1).max(128),
-            widthMeters: positive,
-            heightMeters: positive,
-            clearanceMeters: nonnegative,
-            adjacentRoomIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(2),
-          })
-          .strict(),
-      )
-      .max(65_536),
-    rooms: z
-      .array(
-        z
-          .object({
-            roomId: WORLD_ENTITY_ID_SCHEMA,
-            floorIndex: z.number().int().nonnegative().max(255),
-            semanticEntityId: WORLD_ENTITY_ID_SCHEMA,
-            surfaceIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(4096),
-            portalIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(4096),
-          })
-          .strict(),
-      )
-      .max(65_536),
-    proceduralStairs: z
-      .array(
-        z
-          .object({
-            generatorId: WORLD_ENTITY_ID_SCHEMA,
-            fromFloor: z.number().int().nonnegative(),
-            toFloor: z.number().int().positive(),
-            widthMeters: positive,
-            treadDepthMeters: positive,
-            maximumRiserHeightMeters: positive,
-            originLattice: z
-              .object({
-                x: z.number().int().min(-65_535).max(65_535),
-                y: z.number().int().min(-65_535).max(65_535),
-                z: z.number().int().min(-65_535).max(65_535),
-                yawQuarterTurns: z.number().int().min(0).max(3),
-              })
-              .strict(),
-          })
-          .strict(),
-      )
-      .max(255),
+      .min(1),
+    connections: z.array(
+      z
+        .object({
+          connectionId: WORLD_ENTITY_ID_SCHEMA,
+          host: structuralCellReference
+            .extend({ interfaceId: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/u) })
+            .strict(),
+          child: structuralCellReference
+            .extend({ interfaceId: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/u) })
+            .strict(),
+        })
+        .strict(),
+    ),
+    constructedSurfaces: z.array(
+      z
+        .object({
+          surfaceId: WORLD_ENTITY_ID_SCHEMA,
+          kind: z.enum(["constructed_floor", "constructed_wall", "constructed_ceiling"]),
+          source: structuralCellReference,
+          localNormal: WORLD_VECTOR3_SCHEMA.refine(
+            (value) => Math.hypot(value.x, value.y, value.z) > 1e-9,
+            "Constructed surface normal cannot be zero",
+          ),
+        })
+        .strict(),
+    ),
+    portals: z.array(
+      z
+        .object({
+          portalId: WORLD_ENTITY_ID_SCHEMA,
+          source: structuralCellReference,
+          socketId: z.string().trim().min(1).max(128),
+          widthMeters: positive,
+          heightMeters: positive,
+          clearanceMeters: nonnegative,
+          adjacentRoomIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(2),
+        })
+        .strict(),
+    ),
+    rooms: z.array(
+      z
+        .object({
+          roomId: WORLD_ENTITY_ID_SCHEMA,
+          floorIndex: z.number().int().nonnegative().safe(),
+          semanticEntityId: WORLD_ENTITY_ID_SCHEMA,
+          surfaceIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
+          portalIds: z.array(WORLD_ENTITY_ID_SCHEMA),
+        })
+        .strict(),
+    ),
+    proceduralStairs: z.array(
+      z
+        .object({
+          generatorId: WORLD_ENTITY_ID_SCHEMA,
+          fromFloor: z.number().int().nonnegative(),
+          toFloor: z.number().int().positive(),
+          widthMeters: positive,
+          treadDepthMeters: positive,
+          maximumRiserHeightMeters: positive,
+          originLattice: z
+            .object({
+              x: z.number().int().safe(),
+              y: z.number().int().safe(),
+              z: z.number().int().safe(),
+              yawQuarterTurns: z.number().int().min(0).max(3),
+            })
+            .strict(),
+        })
+        .strict(),
+    ),
   })
   .strict()
   .superRefine((value, context) => {
@@ -798,7 +919,7 @@ export const WORLD_CAMERA_SCHEMA = z
       "Camera up cannot be zero",
     ),
     fieldOfViewDegrees: finite.min(1).max(179),
-    regionIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(4096),
+    regionIds: z.array(WORLD_ENTITY_ID_SCHEMA),
     readabilityIntent: COMPILER_RENDER_READABILITY_INTENT_SCHEMA,
   })
   .strict();
@@ -812,8 +933,8 @@ export const WORLD_VISUAL_ENVIRONMENT_SCHEMA = z
     kind: z.literal("WorldVisualEnvironment"),
     clockTimeHours: finite.min(0).lt(24),
     geographicLatitudeDegrees: finite.min(-90).max(90),
-    brightness: finite.min(0).max(10),
-    exposureCompensation: finite.min(-5).max(5),
+    brightness: nonnegative,
+    exposureCompensation: finite,
     shadowSoftness: finite.min(0).max(1),
     environmentDiffuseScale: finite.min(0).max(1),
     environmentSpecularScale: finite.min(0).max(1),
@@ -827,8 +948,8 @@ export const WORLD_VISUAL_ENVIRONMENT_SCHEMA = z
         decaySrgb: WORLD_SRGB_COLOR_SCHEMA,
         density: finite.min(0).max(1),
         offset: finite.min(-1).max(1),
-        haze: finite.min(0).max(10),
-        glare: finite.min(0).max(10),
+        haze: nonnegative,
+        glare: nonnegative,
       })
       .strict(),
     colorGrade: z
@@ -898,21 +1019,22 @@ export const SPATIAL_WORLD_PLAN_SCHEMA = z
     planId: WORLD_ENTITY_ID_SCHEMA,
     coordinateSystem: z.literal("right_handed_y_up_meters"),
     visualEnvironment: WORLD_VISUAL_ENVIRONMENT_SCHEMA,
-    seed: z.number().int().min(0).max(0xffff_ffff),
+    seed: z.number().int().nonnegative().safe(),
     boundsMeters: WORLD_AABB_SCHEMA,
-    semanticEntities: z.array(PLANNED_SEMANTIC_ENTITY_SCHEMA).max(100_000),
-    admittedAssertions: z.array(SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA).max(100_000),
-    regions: z.array(regionSchema).min(1).max(4096),
-    placementSurfaces: z.array(PLACEMENT_SURFACE_SCHEMA).max(65_536),
-    terrainPlans: z.array(TERRAIN_PLAN_SCHEMA).max(4096),
-    routes: z.array(WORLD_ROUTE_SCHEMA).max(65_536),
-    routeJunctions: z.array(ROUTE_JUNCTION_SCHEMA).max(65_536),
-    lotPolicies: z.array(LOT_SUBDIVISION_POLICY_SCHEMA).max(4096),
-    structuralPrograms: z.array(STRUCTURAL_PROGRAM_SCHEMA).max(4096),
-    constructionPrograms: z.array(CONSTRUCTION_PROGRAM_SCHEMA).max(4096),
-    catalogRequirements: z.array(CATALOG_REQUIREMENT_SCHEMA).max(65_536),
-    realizationIntents: z.array(REALIZATION_INTENT_SCHEMA).max(65_536),
-    cameras: z.array(WORLD_CAMERA_SCHEMA).max(4096),
+    semanticEntities: z.array(PLANNED_SEMANTIC_ENTITY_SCHEMA),
+    admittedAssertions: z.array(SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA),
+    regions: z.array(regionSchema).min(1),
+    placementSurfaces: z.array(PLACEMENT_SURFACE_SCHEMA),
+    terrainPlans: z.array(TERRAIN_PLAN_SCHEMA),
+    routes: z.array(WORLD_ROUTE_SCHEMA),
+    routeJunctions: z.array(ROUTE_JUNCTION_SCHEMA),
+    lotPolicies: z.array(LOT_SUBDIVISION_POLICY_SCHEMA),
+    structuralPrograms: z.array(STRUCTURAL_PROGRAM_SCHEMA),
+    constructionPrograms: z.array(CONSTRUCTION_PROGRAM_SCHEMA),
+    catalogRequirements: z.array(CATALOG_REQUIREMENT_SCHEMA),
+    realizationIntents: z.array(REALIZATION_INTENT_SCHEMA),
+    cameras: z.array(WORLD_CAMERA_SCHEMA),
+    populationPlacementConstraints: POPULATION_PLACEMENT_CONSTRAINTS_SCHEMA.optional(),
     planHash: HASH_SCHEMA,
   })
   .strict()
@@ -925,7 +1047,7 @@ export const INTENT_INTERPRETATION_TRACE_SCHEMA = z
     creatorIntentHash: HASH_SCHEMA,
     semanticModuleHash: HASH_SCHEMA,
     semanticLexiconHash: HASH_SCHEMA,
-    hypothesisBundleHashes: z.array(HASH_SCHEMA).max(65_536),
+    hypothesisBundleHashes: z.array(HASH_SCHEMA),
     modelImplementationHash: HASH_SCHEMA,
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,

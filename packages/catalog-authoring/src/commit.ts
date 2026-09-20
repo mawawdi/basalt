@@ -36,11 +36,7 @@ export const RETAINED_CATALOG_EVIDENCE_SCHEMA = z
     relativePath: z.string().regex(/^registry\/evidence\/[a-f0-9]{64}\.json$/u),
     artifactHash: HASH_SCHEMA,
     bytesHash: HASH_SCHEMA,
-    bytes: z
-      .number()
-      .int()
-      .positive()
-      .max(512 * 1024 * 1024),
+    bytes: z.number().int().positive().safe(),
   })
   .strict();
 export type RetainedCatalogEvidence = z.output<typeof RETAINED_CATALOG_EVIDENCE_SCHEMA>;
@@ -60,13 +56,13 @@ export const CATALOG_AUTHORITY_COMMIT_SCHEMA = z
     semanticLexiconHash: HASH_SCHEMA,
     measurementSetHash: HASH_SCHEMA,
     snapshot: CATALOG_SNAPSHOT_SCHEMA,
-    styleProfiles: z.array(STYLE_PROFILE_DECLARATION_SCHEMA).min(1).max(4096),
-    declarations: z.array(CATALOG_ENTRY_DECLARATION_SCHEMA).max(65_536),
-    assertions: z.array(SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA).max(100_000),
-    acceptanceAudits: z.array(CATALOG_ACCEPTANCE_AUDIT_SCHEMA).max(100_000),
-    dispositions: z.array(CATALOG_DISPOSITION_SCHEMA).max(100_000),
+    styleProfiles: z.array(STYLE_PROFILE_DECLARATION_SCHEMA).min(1),
+    declarations: z.array(CATALOG_ENTRY_DECLARATION_SCHEMA),
+    assertions: z.array(SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA),
+    acceptanceAudits: z.array(CATALOG_ACCEPTANCE_AUDIT_SCHEMA),
+    dispositions: z.array(CATALOG_DISPOSITION_SCHEMA),
     admissionPolicy: CATALOG_ADMISSION_POLICY_SCHEMA,
-    retainedEvidence: z.array(RETAINED_CATALOG_EVIDENCE_SCHEMA).max(100_000),
+    retainedEvidence: z.array(RETAINED_CATALOG_EVIDENCE_SCHEMA),
     sourcePayloadPolicy: z.literal("external_content_addressed"),
     hash: HASH_SCHEMA,
   })

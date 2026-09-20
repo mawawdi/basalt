@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { contentHash, deepFreezeJson, stableJson, HASH_SCHEMA } from "@basalt/contracts";
+import { HORIZONTAL_MASK_SCHEMA } from "@basalt/spatial-core";
 import { createVegetationIntents } from "./vegetation.js";
 import {
   SPATIAL_WORLD_PLAN_SCHEMA,
@@ -20,8 +21,24 @@ const number = z.number().finite();
 const projectedBoundsArea = (bounds: z.output<typeof WORLD_AABB_SCHEMA>) =>
   (bounds.max.x - bounds.min.x) * (bounds.max.z - bounds.min.z);
 const clearing = z
-  .object({ boundsMeters: WORLD_AABB_SCHEMA, falloffMeters: number.min(0).max(32) })
-  .strict();
+  .object({
+    mask: HORIZONTAL_MASK_SCHEMA,
+    verticalRangeMeters: z
+      .object({ minimum: number, maximum: number })
+      .strict()
+      .refine((value) => value.minimum < value.maximum, "Clearing vertical range is inverted"),
+    falloffMeters: number.nonnegative(),
+    layers: z.array(z.enum(["canopy", "understory", "ground_cover"])).min(1),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (new Set(value.layers).size !== value.layers.length)
+      context.addIssue({
+        code: "custom",
+        path: ["layers"],
+        message: "Clearing layers must be unique",
+      });
+  });
 
 /** A prepared palette and technical defaults, with no example composition. */
 export const REGION_AUTHORING_PROFILE_SCHEMA = z
@@ -31,20 +48,63 @@ export const REGION_AUTHORING_PROFILE_SCHEMA = z
     basePlan: SPATIAL_WORLD_PLAN_SCHEMA,
     routeTemplate: WORLD_ROUTE_SCHEMA,
     junctionTemplate: ROUTE_JUNCTION_SCHEMA,
-    placementToleranceMeters: number.min(0).max(8),
-    allowedTerrainMaterialIds: z.array(id).min(1).max(32),
+    placementToleranceMeters: number.nonnegative(),
+    placementPadBlendWidthMeters: number.nonnegative(),
+    evidenceCameraFieldOfViewDegrees: number.gt(0).lt(180),
+    allowedTerrainMaterialIds: z.array(id).min(1),
+    plantingPolicy: z
+      .object({
+        candidateTrialsPerSpacingCell: number.positive(),
+        spacingFactors: z
+          .object({ minimum: number.positive(), maximum: number.positive() })
+          .strict()
+          .refine(
+            (value) => value.minimum <= value.maximum,
+            "Planting spacing factors are inverted",
+          ),
+        canopyResponses: z
+          .object({
+            neutral: z
+              .object({ open: number.min(0).max(1), covered: number.min(0).max(1) })
+              .strict(),
+            sheltered: z
+              .object({ open: number.min(0).max(1), covered: number.min(0).max(1) })
+              .strict(),
+            open: z.object({ open: number.min(0).max(1), covered: number.min(0).max(1) }).strict(),
+          })
+          .strict(),
+        maximumSlopeDegrees: number.min(0).lt(90),
+        maximumSupportReliefMeters: number.nonnegative(),
+        groundEmbedMeters: number.nonnegative(),
+        routeClearanceHeightMeters: number.positive(),
+        minimumSeparationMeters: number.nonnegative(),
+      })
+      .strict(),
     palette: z
       .array(
         z
           .object({
             requirementId: id,
-            description: z.string().min(1).max(1024),
+            description: z.string().min(1),
+            descriptionStatus: z.enum(["authored", "unavailable"]),
+            descriptionEvidenceHashes: z.array(HASH_SCHEMA),
+            renderEvidenceHashes: z.array(HASH_SCHEMA),
+            styleProfile: z
+              .object({
+                handle: id,
+                hash: HASH_SCHEMA,
+                shapeLanguage: z.string().min(1),
+                materialLanguage: z.string().min(1),
+                silhouetteHierarchy: z.array(
+                  z.object({ level: z.string().min(1), guidance: z.string().min(1) }).strict(),
+                ),
+              })
+              .strict(),
             boundsMeters: WORLD_AABB_SCHEMA,
           })
           .strict(),
       )
-      .min(1)
-      .max(256),
+      .min(1),
   })
   .strict()
   .superRefine((p, c) => {
@@ -80,118 +140,132 @@ export const REGION_AUTHORING_PROFILE_SCHEMA = z
   });
 export type RegionAuthoringProfile = z.output<typeof REGION_AUTHORING_PROFILE_SCHEMA>;
 
-/** Transient model proposal. Only the resulting SpatialWorldPlan reaches the compiler. */
-export const REGION_DRAFT_SCHEMA = z
-  .object({
-    planId: id,
-    seed: z.number().int().min(0).max(2_147_483_647),
-    unmetRequirements: z
-      .array(z.string().min(1).max(512))
-      .max(32)
-      .describe(
-        "Actual requested content impossible with this profile. Empty when representable. Ordinary composition, material choices and implementation assumptions are not missing capabilities.",
-      ),
-    notes: z
-      .array(z.string().min(1).max(512))
-      .max(16)
-      .describe(
-        "Nonblocking assumptions and limitations. These are hypotheses, not compiler authority.",
-      ),
-    terrainOperations: z.array(TERRAIN_OPERATION_SCHEMA).max(64),
-    placements: z
-      .array(
-        z
-          .object({
-            placementId: id,
-            requirementId: id,
-            x: number,
-            z: number,
-            yawDegrees: number.min(0).lt(360),
-            columns: z.number().int().min(1).max(32),
-            rows: z.number().int().min(1).max(32),
-            spacingXMeters: number.min(0).max(32),
-            spacingZMeters: number.min(0).max(32),
-            footingElevationMeters: number.nullable(),
-          })
-          .strict(),
-      )
-      .max(128),
-    routeNodes: z.array(z.object({ nodeId: id, position: WORLD_POINT2_SCHEMA }).strict()).max(48),
-    routes: z
-      .array(
-        z
-          .object({
-            routeId: id,
-            startNodeId: id,
-            endNodeId: id,
-            waypoints: z.array(WORLD_POINT2_SCHEMA).max(22),
-            widthMeters: number.min(1).max(8),
-          })
-          .strict(),
-      )
-      .max(24),
-    vegetationAreas: z
-      .array(
-        z
-          .object({
-            areaId: id,
-            boundary: WORLD_POLYGON_SCHEMA,
-            patchScaleMeters: number
-              .min(4)
-              .max(64)
-              .describe("Approximate width of coherent planting patches, in meters."),
-            clearings: z.array(clearing).max(16),
-            palette: z
-              .array(
-                z
-                  .object({
-                    plantId: id,
-                    requirementId: id,
-                    layer: z.enum(["canopy", "understory", "ground_cover"]),
-                    maximumCount: z.number().int().min(1).max(2048),
-                    spacingMeters: number
-                      .min(0.2)
-                      .max(20)
-                      .describe(
-                        "Desired center spacing, before measured geometry and access constraints. Smaller values allow denser planting.",
-                      ),
-                    weight: number
-                      .min(0.1)
-                      .max(10)
-                      .describe("Relative share of candidate trials within this planting layer."),
-                    canopyPreference: z
-                      .enum(["neutral", "sheltered", "open"])
-                      .describe(
-                        "Use neutral for canopy trees; lower plants can prefer shade or open ground.",
-                      ),
-                  })
-                  .strict()
-                  .refine(
-                    (p) => p.layer !== "canopy" || p.canopyPreference === "neutral",
-                    "Canopy must establish itself independently of existing canopy",
+const regionLayoutFields = {
+  planId: id,
+  seed: z.number().int().nonnegative().safe(),
+  unmetRequirements: z
+    .array(z.string().min(1))
+    .describe(
+      "Actual requested content impossible with this profile. Empty when representable. Ordinary composition, material choices and implementation assumptions are not missing capabilities.",
+    ),
+  notes: z
+    .array(z.string().min(1))
+    .describe(
+      "Nonblocking assumptions and limitations. These are hypotheses, not compiler authority.",
+    ),
+  terrainOperations: z.array(TERRAIN_OPERATION_SCHEMA),
+  placements: z.array(
+    z
+      .object({
+        placementId: id,
+        requirementId: id,
+        x: number,
+        z: number,
+        yawDegrees: number.min(0).lt(360),
+        columns: z.number().int().positive().safe(),
+        rows: z.number().int().positive().safe(),
+        spacingXMeters: number.nonnegative(),
+        spacingZMeters: number.nonnegative(),
+        footingElevationMeters: number.nullable(),
+      })
+      .strict(),
+  ),
+  routeNodes: z.array(z.object({ nodeId: id, position: WORLD_POINT2_SCHEMA }).strict()),
+  routes: z.array(
+    z
+      .object({
+        routeId: id,
+        startNodeId: id,
+        endNodeId: id,
+        waypoints: z.array(WORLD_POINT2_SCHEMA),
+        widthMeters: number.positive(),
+      })
+      .strict(),
+  ),
+  cameras: z
+    .array(
+      z
+        .object({
+          cameraId: id,
+          positionMeters: WORLD_VECTOR3_SCHEMA,
+          lookAtMeters: WORLD_VECTOR3_SCHEMA,
+        })
+        .strict(),
+    )
+    .min(1),
+} as const;
+
+const regionPlantingFields = {
+  vegetationAreas: z.array(
+    z
+      .object({
+        areaId: id,
+        habitatFieldId: id,
+        boundary: WORLD_POLYGON_SCHEMA,
+        patchScaleMeters: number
+          .positive()
+          .describe("Approximate width of coherent planting patches, in meters."),
+        edgeFadeMeters: number.nonnegative(),
+        minimumDensity: number.min(0).max(1),
+        patchContrast: number.positive(),
+        clearings: z.array(clearing),
+        palette: z
+          .array(
+            z
+              .object({
+                plantId: id,
+                requirementId: id,
+                layer: z.enum(["canopy", "understory", "ground_cover"]),
+                maximumCount: z.number().int().positive().safe(),
+                spacingMeters: number
+                  .positive()
+                  .describe(
+                    "Desired center spacing, before measured geometry and access constraints. Smaller values allow denser planting.",
                   ),
-              )
-              .min(1)
-              .max(16),
-          })
-          .strict(),
-      )
-      .max(12),
-    cameras: z
-      .array(
-        z
-          .object({
-            cameraId: id,
-            positionMeters: WORLD_VECTOR3_SCHEMA,
-            lookAtMeters: WORLD_VECTOR3_SCHEMA,
-          })
-          .strict(),
-      )
-      .min(2)
-      .max(4),
-  })
+                weight: number
+                  .positive()
+                  .describe("Relative share of candidate trials within this planting layer."),
+                placementOrder: z
+                  .enum(["anchor", "standard", "accent"])
+                  .describe("Art-directed competition order within the layer."),
+                canopyPreference: z
+                  .enum(["neutral", "sheltered", "open"])
+                  .describe(
+                    "Use neutral for canopy trees; lower plants can prefer shade or open ground.",
+                  ),
+              })
+              .strict()
+              .refine(
+                (p) => p.layer !== "canopy" || p.canopyPreference === "neutral",
+                "Canopy must establish itself independently of existing canopy",
+              ),
+          )
+          .min(1),
+      })
+      .strict(),
+  ),
+} as const;
+
+/** Transient layout proposal. Planting is requested only after this structure is fixed. */
+export const REGION_LAYOUT_DRAFT_SCHEMA = z.object(regionLayoutFields).strict();
+export type RegionLayoutDraft = z.output<typeof REGION_LAYOUT_DRAFT_SCHEMA>;
+
+/** Transient planting proposal bound to one proposed layout. */
+export const REGION_PLANTING_DRAFT_SCHEMA = z.object(regionPlantingFields).strict();
+export type RegionPlantingDraft = z.output<typeof REGION_PLANTING_DRAFT_SCHEMA>;
+
+/** Complete transient proposal. Only the resulting SpatialWorldPlan reaches the compiler. */
+export const REGION_DRAFT_SCHEMA = z
+  .object({ ...regionLayoutFields, ...regionPlantingFields })
   .strict();
 export type RegionDraft = z.output<typeof REGION_DRAFT_SCHEMA>;
+
+export function composeRegionDraft(
+  layout: RegionLayoutDraft,
+  planting: RegionPlantingDraft,
+): RegionDraft {
+  return REGION_DRAFT_SCHEMA.parse({ ...layout, ...planting });
+}
 
 export function realizeRegionDraft(
   profileInput: RegionAuthoringProfile,
@@ -221,7 +295,8 @@ export function realizeRegionDraft(
   };
   for (const a of d.placements) {
     const asset = palette(a.requirementId);
-    if (a.columns * a.rows > 512) throw new Error("Placement grid exceeds 512 instances");
+    if (!Number.isSafeInteger(a.columns * a.rows))
+      throw new Error("Placement grid cardinality exceeds exact numeric representation");
     const angle = (a.yawDegrees * Math.PI) / 180;
     const cells = Array.from({ length: a.columns * a.rows }, (_, index) => {
       const column = index % a.columns,
@@ -262,13 +337,13 @@ export function realizeRegionDraft(
           { x: x0, z: z1 },
         ],
         elevationMeters: a.footingElevationMeters,
-        blendWidthMeters: 4,
+        blendWidthMeters: profile.placementPadBlendWidthMeters,
       });
     }
     const shared = {
       intentId: a.placementId,
       requirementId: a.requirementId,
-      priority: 1000,
+      priority: 0,
       regionId,
       surfaceId,
     };
@@ -363,63 +438,56 @@ export function realizeRegionDraft(
   }
   for (const a of d.vegetationAreas) {
     a.palette.forEach((m) => palette(m.requirementId));
+    const orderClass = { anchor: 2, standard: 1, accent: 0 } as const;
+    const competitionOrder = [...a.palette].sort(
+      (left, right) =>
+        orderClass[right.placementOrder] - orderClass[left.placementOrder] ||
+        projectedBoundsArea(palette(right.requirementId).boundsMeters) -
+          projectedBoundsArea(palette(left.requirementId).boundsMeters) ||
+        left.plantId.localeCompare(right.plantId),
+    );
     p.realizationIntents.push(
       ...createVegetationIntents({
         ...a,
         regionId,
         surfaceId,
         densityField: {
-          seed: Number.parseInt(contentHash(`${d.seed}:${a.areaId}`).slice(0, 8), 16),
+          fieldId: a.habitatFieldId,
+          seed: Number.parseInt(contentHash(`${d.seed}:${a.habitatFieldId}`).slice(0, 13), 16),
           wavelengthMeters: a.patchScaleMeters,
-          edgeFadeMeters: Math.min(8, a.patchScaleMeters * 0.4),
-          minimumDensity: 0.35,
-          patchContrast: 1.6,
+          edgeFadeMeters: a.edgeFadeMeters,
+          minimumDensity: a.minimumDensity,
+          patchContrast: a.patchContrast,
         },
         boundary: a.boundary.map((pt) => ({ u: pt.x, v: pt.z })),
         palette: a.palette.map((m) => ({
           ...m,
-          // Broad cover needs room before tiny accents consume its footprint. This is
-          // measured size ordering within the ground layer, never noun classification.
-          priority:
-            m.layer === "canopy"
-              ? 200
-              : m.layer === "ground_cover"
-                ? 100 +
-                  Math.min(
-                    80,
-                    Math.round(
-                      10 *
-                        Math.log2(1 + projectedBoundsArea(palette(m.requirementId).boundsMeters)),
-                    ),
-                  )
-                : 100,
+          priority: competitionOrder.length - competitionOrder.indexOf(m),
           // Species are a mix, not permanent per-species quotas. The authoring
           // runtime checks initial layer presence; later clearing edits may remove plants.
           minimumCount: 0,
           // Spacing drives a finite trial budget. Geometry and the requested minimum
           // remain authoritative; rejected trials are never replenished to fill a quota.
-          candidateDensityPerSquareMeter: Math.min(
-            4,
-            (4 * m.weight) /
-              (m.spacingMeters ** 2 *
-                a.palette.filter((n) => n.layer === m.layer).reduce((sum, n) => sum + n.weight, 0)),
-          ),
-          spacingMeters: { minimum: m.spacingMeters * 0.7, maximum: m.spacingMeters * 1.2 },
+          candidateDensityPerSquareMeter:
+            (profile.plantingPolicy.candidateTrialsPerSpacingCell * m.weight) /
+            (m.spacingMeters ** 2 *
+              a.palette.filter((n) => n.layer === m.layer).reduce((sum, n) => sum + n.weight, 0)),
+          spacingMeters: {
+            minimum: m.spacingMeters * profile.plantingPolicy.spacingFactors.minimum,
+            maximum: m.spacingMeters * profile.plantingPolicy.spacingFactors.maximum,
+          },
           canopyResponse:
             m.layer === "canopy"
-              ? { open: 1, covered: 1 }
-              : m.canopyPreference === "sheltered"
-                ? { open: 0.15, covered: 1 }
-                : m.canopyPreference === "open"
-                  ? { open: 1, covered: 0.25 }
-                  : { open: 0.85, covered: 0.85 },
+              ? profile.plantingPolicy.canopyResponses.neutral
+              : profile.plantingPolicy.canopyResponses[m.canopyPreference],
         })),
         canopyIntentIds: [],
-        maximumSlopeDegrees: 30,
-        maximumSupportReliefMeters: 0.35,
-        groundEmbedMeters: 0.025,
-        routeClearanceHeightMeters: 3,
-        minimumSeparationMeters: 0.02,
+        clearings: a.clearings,
+        maximumSlopeDegrees: profile.plantingPolicy.maximumSlopeDegrees,
+        maximumSupportReliefMeters: profile.plantingPolicy.maximumSupportReliefMeters,
+        groundEmbedMeters: profile.plantingPolicy.groundEmbedMeters,
+        routeClearanceHeightMeters: profile.plantingPolicy.routeClearanceHeightMeters,
+        minimumSeparationMeters: profile.plantingPolicy.minimumSeparationMeters,
       }),
     );
   }
@@ -429,7 +497,7 @@ export function realizeRegionDraft(
   p.cameras = d.cameras.map((c) => ({
     ...c,
     up: { x: 0, y: 1, z: 0 },
-    fieldOfViewDegrees: 58,
+    fieldOfViewDegrees: profile.evidenceCameraFieldOfViewDegrees,
     regionIds: [regionId],
     readabilityIntent: {
       kind: "art_directed",

@@ -19,7 +19,7 @@ export const SOURCE_PROVENANCE_RECORD_SCHEMA = z
   .object({
     sourceContentHash: HASH_SCHEMA,
     originId: ASCII_ID_SCHEMA,
-    archivePaths: z.array(z.string().trim().min(1).max(4096)).max(64),
+    archivePaths: z.array(z.string().trim().min(1).max(4096)),
     originalPath: z.string().trim().min(1).max(4096),
     sourceKind: z.enum(["creator_owned", "licensed", "generated"]),
     metersPerSourceUnit: z.number().finite().positive(),
@@ -67,7 +67,7 @@ export function sealSourceProvenanceRecord(
 export const SOURCE_PROVENANCE_LEDGER_SCHEMA = z
   .object({
     kind: z.literal("SourceProvenanceLedger"),
-    records: z.array(SOURCE_PROVENANCE_RECORD_SCHEMA).max(100_000),
+    records: z.array(SOURCE_PROVENANCE_RECORD_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -121,8 +121,7 @@ export const TRUSTED_SOURCE_MANIFEST_SCHEMA = z
               });
           }),
       )
-      .min(1)
-      .max(100_000),
+      .min(1),
   })
   .strict()
   .superRefine((value, context) => {

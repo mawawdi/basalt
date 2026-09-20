@@ -1,0 +1,75 @@
+{
+  "policyId": "LocalInteractiveRegionExecution",
+  "origin": "Creator-selected local execution allocation; exhaustion is incomplete and resumable",
+  "maximumSemanticAttempts": 3,
+  "maximumMalformedReviewRetries": 1,
+  "refinementIterationAllocation": 1,
+  "requestTimeoutMilliseconds": 300000,
+  "previewTimeoutMilliseconds": 120000,
+  "reviewImageBatchSize": 4,
+  "placementGeometryCacheMaximumBytes": 16777216,
+  "workspace": {
+    "maximumArtifactBytes": 134217728,
+    "maximumPreviewImageBytes": 16777216,
+    "maximumEnvironmentFileBytes": 131072
+  },
+  "transport": {
+    "origin": "Creator-selected OpenRouter allocations by request purpose; 28000 layout and planting tokens preserve measured headroom above the observed 24576-token truncation while fitting the provider-reported 28689-token preauthorization ceiling; bounded edit and review schemas reserve less credit; exhaustion retains the raw response and leaves the run incomplete",
+    "maximumOutputTokensPerRequest": 28000,
+    "outputTokenAllocations": {
+      "layout": 28000,
+      "planting": 28000,
+      "editExtraction": 12000,
+      "editProposal": 16000,
+      "visualReview": 8192,
+      "visualSynthesis": 8192
+    },
+    "maximumTextRequestBytes": 8388608,
+    "maximumResponseBytes": 8388608,
+    "providerSort": "throughput",
+    "maximumTransientRetries": 1,
+    "maximumRetryDelayMilliseconds": 120000,
+    "retryableHttpStatuses": [402, 429, 502, 503, 504]
+  },
+  "preview": {
+    "policyId": "LocalInteractivePreviewExecution",
+    "origin": "Creator-selected local preview mesh allocation; exhaustion leaves visual evidence incomplete",
+    "maximumTerrainVertices": 2000000,
+    "terrainSampleSpacingMeters": 2,
+    "imageWidthPixels": 1920,
+    "imageHeightPixels": 1200,
+    "deviceScaleFactor": 1
+  },
+  "vegetation": {
+    "policyId": "LocalInteractiveVegetationExecution",
+    "origin": "Creator-selected local candidate-evaluation allocation with content-addressed resumable runs",
+    "candidateBatchSize": 32768,
+    "mergeFanIn": 32,
+    "candidateRunDirectory": ".basalt/runtime/vegetation-runs",
+    "maximumCandidateEvaluations": 5000000
+  },
+  "population": {
+    "policyId": "LocalInteractivePopulationExecution",
+    "origin": "Creator-selected local candidate-evaluation allocation; exhaustion leaves the affected intent incomplete",
+    "minimumCandidateAttempts": 4096,
+    "candidateAttemptsPerTarget": 64,
+    "pointPlacementCandidateAttempts": 256
+  },
+  "assembly": {
+    "policyId": "LocalInteractiveAssemblyExecution",
+    "origin": "Creator-selected local constraint-solver allocation; exhaustion leaves the assembly incomplete",
+    "maximumDecisions": 2000000,
+    "maximumBacktracks": 2000000
+  },
+  "construction": {
+    "policyId": "LocalInteractiveConstructionExecution",
+    "origin": "Creator-selected local constructed-element allocation; exhaustion leaves the world incomplete",
+    "maximumConstructedElements": 250000
+  },
+  "landscapeEvidence": {
+    "columns": 128,
+    "rows": 128,
+    "tileColumns": 4,
+    "tileRows": 4
+  }
+}

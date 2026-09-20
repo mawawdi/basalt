@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { copyFile, lstat, mkdir, readdir, realpath, rename, unlink } from "node:fs/promises";
+import { copyFile, lstat, mkdir, readdir, realpath, rename, rm, unlink } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -50,4 +50,5 @@ async function copyTree(source, destination) {
   }
 }
 
+await rm(destinationRoot, { recursive: true, force: true });
 await copyTree(sourceRoot, destinationRoot);

@@ -24,6 +24,7 @@ import {
   type SemanticModule,
 } from "@basalt/semantic-kernel";
 import {
+  horizontalMaskMayIntersectBounds,
   OccupancyIndex,
   sealConstraintModel,
   sealOccupancyReservation,
@@ -37,10 +38,11 @@ import {
   worldRegionContainsPoint,
   worldRegionVolumeBounds,
   type ConstructionProgram,
+  type PopulationPlacementConstraints,
   type SpatialWorldPlan,
   type WorldVector3,
 } from "@basalt/world-planning";
-import { realizeConstructionProgram } from "./construction.js";
+import { realizeConstructionProgram, type ConstructionExecutionPolicy } from "./construction.js";
 import {
   sealAssemblyArtifact,
   sealCompiledWorldFoundation,
@@ -77,6 +79,7 @@ import {
   distributeVegetation,
   isVegetationIntent,
   vegetationGroundElevation,
+  type VegetationExecutionPolicy,
   type VegetationIntent,
 } from "./vegetation.js";
 
@@ -120,9 +123,20 @@ export const REALIZATION_INTENT_REALIZER_BY_KIND = Object.freeze({
   environment_layer: "realizeEnvironment",
 } satisfies Record<RealizationIntentKind, string>);
 
-const MINIMUM_POPULATION_CANDIDATE_ATTEMPTS = 4_096;
-const POPULATION_CANDIDATE_ATTEMPTS_PER_TARGET = 64;
-const MAXIMUM_POPULATION_CANDIDATE_ATTEMPTS = 10_000_000;
+export interface PopulationExecutionPolicy {
+  readonly policyId: string;
+  readonly origin: string;
+  readonly minimumCandidateAttempts: number;
+  readonly candidateAttemptsPerTarget: number;
+  readonly pointPlacementCandidateAttempts: number;
+}
+
+export interface AssemblyExecutionPolicy {
+  readonly policyId: string;
+  readonly origin: string;
+  readonly maximumDecisions: number;
+  readonly maximumBacktracks: number;
+}
 
 export interface CompileBasaltWorldInput {
   readonly semanticModule: SemanticModule;
@@ -130,6 +144,12 @@ export interface CompileBasaltWorldInput {
   readonly catalogAssets: readonly CatalogAssetArtifact[];
   readonly spatialPlan: SpatialWorldPlan;
   readonly placementGeometry?: readonly AssetPlacementGeometry[];
+  readonly executionPolicy?: {
+    readonly construction?: ConstructionExecutionPolicy;
+    readonly vegetation?: VegetationExecutionPolicy;
+    readonly population?: PopulationExecutionPolicy;
+    readonly assembly?: AssemblyExecutionPolicy;
+  };
 }
 
 export function compileBasaltWorld(input: CompileBasaltWorldInput): WorldBuild {
@@ -230,10 +250,15 @@ function compileBasaltWorldInternal(
     const taskId = compilationTaskId("structure", "meso", program.programId);
     try {
       const placement = resolveConstructionPlacement(input.spatialPlan, foundation, program);
+      const constructionExecutionPolicy = input.executionPolicy?.construction;
+      if (!constructionExecutionPolicy)
+        throw new Error(
+          `Construction program ${program.programId} requires an explicit construction execution policy`,
+        );
       const structure =
         previous && !affected.has(taskId)
           ? reuseConstructedStructure(previous, program.programHash, placement)
-          : realizeConstructionProgram(program, placement);
+          : realizeConstructionProgram(program, placement, constructionExecutionPolicy);
       if (!previous || affected.has(taskId)) markExecuted(taskId);
       assertConstructedStructureInsideRegion(input.spatialPlan, structure);
       state.occupancy.reserve(
@@ -759,7 +784,11 @@ function realizeIntent(
           intent.kind === "cluster" ||
           intent.kind === "surface_grid" ||
           (intent.kind === "single" && intent.positionToleranceMeters !== undefined)) &&
-        violatesGroundRouteClearance(state.foundation, instance)
+        violatesGroundRouteClearance(
+          state.foundation,
+          instance,
+          intent.kind === "surface_scatter" && intent.vegetation !== undefined,
+        )
       ) {
         routeClearanceConflictCount += 1;
         continue;
@@ -785,6 +814,16 @@ function realizeIntent(
       diagnostics.push(
         `intent:${intent.intentId}:placed ${placed} of required ${minimum} after ${candidateCount} candidates (${outsideRegionCount} outside region, ${occupancyConflictCount} occupancy conflicts, ${routeClearanceConflictCount} route clearance conflicts)`,
       );
+      if (
+        intent.kind === "single" &&
+        (intent.positionToleranceMeters ?? 0) > 0 &&
+        candidateCount === populationExecutionPolicy(state).pointPlacementCandidateAttempts
+      ) {
+        const policy = populationExecutionPolicy(state);
+        diagnostics.push(
+          `intent:${intent.intentId}:population execution policy ${policy.policyId} exhausted ${policy.pointPlacementCandidateAttempts} point-placement candidate evaluations (${policy.origin})`,
+        );
+      }
     }
   } catch (error) {
     diagnostics.push(
@@ -818,7 +857,7 @@ function realizeVegetation(state: CompilerState, intents: readonly VegetationInt
     }
     ready.push(intent);
     const index = new OccupancyIndex();
-    const boxes = [...intent.vegetation.clearings.map((clearing) => clearing.boundsMeters)];
+    const boxes = [];
     for (const route of state.foundation.routeConstructions) {
       if (route.surfaceId !== intent.surfaceId || route.treatmentKind === "elevated") continue;
       const margin = Math.max(0, route.vegetationMask.halfWidthMeters - route.widthMeters / 2);
@@ -852,10 +891,50 @@ function realizeVegetation(state: CompilerState, intents: readonly VegetationInt
     );
     blockers.set(intent.intentId, index);
   }
+  const constraints = state.input.spatialPlan.populationPlacementConstraints;
+  if (constraints) {
+    if (constraints.catalogSnapshotHash !== state.input.catalogSnapshot.hash) {
+      state.microDiagnostics.push(
+        "population_constraints:catalog snapshot changed; retained placement evidence is stale",
+      );
+      return;
+    }
+    restorePopulationPlacements(state, ready, blockers, constraints);
+  }
+  const active = constraints
+    ? ready.filter((intent) =>
+        constraints.regenerationMasks.some(
+          (mask) =>
+            mask.areaId === intent.vegetation.areaId &&
+            mask.layers.includes(intent.vegetation.layer),
+        ),
+      )
+    : ready;
+  if (active.length > 0 && !state.input.executionPolicy?.vegetation) {
+    state.microDiagnostics.push(
+      "vegetation:Vegetation realization requires an explicit execution policy with a candidate batch size",
+    );
+    return;
+  }
   try {
-    const summaries = distributeVegetation(ready, {
+    const summaries = distributeVegetation(active, {
       seed: state.input.spatialPlan.seed,
       initialCanopy: state.microInstances,
+      executionPolicy: state.input.executionPolicy!.vegetation!,
+      ...(constraints
+        ? {
+            candidateAllowed: (intent: VegetationIntent, candidate: { x: number; z: number }) =>
+              constraints.regenerationMasks.some(
+                (mask) =>
+                  mask.areaId === intent.vegetation.areaId &&
+                  mask.layers.includes(intent.vegetation.layer) &&
+                  candidate.x >= mask.boundsMeters.min.x - mask.transitionMeters &&
+                  candidate.x <= mask.boundsMeters.max.x + mask.transitionMeters &&
+                  candidate.z >= mask.boundsMeters.min.z - mask.transitionMeters &&
+                  candidate.z <= mask.boundsMeters.max.z + mask.transitionMeters,
+              ),
+          }
+        : {}),
       heightAt: (surfaceId, x, z) => surfaceHeight(state, surfaceId, x, z),
       place: (intent, candidate) => {
         const binding = state.bindings.get(intent.requirementId)!;
@@ -897,6 +976,15 @@ function realizeVegetation(state: CompilerState, intents: readonly VegetationInt
           undefined,
           rotation,
         );
+        if (
+          intent.vegetation.clearings.some(
+            (clearing) =>
+              instance.boundsMeters.max.y >= clearing.verticalRangeMeters.minimum &&
+              instance.boundsMeters.min.y <= clearing.verticalRangeMeters.maximum &&
+              horizontalMaskMayIntersectBounds(clearing.mask, instance.boundsMeters),
+          )
+        )
+          return undefined;
         try {
           assertInstanceInsideRegion(state.input.spatialPlan, instance);
         } catch {
@@ -919,10 +1007,19 @@ function realizeVegetation(state: CompilerState, intents: readonly VegetationInt
       },
     });
     for (const summary of summaries) {
-      const intent = ready.find((candidate) => candidate.intentId === summary.intentId)!;
+      const intent = active.find((candidate) => candidate.intentId === summary.intentId)!;
+      if (summary.executionStatus === "resource_exhausted") {
+        state.microDiagnostics.push(
+          `intent:${intent.intentId}:vegetation execution policy ${summary.execution.policyId} ` +
+            `(${summary.execution.origin}) exhausted its ${summary.execution.allocated ?? "unbounded"} ` +
+            `${summary.execution.unit} allocation after checkpointing ${summary.execution.completed} of ` +
+            `${summary.execution.required}; ${summary.execution.exhaustionReason ?? "intent remains valid and compilation is incomplete"}`,
+        );
+        continue;
+      }
       if (summary.placed < intent.minimumCount)
         state.microDiagnostics.push(
-          `intent:${intent.intentId}:placed ${summary.placed} of required ${intent.minimumCount} from ${summary.trials} bounded vegetation trials; rejected ${summary.rejectedDensity} by density/clearing, ${summary.rejectedSpacing} by spacing, ${summary.rejectedSlope} by slope, ${summary.rejectedPlacement} by grounding/occupancy/region; density is not replenished`,
+          `intent:${intent.intentId}:placed ${summary.placed} of required ${intent.minimumCount} from ${summary.trials} vegetation trials; rejected ${summary.rejectedDensity} by density/clearing, ${summary.rejectedRegenerationMask} outside the regeneration mask, ${summary.rejectedSpacing} by spacing, ${summary.rejectedSlope} by slope, ${summary.rejectedPlacement} by grounding/occupancy/region; density is not replenished`,
         );
     }
   } catch (error) {
@@ -932,15 +1029,123 @@ function realizeVegetation(state: CompilerState, intents: readonly VegetationInt
   }
 }
 
-/** Ground population respects the authored route mask using its complete rotated footprint. */
+function restorePopulationPlacements(
+  state: CompilerState,
+  intents: readonly VegetationIntent[],
+  blockers: ReadonlyMap<string, OccupancyIndex>,
+  constraints: PopulationPlacementConstraints,
+): void {
+  const byIntent = new Map(intents.map((intent) => [intent.intentId, intent] as const));
+  for (const lock of constraints.retainedPlacements) {
+    const intent = byIntent.get(lock.intentId);
+    const binding = intent && state.bindings.get(intent.requirementId);
+    const entry = binding && state.entries.get(lock.entryHandle);
+    const member = entry?.memberAssets.find(
+      (candidate) => candidate.memberId === lock.memberId && candidate.assetHash === lock.assetHash,
+    );
+    const asset = member && state.assets.get(member.assetHash);
+    const placementGeometry = asset && state.placementGeometry.get(asset.hash);
+    if (
+      !intent ||
+      intent.requirementId !== lock.requirementId ||
+      !binding ||
+      binding.entryHandle !== lock.entryHandle ||
+      !entry ||
+      entry.kind !== "substitution_set" ||
+      !member ||
+      !asset ||
+      !placementGeometry
+    ) {
+      state.microDiagnostics.push(
+        `population_lock:${lock.lockId}:catalog, intent, or measured geometry evidence is stale`,
+      );
+      continue;
+    }
+    const position = lock.transformMeters.position;
+    const rotation = lock.transformMeters.rotation;
+    const surface = state.foundation.placementSurfaces.find(
+      (candidate) => candidate.surfaceId === intent.surfaceId,
+    );
+    const groundElevation =
+      surface &&
+      vegetationGroundElevation({
+        geometry: placementGeometry,
+        x: position.x,
+        z: position.z,
+        yawRadians: 2 * Math.atan2(rotation[1], rotation[3]),
+        maximumReliefMeters: intent.vegetation.maximumSupportReliefMeters,
+        embedMeters: intent.vegetation.groundEmbedMeters,
+        heightAt: (x, z) =>
+          x < surface.bounds.min.x ||
+          x > surface.bounds.max.x ||
+          z < surface.bounds.min.z ||
+          z > surface.bounds.max.z
+            ? NaN
+            : surfaceHeight(state, intent.surfaceId, x, z),
+      });
+    const expectedY =
+      groundElevation === undefined
+        ? undefined
+        : groundElevation - transformedBounds(asset, { x: 0, y: 0, z: 0 }, rotation).min.y;
+    if (expectedY === undefined || Math.abs(expectedY - position.y) > 1e-6) {
+      state.microDiagnostics.push(
+        `population_lock:${lock.lockId}:terrain support changed from the retained placement`,
+      );
+      continue;
+    }
+    const instance = buildInstance(
+      intent,
+      entry,
+      { member, asset, placementGeometry },
+      position,
+      intent.regionId,
+      intent.surfaceId,
+      undefined,
+      rotation,
+    );
+    try {
+      assertInstanceInsideRegion(state.input.spatialPlan, instance);
+    } catch {
+      state.microDiagnostics.push(`population_lock:${lock.lockId}:placement left its region`);
+      continue;
+    }
+    const reservation = reservationFor(
+      instance,
+      asset,
+      intent.minimumSeparationMeters / 2,
+      placementGeometry,
+    );
+    if (
+      blockers.get(intent.intentId)!.conflicts(reservation).length > 0 ||
+      state.occupancy.conflicts(reservation).length > 0
+    ) {
+      state.microDiagnostics.push(
+        `population_lock:${lock.lockId}:retained placement conflicts with current protected geometry`,
+      );
+      continue;
+    }
+    state.occupancy.reserve(reservation);
+    state.microInstances.push(instance);
+  }
+}
+
+/**
+ * Ground population respects the physical route surface with its complete rotated footprint.
+ * Biological planting additionally respects the authored vegetation buffer. The vegetation
+ * buffer is an ecological/art-direction choice and must not push route-adjacent landmarks or
+ * props away from an otherwise valid approach.
+ */
 function violatesGroundRouteClearance(
   foundation: CompiledWorldFoundation,
   instance: RealizedInstance,
+  includeVegetationBuffer: boolean,
 ): boolean {
   const bounds = instance.boundsMeters;
   return foundation.routeConstructions.some((route) => {
     if (route.surfaceId !== instance.surfaceId || route.treatmentKind === "elevated") return false;
-    const margin = Math.max(0, route.vegetationMask.halfWidthMeters - route.widthMeters / 2);
+    const margin = includeVegetationBuffer
+      ? Math.max(0, route.vegetationMask.halfWidthMeters - route.widthMeters / 2)
+      : 0;
     return route.travelSegments.some(
       ({ boundsMeters: travel }) =>
         bounds.max.x > travel.min.x - margin &&
@@ -1288,6 +1493,7 @@ function realizeAssembly(
       );
     return { connection, host, child, relationId, allowed };
   });
+  const assemblyPolicy = assemblyExecutionPolicy(state);
   const model = sealConstraintModel({
     seed: Number.parseInt(contentHash(stableJson(intent)).slice(0, 8), 16),
     cells: cells.map(({ cellId, candidates }) => ({ cellId, candidates })),
@@ -1303,12 +1509,17 @@ function realizeAssembly(
     })),
     relations: relations.map(({ relationId, allowed }) => ({ relationId, allowed })),
     policy: {
-      maximumDecisions: Math.max(1, cells.length * 8),
-      maximumBacktracks: Math.max(1, cells.length * 8),
+      maximumDecisions: assemblyPolicy.maximumDecisions,
+      maximumBacktracks: assemblyPolicy.maximumBacktracks,
     },
   });
   const solution = solveConstraintModel(model);
-  if (solution.status !== "eligible") throw new Error(solution.diagnostics.join("; "));
+  if (solution.status !== "eligible")
+    throw new Error(
+      `${solution.diagnostics.join("; ")}; assembly execution policy ${assemblyPolicy.policyId} ` +
+        `allocated ${assemblyPolicy.maximumDecisions} decisions and ${assemblyPolicy.maximumBacktracks} backtracks ` +
+        `(${assemblyPolicy.origin})`,
+    );
   const pitchMeters = dequantizeQ32_32(entry.declaration.lattice.pitchMeters);
   const components = solution.assignments.map((assignment) => {
     const provider = state.entries.get(assignment.candidateId);
@@ -1906,16 +2117,19 @@ function targetsForIntent(
   if (intent.kind === "single") {
     const radius = intent.positionToleranceMeters ?? 0;
     const centers = [{ x: intent.at.u, z: intent.at.v }];
-    // Nearest ring first; fixed finite trials retain authored yaw and never relax geometry.
-    if (radius > 0)
-      for (let ring = 1; ring <= 4; ring++)
-        for (let direction = 0; direction < 16; direction++) {
-          const angle = (direction * Math.PI) / 8;
-          centers.push({
-            x: intent.at.u + ((radius * ring) / 4) * Math.cos(angle),
-            z: intent.at.v + ((radius * ring) / 4) * Math.sin(angle),
-          });
-        }
+    // This prefix-stable disk sequence makes candidate allocation operational. Increasing
+    // the allocation extends the same search instead of moving candidates already tried.
+    if (radius > 0) {
+      const policy = populationExecutionPolicy(state);
+      for (let attempt = 1; attempt < policy.pointPlacementCandidateAttempts; attempt++) {
+        const radial = Math.sqrt(radicalInverse(attempt, 2));
+        const angle = 2 * Math.PI * radicalInverse(attempt, 3);
+        centers.push({
+          x: intent.at.u + radius * radial * Math.cos(angle),
+          z: intent.at.v + radius * radial * Math.sin(angle),
+        });
+      }
+    }
     const surface = state.foundation.placementSurfaces.find(
       (s) => s.surfaceId === intent.surfaceId,
     );
@@ -1953,14 +2167,14 @@ function targetsForIntent(
     return scatterTargets(
       state,
       intent,
-      populationCandidateAttemptLimit(intent.targetCount),
+      populationCandidateAttemptLimit(state, intent.targetCount),
       contentHash(stableJson(intent)),
     );
   if (intent.kind === "cluster")
     return clusterTargets(
       state,
       intent,
-      populationCandidateAttemptLimit(intent.targetCount),
+      populationCandidateAttemptLimit(state, intent.targetCount),
       contentHash(stableJson(intent)),
     );
   if (intent.kind === "surface_grid")
@@ -2414,14 +2628,54 @@ function yawQuaternion(hash: string): [number, number, number, number] {
   const angle = (Number.parseInt(hash.slice(0, 8), 16) / 0xffff_ffff) * Math.PI * 2;
   return [0, Math.sin(angle / 2), 0, Math.cos(angle / 2)];
 }
-function populationCandidateAttemptLimit(targetCount: number): number {
-  return Math.min(
-    MAXIMUM_POPULATION_CANDIDATE_ATTEMPTS,
-    Math.max(
-      MINIMUM_POPULATION_CANDIDATE_ATTEMPTS,
-      targetCount * POPULATION_CANDIDATE_ATTEMPTS_PER_TARGET,
-    ),
-  );
+function populationCandidateAttemptLimit(state: CompilerState, targetCount: number): number {
+  const policy = populationExecutionPolicy(state);
+  const scaled = targetCount * policy.candidateAttemptsPerTarget;
+  if (!Number.isSafeInteger(scaled))
+    throw new Error("Population candidate allocation exceeds exact integer representation");
+  return Math.max(policy.minimumCandidateAttempts, scaled);
+}
+
+function populationExecutionPolicy(state: CompilerState): PopulationExecutionPolicy {
+  const policy = state.input.executionPolicy?.population;
+  if (!policy) throw new Error("Population realization requires an explicit execution policy");
+  if (
+    !policy.policyId.trim() ||
+    !policy.origin.trim() ||
+    !Number.isSafeInteger(policy.minimumCandidateAttempts) ||
+    policy.minimumCandidateAttempts <= 0 ||
+    !Number.isSafeInteger(policy.candidateAttemptsPerTarget) ||
+    policy.candidateAttemptsPerTarget <= 0 ||
+    !Number.isSafeInteger(policy.pointPlacementCandidateAttempts) ||
+    policy.pointPlacementCandidateAttempts <= 0
+  )
+    throw new Error("Population execution policy identity and allocations are invalid");
+  return policy;
+}
+
+function assemblyExecutionPolicy(state: CompilerState): AssemblyExecutionPolicy {
+  const policy = state.input.executionPolicy?.assembly;
+  if (!policy) throw new Error("Assembly realization requires an explicit execution policy");
+  if (
+    !policy.policyId.trim() ||
+    !policy.origin.trim() ||
+    !Number.isSafeInteger(policy.maximumDecisions) ||
+    policy.maximumDecisions <= 0 ||
+    !Number.isSafeInteger(policy.maximumBacktracks) ||
+    policy.maximumBacktracks < 0
+  )
+    throw new Error("Assembly execution policy identity and allocations are invalid");
+  return policy;
+}
+
+function radicalInverse(index: number, base: number): number {
+  let value = 0;
+  let fraction = 1 / base;
+  for (let current = index; current > 0; current = Math.floor(current / base)) {
+    value += (current % base) * fraction;
+    fraction /= base;
+  }
+  return value;
 }
 
 function* scatterTargets(

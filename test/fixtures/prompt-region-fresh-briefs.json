@@ -1,0 +1,22 @@
+{
+  "scope": "Fresh post-cutover regional authoring evaluation. Briefs were frozen before any candidate was generated. The same model proposes and reviews; independent visual and creator engine acceptance remain separate.",
+  "model": "deepseek/deepseek-v4.1-flash",
+  "reasoningEffort": "low",
+  "executionPolicyPath": "registry/world-authoring/execution.json",
+  "operatorTimeoutMilliseconds": 900000,
+  "operatorTimeoutOrigin": "Pilot-process cancellation guard; never a quality acceptance criterion",
+  "cases": [
+    {
+      "id": "market-grove-trailhead",
+      "seed": 12001,
+      "prompt": "Create a coherent 112-meter low-poly market-grove trailhead. A timber market stall, produce cart, a few crates and sacks form a compact arrival court near the southern entrance, with a lantern and bench as readable details. A gated rail fence defines one side without enclosing the walking route. A connected curved trail passes the court, reaches a stone well, and loops through a mixed northern grove. Keep a broad meadow between the court and grove, with irregular edge planting, canopy, understory and low ground cover rather than a continuous perimeter band. Use a few soil or leafy-ground patches where the activity and woodland justify them. Keep every route and destination approach clear. Include an overview and close views of the market court, well and grove approach.",
+      "edit": "Increase canopy and understory density in the northern grove, add a vegetation-free transition around the market court while retaining low ground cover at its outer edge, and change one existing northern woodland ground patch to LeafyGrass if one exists. Preserve every route, fence, gate, market prop, well and bench placement exactly."
+    },
+    {
+      "id": "arch-and-swing-circuit",
+      "seed": 12002,
+      "prompt": "Create a coherent 112-meter low-poly ridge circuit. A large stone arch is the destination on a gently raised eastern shoulder. A separate old tree with a hanging swing anchors a quiet western clearing with two benches. A connected trail forms a walkable circuit between them and passes a small stone well without crossing any measured asset footprint. Mixed groves occupy the north and southeast as connected irregular habitats with varied tree heights, shrubs and ground cover. Keep an open central meadow and clear sightlines toward both landmarks. Add restrained woodland ground-material patches and modest smooth terrain relief. No buildings. Include an overview and close views that show both destinations and their approaches.",
+      "edit": "Make the southeastern grove denser at canopy and ground-cover layers, open a larger canopy-and-understory clearing around the swing tree and benches with a soft transition, and reduce understory density beside the well. Preserve the entire trail circuit, arch, swing tree, well and benches exactly."
+    }
+  ]
+}

@@ -30,7 +30,6 @@ import { verifyRobloxUploadEvidence } from "./verify-roblox-upload-evidence.mjs"
 const repositoryRoot = resolve(".");
 const outputPath = ".basalt/catalog/readiness.json";
 const maximumJsonBytes = 512 * 1024 * 1024;
-const maximumReportedFailures = 256;
 const concurrency = 4;
 
 const [sourceManifest, provenance, measurements, renders, dispositions, catalog] =
@@ -262,7 +261,7 @@ const material = {
     records: measurements.assets.length,
     exactSourceCoverage:
       measuredSources.size === manifestSources.size && measurementLineageFailures.length === 0,
-    lineageFailures: measurementLineageFailures.slice(0, maximumReportedFailures),
+    lineageFailures: measurementLineageFailures,
   },
   renders: {
     hash: renders.hash,
@@ -273,10 +272,7 @@ const material = {
     referencedFiles: renderChecks.length,
     validatedFiles: renderBinaryValidation.valid,
     invalidFiles: renderBinaryValidation.invalid,
-    lineageFailures: [...renderLineageFailures, ...renderBinaryValidation.failures].slice(
-      0,
-      maximumReportedFailures,
-    ),
+    lineageFailures: [...renderLineageFailures, ...renderBinaryValidation.failures],
   },
   search: {
     sourceNameHints: sourceNames.current
@@ -336,7 +332,7 @@ const material = {
             ),
           ),
           hash: robloxUploads.value.ledgerHash,
-          evidenceFailures: robloxUploadEvidenceFailures.slice(0, maximumReportedFailures),
+          evidenceFailures: robloxUploadEvidenceFailures,
         }
       : { status: "missing_or_stale", reason: robloxUploads.reason },
     bindings: robloxBindings.current
@@ -344,7 +340,7 @@ const material = {
           status: robloxBindingLineageFailures.length === 0 ? "eligible" : "rejected",
           records: robloxBindings.value.length,
           hash: contentHash(stableJson(robloxBindings.value)),
-          lineageFailures: robloxBindingLineageFailures.slice(0, maximumReportedFailures),
+          lineageFailures: robloxBindingLineageFailures,
         }
       : { status: "missing_or_stale", reason: robloxBindings.reason },
   },
@@ -436,7 +432,7 @@ async function validateFiles(checks) {
       valid += 1;
     } catch (error) {
       invalid += 1;
-      if (failures.length < maximumReportedFailures) failures.push(String(error));
+      failures.push(String(error));
     }
   });
   return { valid, invalid, failures };

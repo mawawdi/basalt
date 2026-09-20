@@ -7,6 +7,7 @@ export interface CatalogMeasureTask {
   readonly taskId: number;
   readonly workspaceRoot: string;
   readonly relativePath: string;
+  readonly sourceBytes: number;
   readonly source: CatalogGlbSource;
 }
 
@@ -27,8 +28,9 @@ async function measure(task: CatalogMeasureTask) {
   const bytes = await readBoundedWorkspaceBytes(
     task.workspaceRoot,
     task.relativePath,
-    512 * 1024 * 1024,
+    task.sourceBytes,
   );
+  if (bytes.byteLength !== task.sourceBytes) throw new Error("Source byte count changed");
   const observed = createHash("sha256").update(bytes).digest("hex");
   if (observed !== task.source.contentHash) throw new Error("Source bytes changed");
   return measureCatalogGlb(bytes, task.source);

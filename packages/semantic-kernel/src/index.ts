@@ -163,11 +163,11 @@ export const CONCEPT_COMMITMENT_DECLARATION_SCHEMA = z
     normativeDefinition: definition,
     identityCriteria: z
       .object({
-        necessary: z.array(definition).min(1).max(16),
-        excludes: z.array(definition).min(1).max(16),
+        necessary: z.array(definition).min(1),
+        excludes: z.array(definition).min(1),
       })
       .strict(),
-    parentIds: z.array(CONCEPT_ID_SCHEMA).max(16),
+    parentIds: z.array(CONCEPT_ID_SCHEMA),
   })
   .strict();
 export type ConceptCommitmentDeclaration = z.output<typeof CONCEPT_COMMITMENT_DECLARATION_SCHEMA>;
@@ -611,18 +611,16 @@ const lexiconEntry = z
       z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/u),
       z.string().trim().min(1).max(160),
     ),
-    alternateLabels: z.array(z.string().trim().min(1).max(160)).max(64),
-    hiddenLabels: z.array(z.string().trim().min(1).max(160)).max(64),
+    alternateLabels: z.array(z.string().trim().min(1).max(160)),
+    hiddenLabels: z.array(z.string().trim().min(1).max(160)),
     scopeNote: z.string().trim().min(1).max(2048).optional(),
-    examples: z.array(z.string().trim().min(1).max(512)).max(32),
-    counterexamples: z.array(z.string().trim().min(1).max(512)).max(32),
-    externalMappings: z
-      .array(
-        z
-          .object({ vocabulary: ASCII_ID_SCHEMA, identifier: z.string().trim().min(1).max(512) })
-          .strict(),
-      )
-      .max(64),
+    examples: z.array(z.string().trim().min(1).max(512)),
+    counterexamples: z.array(z.string().trim().min(1).max(512)),
+    externalMappings: z.array(
+      z
+        .object({ vocabulary: ASCII_ID_SCHEMA, identifier: z.string().trim().min(1).max(512) })
+        .strict(),
+    ),
   })
   .strict();
 export const SEMANTIC_LEXICON_SNAPSHOT_SCHEMA = z
@@ -715,7 +713,6 @@ const evidence = {
       evidenceHashes: z
         .array(HASH_SCHEMA)
         .min(1)
-        .max(65_536)
         .superRefine((values, context) =>
           validateCanonicalArray(values, String, "assertion evidence hashes", context),
         ),
@@ -854,8 +851,8 @@ export const SEMANTIC_HYPOTHESIS_ASSERTION_BUNDLE_SCHEMA = z
     kind: z.literal("SemanticAssertionBundle"),
     authority: z.literal("hypothesis"),
     hypothesisSourceHash: HASH_SCHEMA,
-    assertions: z.array(SEMANTIC_HYPOTHESIS_ASSERTION_SCHEMA).max(100_000),
-    abstentions: z.array(z.string().trim().min(1).max(1024)).max(4096),
+    assertions: z.array(SEMANTIC_HYPOTHESIS_ASSERTION_SCHEMA),
+    abstentions: z.array(z.string().trim().min(1).max(1024)),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -869,7 +866,7 @@ export const SEMANTIC_ADMITTED_ASSERTION_BUNDLE_SCHEMA = z
   .object({
     kind: z.literal("SemanticAssertionBundle"),
     authority: z.literal("admitted"),
-    assertions: z.array(SEMANTIC_ADMITTED_ASSERTION_SCHEMA).max(100_000),
+    assertions: z.array(SEMANTIC_ADMITTED_ASSERTION_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()

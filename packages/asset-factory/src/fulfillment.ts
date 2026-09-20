@@ -85,7 +85,7 @@ const restyleOutcome = z
     sourceEntryHandle: ENTRY_HANDLE_SCHEMA,
     sourceEntryHash: HASH_SCHEMA,
     targetEntryHandle: ENTRY_HANDLE_SCHEMA,
-    jobs: z.array(ASSET_FULFILLMENT_JOB_SCHEMA).min(1).max(4096),
+    jobs: z.array(ASSET_FULFILLMENT_JOB_SCHEMA).min(1),
   })
   .strict();
 const extendOutcome = z
@@ -93,7 +93,7 @@ const extendOutcome = z
     strategy: z.literal("extend_substitution_set"),
     targetEntryHandle: ENTRY_HANDLE_SCHEMA,
     targetEntryHash: HASH_SCHEMA,
-    jobs: z.array(ASSET_FULFILLMENT_JOB_SCHEMA).min(1).max(4096),
+    jobs: z.array(ASSET_FULFILLMENT_JOB_SCHEMA).min(1),
   })
   .strict();
 const synthesizeOutcome = z
@@ -101,7 +101,7 @@ const synthesizeOutcome = z
     strategy: z.literal("synthesize_substitution_set"),
     targetEntryHandle: ENTRY_HANDLE_SCHEMA,
     targetEntryKind: z.literal("substitution_set"),
-    jobs: z.array(ASSET_FULFILLMENT_JOB_SCHEMA).min(1).max(4096),
+    jobs: z.array(ASSET_FULFILLMENT_JOB_SCHEMA).min(1),
   })
   .strict();
 

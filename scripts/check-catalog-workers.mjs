@@ -18,15 +18,21 @@ for (const path of ["workers/catalog-metadata/worker.py", "workers/catalog-metad
 const worker = await readFile("workers/catalog-metadata/worker.py", "utf8");
 const modal = await readFile("workers/catalog-metadata/modal_app.py", "utf8");
 const expected = new Map([
-  ["MAX_ITEMS", "8"],
   ["MAX_VIEWS", "12"],
   ["IMAGE_LONG_EDGE", "384"],
-  ["MAX_EVIDENCE_FILES", "192"],
-  ["MAX_EVIDENCE_TOTAL_BYTES", "64 * 1024 * 1024"],
 ]);
 for (const [name, value] of expected) {
   if (!worker.includes(`${name} = ${value}`)) throw new Error(`Metadata worker ${name} drifted`);
 }
+for (const removed of [
+  "MAX_ITEMS",
+  "MAX_CONTEXT_CANDIDATES",
+  "MAX_EVIDENCE_FILES",
+  "MAX_EVIDENCE_TOTAL_BYTES",
+  "MAX_PREPROCESSED_PIXELS",
+])
+  if (worker.includes(removed))
+    throw new Error(`Metadata worker restored removed corpus-cardinality cap ${removed}`);
 if (!modal.includes('"cpu": 4.0')) throw new Error("Modal metadata worker must use four CPU cores");
 if (!modal.includes('"max_containers": 1'))
   throw new Error("Modal metadata execution must permit one container per execution path");

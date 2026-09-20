@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { readBoundedWorkspaceBytes, writeCanonicalWorkspaceJson } from "@basalt/artifact-store";
+import {
+  readBoundedWorkspaceBytes,
+  serializeCanonicalJson,
+  writeCanonicalWorkspaceJson,
+} from "@basalt/artifact-store";
 import { contentHash, stableJson } from "@basalt/contracts";
 import {
   ROBLOX_ASSET_BINDING_SCHEMA,
@@ -167,12 +171,18 @@ console.log(JSON.stringify(status, null, 2));
 
 async function writeJson(path, value) {
   await mkdir(resolve(root, output), { recursive: true });
-  const existing = await readBoundedWorkspaceBytes(root, path, 256 * 1024 * 1024).catch((error) => {
-    if (error.code === "ENOENT" || error.message.includes("missing")) return undefined;
+  const existingStat = await lstat(resolve(root, path)).catch((error) => {
+    if (error.code === "ENOENT") return undefined;
     throw error;
   });
+  if (existingStat && (!existingStat.isFile() || existingStat.isSymbolicLink()))
+    throw new Error(`Refusing to replace unsafe path: ${path}`);
+  const existing = existingStat
+    ? await readBoundedWorkspaceBytes(root, path, Math.max(1, existingStat.size))
+    : undefined;
+  const proposedBytes = Buffer.byteLength(serializeCanonicalJson(value), "utf8");
   await writeCanonicalWorkspaceJson(root, path, value, {
-    maxBytes: 256 * 1024 * 1024,
+    maxBytes: Math.max(1, proposedBytes, existingStat?.size ?? 0),
     ...(existing === undefined
       ? {}
       : { expectedExistingHash: createHash("sha256").update(existing).digest("hex") }),

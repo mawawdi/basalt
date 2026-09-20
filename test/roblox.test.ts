@@ -25,8 +25,10 @@ import {
   metersToRobloxStuds,
   robloxStudsToMeters,
   robloxTerrainSolidOccupancy,
+  robloxVisualEnvironmentCapabilityGaps,
   sealRobloxAssetBinding,
 } from "@basalt/roblox";
+import { sealWorldVisualEnvironment } from "@basalt/world-planning";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 import { worldFixture } from "./helpers/world-fixture.js";
 
@@ -78,6 +80,21 @@ test("Roblox is the only unit-conversion and import-protocol boundary", async ()
     world.visualEnvironment,
   );
   assert.equal(manifest.loweringGaps.length, 0);
+});
+
+test("visual intent outside Roblox property ranges becomes an adapter lowering gap", async () => {
+  const module = await loadSemanticRegistry();
+  const fixture = await worldFixture(module);
+  const { kind: _kind, hash: _hash, ...environment } = fixture.plan.visualEnvironment;
+  const unrestrictedIntent = sealWorldVisualEnvironment({
+    ...environment,
+    brightness: 14,
+    exposureCompensation: 7,
+  });
+  const gaps = robloxVisualEnvironmentCapabilityGaps(unrestrictedIntent);
+  assert.equal(gaps.length, 2);
+  assert.match(gaps.join("; "), /brightness=14/u);
+  assert.match(gaps.join("; "), /exposureCompensation=7/u);
 });
 
 test(

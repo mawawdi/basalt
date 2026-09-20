@@ -10,15 +10,15 @@ export const STYLE_PROFILE_DECLARATION_SCHEMA = z
   .object({
     handle: STYLE_PROFILE_HANDLE_SCHEMA,
     shapeLanguage: guidance,
-    silhouetteHierarchy: z.array(profileLayer).min(1).max(8),
-    detailScale: z.array(profileLayer).min(1).max(8),
+    silhouetteHierarchy: z.array(profileLayer).min(1),
+    detailScale: z.array(profileLayer).min(1),
     edgeTreatment: guidance,
     materialLanguage: guidance,
     texelDensity: z
       .object({
-        minimumPixelsPerMeter: z.number().finite().positive().max(16384),
-        targetPixelsPerMeter: z.number().finite().positive().max(16384),
-        maximumPixelsPerMeter: z.number().finite().positive().max(16384),
+        minimumPixelsPerMeter: z.number().finite().positive(),
+        targetPixelsPerMeter: z.number().finite().positive(),
+        maximumPixelsPerMeter: z.number().finite().positive(),
       })
       .strict()
       .refine(
@@ -31,10 +31,10 @@ export const STYLE_PROFILE_DECLARATION_SCHEMA = z
       .object({ scaleMeters: z.number().finite().positive(), intensity: unit, guidance })
       .strict(),
     wearPolicy: z
-      .object({ amount: unit, placement: guidance, exclusions: z.array(guidance).max(32) })
+      .object({ amount: unit, placement: guidance, exclusions: z.array(guidance) })
       .strict(),
     lightingIntent: guidance,
-    antiGoals: z.array(guidance).max(32),
+    antiGoals: z.array(guidance),
     palette: z
       .array(
         z
@@ -51,8 +51,7 @@ export const STYLE_PROFILE_DECLARATION_SCHEMA = z
           })
           .strict(),
       )
-      .min(1)
-      .max(32),
+      .min(1),
   })
   .strict();
 export type StyleProfileDeclaration = z.output<typeof STYLE_PROFILE_DECLARATION_SCHEMA>;

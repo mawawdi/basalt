@@ -80,6 +80,7 @@ function admissionPolicy() {
 function searchPolicy() {
   return sealCatalogSearchPolicy({
     policyId: "catalog_search_test",
+    origin: "Deterministic catalog search regression fixture",
     fieldWeights: {
       alternateNouns: 3,
       caption: 3,
@@ -92,12 +93,8 @@ function searchPolicy() {
       useCases: 1,
       visibleText: 2,
     },
-    lexicalCandidateLimit: 200,
-    embeddingCandidateLimit: 200,
     reciprocalRankConstant: 60,
     fusionNormalization: "per_document_available_channels",
-    maximumResults: 100,
-    maximumValidationCandidates: 8,
     tokenizerImplementationHash: CATALOG_SEARCH_TOKENIZER_IMPLEMENTATION_HASH,
   });
 }
@@ -819,6 +816,25 @@ test("progressive search works from basename evidence and fails closed for missi
   assert.equal(referenceResult.status, "incomplete");
   assert.equal(referenceResult.results.length, 0);
   assert.ok(referenceResult.diagnostics.some((entry) => entry.includes("no shape embedding")));
+});
+
+test("catalog retrieval returns the requested result count beyond the former policy ceiling", () => {
+  const policy = searchPolicy();
+  const documents = Array.from({ length: 128 }, (_, index) =>
+    manualSearchDocument((index + 1).toString(16).padStart(64, "0"), ["tree"]),
+  );
+  const index = manualSearchIndex(policy, documents);
+  const query = sealCatalogSearchQuery({
+    text: "tree",
+    rankingMode: "basename_only",
+    styleTerms: [],
+    constraints: { commercialUseRequired: false, redistributionRequired: false },
+    limit: documents.length,
+    validationLimit: 0,
+  });
+  const result = executeCatalogSearch({ index, policy, query });
+  assert.equal(result.status, "eligible");
+  assert.equal(result.results.length, documents.length);
 });
 
 test("mixed enrichment cannot gain an additive channel-count advantage", () => {

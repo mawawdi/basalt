@@ -64,10 +64,10 @@ export const CATALOG_NEAR_DUPLICATE_SEARCH_SCHEMA = z
         denominator: z.number().int().positive(),
       })
       .strict(),
-    searchedSourceContentHashes: z.array(HASH_SCHEMA).max(100_000),
-    comparedPairCount: z.number().int().nonnegative().max(5_000_000_000),
-    relations: z.array(CATALOG_NEAR_DUPLICATE_RELATION_SCHEMA).max(1_000_000),
-    diagnostics: z.array(LEAKAGE_ANALYSIS_DIAGNOSTIC_SCHEMA).max(100_000),
+    searchedSourceContentHashes: z.array(HASH_SCHEMA),
+    comparedPairCount: z.number().int().nonnegative().safe(),
+    relations: z.array(CATALOG_NEAR_DUPLICATE_RELATION_SCHEMA),
+    diagnostics: z.array(LEAKAGE_ANALYSIS_DIAGNOSTIC_SCHEMA),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -137,8 +137,8 @@ export const CATALOG_LEAKAGE_ANALYSIS_SCHEMA = z
     nearDuplicateSearchHash: HASH_SCHEMA,
     implementationHash: HASH_SCHEMA,
     coverage: LEAKAGE_ANALYSIS_COVERAGE_SCHEMA,
-    relations: z.array(CATALOG_LEAKAGE_RELATION_SCHEMA).max(1_000_000),
-    diagnostics: z.array(LEAKAGE_ANALYSIS_DIAGNOSTIC_SCHEMA).max(100_000),
+    relations: z.array(CATALOG_LEAKAGE_RELATION_SCHEMA),
+    diagnostics: z.array(LEAKAGE_ANALYSIS_DIAGNOSTIC_SCHEMA),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -173,8 +173,8 @@ const LEAKAGE_EVIDENCE_REFERENCE_SCHEMA = z
 export const CATALOG_LEAKAGE_GROUP_SCHEMA = z
   .object({
     kind: z.literal("CatalogLeakageGroup"),
-    sourceContentHashes: z.array(HASH_SCHEMA).min(1).max(100_000),
-    evidence: z.array(LEAKAGE_EVIDENCE_REFERENCE_SCHEMA).min(1).max(100_000),
+    sourceContentHashes: z.array(HASH_SCHEMA).min(1),
+    evidence: z.array(LEAKAGE_EVIDENCE_REFERENCE_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -265,7 +265,7 @@ export function analyzeCatalogLeakage(input: {
         `${missingMeasurements.length} source identities lack physical leakage evidence`,
         "incomplete",
         ["coverage"],
-        missingMeasurements.slice(0, 256),
+        missingMeasurements,
       ),
     );
 
@@ -317,7 +317,7 @@ export function analyzeCatalogLeakage(input: {
         `${unknownNearDuplicateSources.length} near-duplicate descriptors reference collision-only or unknown sources`,
         "rejected",
         ["nearDuplicateSearchHash"],
-        unknownNearDuplicateSources.slice(0, 256),
+        unknownNearDuplicateSources,
       ),
     );
   if (missingNearDuplicateSources.length > 0)
@@ -327,7 +327,7 @@ export function analyzeCatalogLeakage(input: {
         `${missingNearDuplicateSources.length} renderable source identities lack near-duplicate shape evidence`,
         "incomplete",
         ["coverage", "nearDuplicateShape"],
-        missingNearDuplicateSources.slice(0, 256),
+        missingNearDuplicateSources,
       ),
     );
   for (const diagnostic of nearDuplicateSearch.diagnostics) diagnostics.push(diagnostic);

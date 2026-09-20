@@ -7,6 +7,7 @@ export * from "./construction.js";
 export * from "./terrain.js";
 export * from "./vegetation.js";
 export * from "./region-authoring.js";
+export * from "./region-edit.js";
 export * from "./routes.js";
 export * from "./route-horizontal.js";
 export * from "./lots.js";

@@ -9,6 +9,7 @@ import {
 } from "@basalt/world-planning";
 import type { SemanticModule } from "@basalt/semantic-kernel";
 import type { WorldDiagnosticCamera, WorldVerifierExpectations } from "@basalt/world-refinement";
+import { TEST_WORLD_EXECUTION_POLICY } from "./execution-policy.js";
 import { worldFixture } from "./world-fixture.js";
 
 const literal = (value: number) => ({ kind: "literal" as const, value });
@@ -95,6 +96,7 @@ export async function observationTowerFixture(module: SemanticModule): Promise<{
       semanticModule: module,
       catalogSnapshot: fixture.snapshot,
       catalogAssets: [fixture.asset],
+      executionPolicy: TEST_WORLD_EXECUTION_POLICY,
     },
   };
 }

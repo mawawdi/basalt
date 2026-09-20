@@ -1,4 +1,7 @@
+import { horizontalMaskBounds, horizontalMaskContainsPoint } from "@basalt/spatial-core";
 import type { TerrainPlan, WorldPoint2 } from "./contracts.js";
+
+export { horizontalMaskBounds, horizontalMaskContainsPoint };
 
 const EPSILON = 1e-9;
 
@@ -20,13 +23,15 @@ export function evaluateTerrainElevation(
     if (operation.kind === "raise") {
       const distance = Math.hypot(xMeters - operation.center.x, zMeters - operation.center.z);
       if (distance < operation.radiusMeters)
-        elevationMeters += operation.deltaMeters * (1 - distance / operation.radiusMeters);
+        elevationMeters +=
+          operation.deltaMeters * smoothstep(1 - distance / operation.radiusMeters);
       continue;
     }
     if (operation.kind === "carve") {
       const distance = Math.hypot(xMeters - operation.center.x, zMeters - operation.center.z);
       if (distance < operation.radiusMeters)
-        elevationMeters -= operation.depthMeters * (1 - distance / operation.radiusMeters);
+        elevationMeters -=
+          operation.depthMeters * smoothstep(1 - distance / operation.radiusMeters);
       continue;
     }
     const point = { x: xMeters, z: zMeters };
@@ -37,11 +42,16 @@ export function evaluateTerrainElevation(
     if (operation.blendWidthMeters <= 0) continue;
     const distance = distanceToPolygon(point, operation.polygon);
     if (distance < operation.blendWidthMeters) {
-      const influence = 1 - distance / operation.blendWidthMeters;
+      const influence = smoothstep(1 - distance / operation.blendWidthMeters);
       elevationMeters += (operation.elevationMeters - elevationMeters) * influence;
     }
   }
   return elevationMeters;
+}
+
+function smoothstep(value: number): number {
+  const t = Math.max(0, Math.min(1, value));
+  return t * t * (3 - 2 * t);
 }
 
 /** Authored material masks change appearance only; later paint wins on overlap. */
@@ -54,9 +64,22 @@ export function evaluateTerrainMaterial(
     throw new Error("Terrain coordinates must be finite");
   let materialId = plan.materialId;
   for (const operation of plan.operations)
-    if (operation.kind === "paint" && pointInPolygon({ x: xMeters, z: zMeters }, operation.polygon))
+    if (
+      operation.kind === "paint" &&
+      terrainPaintContainsPoint(operation, { x: xMeters, z: zMeters })
+    )
       materialId = operation.materialId;
   return materialId;
+}
+
+type TerrainPaintOperation = Extract<TerrainPlan["operations"][number], { kind: "paint" }>;
+
+/** Resolve one authored paint mask in continuous world space before grid or engine quantization. */
+export function terrainPaintContainsPoint(
+  operation: TerrainPaintOperation,
+  point: WorldPoint2,
+): boolean {
+  return horizontalMaskContainsPoint(operation.mask, point);
 }
 
 export function terrainPlanContainsHorizontalPoint(

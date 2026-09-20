@@ -41,7 +41,7 @@ const packet = z
     kind: z.literal("CatalogFirstUseRobloxUploadPacket"),
     hash: HASH_SCHEMA,
     worldBuildHash: HASH_SCHEMA,
-    missingBindings: z.array(itemSchema).min(1).max(128),
+    missingBindings: z.array(itemSchema).min(1),
   })
   .passthrough()
   .parse(await readJson(packetPath));
@@ -88,12 +88,11 @@ const decisionSchema = z
             uploadArtifactHash: HASH_SCHEMA,
             publicationEvidenceHash: HASH_SCHEMA,
             robloxAssetId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-            materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA).min(1).max(100_000),
+            materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA).min(1),
           })
           .strict(),
       )
-      .min(1)
-      .max(128),
+      .min(1),
   })
   .strict();
 let expectedExistingHash;

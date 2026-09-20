@@ -75,6 +75,12 @@ const BINARY_DIRECTORY = "binary-artifacts";
 const HASH_PATTERN = /^[a-f0-9]{64}$/;
 const MEDIA_TYPE_PATTERN = /^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*$/;
 
+function missingArtifactError(message: string): NodeJS.ErrnoException {
+  const error: NodeJS.ErrnoException = new Error(message);
+  error.code = "ENOENT";
+  return error;
+}
+
 /**
  * A local, immutable JSON evidence store. It has no process-working-directory
  * behaviour: every locator is resolved only from the root passed at creation.
@@ -652,7 +658,7 @@ async function assertSafeExistingPathWithinRoot(
   )
     throw new Error("Artifact path escapes store root");
   const rootInfo = await lstat(root).catch((error: unknown) => {
-    if (isMissing(error)) throw new Error("Artifact store root does not exist");
+    if (isMissing(error)) throw missingArtifactError("Artifact store root does not exist");
     throw error;
   });
   if (rootInfo.isSymbolicLink() || !rootInfo.isDirectory())
@@ -664,7 +670,7 @@ async function assertSafeExistingPathWithinRoot(
     if (part === undefined) throw new Error("Invalid artifact path");
     current = `${current}${sep}${part}`;
     const info = await lstat(current).catch((error: unknown) => {
-      if (isMissing(error)) throw new Error("Artifact file is missing");
+      if (isMissing(error)) throw missingArtifactError("Artifact file is missing");
       throw error;
     });
     if (info.isSymbolicLink()) throw new Error("Artifact path contains a symbolic link");

@@ -29,6 +29,12 @@ const execFile = promisify(execFileCallback);
 const repositoryRoot = resolve(".");
 const outputRoot = FIRST_FINISHED_REGION_OUTPUT_ROOT;
 const searchRoot = `${outputRoot}/search`;
+const diagnosticRenderExecutionPolicy = {
+  policyId: "FirstFinishedRegionDiagnosticRender",
+  origin: "Creator-selected local first-finished-region materialization allocation",
+  maximumPixelsPerCamera: 262_144,
+  maximumTerrainTrianglesPerField: 16_384,
+};
 
 const searchRequests = [
   {
@@ -837,7 +843,11 @@ async function loadOrRenderDiagnostics(world, cameras) {
       !(error instanceof Error && error.message.startsWith("cached diagnostic"))
     )
       throw error;
-    return renderWorldDiagnostics({ worldBuild: world, cameras });
+    return renderWorldDiagnostics({
+      worldBuild: world,
+      cameras,
+      executionPolicy: diagnosticRenderExecutionPolicy,
+    });
   }
 }
 

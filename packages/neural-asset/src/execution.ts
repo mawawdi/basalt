@@ -19,16 +19,13 @@ export type NeuralProviderCapability = z.output<typeof NEURAL_PROVIDER_CAPABILIT
 
 const externalRevision = z.string().regex(/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/u);
 
-const canonicalHashes = z
-  .array(HASH_SCHEMA)
-  .max(4096)
-  .superRefine((values, context) => {
-    if (
-      new Set(values).size !== values.length ||
-      stableJson([...values].sort(compareCanonicalStrings)) !== stableJson(values)
-    )
-      context.addIssue({ code: "custom", message: "Hashes must be unique and canonical" });
-  });
+const canonicalHashes = z.array(HASH_SCHEMA).superRefine((values, context) => {
+  if (
+    new Set(values).size !== values.length ||
+    stableJson([...values].sort(compareCanonicalStrings)) !== stableJson(values)
+  )
+    context.addIssue({ code: "custom", message: "Hashes must be unique and canonical" });
+});
 
 export const NEURAL_PROVIDER_DECLARATION_SCHEMA = z
   .object({
@@ -46,7 +43,7 @@ export const NEURAL_PROVIDER_DECLARATION_SCHEMA = z
       .optional(),
     usageScope: z.enum(["research", "production"]),
     status: z.enum(["eligible", "incomplete", "rejected"]),
-    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(256),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -84,7 +81,7 @@ export const NEURAL_WORKER_QUALIFICATION_SCHEMA = z
     dependencyInventoryHash: HASH_SCHEMA,
     rightsEvidenceHash: HASH_SCHEMA,
     status: z.enum(["eligible", "incomplete", "rejected"]),
-    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(256),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -192,7 +189,7 @@ export const NEURAL_ASSET_GENERATION_RECEIPT_SCHEMA = z
         costMicrousd: z.number().int().nonnegative(),
       })
       .strict(),
-    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(4096),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)),
     admissionAuthority: z.literal("finishing_measurement_and_catalog_admission_required"),
     hash: HASH_SCHEMA,
   })
@@ -220,12 +217,8 @@ export const NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA = z
     kind: z.literal("NeuralExecutionBudgetClaim"),
     requestHash: HASH_SCHEMA,
     providerId: NEURAL_PROVIDER_ID_SCHEMA,
-    estimatedCostMicrousd: z.number().int().positive().max(10_000_000_000),
-    reservedGpuMilliseconds: z
-      .number()
-      .int()
-      .positive()
-      .max(30 * 24 * 60 * 60 * 1000),
+    estimatedCostMicrousd: z.number().int().positive().safe(),
+    reservedGpuMilliseconds: z.number().int().positive().safe(),
     budgetHashBefore: HASH_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -236,14 +229,10 @@ export type NeuralExecutionBudgetClaim = z.output<typeof NEURAL_EXECUTION_BUDGET
 export const NEURAL_EXECUTION_BUDGET_SCHEMA = z
   .object({
     kind: z.literal("NeuralExecutionBudget"),
-    maximumCostMicrousd: z.number().int().positive().max(10_000_000_000),
-    maximumGpuMilliseconds: z
-      .number()
-      .int()
-      .positive()
-      .max(30 * 24 * 60 * 60 * 1000),
-    maximumPaidAttempts: z.number().int().positive().max(100_000),
-    claims: z.array(NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA).max(100_000),
+    maximumCostMicrousd: z.number().int().positive().safe(),
+    maximumGpuMilliseconds: z.number().int().positive().safe(),
+    maximumPaidAttempts: z.number().int().positive().safe(),
+    claims: z.array(NEURAL_EXECUTION_BUDGET_CLAIM_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()

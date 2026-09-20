@@ -129,8 +129,8 @@ const QUALIFICATION_ASSET_SCHEMA = z
         "whole_object",
       ])
       .optional(),
-    adjudicatedNouns: z.array(z.string().trim().min(1).max(160)).min(1).max(16).optional(),
-    adjudicationEvidenceHashes: z.array(HASH_SCHEMA).min(1).max(64).optional(),
+    adjudicatedNouns: z.array(z.string().trim().min(1).max(160)).min(1).optional(),
+    adjudicationEvidenceHashes: z.array(HASH_SCHEMA).min(1).optional(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -186,8 +186,8 @@ const QUALIFICATION_QUERY_SCHEMA = z
     query: CATALOG_SEARCH_QUERY_SCHEMA,
     expectation: z.enum(["evidence_insufficient", "match", "no_match"]),
     judgmentBasis: z.enum(["basename_heuristic_proposal", "independent_visual_review"]),
-    judgments: z.array(RELEVANCE_JUDGMENT_SCHEMA).min(1).max(512),
-    adjudicationEvidenceHashes: z.array(HASH_SCHEMA).min(1).max(64),
+    judgments: z.array(RELEVANCE_JUDGMENT_SCHEMA).min(1),
+    adjudicationEvidenceHashes: z.array(HASH_SCHEMA).min(1),
   })
   .strict()
   .superRefine((value, context) => {
@@ -231,7 +231,7 @@ const QUALIFICATION_VALIDATION_CASE_SCHEMA = z
     request: CATALOG_SEARCH_VALIDATION_REQUEST_SCHEMA,
     expectedVerdict: z.enum(["match", "mismatch", "uncertain"]),
     verdictBasis: z.enum(["basename_heuristic_proposal", "independent_visual_review"]),
-    adjudicationEvidenceHashes: z.array(HASH_SCHEMA).min(1).max(64),
+    adjudicationEvidenceHashes: z.array(HASH_SCHEMA).min(1),
   })
   .strict()
   .superRefine((value, context) =>
@@ -283,7 +283,7 @@ const QUALIFICATION_REVIEW_ASSET_SCHEMA = z
       "vegetation",
       "whole_object",
     ]),
-    proposedNouns: z.array(z.string().trim().min(1).max(160)).min(1).max(16),
+    proposedNouns: z.array(z.string().trim().min(1).max(160)).min(1),
   })
   .strict()
   .superRefine((value, context) =>
@@ -296,7 +296,7 @@ const QUALIFICATION_REVIEW_QUERY_SCHEMA = z
     split: CATALOG_QUALIFICATION_SPLIT_SCHEMA,
     queryHash: HASH_SCHEMA,
     proposedExpectation: z.enum(["evidence_insufficient", "match", "no_match"]),
-    proposedJudgments: z.array(RELEVANCE_JUDGMENT_SCHEMA).min(1).max(512),
+    proposedJudgments: z.array(RELEVANCE_JUDGMENT_SCHEMA).min(1),
   })
   .strict()
   .superRefine((value, context) =>
@@ -336,11 +336,11 @@ export const CATALOG_QUALIFICATION_REVIEW_PACKET_SCHEMA = z
         validatorVerdicts: z.literal("required"),
       })
       .strict(),
-    pages: z.array(QUALIFICATION_REVIEW_PAGE_SCHEMA).min(9).max(512),
-    visuals: z.array(QUALIFICATION_REVIEW_VISUAL_SCHEMA).min(1).max(100_000),
-    assets: z.array(QUALIFICATION_REVIEW_ASSET_SCHEMA).min(1).max(10_000),
-    queries: z.array(QUALIFICATION_REVIEW_QUERY_SCHEMA).min(1).max(10_000),
-    validationCases: z.array(QUALIFICATION_REVIEW_VALIDATOR_CASE_SCHEMA).min(1).max(10_000),
+    pages: z.array(QUALIFICATION_REVIEW_PAGE_SCHEMA).min(9),
+    visuals: z.array(QUALIFICATION_REVIEW_VISUAL_SCHEMA).min(1),
+    assets: z.array(QUALIFICATION_REVIEW_ASSET_SCHEMA).min(1),
+    queries: z.array(QUALIFICATION_REVIEW_QUERY_SCHEMA).min(1),
+    validationCases: z.array(QUALIFICATION_REVIEW_VALIDATOR_CASE_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -411,7 +411,7 @@ const QUALIFICATION_ADJUDICATED_ASSET_SCHEMA = z
       "vegetation",
       "whole_object",
     ]),
-    adjudicatedNouns: z.array(z.string().trim().min(1).max(160)).min(1).max(16),
+    adjudicatedNouns: z.array(z.string().trim().min(1).max(160)).min(1),
   })
   .strict()
   .superRefine((value, context) =>
@@ -427,7 +427,7 @@ const QUALIFICATION_ADJUDICATED_QUERY_SCHEMA = z
     queryId: z.string().regex(/^[a-z][a-z0-9_]{0,95}$/u),
     expectationReviewAction: REVIEW_ACTION_SCHEMA,
     expectation: z.enum(["evidence_insufficient", "match", "no_match"]),
-    judgments: z.array(QUALIFICATION_ADJUDICATED_RELEVANCE_SCHEMA).min(1).max(512),
+    judgments: z.array(QUALIFICATION_ADJUDICATED_RELEVANCE_SCHEMA).min(1),
   })
   .strict()
   .superRefine((value, context) =>
@@ -469,9 +469,9 @@ export const CATALOG_QUALIFICATION_ADJUDICATION_DECISION_SCHEMA = z
         validatorVerdicts: z.literal("complete"),
       })
       .strict(),
-    assets: z.array(QUALIFICATION_ADJUDICATED_ASSET_SCHEMA).min(1).max(10_000),
-    queries: z.array(QUALIFICATION_ADJUDICATED_QUERY_SCHEMA).min(1).max(10_000),
-    validationCases: z.array(QUALIFICATION_ADJUDICATED_VALIDATOR_CASE_SCHEMA).min(1).max(10_000),
+    assets: z.array(QUALIFICATION_ADJUDICATED_ASSET_SCHEMA).min(1),
+    queries: z.array(QUALIFICATION_ADJUDICATED_QUERY_SCHEMA).min(1),
+    validationCases: z.array(QUALIFICATION_ADJUDICATED_VALIDATOR_CASE_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -514,8 +514,7 @@ export const CATALOG_QUALIFICATION_CANDIDATE_POOL_SCHEMA = z
           })
           .strict(),
       )
-      .min(1)
-      .max(100_000),
+      .min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -568,12 +567,12 @@ export const CATALOG_QUALIFICATION_FIXTURE_SCHEMA = z
     measurementSetHash: HASH_SCHEMA,
     visualReviewIndexHash: HASH_SCHEMA,
     leakageAnalysisHash: HASH_SCHEMA,
-    assets: z.array(QUALIFICATION_ASSET_SCHEMA).min(1).max(100_000),
+    assets: z.array(QUALIFICATION_ASSET_SCHEMA).min(1),
     candidatePools: z.array(CATALOG_QUALIFICATION_CANDIDATE_POOL_SCHEMA).length(6),
-    queries: z.array(QUALIFICATION_QUERY_SCHEMA).min(1).max(10_000),
-    validationCases: z.array(QUALIFICATION_VALIDATION_CASE_SCHEMA).min(1).max(10_000),
-    writerConfigurations: z.array(WRITER_CONFIGURATION_SCHEMA).min(1).max(16),
-    validatorConfigurations: z.array(VALIDATOR_CONFIGURATION_SCHEMA).min(1).max(16),
+    queries: z.array(QUALIFICATION_QUERY_SCHEMA).min(1),
+    validationCases: z.array(QUALIFICATION_VALIDATION_CASE_SCHEMA).min(1),
+    writerConfigurations: z.array(WRITER_CONFIGURATION_SCHEMA).min(1),
+    validatorConfigurations: z.array(VALIDATOR_CONFIGURATION_SCHEMA).min(1),
     adjudicationProtocolHash: HASH_SCHEMA,
     qualificationPolicyHash: HASH_SCHEMA,
     searchPolicyHash: HASH_SCHEMA,
@@ -708,9 +707,7 @@ const DECISION_RUN_SCHEMA = z
     validatorModelId: z.string().regex(/^[a-z][a-z0-9_]{2,127}$/u),
     coverageScenario: z.literal("mixed"),
     resultSetHash: HASH_SCHEMA,
-    validations: z
-      .array(z.object({ requestHash: HASH_SCHEMA, receiptHash: HASH_SCHEMA }).strict())
-      .max(8),
+    validations: z.array(z.object({ requestHash: HASH_SCHEMA, receiptHash: HASH_SCHEMA }).strict()),
     decisionHash: HASH_SCHEMA,
   })
   .strict()
@@ -739,12 +736,12 @@ export const CATALOG_QUALIFICATION_EVIDENCE_SCHEMA = z
     validationSchemaHash: HASH_SCHEMA,
     workerImplementationHash: HASH_SCHEMA,
     frozenSelectionHash: HASH_SCHEMA.optional(),
-    metadataRuns: z.array(METADATA_RUN_SCHEMA).max(128),
-    embeddingRuns: z.array(EMBEDDING_RUN_SCHEMA).max(8),
-    indexRuns: z.array(INDEX_RUN_SCHEMA).max(128),
-    retrievalRuns: z.array(RETRIEVAL_RUN_SCHEMA).max(1_000_000),
-    independentValidationRuns: z.array(INDEPENDENT_VALIDATION_RUN_SCHEMA).max(100_000),
-    decisionRuns: z.array(DECISION_RUN_SCHEMA).max(1_000_000),
+    metadataRuns: z.array(METADATA_RUN_SCHEMA),
+    embeddingRuns: z.array(EMBEDDING_RUN_SCHEMA),
+    indexRuns: z.array(INDEX_RUN_SCHEMA),
+    retrievalRuns: z.array(RETRIEVAL_RUN_SCHEMA),
+    independentValidationRuns: z.array(INDEPENDENT_VALIDATION_RUN_SCHEMA),
+    decisionRuns: z.array(DECISION_RUN_SCHEMA),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -898,9 +895,9 @@ export const CATALOG_QUALIFICATION_REPORT_SCHEMA = z
     candidatePopulations: z
       .object({ uniform: z.number().int().positive(), mixed: z.number().int().positive() })
       .strict(),
-    channelMetrics: z.array(CHANNEL_METRICS_SCHEMA).min(1).max(1_024),
-    validatorMetrics: z.array(VALIDATOR_METRICS_SCHEMA).min(1).max(32),
-    decisionMetrics: z.array(DECISION_METRICS_SCHEMA).min(1).max(512),
+    channelMetrics: z.array(CHANNEL_METRICS_SCHEMA).min(1),
+    validatorMetrics: z.array(VALIDATOR_METRICS_SCHEMA).min(1),
+    decisionMetrics: z.array(DECISION_METRICS_SCHEMA).min(1),
     selectedGpuMilliseconds: z.number().int().nonnegative(),
     totalGpuMilliseconds: z.number().int().nonnegative(),
     gates: z
@@ -916,7 +913,7 @@ export const CATALOG_QUALIFICATION_REPORT_SCHEMA = z
         frozenSelection: z.boolean(),
       })
       .strict(),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(256),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })

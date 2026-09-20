@@ -21,7 +21,7 @@ export type CatalogEmbeddingPurpose = z.output<typeof CATALOG_EMBEDDING_PURPOSE_
 export const CATALOG_QUANTIZED_VECTOR_SCHEMA = z
   .object({
     scaleMillionths: z.number().int().positive().max(1_000_000_000),
-    values: z.array(z.number().int().min(-32_767).max(32_767)).min(8).max(8_192),
+    values: z.array(z.number().int().min(-32_767).max(32_767)).min(1),
   })
   .strict()
   .superRefine((value, context) => {
@@ -46,7 +46,7 @@ export const CATALOG_EMBEDDING_RECEIPT_SCHEMA = z
     perViewEvidenceHash: HASH_SCHEMA.optional(),
     aggregate: CATALOG_QUANTIZED_VECTOR_SCHEMA,
     maximumViewDisagreementMillionths: z.number().int().min(0).max(2_000_000),
-    gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
+    gpuMilliseconds: z.number().int().nonnegative().safe(),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -60,22 +60,18 @@ export const CATALOG_EMBEDDING_SET_SCHEMA = z
     status: COMPILATION_STATUS_SCHEMA,
     sourceManifestHash: HASH_SCHEMA,
     visualReviewIndexHash: HASH_SCHEMA,
-    expected: z
-      .array(
-        z
-          .object({ sourceContentHash: HASH_SCHEMA, purpose: CATALOG_EMBEDDING_PURPOSE_SCHEMA })
-          .strict(),
-      )
-      .max(200_000),
-    receipts: z.array(CATALOG_EMBEDDING_RECEIPT_SCHEMA).max(200_000),
-    missing: z
-      .array(
-        z
-          .object({ sourceContentHash: HASH_SCHEMA, purpose: CATALOG_EMBEDDING_PURPOSE_SCHEMA })
-          .strict(),
-      )
-      .max(200_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(200_000),
+    expected: z.array(
+      z
+        .object({ sourceContentHash: HASH_SCHEMA, purpose: CATALOG_EMBEDDING_PURPOSE_SCHEMA })
+        .strict(),
+    ),
+    receipts: z.array(CATALOG_EMBEDDING_RECEIPT_SCHEMA),
+    missing: z.array(
+      z
+        .object({ sourceContentHash: HASH_SCHEMA, purpose: CATALOG_EMBEDDING_PURPOSE_SCHEMA })
+        .strict(),
+    ),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -115,8 +111,8 @@ export const CATALOG_EMBEDDING_MATRIX_SCHEMA = z
     preprocessingImplementationHash: HASH_SCHEMA,
     aggregationImplementationHash: HASH_SCHEMA,
     encoding: z.literal("int16_le_unit_vector"),
-    dimension: z.number().int().min(8).max(8_192),
-    rows: z.array(MATRIX_ROW_SCHEMA).max(100_000),
+    dimension: z.number().int().positive().safe(),
+    rows: z.array(MATRIX_ROW_SCHEMA),
     blob: BINARY_DESCRIPTOR_SCHEMA,
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
@@ -147,7 +143,7 @@ export const CATALOG_QUERY_EMBEDDING_RECEIPT_SCHEMA = z
     modelImplementationHash: HASH_SCHEMA,
     preprocessingImplementationHash: HASH_SCHEMA,
     workerOutputHash: HASH_SCHEMA,
-    batchGpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
+    batchGpuMilliseconds: z.number().int().nonnegative().safe(),
     vector: CATALOG_QUANTIZED_VECTOR_SCHEMA,
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,

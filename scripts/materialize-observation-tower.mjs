@@ -33,6 +33,12 @@ const fixture = await observationTowerFixture(semanticModule);
 const compilerExecutions = [];
 const observationExecutions = [];
 const observations = [];
+const diagnosticRenderExecutionPolicy = {
+  policyId: "ObservationTowerDiagnosticRender",
+  origin: "Creator-selected local observation-tower materialization allocation",
+  maximumPixelsPerCamera: 262_144,
+  maximumTerrainTrianglesPerField: 16_384,
+};
 const renderPayloads = new Map();
 let currentPlan = fixture.plan;
 let baselineWorldBuild;
@@ -126,6 +132,7 @@ const result = await runBoundedRefinement({
       policy,
       expectations: towerExpectations(worldBuild),
       cameras: towerDiagnosticCameras(currentPlan),
+      diagnosticRenderExecutionPolicy,
       affectedTaskIds,
       ...(previousObservation ? { previousObservation } : {}),
     });

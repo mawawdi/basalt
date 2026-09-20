@@ -1109,8 +1109,10 @@ export async function retainMatrixBytes(
   matrix: CatalogEmbeddingMatrix,
   bytes: Uint8Array,
 ): Promise<void> {
+  if (bytes.byteLength !== matrix.blob.sizeBytes)
+    throw new Error("Embedding matrix bytes differ from the sealed size descriptor");
   const store = new ImmutableBinaryArtifactStore(absolute(context.root, CATALOG_CAS_ROOT), {
-    maxBytes: 512 * 1024 * 1024,
+    maxBytes: Math.max(1, bytes.byteLength),
   });
   const reference = await store.write(bytes, matrix.blob.mediaType);
   if (

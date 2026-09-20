@@ -54,9 +54,9 @@ export const CATALOG_VISUAL_VALIDATION_SCHEMA = z
         .object({ status: z.literal("abstained"), reason: z.string().trim().min(1).max(512) })
         .strict(),
     ]),
-    reasons: z.array(z.string().trim().min(1).max(512)).min(1).max(32),
-    mismatchedConstraints: z.array(z.string().trim().min(1).max(160)).max(32),
-    visibleLimitations: z.array(z.string().trim().min(1).max(512)).max(32),
+    reasons: z.array(z.string().trim().min(1).max(512)).min(1),
+    mismatchedConstraints: z.array(z.string().trim().min(1).max(160)),
+    visibleLimitations: z.array(z.string().trim().min(1).max(512)),
   })
   .strict();
 export type CatalogVisualValidation = z.output<typeof CATALOG_VISUAL_VALIDATION_SCHEMA>;
@@ -160,16 +160,16 @@ export const CATALOG_VALIDATION_RECEIPT_SCHEMA = z
     promptHash: HASH_SCHEMA,
     rawOutputHash: HASH_SCHEMA.optional(),
     validation: CATALOG_VISUAL_VALIDATION_SCHEMA.optional(),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(256),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     resourceUsage: z
       .object({
         inputImageCount: z.number().int().nonnegative().max(12),
-        inputPixels: z.number().int().nonnegative().max(100_000_000),
-        inputTokens: z.number().int().nonnegative().max(10_000_000),
-        outputTokens: z.number().int().nonnegative().max(10_000_000),
-        elapsedMilliseconds: z.number().int().nonnegative().max(86_400_000),
+        inputPixels: z.number().int().nonnegative().safe(),
+        inputTokens: z.number().int().nonnegative().safe(),
+        outputTokens: z.number().int().nonnegative().safe(),
+        elapsedMilliseconds: z.number().int().nonnegative().safe(),
         peakResidentBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-        gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
+        gpuMilliseconds: z.number().int().nonnegative().safe(),
       })
       .strict(),
     compilerAuthority: z.literal(false),
@@ -212,7 +212,7 @@ export type CatalogValidationReceipt = z.output<typeof CATALOG_VALIDATION_RECEIP
 const DECISION_CANDIDATE_SCHEMA = z
   .object({
     sourceContentHash: HASH_SCHEMA,
-    fusedRank: z.number().int().positive().max(100),
+    fusedRank: z.number().int().positive().safe(),
     validation: z.enum(["match", "mismatch", "not_requested", "pending", "uncertain"]),
     validationReceiptHash: HASH_SCHEMA.optional(),
   })
@@ -226,8 +226,8 @@ export const CATALOG_CANDIDATE_DECISION_SCHEMA = z
     resultSetHash: HASH_SCHEMA,
     policyHash: HASH_SCHEMA,
     selectedSourceContentHash: HASH_SCHEMA.optional(),
-    consideredCandidates: z.array(DECISION_CANDIDATE_SCHEMA).max(8),
-    reasons: z.array(z.string().trim().min(1).max(512)).min(1).max(32),
+    consideredCandidates: z.array(DECISION_CANDIDATE_SCHEMA),
+    reasons: z.array(z.string().trim().min(1).max(512)).min(1),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })

@@ -10,6 +10,7 @@ import {
   acquireWorkspaceExclusiveLock,
   readBoundedWorkspaceBytes,
   readBoundedWorkspaceJson,
+  serializeCanonicalJson,
   writeCanonicalWorkspaceJson,
 } from "@basalt/artifact-store";
 import {
@@ -52,7 +53,7 @@ import {
   validateSourceAuthority,
   type CatalogAssetArtifact,
 } from "@basalt/catalog-model";
-import { contentHash, stableJson } from "@basalt/contracts";
+import { contentHash, quantizeQ32_32, stableJson } from "@basalt/contracts";
 import { NEURAL_PROVIDER_WORKERS, RESTORED_NEURAL_PROVIDERS } from "@basalt/neural-asset";
 import {
   AFFORDANCE_DEFINITION_SCHEMA,
@@ -90,7 +91,7 @@ import { runCatalogIndexCommand, runCatalogSearchCommand } from "./catalog-searc
 import { runCatalogContextCommand } from "./catalog-context.js";
 import { runCatalogQualifyCommand } from "./catalog-qualify.js";
 import { prepareWorldPlacementGeometry } from "./world-placement-geometry.js";
-import { runWorldAuthoringCommand } from "./world-authoring.js";
+import { REGION_EXECUTION_POLICY_SCHEMA, runWorldAuthoringCommand } from "./world-authoring.js";
 
 const repositoryRoot = resolve(".");
 const args = process.argv.slice(2);
@@ -109,23 +110,21 @@ const CATALOG_NEAR_DUPLICATE_WORKER_OUTPUT_SCHEMA = z
       })
       .strict(),
     descriptorSetHash: z.string().regex(/^[a-f0-9]{64}$/u),
-    searchedSourceContentHashes: z.array(z.string().regex(/^[a-f0-9]{64}$/u)).max(100_000),
-    comparedPairCount: z.number().int().nonnegative().max(5_000_000_000),
-    relations: z
-      .array(
-        z
-          .object({
-            leftSourceContentHash: z.string().regex(/^[a-f0-9]{64}$/u),
-            rightSourceContentHash: z.string().regex(/^[a-f0-9]{64}$/u),
-            leftDescriptorHash: z.string().regex(/^[a-f0-9]{64}$/u),
-            rightDescriptorHash: z.string().regex(/^[a-f0-9]{64}$/u),
-            distanceBits: z.number().int().nonnegative(),
-            totalBits: z.number().int().positive(),
-          })
-          .strict(),
-      )
-      .max(1_000_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2048)).max(100_000),
+    searchedSourceContentHashes: z.array(z.string().regex(/^[a-f0-9]{64}$/u)),
+    comparedPairCount: z.number().int().nonnegative().safe(),
+    relations: z.array(
+      z
+        .object({
+          leftSourceContentHash: z.string().regex(/^[a-f0-9]{64}$/u),
+          rightSourceContentHash: z.string().regex(/^[a-f0-9]{64}$/u),
+          leftDescriptorHash: z.string().regex(/^[a-f0-9]{64}$/u),
+          rightDescriptorHash: z.string().regex(/^[a-f0-9]{64}$/u),
+          distanceBits: z.number().int().nonnegative(),
+          totalBits: z.number().int().positive(),
+        })
+        .strict(),
+    ),
+    diagnostics: z.array(z.string().trim().min(1).max(2048)),
   })
   .strict();
 
@@ -232,11 +231,7 @@ async function catalogInventory(values: string[]): Promise<void> {
   await requireSourceProvenance(manifest, options.get("--provenance"));
   const records = [];
   for (const asset of manifest.assets) {
-    const bytes = await readBoundedWorkspaceBytes(
-      repositoryRoot,
-      asset.relativePath,
-      512 * 1024 * 1024,
-    );
+    const bytes = await readWorkspaceBytesExact(asset.relativePath);
     if (sha256(bytes) !== asset.contentHash)
       throw new Error(`Source hash changed: ${asset.relativePath}`);
     records.push({ sourceContentHash: asset.contentHash, bytes: bytes.byteLength });
@@ -480,7 +475,7 @@ async function runCatalogNearDuplicateSearch(input: {
             message: `Appearance evidence is missing ${missingRenderedSources.length} renderable sources and includes ${unexpectedRenderedSources.length} collision-only or unknown sources`,
             gateStatus: "rejected" as const,
             path: ["visualReviewIndexHash"],
-            evidenceHashes: [...missingRenderedSources, ...unexpectedRenderedSources].slice(0, 256),
+            evidenceHashes: [...missingRenderedSources, ...unexpectedRenderedSources],
           },
         ]),
     ...(missingSources.length === 0
@@ -491,7 +486,7 @@ async function runCatalogNearDuplicateSearch(input: {
             message: `${missingSources.length} renderable source identities lack shape descriptors`,
             gateStatus: "incomplete" as const,
             path: ["searchedSourceContentHashes"],
-            evidenceHashes: missingSources.slice(0, 256),
+            evidenceHashes: missingSources,
           },
         ]),
     ...(unexpectedSources.length === 0
@@ -502,7 +497,7 @@ async function runCatalogNearDuplicateSearch(input: {
             message: `${unexpectedSources.length} collision-only or unknown sources received appearance shape descriptors`,
             gateStatus: "rejected" as const,
             path: ["searchedSourceContentHashes"],
-            evidenceHashes: unexpectedSources.slice(0, 256),
+            evidenceHashes: unexpectedSources,
           },
         ]),
   ];
@@ -539,23 +534,43 @@ async function catalogMeasure(values: string[]): Promise<void> {
       ...(filenamesBySource.get(record.sourceContentHash) ?? []),
       basename(record.originalPath),
     ]);
+  const previousRaw = await readOptionalJson(output);
+  const previous = previousRaw ? CATALOG_MEASUREMENT_SET_SCHEMA.parse(previousRaw) : undefined;
   const assets = new Map<string, CatalogAssetArtifact>();
   const diagnostics: Array<{ sourceContentHash: string; reason: string }> = [];
-  const tasks = manifest.assets
-    .map((asset) => ({
-      workspaceRoot: repositoryRoot,
-      relativePath: asset.relativePath,
-      source: {
-        contentHash: asset.contentHash,
-        rights: asset.rights,
-        metersPerSourceUnit: asset.metersPerSourceUnit,
-        sourcePurpose: sourceFilenameObservationsIdentifyCollisionCompanion(
-          filenamesBySource.get(asset.contentHash) ?? [],
-        )
-          ? ("collision_companion" as const)
-          : ("renderable" as const),
-      },
-    }))
+  const previousBySource = new Map(
+    (previous?.assets ?? []).map((asset) => [asset.source.contentHash, asset] as const),
+  );
+  const candidates = await Promise.all(
+    manifest.assets.map(async (asset) => {
+      const sourcePurpose = sourceFilenameObservationsIdentifyCollisionCompanion(
+        filenamesBySource.get(asset.contentHash) ?? [],
+      )
+        ? ("collision_companion" as const)
+        : ("renderable" as const);
+      const prior = previousBySource.get(asset.contentHash);
+      if (prior && catalogMeasurementCanBeReused(prior, asset, sourcePurpose)) {
+        assets.set(asset.contentHash, prior);
+        return undefined;
+      }
+      const information = await lstat(absolute(asset.relativePath));
+      if (!information.isFile() || information.isSymbolicLink())
+        throw new Error(`Catalog source is not a regular file: ${asset.relativePath}`);
+      return {
+        workspaceRoot: repositoryRoot,
+        relativePath: asset.relativePath,
+        sourceBytes: information.size,
+        source: {
+          contentHash: asset.contentHash,
+          rights: asset.rights,
+          metersPerSourceUnit: asset.metersPerSourceUnit,
+          sourcePurpose,
+        },
+      };
+    }),
+  );
+  const tasks = candidates
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined)
     .sort((left, right) => compare(left.source.contentHash, right.source.contentHash))
     .map((entry, taskId) => ({ ...entry, taskId }));
   const requestedWorkers = requireLocalCatalogWorkerCount(
@@ -576,11 +591,28 @@ async function catalogMeasure(values: string[]): Promise<void> {
   await writeCanonicalJson(output, measurements);
   print({
     status: diagnostics.length === 0 ? "eligible" : "incomplete",
+    reused: assets.size - (tasks.length - diagnostics.length),
+    measuredThisRun: tasks.length - diagnostics.length,
     measured: assets.size,
     refused: diagnostics.length,
     output: absolute(output),
     hash: measurements.hash,
   });
+}
+
+function catalogMeasurementCanBeReused(
+  measured: CatalogAssetArtifact,
+  source: z.output<typeof TRUSTED_SOURCE_MANIFEST_SCHEMA>["assets"][number],
+  sourcePurpose: "collision_companion" | "renderable",
+): boolean {
+  const measuredCollisionOnly =
+    measured.parts.length > 0 && measured.parts.every((part) => part.role === "collision_proxy");
+  return (
+    measured.source.contentHash === source.contentHash &&
+    stableJson(measured.source.rights) === stableJson(source.rights) &&
+    measured.coordinateFrame.unitsToMeters === quantizeQ32_32(source.metersPerSourceUnit) &&
+    measuredCollisionOnly === (sourcePurpose === "collision_companion")
+  );
 }
 
 async function catalogRender(values: string[]): Promise<void> {
@@ -662,6 +694,9 @@ async function worldCompile(values: string[]): Promise<void> {
   const options = parseOptions(values.slice(1));
   const catalogPath = requiredOption(options, "--catalog");
   const output = options.get("--output") ?? ".basalt/world/world-build.json";
+  const executionPolicy = REGION_EXECUTION_POLICY_SCHEMA.parse(
+    await readJson(options.get("--execution-policy") ?? "registry/world-authoring/execution.json"),
+  );
   const semanticModule = await loadSemanticModule();
   const plan = SPATIAL_WORLD_PLAN_SCHEMA.parse(await readJson(planPath));
   const catalogCommit = CATALOG_AUTHORITY_COMMIT_SCHEMA.parse(await readJson(catalogPath));
@@ -684,6 +719,7 @@ async function worldCompile(values: string[]): Promise<void> {
     snapshot: catalogCommit.snapshot,
     assets: measurements.assets,
     sourceManifest: catalogCommit.sourceManifest,
+    cacheMaximumBytes: executionPolicy.placementGeometryCacheMaximumBytes,
   });
   const worldBuild = compileBasaltWorld({
     semanticModule,
@@ -691,6 +727,23 @@ async function worldCompile(values: string[]): Promise<void> {
     catalogAssets: measurements.assets,
     spatialPlan: plan,
     placementGeometry,
+    executionPolicy: {
+      construction: executionPolicy.construction,
+      population: executionPolicy.population,
+      assembly: executionPolicy.assembly,
+      vegetation: {
+        policyId: executionPolicy.vegetation.policyId,
+        origin: executionPolicy.vegetation.origin,
+        candidateBatchSize: executionPolicy.vegetation.candidateBatchSize,
+        mergeFanIn: executionPolicy.vegetation.mergeFanIn,
+        candidateRunDirectory: executionPolicy.vegetation.candidateRunDirectory,
+        ...(executionPolicy.vegetation.maximumCandidateEvaluations === undefined
+          ? {}
+          : {
+              maximumCandidateEvaluations: executionPolicy.vegetation.maximumCandidateEvaluations,
+            }),
+      },
+    },
   });
   await writeCanonicalJson(output, worldBuild);
   print({
@@ -895,11 +948,7 @@ async function retainCatalogEvidence(
     const artifact = candidate.schema.parse(raw);
     const relativePath = `registry/evidence/${artifact.hash}.json`;
     await writeCanonicalJson(relativePath, artifact);
-    const bytes = await readBoundedWorkspaceBytes(
-      repositoryRoot,
-      absolute(relativePath),
-      512 * 1024 * 1024,
-    );
+    const bytes = await readWorkspaceBytesExact(relativePath);
     retained.push({
       kind: artifact.kind,
       relativePath,
@@ -931,11 +980,7 @@ async function retainCatalogEvidence(
             : undefined;
     if (!artifact || artifact.hash !== artifactHash)
       throw new Error(`Acceptance audit references invalid retained evidence ${artifactHash}`);
-    const bytes = await readBoundedWorkspaceBytes(
-      repositoryRoot,
-      absolute(relativePath),
-      512 * 1024 * 1024,
-    );
+    const bytes = await readWorkspaceBytesExact(relativePath);
     retained.push({
       kind: artifact.kind,
       relativePath,
@@ -977,11 +1022,7 @@ async function verifyCatalogCommit(
   if (raw === undefined) return { current: false, diagnostic: "Run `basalt catalog commit`" };
   const committed = CATALOG_AUTHORITY_COMMIT_SCHEMA.parse(raw);
   for (const evidence of committed.retainedEvidence) {
-    const bytes = await readBoundedWorkspaceBytes(
-      repositoryRoot,
-      absolute(evidence.relativePath),
-      512 * 1024 * 1024,
-    ).catch(() => undefined);
+    const bytes = await readWorkspaceBytesExact(evidence.relativePath).catch(() => undefined);
     if (!bytes || bytes.byteLength !== evidence.bytes || sha256(bytes) !== evidence.bytesHash)
       return {
         current: false,
@@ -1135,7 +1176,18 @@ function requestMeasurement(
   });
 }
 async function readJson(path: string): Promise<unknown> {
-  return readBoundedWorkspaceJson(repositoryRoot, absolute(path), 512 * 1024 * 1024);
+  const destination = absolute(path);
+  const information = await lstat(destination);
+  if (!information.isFile() || information.isSymbolicLink())
+    throw new Error(`Workspace input is not a regular file: ${destination}`);
+  return readBoundedWorkspaceJson(repositoryRoot, destination, Math.max(1, information.size));
+}
+async function readWorkspaceBytesExact(path: string): Promise<Uint8Array> {
+  const destination = absolute(path);
+  const information = await lstat(destination);
+  if (!information.isFile() || information.isSymbolicLink())
+    throw new Error(`Workspace input is not a regular file: ${destination}`);
+  return readBoundedWorkspaceBytes(repositoryRoot, destination, Math.max(1, information.size));
 }
 async function readOptionalJson(path: string): Promise<unknown | undefined> {
   try {
@@ -1165,18 +1217,21 @@ async function loadAdmissionPolicy(path = "registry/admission-policy.json") {
 async function writeCanonicalJson(path: string, value: unknown): Promise<void> {
   const destination = absolute(path);
   let expectedExistingHash: string | undefined;
+  let existingBytes = 0;
   try {
     const information = await lstat(destination);
     if (!information.isFile() || information.isSymbolicLink())
       throw new Error(`Workspace output is not a regular file: ${destination}`);
+    existingBytes = information.size;
     expectedExistingHash = sha256(
-      await readBoundedWorkspaceBytes(repositoryRoot, destination, 512 * 1024 * 1024),
+      await readBoundedWorkspaceBytes(repositoryRoot, destination, Math.max(1, information.size)),
     );
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
+  const proposedBytes = Buffer.byteLength(serializeCanonicalJson(value), "utf8");
   await writeCanonicalWorkspaceJson(repositoryRoot, destination, value, {
-    maxBytes: 512 * 1024 * 1024,
+    maxBytes: Math.max(1, proposedBytes, existingBytes),
     ...(expectedExistingHash ? { expectedExistingHash } : {}),
   });
 }
@@ -1234,7 +1289,7 @@ function usage(): void {
       "  basalt catalog validate|seal|commit",
       "  basalt world compile <plan> --catalog <committed-catalog>",
       "  basalt world profile <authority-plan> --output <profile.json>",
-      "  basalt world generate <prompt> --model <OpenRouter-ID> --output <directory>",
+      "  basalt world generate <prompt> --model <OpenRouter-ID> --seed <integer> --output <directory>",
       "  basalt world edit <prompt> --from <directory> --model <OpenRouter-ID> --output <directory>",
       "  basalt roblox install-plugin",
       "  basalt roblox import <world-build>",

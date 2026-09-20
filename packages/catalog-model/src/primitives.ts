@@ -62,11 +62,9 @@ export const PLACEMENT_SIGNATURE_SCHEMA = z
   .object({
     support: SUPPORT_MODE_SCHEMA,
     contact: CONTACT_TYPE_SCHEMA,
-    interfaces: z
-      .array(
-        z.object({ interfaceId: INTERFACE_ID_SCHEMA, polarity: SOCKET_POLARITY_SCHEMA }).strict(),
-      )
-      .max(128),
+    interfaces: z.array(
+      z.object({ interfaceId: INTERFACE_ID_SCHEMA, polarity: SOCKET_POLARITY_SCHEMA }).strict(),
+    ),
   })
   .strict()
   .superRefine((value, context) => {

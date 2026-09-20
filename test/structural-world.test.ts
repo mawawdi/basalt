@@ -17,6 +17,7 @@ import {
 } from "@basalt/semantic-kernel";
 import { compileBasaltWorld } from "@basalt/world-compiler";
 import { DEFAULT_WORLD_VISUAL_ENVIRONMENT, sealSpatialWorldPlan } from "@basalt/world-planning";
+import { TEST_WORLD_EXECUTION_POLICY } from "./helpers/execution-policy.js";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 
 const evidenceHash = contentHash("structural-fixture-evidence");
@@ -187,7 +188,7 @@ test("assemblies bind exact components, sockets, surfaces, rooms, portals, and s
     placement: { requiredSupport: "ground" as const, requiredInterfaceIds: [] },
     metricBounds: {},
     rights: { commercialUseRequired: true, redistributionRequired: true },
-    budget: { maximumTriangles: 10_000, maximumSourceBytes: 10_000, maximumInstances: 16 },
+    budget: { maximumTriangles: 10_000, maximumSourceBytes: 10_000 },
     required: true,
   };
   const plan = sealSpatialWorldPlan({
@@ -345,12 +346,14 @@ test("assemblies bind exact components, sockets, surfaces, rooms, portals, and s
     catalogSnapshot: snapshot,
     catalogAssets: [wallAsset, floorAsset],
     spatialPlan: plan,
+    executionPolicy: TEST_WORLD_EXECUTION_POLICY,
   });
   const second = compileBasaltWorld({
     semanticModule: module,
     catalogSnapshot: snapshot,
     catalogAssets: [floorAsset, wallAsset],
     spatialPlan: plan,
+    executionPolicy: TEST_WORLD_EXECUTION_POLICY,
   });
   assert.equal(first.worldBuildHash, second.worldBuildHash);
   assert.equal(first.status, "eligible");

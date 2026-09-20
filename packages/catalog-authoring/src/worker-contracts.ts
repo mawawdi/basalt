@@ -47,7 +47,7 @@ export type CatalogModelDeclaration = z.output<typeof CATALOG_MODEL_DECLARATION_
 export const CATALOG_MODEL_DECLARATIONS_SCHEMA = z
   .object({
     kind: z.literal("CatalogModelDeclarations"),
-    models: z.array(CATALOG_MODEL_DECLARATION_SCHEMA).min(4).max(16),
+    models: z.array(CATALOG_MODEL_DECLARATION_SCHEMA).min(4),
   })
   .strict()
   .superRefine((value, context) => {
@@ -74,48 +74,24 @@ const PROMPT_TEMPLATE_SCHEMA = z
   .min(1)
   .max(32_768)
   .refine((value) => value.trim().length > 0, "Prompt template must contain non-whitespace text");
-export const CATALOG_WORKER_MAX_ASSETS_PER_SHARD = 8;
-export const CATALOG_CONTEXT_MAX_CANDIDATES = 32;
-export const CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD = 192;
-export const CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD = 64 * 1024 * 1024;
 export const CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS = 384;
-export const CATALOG_WORKER_MAX_PREPROCESSED_PIXELS_PER_SHARD =
-  CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD *
-  CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS *
-  CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS;
 
-const EVIDENCE_SIZE_SCHEMA = z
-  .number()
-  .int()
-  .positive()
-  .max(64 * 1024 * 1024);
+const EVIDENCE_SIZE_SCHEMA = z.number().int().positive().safe();
 const CATALOG_WORKER_INPUT_BUDGET_SCHEMA = z
   .object({
-    assetCount: z.number().int().positive().max(CATALOG_WORKER_MAX_ASSETS_PER_SHARD),
-    evidenceFileCount: z.number().int().positive().max(CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD),
-    evidenceBytes: z.number().int().positive().max(CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD),
-    preprocessedPixelCeiling: z
-      .number()
-      .int()
-      .positive()
-      .max(CATALOG_WORKER_MAX_PREPROCESSED_PIXELS_PER_SHARD),
+    assetCount: z.number().int().positive().safe(),
+    evidenceFileCount: z.number().int().positive().safe(),
+    evidenceBytes: z.number().int().positive().safe(),
+    preprocessedPixelCeiling: z.number().int().positive().safe(),
   })
   .strict();
 
 const CATALOG_CONTEXT_WORKER_INPUT_BUDGET_SCHEMA = z
   .object({
-    candidateCount: z.number().int().min(2).max(CATALOG_CONTEXT_MAX_CANDIDATES),
-    evidenceFileCount: z.number().int().min(2).max(CATALOG_CONTEXT_MAX_CANDIDATES),
-    evidenceBytes: z.number().int().positive().max(CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD),
-    preprocessedPixelCeiling: z
-      .number()
-      .int()
-      .positive()
-      .max(
-        CATALOG_CONTEXT_MAX_CANDIDATES *
-          CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS *
-          CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS,
-      ),
+    candidateCount: z.number().int().min(2).safe(),
+    evidenceFileCount: z.number().int().min(2).safe(),
+    evidenceBytes: z.number().int().positive().safe(),
+    preprocessedPixelCeiling: z.number().int().positive().safe(),
   })
   .strict();
 
@@ -180,7 +156,7 @@ export const CATALOG_METADATA_WORKER_JOB_SCHEMA = z
     outputSchemaHash: HASH_SCHEMA,
     workerImplementationHash: HASH_SCHEMA,
     model: CATALOG_MODEL_DECLARATION_SCHEMA,
-    items: z.array(METADATA_WORKER_ITEM_SCHEMA).min(1).max(CATALOG_WORKER_MAX_ASSETS_PER_SHARD),
+    items: z.array(METADATA_WORKER_ITEM_SCHEMA).min(1),
     inputBudget: CATALOG_WORKER_INPUT_BUDGET_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -223,10 +199,7 @@ export const CATALOG_CONTEXT_WORKER_JOB_SCHEMA = z
     workerImplementationHash: HASH_SCHEMA,
     model: CATALOG_MODEL_DECLARATION_SCHEMA,
     request: ASSET_CONTEXT_HYPOTHESIS_REQUEST_SCHEMA,
-    candidateEvidence: z
-      .array(CONTEXT_WORKER_CANDIDATE_EVIDENCE_SCHEMA)
-      .min(2)
-      .max(CATALOG_CONTEXT_MAX_CANDIDATES),
+    candidateEvidence: z.array(CONTEXT_WORKER_CANDIDATE_EVIDENCE_SCHEMA).min(2),
     inputBudget: CATALOG_CONTEXT_WORKER_INPUT_BUDGET_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -322,18 +295,18 @@ const WORKER_RUNTIME_SCHEMA = z
 
 const WORKER_USAGE_SCHEMA = z
   .object({
-    inputImageCount: z.number().int().nonnegative().max(12),
-    inputPixels: z.number().int().nonnegative().max(100_000_000),
-    inputTokens: z.number().int().nonnegative().max(10_000_000),
-    outputTokens: z.number().int().nonnegative().max(10_000_000),
-    elapsedMilliseconds: z.number().int().nonnegative().max(86_400_000),
-    peakResidentBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-    gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
+    inputImageCount: z.number().int().nonnegative().safe(),
+    inputPixels: z.number().int().nonnegative().safe(),
+    inputTokens: z.number().int().nonnegative().safe(),
+    outputTokens: z.number().int().nonnegative().safe(),
+    elapsedMilliseconds: z.number().int().nonnegative().safe(),
+    peakResidentBytes: z.number().int().nonnegative().safe(),
+    gpuMilliseconds: z.number().int().nonnegative().safe(),
   })
   .strict();
 
 const CONTEXT_WORKER_USAGE_SCHEMA = WORKER_USAGE_SCHEMA.extend({
-  inputImageCount: z.number().int().min(0).max(CATALOG_CONTEXT_MAX_CANDIDATES),
+  inputImageCount: z.number().int().nonnegative().safe(),
 }).strict();
 
 export const CATALOG_METADATA_WORKER_OUTPUT_SCHEMA = z
@@ -350,13 +323,12 @@ export const CATALOG_METADATA_WORKER_OUTPUT_SCHEMA = z
             promptHash: HASH_SCHEMA,
             rawOutputHash: HASH_SCHEMA.optional(),
             metadata: CATALOG_SEARCH_METADATA_SCHEMA.optional(),
-            diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(32),
+            diagnostics: z.array(z.string().trim().min(1).max(2_048)),
             resourceUsage: WORKER_USAGE_SCHEMA,
           })
           .strict(),
       )
-      .min(1)
-      .max(CATALOG_WORKER_MAX_ASSETS_PER_SHARD),
+      .min(1),
     resultHash: HASH_SCHEMA,
   })
   .strict()
@@ -379,7 +351,7 @@ export const CATALOG_CONTEXT_WORKER_OUTPUT_SCHEMA = z
     promptHash: HASH_SCHEMA,
     rawOutputHash: HASH_SCHEMA.optional(),
     hypothesis: ASSET_CONTEXT_HYPOTHESIS_OUTPUT_SCHEMA.optional(),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(32),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     resourceUsage: CONTEXT_WORKER_USAGE_SCHEMA,
     resultHash: HASH_SCHEMA,
   })
@@ -444,8 +416,7 @@ export const CATALOG_EMBEDDING_WORKER_JOB_SCHEMA = z
           })
           .strict(),
       )
-      .min(1)
-      .max(CATALOG_WORKER_MAX_ASSETS_PER_SHARD),
+      .min(1),
     inputBudget: CATALOG_WORKER_INPUT_BUDGET_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -520,8 +491,7 @@ export const CATALOG_EMBEDDING_WORKER_OUTPUT_SCHEMA = z
           })
           .strict(),
       )
-      .min(1)
-      .max(16),
+      .min(1),
     resultHash: HASH_SCHEMA,
   })
   .strict()
@@ -543,8 +513,7 @@ export const CATALOG_QUERY_EMBEDDING_WORKER_JOB_SCHEMA = z
       .array(
         z.object({ queryHash: HASH_SCHEMA, text: z.string().trim().min(1).max(2_048) }).strict(),
       )
-      .min(1)
-      .max(256),
+      .min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -567,8 +536,7 @@ export const CATALOG_QUERY_EMBEDDING_WORKER_OUTPUT_SCHEMA = z
     gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
     items: z
       .array(z.object({ queryHash: HASH_SCHEMA, vector: CATALOG_QUANTIZED_VECTOR_SCHEMA }).strict())
-      .min(1)
-      .max(256),
+      .min(1),
     resultHash: HASH_SCHEMA,
   })
   .strict()
@@ -625,8 +593,7 @@ export const CATALOG_VALIDATION_WORKER_JOB_SCHEMA = z
               });
           }),
       )
-      .min(1)
-      .max(CATALOG_WORKER_MAX_ASSETS_PER_SHARD),
+      .min(1),
     inputBudget: CATALOG_WORKER_INPUT_BUDGET_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -662,13 +629,12 @@ export const CATALOG_VALIDATION_WORKER_OUTPUT_SCHEMA = z
             promptHash: HASH_SCHEMA,
             rawOutputHash: HASH_SCHEMA.optional(),
             validation: CATALOG_VISUAL_VALIDATION_SCHEMA.optional(),
-            diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(32),
+            diagnostics: z.array(z.string().trim().min(1).max(2_048)),
             resourceUsage: WORKER_USAGE_SCHEMA,
           })
           .strict(),
       )
-      .min(1)
-      .max(CATALOG_WORKER_MAX_ASSETS_PER_SHARD),
+      .min(1),
     resultHash: HASH_SCHEMA,
   })
   .strict()

@@ -24,16 +24,14 @@ export const CATALOG_MODEL_ROLE_POLICY_SCHEMA = z
     requirementValidator: ROLE_BINDING_SCHEMA.extend({
       viewSet: z.literal("canonical_twelve"),
     }).strict(),
-    challengers: z
-      .array(
-        z
-          .object({
-            role: CATALOG_MODEL_ROLE_SCHEMA,
-            modelId: z.string().regex(/^[a-z][a-z0-9_]{2,127}$/u),
-          })
-          .strict(),
-      )
-      .max(16),
+    challengers: z.array(
+      z
+        .object({
+          role: CATALOG_MODEL_ROLE_SCHEMA,
+          modelId: z.string().regex(/^[a-z][a-z0-9_]{2,127}$/u),
+        })
+        .strict(),
+    ),
     qualificationReportHash: HASH_SCHEMA.optional(),
     hash: HASH_SCHEMA,
   })

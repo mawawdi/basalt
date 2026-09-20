@@ -50,8 +50,10 @@ export function createMurmurHash3Random(seed: number): () => number {
 /** Resource limits for model-authored spatial declarations. */
 export const SPATIAL_ADMISSION_POLICY_SCHEMA = z
   .object({
+    policyId: entityId,
+    origin: z.string().trim().min(1),
     maximumJsonBytes: z.number().int().safe().positive(),
-    maximumJsonDepth: z.number().int().positive().max(64),
+    maximumJsonDepth: z.number().int().safe().positive(),
     maximumJsonNodes: z.number().int().safe().positive(),
     maximumStringUtf8Bytes: z.number().int().safe().positive(),
     maximumComponents: z.number().int().safe().positive(),
@@ -65,6 +67,8 @@ export const SPATIAL_ADMISSION_POLICY_SCHEMA = z
   .strict();
 export type SpatialAdmissionPolicy = z.infer<typeof SPATIAL_ADMISSION_POLICY_SCHEMA>;
 export const DEFAULT_SPATIAL_ADMISSION_POLICY: Readonly<SpatialAdmissionPolicy> = Object.freeze({
+  policyId: "LocalSpatialAdmission",
+  origin: "Repository default for local model-authored declaration admission",
   maximumJsonBytes: 1024 * 1024,
   maximumJsonDepth: 32,
   maximumJsonNodes: 50_000,

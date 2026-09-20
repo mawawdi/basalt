@@ -8,6 +8,7 @@ const GLB_MAGIC = 0x46546c67;
 const JSON_CHUNK = 0x4e4f534a;
 const BIN_CHUNK = 0x004e4942;
 const GLB_VERSION = 2;
+const GLB_UINT32_MAX = 0xffff_ffff;
 const SUPPORTED_EXTENSIONS = new Set([
   "KHR_materials_emissive_strength",
   "KHR_materials_specular",
@@ -340,7 +341,7 @@ export async function packGltfToGlb(
   jsonBytes: Uint8Array,
   resolveExternalResource?: GltfExternalResourceResolver,
 ): Promise<Uint8Array> {
-  if (jsonBytes.byteLength === 0 || jsonBytes.byteLength > 256 * 1024 * 1024)
+  if (jsonBytes.byteLength === 0 || jsonBytes.byteLength > GLB_UINT32_MAX)
     throw new Error("glTF JSON is outside the admitted byte range");
   let decoded: unknown;
   try {
@@ -415,7 +416,8 @@ export async function packGltfToGlb(
       return { ...image, bufferView: bufferViewIndex, mimeType, uri: undefined };
     }),
   );
-  if (totalLength > 256 * 1024 * 1024) throw new Error("Packed glTF exceeds the byte budget");
+  if (totalLength > GLB_UINT32_MAX)
+    throw new Error("Packed glTF exceeds the GLB uint32 representation limit");
   const binary = new Uint8Array(totalLength);
   for (let index = 0; index < sourceBuffers.length; index += 1)
     binary.set(sourceBuffers[index]!, bases[index]!);
@@ -464,14 +466,20 @@ function inferImageMimeType(bytes: Uint8Array, label: string): "image/png" | "im
 }
 
 function align4(value: number): number {
-  return (value + 3) & ~3;
+  const aligned = Math.ceil(value / 4) * 4;
+  if (!Number.isSafeInteger(aligned) || aligned > GLB_UINT32_MAX)
+    throw new Error("GLB aligned length exceeds the uint32 representation limit");
+  return aligned;
 }
 
 function encodeGlb(document: unknown, binary: Uint8Array): Uint8Array {
   const json = new TextEncoder().encode(JSON.stringify(document));
   const jsonLength = align4(json.byteLength);
   const binaryLength = align4(binary.byteLength);
-  const output = new Uint8Array(12 + 8 + jsonLength + 8 + binaryLength);
+  const outputLength = 12 + 8 + jsonLength + 8 + binaryLength;
+  if (!Number.isSafeInteger(outputLength) || outputLength > GLB_UINT32_MAX)
+    throw new Error("GLB output exceeds the uint32 representation limit");
+  const output = new Uint8Array(outputLength);
   const view = new DataView(output.buffer);
   view.setUint32(0, GLB_MAGIC, true);
   view.setUint32(4, GLB_VERSION, true);
@@ -498,8 +506,7 @@ export interface GlbCollisionSupportPatch {
 
 /** Extract normalized triangle buffers for deterministic offline geometry gates. */
 export function inspectGlbMeshes(bytes: Uint8Array): readonly NormalizedMesh[] {
-  if (bytes.byteLength < 20 || bytes.byteLength > 512 * 1024 * 1024)
-    throw new Error("GLB byte length is outside the admitted range");
+  if (bytes.byteLength < 20) throw new Error("GLB byte length is outside the admitted range");
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (view.getUint32(0, true) !== GLB_MAGIC || view.getUint32(4, true) !== GLB_VERSION)
     throw new Error("Malformed GLB header");
@@ -588,13 +595,13 @@ export function inspectGlbTopology(
   expectedNodeNames?: readonly string[],
 ): GlbTopologyEvidence {
   const report = inspectGlb(bytes, {
-    maximumBytes: Math.min(bytes.byteLength, 256 * 1024 * 1024),
-    maximumTriangles: 2_000_000,
-    maximumTrianglesPerMesh: 2_000_000,
-    maximumNodes: 8_192,
-    maximumMaterials: 512,
-    maximumTextures: 512,
-    maximumTexturePixels: 64 * 4096 * 4096,
+    maximumBytes: bytes.byteLength,
+    maximumTriangles: Number.MAX_SAFE_INTEGER,
+    maximumTrianglesPerMesh: Number.MAX_SAFE_INTEGER,
+    maximumNodes: Number.MAX_SAFE_INTEGER,
+    maximumMaterials: Number.MAX_SAFE_INTEGER,
+    maximumTextures: Number.MAX_SAFE_INTEGER,
+    maximumTexturePixels: Number.MAX_SAFE_INTEGER,
     ...(expectedNodeNames ? { expectedNodeNames } : {}),
   });
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -770,7 +777,7 @@ export function inspectGlbPrimitiveBindings(
 export function inspectGlbCollisionSupportPatches(
   bytes: Uint8Array,
   nodeName: string,
-  maximumPatches = 100_000,
+  maximumPatches = Number.MAX_SAFE_INTEGER,
 ): GlbCollisionSupportPatch[] {
   return inspectGlbDirectionalTopology(bytes, nodeName, maximumPatches, {
     x: 0,
@@ -788,7 +795,7 @@ export function inspectGlbAssetContactPatches(
   bytes: Uint8Array,
   nodeName: string,
   outwardNormal: { readonly x: number; readonly y: number; readonly z: number },
-  maximumPatches = 100_000,
+  maximumPatches = Number.MAX_SAFE_INTEGER,
 ): GlbAssetContactPatch[] {
   const normal = normalizedTopologyDirection(outwardNormal);
   const evidence = inspectGlbDirectionalTopology(bytes, nodeName, maximumPatches, normal);
@@ -841,16 +848,16 @@ function inspectGlbDirectionalTopology(
   maximumPatches: number,
   direction: { readonly x: number; readonly y: number; readonly z: number },
 ): { patches: GlbCollisionSupportPatch[]; points: GlbCollisionSupportPoint[] } {
-  if (!Number.isInteger(maximumPatches) || maximumPatches < 1 || maximumPatches > 2_000_000)
+  if (!Number.isSafeInteger(maximumPatches) || maximumPatches < 1)
     throw new Error("Asset topology-patch budget is invalid");
   inspectGlb(bytes, {
-    maximumBytes: Math.min(bytes.byteLength, 256 * 1024 * 1024),
-    maximumTriangles: 2_000_000,
-    maximumTrianglesPerMesh: 2_000_000,
-    maximumNodes: 8_192,
-    maximumMaterials: 512,
-    maximumTextures: 512,
-    maximumTexturePixels: 4096 * 4096,
+    maximumBytes: bytes.byteLength,
+    maximumTriangles: Number.MAX_SAFE_INTEGER,
+    maximumTrianglesPerMesh: Number.MAX_SAFE_INTEGER,
+    maximumNodes: Number.MAX_SAFE_INTEGER,
+    maximumMaterials: Number.MAX_SAFE_INTEGER,
+    maximumTextures: Number.MAX_SAFE_INTEGER,
+    maximumTexturePixels: Number.MAX_SAFE_INTEGER,
   });
 
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -1032,13 +1039,13 @@ export function inspectGlb(
   options: GlbInspectionOptions = {},
 ): GlbInspectionReport {
   const limits = {
-    maximumBytes: options.maximumBytes ?? 20 * 1024 * 1024,
-    maximumTriangles: options.maximumTriangles ?? 2_000_000,
-    maximumTrianglesPerMesh: options.maximumTrianglesPerMesh ?? 20_000,
-    maximumNodes: options.maximumNodes ?? 8192,
-    maximumMaterials: options.maximumMaterials ?? 512,
-    maximumTextures: options.maximumTextures ?? 512,
-    maximumTexturePixels: options.maximumTexturePixels ?? 4096 * 4096,
+    maximumBytes: options.maximumBytes ?? bytes.byteLength,
+    maximumTriangles: options.maximumTriangles ?? Number.MAX_SAFE_INTEGER,
+    maximumTrianglesPerMesh: options.maximumTrianglesPerMesh ?? Number.MAX_SAFE_INTEGER,
+    maximumNodes: options.maximumNodes ?? Number.MAX_SAFE_INTEGER,
+    maximumMaterials: options.maximumMaterials ?? Number.MAX_SAFE_INTEGER,
+    maximumTextures: options.maximumTextures ?? Number.MAX_SAFE_INTEGER,
+    maximumTexturePixels: options.maximumTexturePixels ?? Number.MAX_SAFE_INTEGER,
   };
   const assetUnitsToMeters = options.assetUnitsToMeters ?? 1;
   if (!Number.isFinite(assetUnitsToMeters) || assetUnitsToMeters <= 0)

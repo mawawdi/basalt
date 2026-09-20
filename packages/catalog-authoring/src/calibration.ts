@@ -98,10 +98,10 @@ export const CATALOG_CALIBRATION_SPLIT_SCHEMA = z
     sourceManifestHash: HASH_SCHEMA,
     groupingPolicyHash: HASH_SCHEMA,
     leakageAnalysisHash: HASH_SCHEMA,
-    groups: z.array(CATALOG_LEAKAGE_GROUP_SCHEMA).max(100_000),
-    assignments: z.array(CATALOG_CALIBRATION_ASSIGNMENT_SCHEMA).max(100_000),
+    groups: z.array(CATALOG_LEAKAGE_GROUP_SCHEMA),
+    assignments: z.array(CATALOG_CALIBRATION_ASSIGNMENT_SCHEMA),
     targets: z.array(CATALOG_CALIBRATION_TARGET_SCHEMA).length(3),
-    diagnostics: z.array(CATALOG_CALIBRATION_DIAGNOSTIC_SCHEMA).max(100_000),
+    diagnostics: z.array(CATALOG_CALIBRATION_DIAGNOSTIC_SCHEMA),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -307,7 +307,7 @@ function assessSplit(
         `${duplicated.length} source identities occur in more than one leakage group`,
         "rejected",
         ["groups"],
-        duplicated.map(([hash]) => hash).slice(0, 256),
+        duplicated.map(([hash]) => hash),
       ),
     );
   const missingCount = manifest.assets.filter(

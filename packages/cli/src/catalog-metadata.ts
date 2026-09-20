@@ -29,10 +29,6 @@ import {
   CATALOG_VISUAL_REVIEW_INDEX_SCHEMA,
   CATALOG_VISUAL_VALIDATION_JSON_SCHEMA_HASH,
   CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS,
-  CATALOG_WORKER_MAX_ASSETS_PER_SHARD,
-  CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD,
-  CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD,
-  CATALOG_WORKER_MAX_PREPROCESSED_PIXELS_PER_SHARD,
   buildCatalogSearchMetadataShards,
   buildCatalogSourceNameHintSet,
   metadataViewIds,
@@ -522,7 +518,9 @@ async function generateMetadata(
   const executor = z.enum(["local", "modal"]).parse(options.get("--executor") ?? "local");
   const force = parseBoolean(options.get("--force") ?? "false");
   const outputs = [];
-  for (const items of boundedMetadataShards(workerItems)) {
+  // Each content-addressed asset is an independent durable checkpoint. Corpus size only
+  // creates more checkpoints; it never changes the worker contract or truncates the set.
+  for (const items of workerItems.map((item) => [item])) {
     const material = {
       kind: "CatalogMetadataWorkerJob" as const,
       requestSetHash: requests.hash,
@@ -855,30 +853,6 @@ function metadataBudget(items: readonly MetadataWorkerItem[]) {
     preprocessedPixelCeiling:
       sizes.length * CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS * CATALOG_WORKER_IMAGE_LONG_EDGE_PIXELS,
   };
-}
-
-function boundedMetadataShards(items: readonly MetadataWorkerItem[]): MetadataWorkerItem[][] {
-  const result: MetadataWorkerItem[][] = [];
-  let current: MetadataWorkerItem[] = [];
-  const fits = (candidate: readonly MetadataWorkerItem[]) => {
-    const budget = metadataBudget(candidate);
-    return (
-      budget.assetCount <= CATALOG_WORKER_MAX_ASSETS_PER_SHARD &&
-      budget.evidenceFileCount <= CATALOG_WORKER_MAX_EVIDENCE_FILES_PER_SHARD &&
-      budget.evidenceBytes <= CATALOG_WORKER_MAX_EVIDENCE_BYTES_PER_SHARD &&
-      budget.preprocessedPixelCeiling <= CATALOG_WORKER_MAX_PREPROCESSED_PIXELS_PER_SHARD
-    );
-  };
-  for (const item of items) {
-    if (!fits([item])) throw new Error("One metadata item exceeds the bounded worker contract");
-    if (current.length > 0 && !fits([...current, item])) {
-      result.push(current);
-      current = [];
-    }
-    current.push(item);
-  }
-  if (current.length > 0) result.push(current);
-  return result;
 }
 
 async function pruneMetadataShards(root: string, retained: ReadonlySet<string>): Promise<void> {

@@ -110,8 +110,8 @@ export const CATALOG_VISUAL_REVIEW_INDEX_SCHEMA = z
     lightingHash: HASH_SCHEMA,
     materialModeHash: HASH_SCHEMA,
     channelEncodingHash: HASH_SCHEMA,
-    items: z.array(CATALOG_VISUAL_REVIEW_ITEM_SCHEMA).max(100_000),
-    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(100_000),
+    items: z.array(CATALOG_VISUAL_REVIEW_ITEM_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)),
     hash: HASH_SCHEMA,
   })
   .strict()

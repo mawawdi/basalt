@@ -21,8 +21,7 @@ export const ASSET_PLACEMENT_GEOMETRY_SCHEMA = z
             "Placement bands require positive volume",
           ),
       )
-      .min(1)
-      .max(64),
+      .min(1),
     hash: HASH_SCHEMA,
   })
   .strict()

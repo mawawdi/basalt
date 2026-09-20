@@ -80,8 +80,8 @@ export const CATALOG_CALIBRATION_STRATUM_SCHEMA = z
     stratumId: ASCII_ID_SCHEMA,
     dimension: CATALOG_CALIBRATION_STRATUM_DIMENSION_SCHEMA,
     definition: z.string().trim().min(1).max(2048),
-    minimumAssetJudgments: z.number().int().nonnegative().max(100_000),
-    minimumPairJudgments: z.number().int().nonnegative().max(100_000),
+    minimumAssetJudgments: z.number().int().nonnegative().safe(),
+    minimumPairJudgments: z.number().int().nonnegative().safe(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -99,9 +99,9 @@ export const CATALOG_ADMISSION_RUBRIC_SCHEMA = z
     rubricId: ASCII_ID_SCHEMA,
     semanticModuleHash: HASH_SCHEMA,
     evidenceChannels: z.array(CATALOG_EVIDENCE_CHANNEL_SCHEMA).length(7),
-    defects: z.array(CATALOG_DEFECT_DEFINITION_SCHEMA).min(1).max(256),
-    criteria: z.array(CATALOG_REVIEW_CRITERION_SCHEMA).min(2).max(256),
-    strata: z.array(CATALOG_CALIBRATION_STRATUM_SCHEMA).min(1).max(256),
+    defects: z.array(CATALOG_DEFECT_DEFINITION_SCHEMA).min(1),
+    criteria: z.array(CATALOG_REVIEW_CRITERION_SCHEMA).min(2),
+    strata: z.array(CATALOG_CALIBRATION_STRATUM_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()

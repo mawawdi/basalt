@@ -56,7 +56,7 @@ const ATTRIBUTED_ASSEMBLY_MEMBER_SCHEMA = z
     sourceContentHash: HASH_SCHEMA,
     parentSourceContentHash: HASH_SCHEMA.optional(),
     transformMeters: CONTEXT_TRANSFORM_SCHEMA.optional(),
-    authoredRoleTerms: z.array(TERM_SCHEMA).max(32),
+    authoredRoleTerms: z.array(TERM_SCHEMA),
   })
   .strict()
   .superRefine((value, context) => {
@@ -87,7 +87,7 @@ export const ATTRIBUTED_ASSEMBLY_CONTEXT_EVIDENCE_SCHEMA = z
       })
       .strict(),
     documentationContentHash: HASH_SCHEMA.optional(),
-    members: z.array(ATTRIBUTED_ASSEMBLY_MEMBER_SCHEMA).min(1).max(256),
+    members: z.array(ATTRIBUTED_ASSEMBLY_MEMBER_SCHEMA).min(1),
   })
   .strict()
   .superRefine((value, context) => {
@@ -145,8 +145,8 @@ export const ASSET_CONTEXT_CANDIDATE_SCHEMA = z
     sourceNameHintHash: HASH_SCHEMA.optional(),
     metadataReceiptHash: HASH_SCHEMA.optional(),
     selectedRgbViews: z.array(CATALOG_SELECTED_RGB_VIEW_SCHEMA).min(4).max(12),
-    parts: z.array(PART_CONTEXT_EVIDENCE_SCHEMA).max(4_096),
-    sockets: z.array(SOCKET_CONTEXT_EVIDENCE_SCHEMA).max(4_096),
+    parts: z.array(PART_CONTEXT_EVIDENCE_SCHEMA),
+    sockets: z.array(SOCKET_CONTEXT_EVIDENCE_SCHEMA),
   })
   .strict()
   .superRefine((value, context) => {
@@ -174,8 +174,8 @@ export const ASSET_CONTEXT_HYPOTHESIS_REQUEST_SCHEMA = z
   .object({
     kind: z.literal("AssetContextHypothesisRequest"),
     groupingEvidence: z.array(CONTEXT_GROUPING_EVIDENCE_SCHEMA).min(1).max(4),
-    candidates: z.array(ASSET_CONTEXT_CANDIDATE_SCHEMA).min(2).max(32),
-    attributedAssemblyEvidence: z.array(ATTRIBUTED_ASSEMBLY_CONTEXT_EVIDENCE_SCHEMA).max(64),
+    candidates: z.array(ASSET_CONTEXT_CANDIDATE_SCHEMA).min(2),
+    attributedAssemblyEvidence: z.array(ATTRIBUTED_ASSEMBLY_CONTEXT_EVIDENCE_SCHEMA),
     promptTemplateHash: HASH_SCHEMA,
     outputSchemaHash: HASH_SCHEMA,
     compilerAuthority: z.literal(false),
@@ -231,7 +231,7 @@ export const ASSET_CONTEXT_PROPOSAL_GROUP_SCHEMA = z
     kind: z.literal("AssetContextProposalGroup"),
     groupId: HASH_SCHEMA,
     groupingEvidence: z.array(CONTEXT_GROUPING_EVIDENCE_SCHEMA).min(1).max(3),
-    sourceContentHashes: z.array(HASH_SCHEMA).min(2).max(32),
+    sourceContentHashes: z.array(HASH_SCHEMA).min(2),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -258,8 +258,8 @@ export const CATALOG_CONTEXT_REQUEST_SET_SCHEMA = z
     visualReviewIndexHash: HASH_SCHEMA,
     sourceNameHintSetHash: HASH_SCHEMA,
     promptTemplateHash: HASH_SCHEMA,
-    requests: z.array(ASSET_CONTEXT_HYPOTHESIS_REQUEST_SCHEMA).max(100_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(100_000),
+    requests: z.array(ASSET_CONTEXT_HYPOTHESIS_REQUEST_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -283,9 +283,9 @@ export const CATALOG_CONTEXT_RECEIPT_SET_SCHEMA = z
     kind: z.literal("CatalogContextReceiptSet"),
     status: COMPILATION_STATUS_SCHEMA,
     requestSetHash: HASH_SCHEMA,
-    receipts: z.array(z.lazy(() => ASSET_CONTEXT_HYPOTHESIS_RECEIPT_SCHEMA)).max(100_000),
-    missingRequestHashes: z.array(HASH_SCHEMA).max(100_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(100_000),
+    receipts: z.array(z.lazy(() => ASSET_CONTEXT_HYPOTHESIS_RECEIPT_SCHEMA)),
+    missingRequestHashes: z.array(HASH_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -319,10 +319,10 @@ const CONTEXT_ASSET_HYPOTHESIS_SCHEMA = z
   .object({
     sourceContentHash: HASH_SCHEMA,
     sourceRole: catalogObservation(CATALOG_SOURCE_ROLE_HINT_SCHEMA),
-    componentRoleTerms: catalogObservation(z.array(TERM_SCHEMA).max(32)),
-    likelyMateSourceHashes: catalogObservation(z.array(HASH_SCHEMA).max(31)),
-    notes: catalogObservation(z.array(TERM_SCHEMA).max(32)),
-    supportingEvidenceHashes: z.array(HASH_SCHEMA).max(64),
+    componentRoleTerms: catalogObservation(z.array(TERM_SCHEMA)),
+    likelyMateSourceHashes: catalogObservation(z.array(HASH_SCHEMA)),
+    notes: catalogObservation(z.array(TERM_SCHEMA)),
+    supportingEvidenceHashes: z.array(HASH_SCHEMA),
   })
   .strict()
   .superRefine((value, context) => {
@@ -355,7 +355,7 @@ const CONTEXT_RELATION_SCHEMA = z
     subjectSourceContentHash: HASH_SCHEMA,
     objectSourceContentHash: HASH_SCHEMA,
     rationale: z.string().trim().min(1).max(512),
-    supportingEvidenceHashes: z.array(HASH_SCHEMA).min(1).max(64),
+    supportingEvidenceHashes: z.array(HASH_SCHEMA).min(1),
   })
   .strict()
   .superRefine((value, context) => {
@@ -371,9 +371,9 @@ const CONTEXT_RELATION_SCHEMA = z
 
 export const ASSET_CONTEXT_HYPOTHESIS_OUTPUT_SCHEMA = z
   .object({
-    assets: z.array(CONTEXT_ASSET_HYPOTHESIS_SCHEMA).min(2).max(32),
-    relations: z.array(CONTEXT_RELATION_SCHEMA).max(496),
-    groupNotes: catalogObservation(z.array(TERM_SCHEMA).max(64)),
+    assets: z.array(CONTEXT_ASSET_HYPOTHESIS_SCHEMA).min(2),
+    relations: z.array(CONTEXT_RELATION_SCHEMA),
+    groupNotes: catalogObservation(z.array(TERM_SCHEMA)),
   })
   .strict()
   .superRefine((value, context) => {
@@ -414,16 +414,16 @@ export const ASSET_CONTEXT_HYPOTHESIS_RECEIPT_SCHEMA = z
     promptHash: HASH_SCHEMA,
     rawOutputHash: HASH_SCHEMA.optional(),
     hypothesis: ASSET_CONTEXT_HYPOTHESIS_OUTPUT_SCHEMA.optional(),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(256),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     resourceUsage: z
       .object({
-        inputImageCount: z.number().int().nonnegative().max(32),
-        inputPixels: z.number().int().nonnegative().max(100_000_000),
-        inputTokens: z.number().int().nonnegative().max(10_000_000),
-        outputTokens: z.number().int().nonnegative().max(10_000_000),
-        elapsedMilliseconds: z.number().int().nonnegative().max(86_400_000),
+        inputImageCount: z.number().int().nonnegative().safe(),
+        inputPixels: z.number().int().nonnegative().safe(),
+        inputTokens: z.number().int().nonnegative().safe(),
+        outputTokens: z.number().int().nonnegative().safe(),
+        elapsedMilliseconds: z.number().int().nonnegative().safe(),
         peakResidentBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-        gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
+        gpuMilliseconds: z.number().int().nonnegative().safe(),
       })
       .strict(),
     compilerAuthority: z.literal(false),
@@ -469,7 +469,7 @@ export const CONSTRUCTION_ELIGIBILITY_ASSESSMENT_SCHEMA = z
         "standalone_candidate",
       ])
       .optional(),
-    reasons: z.array(z.string().trim().min(1).max(512)).min(1).max(64),
+    reasons: z.array(z.string().trim().min(1).max(512)).min(1),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -495,8 +495,8 @@ export const CONSTRUCTION_ELIGIBILITY_SET_SCHEMA = z
     measurementSetHash: HASH_SCHEMA,
     metadataSetHash: HASH_SCHEMA.optional(),
     contextReceiptSetHash: HASH_SCHEMA.optional(),
-    assessments: z.array(CONSTRUCTION_ELIGIBILITY_ASSESSMENT_SCHEMA).max(100_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(100_000),
+    assessments: z.array(CONSTRUCTION_ELIGIBILITY_ASSESSMENT_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -686,7 +686,7 @@ export function proposeAssetContextGroups(input: {
       ),
       String,
       "context retrieval neighbors",
-    ).slice(0, 31);
+    );
     if (neighbors.length === 0) continue;
     const sources = canonicalValues(
       [relation.sourceContentHash, ...neighbors],
@@ -702,25 +702,17 @@ export function proposeAssetContextGroups(input: {
   for (const bucket of buckets.values()) {
     const sources = [...bucket.sources].sort(compareCanonicalStrings);
     if (sources.length < 2) continue;
-    for (let offset = 0; offset < sources.length; offset += 32) {
-      const bounded = sources.slice(offset, offset + 32);
-      if (bounded.length < 2) continue;
-      if (contextGroupHasMetricOrInterfaceEvidence(bounded, candidateBySource))
-        bucket.evidence.add("metric_interface");
-      const groupId = contentHash(stableJson(bounded));
-      const group = sealArtifact(ASSET_CONTEXT_PROPOSAL_GROUP_SCHEMA, {
-        kind: "AssetContextProposalGroup" as const,
-        groupId,
-        groupingEvidence: canonicalValues(
-          [...bucket.evidence],
-          String,
-          "proposal grouping evidence",
-        ),
-        sourceContentHashes: bounded,
-        compilerAuthority: false as const,
-      });
-      unique.set(groupId, group);
-    }
+    if (contextGroupHasMetricOrInterfaceEvidence(sources, candidateBySource))
+      bucket.evidence.add("metric_interface");
+    const groupId = contentHash(stableJson(sources));
+    const group = sealArtifact(ASSET_CONTEXT_PROPOSAL_GROUP_SCHEMA, {
+      kind: "AssetContextProposalGroup" as const,
+      groupId,
+      groupingEvidence: canonicalValues([...bucket.evidence], String, "proposal grouping evidence"),
+      sourceContentHashes: sources,
+      compilerAuthority: false as const,
+    });
+    unique.set(groupId, group);
   }
   return [...unique.values()].sort((left, right) =>
     compareCanonicalStrings(left.groupId, right.groupId),

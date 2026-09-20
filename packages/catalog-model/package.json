@@ -11,6 +11,7 @@
   "dependencies": {
     "@basalt/contracts": "*",
     "@basalt/semantic-kernel": "*",
+    "@basalt/spatial-core": "*",
     "zod": "4.5.4"
   }
 }

@@ -1,0 +1,22 @@
+{
+  "policyId": "OutdoorRegionArtDirection",
+  "origin": "Creator-authored Basalt outdoor-region profile policy",
+  "placementToleranceMeters": 3,
+  "placementPadBlendWidthMeters": 4,
+  "evidenceCameraFieldOfViewDegrees": 58,
+  "allowedTerrainMaterialIds": ["Grass", "Ground", "LeafyGrass", "Mud"],
+  "plantingPolicy": {
+    "candidateTrialsPerSpacingCell": 4,
+    "spacingFactors": { "minimum": 0.7, "maximum": 1.2 },
+    "canopyResponses": {
+      "neutral": { "open": 1, "covered": 1 },
+      "sheltered": { "open": 0.15, "covered": 1 },
+      "open": { "open": 1, "covered": 0.25 }
+    },
+    "maximumSlopeDegrees": 30,
+    "maximumSupportReliefMeters": 0.35,
+    "groundEmbedMeters": 0.025,
+    "routeClearanceHeightMeters": 3,
+    "minimumSeparationMeters": 0.02
+  }
+}

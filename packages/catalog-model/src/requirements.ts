@@ -15,6 +15,7 @@ import {
   semanticAncestorDistance,
   type SemanticModule,
 } from "@basalt/semantic-kernel";
+import { HORIZONTAL_MASK_SCHEMA } from "@basalt/spatial-core";
 import {
   CATALOG_ENTRY_KIND_SCHEMA,
   ENTRY_HANDLE_SCHEMA,
@@ -28,17 +29,14 @@ import type { CatalogSnapshot, SealedRuntimeCatalogEntry } from "./entries.js";
 export const CATALOG_REQUIREMENT_SCHEMA = z
   .object({
     requirementId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
-    allowedEntryHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1).max(128).optional(),
+    allowedEntryHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1).optional(),
     semantic: SEMANTIC_REQUIREMENT_SCHEMA,
-    acceptedEntryKinds: z
-      .array(CATALOG_ENTRY_KIND_SCHEMA.exclude(["collection"]))
-      .min(1)
-      .max(5),
-    styleProfileHandles: z.array(STYLE_PROFILE_HANDLE_SCHEMA).max(32),
+    acceptedEntryKinds: z.array(CATALOG_ENTRY_KIND_SCHEMA.exclude(["collection"])).min(1),
+    styleProfileHandles: z.array(STYLE_PROFILE_HANDLE_SCHEMA),
     placement: z
       .object({
         requiredSupport: SUPPORT_MODE_SCHEMA.optional(),
-        requiredInterfaceIds: z.array(INTERFACE_ID_SCHEMA).max(128),
+        requiredInterfaceIds: z.array(INTERFACE_ID_SCHEMA),
       })
       .strict(),
     metricBounds: z
@@ -56,7 +54,6 @@ export const CATALOG_REQUIREMENT_SCHEMA = z
       .object({
         maximumTriangles: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
         maximumSourceBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-        maximumInstances: z.number().int().positive().max(1_000_000),
       })
       .strict(),
     required: z.boolean(),
@@ -67,65 +64,65 @@ export type CatalogRequirement = z.output<typeof CATALOG_REQUIREMENT_SCHEMA>;
 const intentBase = {
   intentId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
   requirementId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
-  priority: z.number().int().min(-1_000_000).max(1_000_000),
+  priority: z.number().int().safe(),
 };
 const point2 = z.object({ u: z.number().finite(), v: z.number().finite() }).strict();
-const count = z.number().int().positive().max(65_536);
+const count = z.number().int().positive().safe();
 
-/** Relative spatial density; counts remain bounded independently. Shared seeds align layers. */
+/** Relative spatial density. Shared field identity and seeds align neighboring areas and layers. */
 export const POPULATION_DENSITY_FIELD_SCHEMA = z
   .object({
-    seed: z.number().int().min(0).max(0xffff_ffff),
-    edgeFadeMeters: z.number().finite().positive().max(10_000),
-    wavelengthMeters: z.number().finite().positive().max(10_000),
+    fieldId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
+    seed: z.number().int().nonnegative().safe(),
+    edgeFadeMeters: z.number().finite().nonnegative(),
+    wavelengthMeters: z.number().finite().positive(),
     minimumDensity: z.number().finite().min(0).max(1),
-    patchContrast: z.number().finite().min(1).max(8),
+    patchContrast: z.number().finite().positive(),
   })
   .strict();
 export type PopulationDensityField = z.output<typeof POPULATION_DENSITY_FIELD_SCHEMA>;
 
-const populationVector = z
-  .object({ x: z.number().finite(), y: z.number().finite(), z: z.number().finite() })
-  .strict();
 /** Authored plant-community policy. None of these values classify an asset or alter its geometry. */
+export const VEGETATION_CLEARING_SCHEMA = z
+  .object({
+    mask: HORIZONTAL_MASK_SCHEMA,
+    verticalRangeMeters: z
+      .object({ minimum: z.number().finite(), maximum: z.number().finite() })
+      .strict()
+      .refine(
+        (value) => value.minimum < value.maximum,
+        "Clearing vertical range must have positive extent",
+      ),
+    falloffMeters: z.number().finite().nonnegative(),
+  })
+  .strict();
+export type VegetationClearing = z.output<typeof VEGETATION_CLEARING_SCHEMA>;
+
 export const VEGETATION_DISTRIBUTION_SCHEMA = z
   .object({
+    areaId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
+    habitatFieldId: z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u),
     layer: z.enum(["canopy", "understory", "ground_cover"]),
-    candidateDensityPerSquareMeter: z.number().finite().positive().max(8),
+    candidateDensityPerSquareMeter: z.number().finite().positive(),
     spacingMeters: z
       .object({
-        minimum: z.number().finite().positive().max(100),
-        maximum: z.number().finite().positive().max(100),
+        minimum: z.number().finite().positive(),
+        maximum: z.number().finite().positive(),
       })
       .strict()
       .refine(
         (value) => value.maximum >= value.minimum,
         "Maximum spacing must cover minimum spacing",
       ),
-    canopyIntentIds: z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u)).max(128),
+    canopyIntentIds: z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/u)),
     canopyResponse: z
       .object({ open: z.number().min(0).max(1), covered: z.number().min(0).max(1) })
       .strict(),
-    maximumSlopeDegrees: z.number().finite().min(0).max(60),
-    maximumSupportReliefMeters: z.number().finite().nonnegative().max(1),
-    groundEmbedMeters: z.number().finite().nonnegative().max(0.25),
-    routeClearanceHeightMeters: z.number().finite().positive().max(20),
-    clearings: z
-      .array(
-        z
-          .object({
-            boundsMeters: z
-              .object({ min: populationVector, max: populationVector })
-              .strict()
-              .refine(
-                ({ min, max }) => min.x < max.x && min.y < max.y && min.z < max.z,
-                "Clearing must have positive volume",
-              ),
-            falloffMeters: z.number().finite().nonnegative().max(100),
-          })
-          .strict(),
-      )
-      .max(128),
+    maximumSlopeDegrees: z.number().finite().min(0).lt(90),
+    maximumSupportReliefMeters: z.number().finite().nonnegative(),
+    groundEmbedMeters: z.number().finite().nonnegative(),
+    routeClearanceHeightMeters: z.number().finite().positive(),
+    clearings: z.array(VEGETATION_CLEARING_SCHEMA),
   })
   .strict()
   .superRefine((value, context) => {
@@ -155,7 +152,7 @@ export const REALIZATION_INTENT_SCHEMA = z
         at: point2,
         yawDegrees: z.number().finite().min(0).lt(360).optional(),
         /** Explicit local placement freedom. Absent means an exact authored point. */
-        positionToleranceMeters: z.number().finite().min(0).max(8).optional(),
+        positionToleranceMeters: z.number().finite().min(0).optional(),
       })
       .strict(),
     z
@@ -164,7 +161,7 @@ export const REALIZATION_INTENT_SCHEMA = z
         ...intentBase,
         regionId: z.string().min(1).max(64),
         surfaceId: z.string().min(1).max(64),
-        boundary: z.array(point2).min(3).max(512),
+        boundary: z.array(point2).min(3),
         densityField: POPULATION_DENSITY_FIELD_SCHEMA.optional(),
         vegetation: VEGETATION_DISTRIBUTION_SCHEMA.optional(),
         minimumCount: z.number().int().nonnegative(),
@@ -204,8 +201,8 @@ export const REALIZATION_INTENT_SCHEMA = z
         regionId: z.string().min(1).max(64),
         surfaceId: z.string().min(1).max(64),
         origin: point2,
-        columns: z.number().int().positive().max(4096),
-        rows: z.number().int().positive().max(4096),
+        columns: z.number().int().positive().safe(),
+        rows: z.number().int().positive().safe(),
         spacingUMeters: z.number().finite().positive(),
         spacingVMeters: z.number().finite().positive(),
       })
@@ -233,7 +230,7 @@ export const REALIZATION_INTENT_SCHEMA = z
       .object({
         kind: z.literal("route_network"),
         ...intentBase,
-        routeIds: z.array(z.string().min(1).max(64)).min(1).max(4096),
+        routeIds: z.array(z.string().min(1).max(64)).min(1),
       })
       .strict(),
     z
@@ -249,7 +246,7 @@ export const REALIZATION_INTENT_SCHEMA = z
       .object({
         kind: z.literal("environment_layer"),
         ...intentBase,
-        regionIds: z.array(z.string().min(1).max(64)).min(1).max(256),
+        regionIds: z.array(z.string().min(1).max(64)).min(1),
         mode: z.enum(["sky", "atmosphere", "water_surface", "overhead", "far_field"]),
       })
       .strict(),
@@ -289,14 +286,14 @@ export type RealizationIntent = z.output<typeof REALIZATION_INTENT_SCHEMA>;
 const rejectedMemberSchema = z
   .object({
     memberId: z.string().min(1).max(128),
-    reasons: z.array(z.string().min(1).max(256)).min(1).max(16),
+    reasons: z.array(z.string().min(1).max(256)).min(1),
   })
   .strict();
 const rejectedCandidateSchema = z
   .object({
     entryHandle: ENTRY_HANDLE_SCHEMA,
-    reasons: z.array(z.string().min(1).max(256)).min(1).max(32),
-    rejectedMembers: z.array(rejectedMemberSchema).max(4096),
+    reasons: z.array(z.string().min(1).max(256)).min(1),
+    rejectedMembers: z.array(rejectedMemberSchema),
   })
   .strict();
 const rankedCandidateSchema = z
@@ -308,8 +305,8 @@ const rankedCandidateSchema = z
     boundsSlackQ32: z.string().regex(/^[0-9]+$/u),
     triangleCount: z.number().int().nonnegative(),
     sourceBytes: z.number().int().nonnegative(),
-    eligibleMemberIds: z.array(z.string().min(1).max(128)).max(4096),
-    rejectedMembers: z.array(rejectedMemberSchema).max(4096),
+    eligibleMemberIds: z.array(z.string().min(1).max(128)),
+    rejectedMembers: z.array(rejectedMemberSchema),
     rank: z.number().int().nonnegative(),
   })
   .strict();
@@ -325,7 +322,7 @@ export const RESOLVED_CATALOG_BINDING_SCHEMA = z
     memberId: z.string().min(1).max(128).optional(),
     assetHash: HASH_SCHEMA.optional(),
     assertionBundleHash: HASH_SCHEMA.optional(),
-    evidenceHashes: z.array(HASH_SCHEMA).max(8192),
+    evidenceHashes: z.array(HASH_SCHEMA),
     semanticDistance: z.number().int().nonnegative(),
     rank: z.number().int().nonnegative(),
     explanation: z
@@ -354,8 +351,8 @@ export const RESOLVED_CATALOG_BINDING_SCHEMA = z
           z.literal("source_byte_cost"),
           z.literal("entry_hash"),
         ]),
-        rankedCandidates: z.array(rankedCandidateSchema).min(1).max(4096),
-        rejectedCandidates: z.array(rejectedCandidateSchema).max(4096),
+        rankedCandidates: z.array(rankedCandidateSchema).min(1),
+        rejectedCandidates: z.array(rejectedCandidateSchema),
       })
       .strict(),
   })
@@ -367,7 +364,7 @@ const gapBase = {
   requirementHash: HASH_SCHEMA,
   required: z.boolean(),
   reason: z.string().min(1).max(1024),
-  rejectedCandidates: z.array(rejectedCandidateSchema).max(4096),
+  rejectedCandidates: z.array(rejectedCandidateSchema),
 };
 export const SEMANTIC_GAP_SCHEMA = z
   .object({ kind: z.literal("semantic_gap"), ...gapBase })
@@ -394,9 +391,9 @@ export const CATALOG_RESOLUTION_PLAN_SCHEMA = z
     semanticKernelHash: HASH_SCHEMA,
     catalogSnapshotHash: HASH_SCHEMA,
     requirementsHash: HASH_SCHEMA,
-    bindings: z.array(RESOLVED_CATALOG_BINDING_SCHEMA).max(8192),
-    gaps: z.array(RESOLUTION_GAP_SCHEMA).max(8192),
-    diagnostics: z.array(z.string().min(1).max(1024)).max(8192),
+    bindings: z.array(RESOLVED_CATALOG_BINDING_SCHEMA),
+    gaps: z.array(RESOLUTION_GAP_SCHEMA),
+    diagnostics: z.array(z.string().min(1).max(1024)),
     hash: HASH_SCHEMA,
   })
   .strict()

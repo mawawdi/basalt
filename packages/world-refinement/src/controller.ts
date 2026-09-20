@@ -1,4 +1,5 @@
 import { compareCanonicalStrings, stableJson } from "@basalt/contracts";
+import { horizontalMaskBounds } from "@basalt/spatial-core";
 import {
   affectedCompilationTaskClosure,
   compilationTaskId,
@@ -65,6 +66,12 @@ export async function runBoundedRefinement(input: {
     readonly affectedTaskIds: readonly string[];
   }) => Promise<RefinementObservationResult> | RefinementObservationResult;
   readonly policy: RefinementPolicy;
+  /** Trusted deterministic evidence attachment after semantic changes and before compilation. */
+  readonly prepareNextPlan?: (input: {
+    readonly plan: SpatialWorldPlan;
+    readonly proposal: WorldChangeProposal;
+    readonly previousWorldBuild: WorldBuild;
+  }) => SpatialWorldPlan;
 }): Promise<{
   readonly run: RefinementRun;
   readonly plan: SpatialWorldPlan;
@@ -92,6 +99,7 @@ export async function runBoundedRefinement(input: {
   const initialPlanHash = plan.planHash;
   const iterations: RefinementRun["iterations"] = [];
   const diagnostics: string[] = [];
+  const attemptedFailureStates = new Set<string>();
   const terminalStatus = () => {
     if (worldBuild.status === "rejected" || observation.geometricStatus === "rejected")
       return "rejected" as const;
@@ -121,7 +129,30 @@ export async function runBoundedRefinement(input: {
         proposal.baseWorldBuildHash !== worldBuild.worldBuildHash
       )
         throw new Error("Refinement proposal binds stale inputs");
-      const nextPlan = applyWorldChangeProposal(plan, proposal, policy);
+      const failureState = stableJson({
+        changes: proposal.changes,
+        observationStatus: observation.geometricStatus,
+        failedChecks: observation.checks
+          .filter((check) => check.status !== "eligible")
+          .map((check) => ({
+            kind: check.kind,
+            status: check.status,
+            diagnostic: check.diagnostic,
+          })),
+      });
+      if (attemptedFailureStates.has(failureState)) {
+        diagnostics.push("Refinement repeated an unchanged proposal and failure state");
+        break;
+      }
+      attemptedFailureStates.add(failureState);
+      const changedPlan = applyWorldChangeProposal(plan, proposal, policy);
+      const nextPlan = input.prepareNextPlan
+        ? input.prepareNextPlan({
+            plan: changedPlan,
+            proposal,
+            previousWorldBuild: worldBuild,
+          })
+        : changedPlan;
       const seedTaskIds = refinementSeedTasks(worldBuild, proposal);
       const affectedTaskIds = affectedCompilationTaskClosure(worldBuild.tasks, seedTaskIds);
       enforceProtectedClosure(worldBuild, affectedTaskIds, policy);
@@ -165,6 +196,8 @@ export async function runBoundedRefinement(input: {
         afterWorldBuildHash: nextWorldBuild.worldBuildHash,
         seedTaskIds: [...seedTaskIds],
         affectedTaskIds: [...affectedTaskIds],
+        executedTaskIds: [...compilation.execution.executedTaskIds],
+        reusedTaskIds: compilation.execution.reusedTasks.map((task) => task.taskId),
         changedTaskHashes,
         compilationExecutionHash: compilation.execution.hash,
         observationHash: nextObservation.hash,
@@ -244,11 +277,11 @@ export function applyWorldChangeProposal(
           r.terrainPlanId === change.terrainPlanId && r.operationIndex === change.operationIndex,
       );
       const terrain = terrainPlans.find((t) => t.terrainPlanId === change.terrainPlanId);
-      if (!rule || !terrain || terrain.operations[change.operationIndex]?.kind !== "paint")
+      const currentOperation = terrain?.operations[change.operationIndex];
+      if (!rule || !terrain || currentOperation?.kind !== "paint")
         throw new Error("Ground material edit is not whitelisted");
       if (
         !rule.allowedMaterialIds.includes(change.materialId) ||
-        change.polygon.length > 32 ||
         change.polygon.some(
           (p) =>
             p.x < rule.bounds.min.x ||
@@ -261,7 +294,7 @@ export function applyWorldChangeProposal(
       terrain.operations[change.operationIndex] = {
         kind: "paint",
         materialId: change.materialId,
-        polygon: change.polygon,
+        mask: { ...currentOperation.mask, polygon: change.polygon },
       };
     } else {
       const rule = policy.vegetation.find((r) => r.intentId === change.intentId);
@@ -277,24 +310,24 @@ export function applyWorldChangeProposal(
           `Vegetation edit is not whitelisted: ${change.intentId}; use an existing editable intent ID from the policy`,
         );
       if (change.kind === "vegetation_density") {
-        if (
-          change.candidateDensityPerSquareMeter < rule.minimumDensity ||
-          change.candidateDensityPerSquareMeter > rule.maximumDensity ||
-          change.maximumCount > rule.maximumCount ||
-          change.maximumCount < intent.minimumCount
-        )
+        if (change.maximumCount < intent.minimumCount)
           throw new Error("Vegetation density exceeds its policy bound");
         intent.vegetation.candidateDensityPerSquareMeter = change.candidateDensityPerSquareMeter;
+        intent.vegetation.spacingMeters = change.spacingMeters;
         intent.targetCount = change.maximumCount;
       } else {
         if (
-          change.clearings.some((c) =>
-            (["x", "y", "z"] as const).some(
-              (axis) =>
-                c.boundsMeters.min[axis] < rule.clearingBounds.min[axis] ||
-                c.boundsMeters.max[axis] > rule.clearingBounds.max[axis],
-            ),
-          )
+          change.clearings.some((clearing) => {
+            const bounds = horizontalMaskBounds(clearing.mask);
+            return (
+              bounds.min.x < rule.clearingBounds.min.x ||
+              bounds.max.x > rule.clearingBounds.max.x ||
+              bounds.min.z < rule.clearingBounds.min.z ||
+              bounds.max.z > rule.clearingBounds.max.z ||
+              clearing.verticalRangeMeters.minimum < rule.clearingBounds.min.y ||
+              clearing.verticalRangeMeters.maximum > rule.clearingBounds.max.y
+            );
+          })
         )
           throw new Error("Vegetation clearing exceeds its policy bound");
         // Requested clearings may add exclusions, never remove prior protection.

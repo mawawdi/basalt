@@ -72,16 +72,30 @@ and variable spacing produce clumps and gaps without quota replenishment. Ground
 reserve an authored clearance height; clearings reserve full 3D activity volumes. Canopies
 can overhang these volumes only when the measured occupied geometry stays clear.
 
+Habitat identity is independent of edit-area identity. Neighboring planting areas can share one
+continuous habitat field while retaining separate edit masks, so a local edit does not introduce a
+seam into the ecological pattern. Every clearing names the affected layers and an authored transition
+width: a meadow can exclude canopy and understory while retaining low ground cover. Canopy anchors
+and broad measured patches compete before smaller accents; physical collision still uses measured
+geometry rather than those biological spacing preferences. Catalog variants supply measured height
+and silhouette diversity without disguising a missing variant through arbitrary mesh scaling.
+
 Source-derived height bands retain trunks and low branches while permitting plants in empty
 space beneath crowns. They do not shrink geometry based on a model's interpretation, change
 source meshes or redefine engine physics. A rotated bottom-envelope terrain probe rejects
 excessive support relief and allows a small authored embed rather than suspending wide roots
 from a center-only height sample. This sampled check does not certify every root contact.
 Refinement uses retained measured reservations.
-Terrain `paint` operations apply authored polygon material masks without moving the ground.
-Later paint wins on overlap; resolved route materials retain precedence. These discrete masks
-are sampled into the same sealed base field and passed through engine lowering, not preview
-decoration. Harvest Valley uses leafy woodland ground and soil beneath selected groves and
+Terrain `paint` operations apply material masks without moving the ground. Every operation
+declares either an exact hard edge or a seeded organic edge with explicit world-space wavelength
+and displacement. Organic edges displace a tight authored coarse polygon through a deterministic
+continuous field; the compiler does not hide a universal brush size or convert object bounds into
+surface design. Vegetation clearings use the same mask contract, so an activity surface can bind
+material and selected planting layers to one coherent edge while retaining an authored transition
+outside it. Complete measured plant bounds stay outside the clearing, rather than checking only
+their origins. Later paint wins on overlap; resolved route materials retain precedence. These
+discrete masks are sampled into the same sealed base field and passed through engine lowering, not
+preview decoration. Harvest Valley uses leafy woodland ground and soil beneath selected groves and
 crops. Native material relief remains an engine concern: Roblox's
 [terrain materials](https://create.roblox.com/docs/parts/terrain) affect appearance and shape,
 so a WebGL color patch does not establish the final contact or texture quality.
@@ -90,11 +104,20 @@ research baselines behind this bounded implementation. It does not establish gen
 visual quality, automatic biome inference or streaming consistency. The comparison protocol
 and retained observations are documented in `EVALS.md`.
 
-The bounded Three.js preview renders exact GLBs, compiled placements, route surfaces and sampled
+The Three.js preview renders exact GLBs, compiled placements, route surfaces and sampled
 final terrain. It supports orbiting and reproducible camera captures. Approximate preview terrain
 shading and lighting are visual aids; creator-run Roblox appearance and traversal remain separate
 evidence. The fixed Studio asset-capture action observes unparented published models and returns
 exact material paths and texture IDs without modifying the place or inventing a visual verdict.
+For model review, complete route tessellation stays in the local `WorldBuild`; transport receives
+its hash, bounds, segment count, grade summary and exact local pointer. Every omitted detail is named,
+so a smaller review request does not become a truncated evidence claim.
+
+The retained capacity-cutover independent review found that the strongest generated region has a
+readable meadow/woodland hierarchy, but the set is not yet visually accepted. Sparse or isolated
+props, weak destination-to-route contact, geometric ground patches and occluded cameras remain
+blocking composition evidence. Compiler eligibility, same-model approval and instance count do not
+override that verdict.
 
 ## Asset evidence
 
@@ -179,11 +202,16 @@ ranking. It then:
 1. runs independent field-weighted BM25 channels over weak basename tokens and available
    metadata;
 2. ranks query text against aggregate SigLIP2 image embeddings when present;
-3. fuses the top 200 from available channels with reciprocal-rank fusion at `k = 60`,
-   normalized by each document's available channels;
+3. fuses every eligible result from available channels with reciprocal-rank fusion using the
+   policy's declared rank constant, normalized by each document's available channels;
 4. breaks ties by source-content hash; and
-5. optionally asks the selected VLM to validate at most eight candidates against the
-   exact requirement and all twelve views.
+5. returns the caller-requested result window and marks the caller-requested prefix for optional
+   requirement validation against its retained evidence.
+
+The result and validation window sizes belong to the concrete query, where the consumer knows the
+amount of evidence it can inspect. The search policy contains no corpus or candidate truncation.
+Transport may process a requested validation set incrementally, but it must retain every receipt and
+may not reinterpret an unfinished prefix as a no-match result.
 
 Reference-asset queries use DINOv3 shape embeddings instead of SigLIP text/image vectors.
 They return `incomplete` if DINO evidence is absent; DINO is not required for text search.
@@ -193,7 +221,7 @@ silently exclude an asset. Validator results annotate the base rank as `match`,
 `uncertain`, or `mismatch`; evidence is never discarded.
 
 Nearest-neighbor retrieval never decides that an asset is suitable. A separately hashed,
-frozen decision policy considers the bounded validated candidates and returns
+frozen decision policy considers the query-requested validated candidates and returns
 `suitable_match`, `evidence_insufficient`, or `no_suitable_match`. An uncertain candidate
 prevents a conclusive no-match claim.
 
@@ -205,8 +233,9 @@ assembly semantics stay incomplete without measured or engine evidence.
 
 Per-asset renders often cannot reveal whether a mesh is a whole object, one module, a
 collision companion, or a piece intended to mate with another. Context requests therefore
-group 2–32 assets from auditable basename stems, metric/interface compatibility, and bounded
-retrieval. Pack and directory identity never supply meaning.
+group the complete evidence-related candidate set from auditable basename stems,
+metric/interface compatibility, and retrieval. Pack and directory identity never supply meaning,
+and transport batching cannot redefine the logical group.
 
 A request may include attributed source prefabs or demonstrated assemblies, exact
 component transforms and parent/child relationships, authored role declarations, and
@@ -265,17 +294,16 @@ semantics or overwrite an entry.
 
 ## Evidence scalability
 
-Metadata, embedding, and validation work is split into deterministic resumable shards.
-Each shard is bounded by all of the following:
+Metadata generation uses one deterministic content-addressed asset checkpoint at a time.
+Embedding and validation artifacts retain complete identity coverage and exact input byte, file,
+and preprocessed-pixel totals. Corpus size therefore creates more independently reusable work; no
+schema ceiling discards later assets or evidence. The 384-pixel preprocessing edge is part of the
+declared model input transform, rather than a corpus-size limit.
 
-- at most eight assets;
-- at most 192 evidence files;
-- at most 64 MiB of input evidence;
-- a fixed preprocessed-pixel ceiling derived from a 384-pixel long edge.
-
-The asset count is a checkpoint ceiling, not a GPU batch size. Actual inference may be
-sequential. Remote model execution is optional, has no default provider, and must be selected
-explicitly; at most one remote GPU worker and four local CPU tasks are allowed. The
+Actual inference may be sequential. Remote model execution is optional, has no default provider,
+and must be selected explicitly; the current executor policy allows at most one remote GPU worker
+and four local CPU tasks. Exhaustion stops work with retained checkpoints instead of producing a
+smaller catalog. The
 tracked 32-asset fixture is a smoke test only. Corpus execution remains locked until the
 larger pooled, leakage-isolated qualification covers mixed enrichment, independent writer
 and validator roles, four versus twelve views, confusers, no-match cases, and

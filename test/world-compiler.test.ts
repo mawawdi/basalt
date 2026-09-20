@@ -7,17 +7,92 @@ import {
 } from "@basalt/semantic-kernel";
 import {
   compileBasaltWorld,
+  ConstructionResourceExhaustedError,
+  realizeConstructionProgram,
   sampleTerrainFieldElevation,
   sealCompilationTaskResult,
   worldBuildDiagnostics,
 } from "@basalt/world-compiler";
 import {
+  sealConstructionProgram,
   sealSpatialWorldPlan,
   SPATIAL_WORLD_PLAN_SCHEMA,
   worldFoundationInputHash,
 } from "@basalt/world-planning";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 import { worldFixture } from "./helpers/world-fixture.js";
+import { TEST_WORLD_EXECUTION_POLICY } from "./helpers/execution-policy.js";
+
+const constructionLiteral = (value: number) => ({ kind: "literal" as const, value });
+
+test("construction cardinality is governed by execution allocation rather than a schema ceiling", () => {
+  const program = sealConstructionProgram({
+    programId: "LargeRepeat",
+    regionId: "MainRegion",
+    semanticDependencyClosureHash: "a".repeat(64),
+    styleProfileHash: "b".repeat(64),
+    defaultAppearance: {
+      materialId: "WoodPlanks",
+      baseColorSrgb: { red: 90, green: 60, blue: 30 },
+    },
+    anchor: { kind: "region_point", positionMeters: { x: 0, y: 0, z: 0 } },
+    localFrame: { originOffsetMeters: { x: 0, y: 0, z: 0 }, yawQuarterTurns: 0 },
+    parameters: [],
+    operations: [
+      {
+        operationId: "RepeatTemplate",
+        kind: "box",
+        centerMeters: {
+          x: constructionLiteral(0),
+          y: constructionLiteral(0.5),
+          z: constructionLiteral(0),
+        },
+        sizeMeters: {
+          x: constructionLiteral(0.2),
+          y: constructionLiteral(1),
+          z: constructionLiteral(0.2),
+        },
+        templateOnly: true,
+      },
+      {
+        operationId: "HugeRepeat",
+        kind: "linear_repeat",
+        sourceOperationId: "RepeatTemplate",
+        count: { kind: "literal", value: 65_537 },
+        stepMeters: {
+          x: constructionLiteral(0.25),
+          y: constructionLiteral(0),
+          z: constructionLiteral(0),
+        },
+      },
+    ],
+    contributionEvidenceHashes: [contentHash("large-repeat")],
+  });
+  assert.equal(
+    (
+      program.operations.find((operation) => operation.kind === "linear_repeat")!.count as {
+        value: number;
+      }
+    ).value,
+    65_537,
+  );
+  assert.throws(
+    () =>
+      realizeConstructionProgram(
+        program,
+        { anchorPositionMeters: { x: 0, y: 0, z: 0 }, evidenceHash: contentHash("placement") },
+        {
+          policyId: "SmallConstructionTest",
+          origin: "Deliberately small test allocation",
+          maximumConstructedElements: 100,
+        },
+      ),
+    (error: unknown) =>
+      error instanceof ConstructionResourceExhaustedError &&
+      error.requestedElements === 65_537 &&
+      error.policy.maximumConstructedElements === 100,
+  );
+});
 
 test("foundation, resolution, and realization are deterministic and keep the plan immutable", async () => {
   const module = await loadSemanticRegistry();
@@ -143,6 +218,7 @@ test("scatter and cluster rotate candidates independently while preserving bound
       catalogSnapshot: fixture.snapshot,
       catalogAssets: [fixture.asset],
       spatialPlan,
+      executionPolicy: TEST_WORLD_EXECUTION_POLICY,
     };
     const world = compileBasaltWorld(input);
     assert.equal(world.status, "eligible", world.diagnostics.join("; "));
@@ -162,7 +238,7 @@ test("scatter and cluster rotate candidates independently while preserving bound
   }
 });
 
-test("ground population keeps full footprints outside route clearance and reports blocked grids", async () => {
+test("ground population separates physical route clearance from biological planting setbacks", async () => {
   const module = await loadSemanticRegistry();
   const fixture = await worldFixture(module);
   const { kind: _kind, coordinateSystem: _coordinates, planHash: _hash, ...body } = fixture.plan;
@@ -179,6 +255,7 @@ test("ground population keeps full footprints outside route clearance and report
       catalogSnapshot: fixture.snapshot,
       catalogAssets: [fixture.asset],
       spatialPlan,
+      executionPolicy: TEST_WORLD_EXECUTION_POLICY,
     });
   const planted = compile(
     sealSpatialWorldPlan({
@@ -198,7 +275,30 @@ test("ground population keeps full footprints outside route clearance and report
   );
   assert.equal(planted.status, "eligible", planted.diagnostics.join("; "));
   assert.equal(planted.instances.length, 6);
-  for (const instance of planted.instances) assert.ok(instance.boundsMeters.min.z >= 2.5);
+  for (const instance of planted.instances) assert.ok(instance.boundsMeters.min.z >= 2);
+
+  const routeAdjacentLandmark = compile(
+    sealSpatialWorldPlan({
+      ...body,
+      realizationIntents: [
+        {
+          ...common,
+          kind: "single",
+          at: { u: 10, v: 2.8 },
+          positionToleranceMeters: 0,
+        },
+      ],
+    }),
+  );
+  assert.equal(
+    routeAdjacentLandmark.status,
+    "eligible",
+    routeAdjacentLandmark.diagnostics.join("; "),
+  );
+  assert.equal(routeAdjacentLandmark.instances.length, 1);
+  assert.ok(routeAdjacentLandmark.instances[0]!.boundsMeters.min.z > 2);
+  assert.ok(routeAdjacentLandmark.instances[0]!.boundsMeters.min.z < 2.5);
+
   const blocked = compile(
     sealSpatialWorldPlan({
       ...body,
@@ -206,7 +306,7 @@ test("ground population keeps full footprints outside route clearance and report
         {
           ...common,
           kind: "surface_grid",
-          origin: { u: 10, v: 2.8 },
+          origin: { u: 10, v: 2.4 },
           columns: 1,
           rows: 1,
           spacingUMeters: 1,

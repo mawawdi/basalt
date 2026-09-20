@@ -197,7 +197,6 @@ export async function catalogFixture(
     budget: {
       maximumTriangles: 1000,
       maximumSourceBytes: 4096,
-      maximumInstances: 100,
     },
     required: true,
   };

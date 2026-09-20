@@ -15,11 +15,7 @@ export * from "./fulfillment.js";
 const artifactReference = z
   .object({
     artifactHash: HASH_SCHEMA,
-    bytes: z
-      .number()
-      .int()
-      .positive()
-      .max(512 * 1024 * 1024),
+    bytes: z.number().int().positive().safe(),
     mediaType: z.string().regex(/^[a-z0-9.+-]+\/[a-z0-9.+-]+$/u),
   })
   .strict();
@@ -34,16 +30,12 @@ export const ASSET_FACTORY_REQUEST_SCHEMA = z
     styleProfile: SEALED_STYLE_PROFILE_SCHEMA,
     measurableConstraints: z
       .object({
-        maximumTriangles: z.number().int().positive().max(20_000_000),
-        maximumSourceBytes: z
-          .number()
-          .int()
-          .positive()
-          .max(512 * 1024 * 1024),
+        maximumTriangles: z.number().int().positive().safe(),
+        maximumSourceBytes: z.number().int().positive().safe(),
         outputMediaType: z.literal("model/gltf-binary"),
         requireSupportEvidence: z.boolean(),
         requireCollisionEvidence: z.boolean(),
-        requiredSocketCount: z.number().int().nonnegative().max(4096),
+        requiredSocketCount: z.number().int().nonnegative().safe(),
       })
       .strict(),
     hash: HASH_SCHEMA,
@@ -86,9 +78,9 @@ export const ASSET_FACTORY_CANDIDATE_SCHEMA = z
       .refine((value) => value.mediaType === "model/gltf-binary", "Factory output must be GLB")
       .optional(),
     neuralGenerationReceiptHash: HASH_SCHEMA,
-    finishingEvidenceHashes: z.array(HASH_SCHEMA).max(4096),
-    lineageEvidenceHashes: z.array(HASH_SCHEMA).max(4096),
-    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(4096),
+    finishingEvidenceHashes: z.array(HASH_SCHEMA),
+    lineageEvidenceHashes: z.array(HASH_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(1024)),
     admissionAuthority: z.literal("measurement_and_catalog_seal_required"),
     hash: HASH_SCHEMA,
   })

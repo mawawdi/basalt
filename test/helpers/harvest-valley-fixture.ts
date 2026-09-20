@@ -14,6 +14,7 @@ import {
   type VegetationPaletteMember,
   type WorldRoute,
 } from "@basalt/world-planning";
+import { TEST_WORLD_EXECUTION_POLICY } from "./execution-policy.js";
 import { catalogFirstUseFixture } from "./catalog-first-use-fixture.js";
 
 export const HARVEST_VALLEY_OUTPUT_ROOT = ".basalt/evals/harvest-valley";
@@ -114,7 +115,7 @@ export async function harvestValleyFixture(module: SemanticModule) {
     "rock_rounded_01_ground",
   ];
   const requirements: CatalogRequirement[] = handles.map((handle) => {
-    const entry = base.catalogCommit.declarations.find((item) => item.handle === handle);
+    const entry = base.catalogCommit.snapshot.entries.find((item) => item.handle === handle);
     if (!entry || entry.kind !== "substitution_set")
       throw new Error(`Missing admitted showcase entry ${handle}`);
     return {
@@ -134,9 +135,8 @@ export async function harvestValleyFixture(module: SemanticModule) {
       metricBounds: {},
       rights: { commercialUseRequired: true, redistributionRequired: true },
       budget: {
-        maximumTriangles: 5_000_000,
-        maximumSourceBytes: 512 * 1024 * 1024,
-        maximumInstances: 2048,
+        maximumTriangles: entry.triangleCount,
+        maximumSourceBytes: entry.sourceBytes,
       },
       required: true,
     };
@@ -388,27 +388,30 @@ export async function harvestValleyFixture(module: SemanticModule) {
       young: 16,
     },
   ];
+  const hardClearing = (
+    min: { x: number; y: number; z: number },
+    max: { x: number; y: number; z: number },
+    falloffMeters: number,
+  ) => ({
+    mask: {
+      polygon: [
+        { x: min.x, z: min.z },
+        { x: max.x, z: min.z },
+        { x: max.x, z: max.z },
+        { x: min.x, z: max.z },
+      ],
+      edgeProfile: { kind: "hard" as const },
+    },
+    verticalRangeMeters: { minimum: min.y, maximum: max.y },
+    falloffMeters,
+    layers: ["canopy", "understory", "ground_cover"] as const,
+  });
   const clearings = [
-    {
-      boundsMeters: { min: { x: 56, y: -8, z: 9 }, max: { x: 70, y: 12, z: 29 } },
-      falloffMeters: 5,
-    },
-    {
-      boundsMeters: { min: { x: 44, y: -8, z: 59 }, max: { x: 68, y: 14, z: 87 } },
-      falloffMeters: 2,
-    },
-    {
-      boundsMeters: { min: { x: 17, y: -8, z: 58 }, max: { x: 28, y: 8, z: 74 } },
-      falloffMeters: 3,
-    },
-    {
-      boundsMeters: { min: { x: 40, y: -8, z: 37 }, max: { x: 87, y: 8, z: 59 } },
-      falloffMeters: 3,
-    },
-    {
-      boundsMeters: { min: { x: 67, y: 9, z: 85 }, max: { x: 81, y: 16, z: 97 } },
-      falloffMeters: 3,
-    },
+    hardClearing({ x: 56, y: -8, z: 9 }, { x: 70, y: 12, z: 29 }, 5),
+    hardClearing({ x: 44, y: -8, z: 59 }, { x: 68, y: 14, z: 87 }, 2),
+    hardClearing({ x: 17, y: -8, z: 58 }, { x: 28, y: 8, z: 74 }, 3),
+    hardClearing({ x: 40, y: -8, z: 37 }, { x: 87, y: 8, z: 59 }, 3),
+    hardClearing({ x: 67, y: 9, z: 85 }, { x: 81, y: 16, z: 97 }, 3),
   ];
   const anchorIds = [
     "FarmShade",
@@ -450,11 +453,13 @@ export async function harvestValleyFixture(module: SemanticModule) {
     intents.push(
       ...createVegetationIntents({
         areaId,
+        habitatFieldId: areaId,
         regionId: REGION,
         surfaceId: SURFACE,
         boundary: boundary.map(([u, v]) => ({ u, v })),
         palette,
         densityField: {
+          fieldId: areaId,
           seed: 260924,
           edgeFadeMeters,
           wavelengthMeters: 18,
@@ -893,10 +898,18 @@ export async function harvestValleyFixture(module: SemanticModule) {
           plateau(46, 61, 66, 85, 5.6, 1.2),
           plateau(29.8, 32.8, 36.3, 39.2, 2.7, 1.2),
           plateau(17, 57, 27, 73, 4, 1.2),
-          ...woods.map((wood) => ({
+          ...woods.map((wood, index) => ({
             kind: "paint" as const,
-            polygon: wood.boundary.map(([x, z]) => ({ x, z })),
             materialId: "LeafyGrass",
+            mask: {
+              polygon: wood.boundary.map(([x, z]) => ({ x, z })),
+              edgeProfile: {
+                kind: "organic" as const,
+                seed: 31_000 + index,
+                wavelengthMeters: 8,
+                displacementMeters: 1.8,
+              },
+            },
           })),
           ...[
             [
@@ -930,8 +943,11 @@ export async function harvestValleyFixture(module: SemanticModule) {
             ],
           ].map((polygon) => ({
             kind: "paint" as const,
-            polygon: polygon.map(([x, z]) => ({ x: x!, z: z! })),
             materialId: "Ground",
+            mask: {
+              polygon: polygon.map(([x, z]) => ({ x: x!, z: z! })),
+              edgeProfile: { kind: "hard" as const },
+            },
           })),
         ],
         materialId: "Grass",
@@ -1040,6 +1056,7 @@ export async function harvestValleyFixture(module: SemanticModule) {
       catalogAssets: base.measurements.assets,
       spatialPlan: plan,
       placementGeometry,
+      executionPolicy: TEST_WORLD_EXECUTION_POLICY,
     },
   };
 }

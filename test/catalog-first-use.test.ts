@@ -3,6 +3,7 @@ import test from "node:test";
 import { createRobloxImportManifest } from "@basalt/roblox";
 import { compileBasaltWorld } from "@basalt/world-compiler";
 import { catalogFirstUseFixture } from "./helpers/catalog-first-use-fixture.js";
+import { TEST_WORLD_EXECUTION_POLICY } from "./helpers/execution-policy.js";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 
 test("the first-use fixture resolves only real committed catalog authority", async () => {
@@ -13,12 +14,14 @@ test("the first-use fixture resolves only real committed catalog authority", asy
     catalogSnapshot: fixture.catalogCommit.snapshot,
     catalogAssets: fixture.measurements.assets,
     spatialPlan: fixture.plan,
+    executionPolicy: TEST_WORLD_EXECUTION_POLICY,
   });
   const changed = compileBasaltWorld({
     semanticModule: module,
     catalogSnapshot: fixture.catalogCommit.snapshot,
     catalogAssets: fixture.measurements.assets,
     spatialPlan: fixture.changedPlan,
+    executionPolicy: TEST_WORLD_EXECUTION_POLICY,
   });
   assert.equal(baseline.catalogSnapshotHash, fixture.catalogCommit.snapshot.hash);
   assert.equal(baseline.catalogResolution.requirementsHash.length, 64);

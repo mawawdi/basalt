@@ -27,8 +27,8 @@ export const DIAGNOSTIC_SCHEMA = z
   .object({
     code: ASCII_ID_SCHEMA,
     message: z.string().trim().min(1).max(2048),
-    path: z.array(z.union([z.string().max(256), z.number().int().nonnegative()])).max(64),
-    evidenceHashes: z.array(HASH_SCHEMA).max(256),
+    path: z.array(z.union([z.string().max(256), z.number().int().nonnegative()])),
+    evidenceHashes: z.array(HASH_SCHEMA),
   })
   .strict();
 export type Diagnostic = z.output<typeof DIAGNOSTIC_SCHEMA>;

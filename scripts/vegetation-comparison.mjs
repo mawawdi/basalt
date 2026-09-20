@@ -6,6 +6,7 @@ import { readBoundedWorkspaceBytes, writeCanonicalWorkspaceJson } from "@basalt/
 import { contentHash, stableJson } from "@basalt/contracts";
 import { CATALOG_AUTHORITY_COMMIT_SCHEMA } from "@basalt/catalog-authoring";
 import { CATALOG_MEASUREMENT_SET_SCHEMA } from "@basalt/catalog-model";
+import { horizontalMaskContainsPoint } from "@basalt/spatial-core";
 import { compileBasaltWorld, canopyInfluenceAt } from "@basalt/world-compiler";
 import { sealSpatialWorldPlan, SPATIAL_WORLD_PLAN_SCHEMA } from "@basalt/world-planning";
 import { sealRefinementPolicy, verifyWorldBuild } from "@basalt/world-refinement";
@@ -60,6 +61,7 @@ for (const path of [
   "packages/world-compiler/src/vegetation.ts",
   "packages/world-compiler/src/population-density.ts",
   "packages/world-planning/src/contracts.ts",
+  "packages/spatial-core/src/horizontal-mask.ts",
   "packages/spatial-core/src/occupancy.ts",
   "packages/world-refinement/src/verifiers.ts",
   "packages/cli/src/world-placement-geometry.ts",
@@ -207,8 +209,10 @@ for (const seed of spec.seeds)
     ).length;
     const clearingAnchors = population.filter(({ transformMeters: { position: p } }) =>
       spec.clearings.some(
-        ({ boundsMeters: { min, max } }) =>
-          p.x > min.x && p.x < max.x && p.y >= min.y && p.y <= max.y && p.z > min.z && p.z < max.z,
+        (clearing) =>
+          p.y >= clearing.verticalRangeMeters.minimum &&
+          p.y <= clearing.verticalRangeMeters.maximum &&
+          horizontalMaskContainsPoint(clearing.mask, p),
       ),
     ).length;
     const report = {

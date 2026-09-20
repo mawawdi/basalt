@@ -36,7 +36,7 @@ const occupancyReservationMaterial = z
     stratum: z.string().min(1).max(64),
     bounds: SPATIAL_AABB_SCHEMA,
     collisionEvidenceHash: hashSchema.optional(),
-    narrowPhaseObbs: z.array(SPATIAL_OBB_SCHEMA).max(4096),
+    narrowPhaseObbs: z.array(SPATIAL_OBB_SCHEMA),
   })
   .strict()
   .superRefine((value, context) => {

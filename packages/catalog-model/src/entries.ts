@@ -53,24 +53,20 @@ export const CATALOG_SEMANTIC_SIGNATURE_SCHEMA = z
   .object({
     denotation: CONCEPT_COMMITMENT_REFERENCE_SCHEMA,
     realizationForm: REALIZATION_FORM_SCHEMA,
-    fixedStates: z
-      .array(
-        z
-          .object({
-            stateDimensionId: STATE_DIMENSION_ID_SCHEMA,
-            stateValueId: STATE_VALUE_ID_SCHEMA,
-          })
-          .strict(),
-      )
-      .max(32),
-    affordances: z
-      .array(
-        z
-          .object({ affordanceId: AFFORDANCE_ID_SCHEMA, evidenceLevel: EVIDENCE_LEVEL_SCHEMA })
-          .strict(),
-      )
-      .max(64),
-    surfaceTreatmentIds: z.array(SURFACE_TREATMENT_ID_SCHEMA).max(64),
+    fixedStates: z.array(
+      z
+        .object({
+          stateDimensionId: STATE_DIMENSION_ID_SCHEMA,
+          stateValueId: STATE_VALUE_ID_SCHEMA,
+        })
+        .strict(),
+    ),
+    affordances: z.array(
+      z
+        .object({ affordanceId: AFFORDANCE_ID_SCHEMA, evidenceLevel: EVIDENCE_LEVEL_SCHEMA })
+        .strict(),
+    ),
+    surfaceTreatmentIds: z.array(SURFACE_TREATMENT_ID_SCHEMA),
     dependencyClosureHash: HASH_SCHEMA,
   })
   .strict()
@@ -93,8 +89,8 @@ const catalogMember = z
     memberId: MEMBER_ID_SCHEMA,
     assetHash: HASH_SCHEMA,
     assertionBundleHash: HASH_SCHEMA,
-    selectionWeight: z.number().int().positive().max(0x7fff_ffff),
-    socketBindings: z.array(socketBinding).max(128),
+    selectionWeight: z.number().int().positive().safe(),
+    socketBindings: z.array(socketBinding),
   })
   .strict();
 const interfaceDeclaration = z
@@ -105,25 +101,23 @@ const runtimeBase = {
   semantic: CATALOG_SEMANTIC_SIGNATURE_SCHEMA,
   placement: PLACEMENT_SIGNATURE_SCHEMA,
   styleProfileHandle: STYLE_PROFILE_HANDLE_SCHEMA,
-  evidenceHashes: z.array(HASH_SCHEMA).max(4096),
+  evidenceHashes: z.array(HASH_SCHEMA),
 };
 const provider = z
   .object({
     roleSchemeId: ROLE_SCHEME_ID_SCHEMA,
     roleId: ROLE_ID_SCHEMA,
-    providerHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1).max(256),
-    minimumCount: z.number().int().nonnegative().max(65_536),
-    maximumCount: z.number().int().positive().max(65_536),
-    socketBindings: z
-      .array(
-        z
-          .object({
-            providerSocketId: z.string().min(1).max(128),
-            interfaceId: INTERFACE_ID_SCHEMA,
-          })
-          .strict(),
-      )
-      .max(512),
+    providerHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1),
+    minimumCount: z.number().int().nonnegative().safe(),
+    maximumCount: z.number().int().positive().safe(),
+    socketBindings: z.array(
+      z
+        .object({
+          providerSocketId: z.string().min(1).max(128),
+          interfaceId: INTERFACE_ID_SCHEMA,
+        })
+        .strict(),
+    ),
   })
   .strict()
   .refine((value) => value.minimumCount <= value.maximumCount, "Provider count is inverted");
@@ -132,7 +126,7 @@ const substitutionSetDeclaration = z
   .object({
     kind: z.literal("substitution_set"),
     ...runtimeBase,
-    members: z.array(catalogMember).min(1).max(4096),
+    members: z.array(catalogMember).min(1),
   })
   .strict();
 const assemblyKitDeclaration = z
@@ -140,15 +134,13 @@ const assemblyKitDeclaration = z
     kind: z.literal("assembly_kit"),
     ...runtimeBase,
     roleSchemeId: ROLE_SCHEME_ID_SCHEMA,
-    providers: z.array(provider).min(1).max(4096),
-    interfaces: z.array(interfaceDeclaration).max(1024),
-    allowedMates: z
-      .array(
-        z
-          .object({ firstInterfaceId: INTERFACE_ID_SCHEMA, secondInterfaceId: INTERFACE_ID_SCHEMA })
-          .strict(),
-      )
-      .max(4096),
+    providers: z.array(provider).min(1),
+    interfaces: z.array(interfaceDeclaration),
+    allowedMates: z.array(
+      z
+        .object({ firstInterfaceId: INTERFACE_ID_SCHEMA, secondInterfaceId: INTERFACE_ID_SCHEMA })
+        .strict(),
+    ),
     transitions: z
       .array(
         z
@@ -160,13 +152,12 @@ const assemblyKitDeclaration = z
           })
           .strict(),
       )
-      .min(1)
-      .max(4096),
+      .min(1),
     topology: z
       .object({
         connectivity: z.literal("connected"),
         cyclePolicy: z.enum(["forbidden", "permitted"]),
-        minimumConnections: z.number().int().nonnegative().max(65_535),
+        minimumConnections: z.number().int().nonnegative().safe(),
       })
       .strict(),
     lattice: z
@@ -176,17 +167,17 @@ const assemblyKitDeclaration = z
         evidenceHash: HASH_SCHEMA.optional(),
       })
       .strict(),
-    terminalRoleIds: z.array(ROLE_ID_SCHEMA).max(128),
-    requiredCoverageRoleIds: z.array(ROLE_ID_SCHEMA).max(128),
+    terminalRoleIds: z.array(ROLE_ID_SCHEMA),
+    requiredCoverageRoleIds: z.array(ROLE_ID_SCHEMA),
   })
   .strict();
 const attachmentSetDeclaration = z
   .object({
     kind: z.literal("attachment_set"),
     ...runtimeBase,
-    members: z.array(catalogMember).min(1).max(4096),
-    acceptedHostSupports: z.array(PLACEMENT_SIGNATURE_SCHEMA.shape.support).min(1).max(7),
-    acceptedHostInterfaceIds: z.array(INTERFACE_ID_SCHEMA).max(128),
+    members: z.array(catalogMember).min(1),
+    acceptedHostSupports: z.array(PLACEMENT_SIGNATURE_SCHEMA.shape.support).min(1),
+    acceptedHostInterfaceIds: z.array(INTERFACE_ID_SCHEMA),
   })
   .strict();
 const routeKitDeclaration = z
@@ -208,34 +199,30 @@ const routeKitDeclaration = z
               "bridge",
               "tunnel",
             ]),
-            providerHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1).max(256),
+            providerHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1),
           })
           .strict(),
       )
-      .min(1)
-      .max(1024),
+      .min(1),
     segmentLengthMeters: POSITIVE_Q32_SCHEMA,
-    allowedTransitions: z
-      .array(z.object({ fromRoleId: ROLE_ID_SCHEMA, toRoleId: ROLE_ID_SCHEMA }).strict())
-      .max(4096),
+    allowedTransitions: z.array(
+      z.object({ fromRoleId: ROLE_ID_SCHEMA, toRoleId: ROLE_ID_SCHEMA }).strict(),
+    ),
   })
   .strict();
 const environmentRealizerDeclaration = z
   .object({
     kind: z.literal("environment_realizer"),
     ...runtimeBase,
-    members: z.array(catalogMember).min(1).max(4096),
-    modes: z
-      .array(z.enum(["sky", "atmosphere", "water_surface", "overhead", "far_field"]))
-      .min(1)
-      .max(5),
+    members: z.array(catalogMember).min(1),
+    modes: z.array(z.enum(["sky", "atmosphere", "water_surface", "overhead", "far_field"])).min(1),
   })
   .strict();
 const collectionDeclaration = z
   .object({
     kind: z.literal("collection"),
     handle: ENTRY_HANDLE_SCHEMA,
-    entryHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1).max(4096),
+    entryHandles: z.array(ENTRY_HANDLE_SCHEMA).min(1),
   })
   .strict();
 
@@ -251,10 +238,8 @@ export type CatalogEntryDeclaration = z.output<typeof CATALOG_ENTRY_DECLARATION_
 
 const sealedBase = {
   handle: ENTRY_HANDLE_SCHEMA,
-  childEntries: z
-    .array(z.object({ handle: ENTRY_HANDLE_SCHEMA, entryHash: HASH_SCHEMA }).strict())
-    .max(8192),
-  descendantAssetHashes: z.array(HASH_SCHEMA).max(100_000),
+  childEntries: z.array(z.object({ handle: ENTRY_HANDLE_SCHEMA, entryHash: HASH_SCHEMA }).strict()),
+  descendantAssetHashes: z.array(HASH_SCHEMA),
   triangleCount: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   sourceBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   declarationHash: HASH_SCHEMA,
@@ -266,36 +251,34 @@ const sealedRuntimeBase = {
   placement: PLACEMENT_SIGNATURE_SCHEMA,
   styleProfileHandle: STYLE_PROFILE_HANDLE_SCHEMA,
   styleProfileHash: HASH_SCHEMA,
-  evidenceHashes: z.array(HASH_SCHEMA).max(8192),
-  memberAssets: z
-    .array(
-      z
-        .object({
-          memberId: MEMBER_ID_SCHEMA,
-          assetHash: HASH_SCHEMA,
-          assertionBundleHash: HASH_SCHEMA,
-          selectionWeight: z.number().int().positive(),
-          socketBindings: z.array(socketBinding).max(128),
-          bounds: CATALOG_AABB_FIXED_SCHEMA,
-          triangleCount: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-          sourceBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-          rights: z
-            .object({
-              commercialUsePermitted: z.boolean(),
-              redistributionPermitted: z.boolean(),
-              licenseId: z.string().trim().min(1).max(160),
-            })
-            .strict(),
-        })
-        .strict(),
-    )
-    .max(4096),
+  evidenceHashes: z.array(HASH_SCHEMA),
+  memberAssets: z.array(
+    z
+      .object({
+        memberId: MEMBER_ID_SCHEMA,
+        assetHash: HASH_SCHEMA,
+        assertionBundleHash: HASH_SCHEMA,
+        selectionWeight: z.number().int().positive(),
+        socketBindings: z.array(socketBinding),
+        bounds: CATALOG_AABB_FIXED_SCHEMA,
+        triangleCount: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+        sourceBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+        rights: z
+          .object({
+            commercialUsePermitted: z.boolean(),
+            redistributionPermitted: z.boolean(),
+            licenseId: z.string().trim().min(1).max(160),
+          })
+          .strict(),
+      })
+      .strict(),
+  ),
   metricEnvelope: CATALOG_AABB_FIXED_SCHEMA.optional(),
   rights: z
     .object({
       commercialUsePermitted: z.boolean(),
       redistributionPermitted: z.boolean(),
-      licenseIds: z.array(z.string().trim().min(1).max(160)).max(4096),
+      licenseIds: z.array(z.string().trim().min(1).max(160)),
     })
     .strict(),
 };
@@ -398,16 +381,15 @@ export const CATALOG_SNAPSHOT_SCHEMA = z
     kind: z.literal("CatalogSnapshot"),
     status: COMPILATION_STATUS_SCHEMA,
     semanticKernelHash: HASH_SCHEMA,
-    semanticClosureHashes: z.array(HASH_SCHEMA).max(100_000),
+    semanticClosureHashes: z.array(HASH_SCHEMA),
     styleProfiles: z
       .array(z.object({ handle: STYLE_PROFILE_HANDLE_SCHEMA, hash: HASH_SCHEMA }).strict())
-      .min(1)
-      .max(4096),
-    entries: z.array(SEALED_CATALOG_ENTRY_SCHEMA).max(65_536),
-    eligibleAssetArtifactHashes: z.array(HASH_SCHEMA).max(100_000),
-    sourceIdentityCount: z.number().int().nonnegative().max(100_000),
+      .min(1),
+    entries: z.array(SEALED_CATALOG_ENTRY_SCHEMA),
+    eligibleAssetArtifactHashes: z.array(HASH_SCHEMA),
+    sourceIdentityCount: z.number().int().nonnegative().safe(),
     dispositionsHash: HASH_SCHEMA,
-    diagnostics: z.array(z.string().min(1).max(1024)).max(100_000),
+    diagnostics: z.array(z.string().min(1).max(1024)),
     hash: HASH_SCHEMA,
   })
   .strict()

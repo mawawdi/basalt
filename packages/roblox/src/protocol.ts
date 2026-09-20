@@ -110,7 +110,7 @@ export const ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA = z
   .object({
     openingId: entityId,
     clearanceBoundsMicrometers: MICROMETER_AABB_SCHEMA,
-    blockingPartIds: z.array(z.string().trim().min(1).max(1024)).max(256),
+    blockingPartIds: z.array(z.string().trim().min(1).max(1024)),
   })
   .strict()
   .superRefine((value, context) => {
@@ -253,11 +253,9 @@ const robloxUploadArtifact = z
 const robloxUploadAdaptation = z
   .object({
     policyHash: z.literal(ROBLOX_GLTF_UPLOAD_ADAPTATION_POLICY_HASH),
-    strippedSecondaryVertexColorSemantics: z
-      .array(z.string().regex(/^COLOR_[1-9][0-9]*$/u))
-      .max(32),
-    strippedPrimitiveAttributeCount: z.number().int().nonnegative().max(100_000),
-    preservedPrimaryVertexColorPrimitiveCount: z.number().int().nonnegative().max(100_000),
+    strippedSecondaryVertexColorSemantics: z.array(z.string().regex(/^COLOR_[1-9][0-9]*$/u)),
+    strippedPrimitiveAttributeCount: z.number().int().nonnegative().safe(),
+    preservedPrimaryVertexColorPrimitiveCount: z.number().int().nonnegative().safe(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -401,7 +399,7 @@ export const ROBLOX_ASSET_UPLOAD_LEDGER_SCHEMA = z
   .object({
     kind: z.literal("RobloxAssetUploadLedger"),
     creator: z.object({ userId: z.number().int().positive().safe() }).strict(),
-    uploads: z.array(ROBLOX_ASSET_UPLOAD_SCHEMA).max(100_000),
+    uploads: z.array(ROBLOX_ASSET_UPLOAD_SCHEMA),
     ledgerHash: HASH_SCHEMA,
   })
   .strict()
@@ -464,8 +462,8 @@ export const ROBLOX_SCENE_INSTANCE_SCHEMA = z
       .strict(),
     sourceBoundsMeters: SPATIAL_AABB_SCHEMA,
     boundsMeters: SPATIAL_AABB_SCHEMA,
-    materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA).max(100_000),
-    evidenceHashes: z.array(HASH_SCHEMA).max(8192),
+    materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA),
+    evidenceHashes: z.array(HASH_SCHEMA),
   })
   .strict()
   .superRefine((value, context) => {
@@ -509,24 +507,20 @@ export const ROBLOX_IMPORT_TRANSACTION_SCHEMA = z
       .optional(),
     meso: z
       .object({
-        assemblies: z.array(ASSEMBLY_ARTIFACT_SCHEMA).max(65_536),
-        constructedStructures: z.array(CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA).max(65_536),
-        constructedSurfaces: z.array(CONSTRUCTED_SURFACE_SCHEMA).max(65_536),
-        portals: z.array(PORTAL_ARTIFACT_SCHEMA).max(65_536),
-        rooms: z.array(ROOM_ARTIFACT_SCHEMA).max(65_536),
-        proceduralStairs: z.array(PROCEDURAL_STAIR_ARTIFACT_SCHEMA).max(65_536),
+        assemblies: z.array(ASSEMBLY_ARTIFACT_SCHEMA),
+        constructedStructures: z.array(CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA),
+        constructedSurfaces: z.array(CONSTRUCTED_SURFACE_SCHEMA),
+        portals: z.array(PORTAL_ARTIFACT_SCHEMA),
+        rooms: z.array(ROOM_ARTIFACT_SCHEMA),
+        proceduralStairs: z.array(PROCEDURAL_STAIR_ARTIFACT_SCHEMA),
       })
       .strict()
       .optional(),
-    instances: z.array(ROBLOX_SCENE_INSTANCE_SCHEMA).max(100_000),
-    expectedInstanceHashes: z
-      .array(z.object({ instanceId: entityId, hash: HASH_SCHEMA }).strict())
-      .max(100_000),
-    expectedArtifactHashes: z.array(observedArtifact).max(262_144),
-    expectedConstructedElements: z
-      .array(ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA)
-      .max(100_000),
-    expectedConstructedOpenings: z.array(ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA).max(65_536),
+    instances: z.array(ROBLOX_SCENE_INSTANCE_SCHEMA),
+    expectedInstanceHashes: z.array(z.object({ instanceId: entityId, hash: HASH_SCHEMA }).strict()),
+    expectedArtifactHashes: z.array(observedArtifact),
+    expectedConstructedElements: z.array(ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA),
+    expectedConstructedOpenings: z.array(ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -593,23 +587,22 @@ export const ROBLOX_IMPORT_MANIFEST_SCHEMA = z
     sessionHash: HASH_SCHEMA,
     worldBuildHash: HASH_SCHEMA,
     worldStatus: z.enum(["eligible", "incomplete"]),
-    loweringGaps: z
-      .array(
-        z
-          .object({
-            kind: z.enum([
-              "asset_binding",
-              "constructed_geometry",
-              "route_construction",
-              "terrain_construction",
-            ]),
-            subjectHash: HASH_SCHEMA,
-            reason: z.string().trim().min(1).max(1024),
-          })
-          .strict(),
-      )
-      .max(100_000),
-    transactions: z.array(ROBLOX_IMPORT_TRANSACTION_SCHEMA).min(4).max(100_000),
+    loweringGaps: z.array(
+      z
+        .object({
+          kind: z.enum([
+            "asset_binding",
+            "constructed_geometry",
+            "route_construction",
+            "terrain_construction",
+            "visual_environment",
+          ]),
+          subjectHash: HASH_SCHEMA,
+          reason: z.string().trim().min(1),
+        })
+        .strict(),
+    ),
+    transactions: z.array(ROBLOX_IMPORT_TRANSACTION_SCHEMA).min(4),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -638,7 +631,7 @@ export const ROBLOX_ASSET_BINDING_SCHEMA = z
     sourceArtifactHash: HASH_SCHEMA,
     uploadArtifactHash: HASH_SCHEMA,
     publicationEvidenceHash: HASH_SCHEMA,
-    materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA).min(1).max(100_000),
+    materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA).min(1),
     bindingHash: HASH_SCHEMA,
   })
   .strict()
@@ -672,14 +665,12 @@ export const ROBLOX_READBACK_SCHEMA = z
     worldBuildHash: HASH_SCHEMA,
     transactionId: entityId,
     status: z.enum(["complete", "incomplete"]),
-    instances: z
-      .array(z.object({ instanceId: entityId, realizedHash: HASH_SCHEMA }).strict())
-      .max(100_000),
-    artifacts: z.array(observedArtifact).max(262_144),
-    constructedElements: z.array(ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA).max(100_000),
-    constructedOpenings: z.array(ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA).max(65_536),
-    traceEvents: z.array(ROBLOX_TRACE_EVENT_SCHEMA).max(4_096),
-    diagnostics: z.array(z.string().min(1).max(1024)).max(4096),
+    instances: z.array(z.object({ instanceId: entityId, realizedHash: HASH_SCHEMA }).strict()),
+    artifacts: z.array(observedArtifact),
+    constructedElements: z.array(ROBLOX_CONSTRUCTED_ELEMENT_OBSERVATION_SCHEMA),
+    constructedOpenings: z.array(ROBLOX_CONSTRUCTED_OPENING_OBSERVATION_SCHEMA),
+    traceEvents: z.array(ROBLOX_TRACE_EVENT_SCHEMA),
+    diagnostics: z.array(z.string().min(1)),
   })
   .strict()
   .superRefine((value, context) => {
@@ -737,14 +728,49 @@ export const ROBLOX_IMPORT_REPORT_SCHEMA = z
     progress: z
       .object({ complete: z.number().int().nonnegative(), total: z.number().int().positive() })
       .strict(),
-    records: z.array(ROBLOX_IMPORT_REPORT_RECORD_SCHEMA).max(65_536),
-    diagnostics: z.array(z.string().min(1).max(1_024)).max(4_096),
-    traceEvents: z.array(ROBLOX_TRACE_EVENT_SCHEMA).max(8_192),
+    records: z.array(ROBLOX_IMPORT_REPORT_RECORD_SCHEMA),
+    diagnostics: z.array(z.string().min(1)),
+    traceEvents: z.array(ROBLOX_TRACE_EVENT_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()
   .superRefine((value, context) => verifyHash(value, "hash", context));
 export type RobloxImportReport = z.output<typeof ROBLOX_IMPORT_REPORT_SCHEMA>;
+
+/**
+ * Current Roblox property ranges live at the adapter boundary. They are lowering capabilities,
+ * not limits on Basalt's engine-neutral visual intent.
+ */
+export const ROBLOX_VISUAL_ENVIRONMENT_CAPABILITY = Object.freeze({
+  capabilityId: "RobloxVisualEnvironment",
+  origin: "Roblox Lighting and Atmosphere property ranges",
+  brightness: Object.freeze({ minimum: 0, maximum: 10 }),
+  exposureCompensation: Object.freeze({ minimum: -5, maximum: 5 }),
+  atmosphereHaze: Object.freeze({ minimum: 0, maximum: 10 }),
+  atmosphereGlare: Object.freeze({ minimum: 0, maximum: 10 }),
+});
+
+export function robloxVisualEnvironmentCapabilityGaps(
+  environment: z.output<typeof WORLD_VISUAL_ENVIRONMENT_SCHEMA>,
+): readonly string[] {
+  const capability = ROBLOX_VISUAL_ENVIRONMENT_CAPABILITY;
+  const gaps: string[] = [];
+  const check = (
+    property: string,
+    value: number,
+    range: { readonly minimum: number; readonly maximum: number },
+  ) => {
+    if (value < range.minimum || value > range.maximum)
+      gaps.push(
+        `${capability.capabilityId} cannot lower ${property}=${value}; supported range is ${range.minimum}..${range.maximum} (${capability.origin})`,
+      );
+  };
+  check("brightness", environment.brightness, capability.brightness);
+  check("exposureCompensation", environment.exposureCompensation, capability.exposureCompensation);
+  check("atmosphere.haze", environment.atmosphere.haze, capability.atmosphereHaze);
+  check("atmosphere.glare", environment.atmosphere.glare, capability.atmosphereGlare);
+  return gaps;
+}
 
 export function createRobloxImportManifest(
   worldBuildInput: WorldBuild,
@@ -808,10 +834,15 @@ export function createRobloxImportManifest(
     loweringGaps.push({
       kind: "terrain_construction",
       subjectHash: worldBuild.foundation.foundationHash,
-      reason:
-        worldBuild.foundation.diagnostics.join("; ").slice(0, 1024) ||
-        "World foundation is incomplete",
+      reason: worldBuild.foundation.diagnostics.join("; ") || "World foundation is incomplete",
     });
+  loweringGaps.push(
+    ...robloxVisualEnvironmentCapabilityGaps(worldBuild.visualEnvironment).map((reason) => ({
+      kind: "visual_environment" as const,
+      subjectHash: worldBuild.visualEnvironment.hash,
+      reason,
+    })),
+  );
   const foundationArtifacts = foundationObservations(worldBuild);
   const structuralArtifacts = structuralObservations(worldBuild);
   const constructedElements = constructedElementObservations(worldBuild);

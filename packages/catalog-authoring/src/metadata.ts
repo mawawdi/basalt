@@ -59,7 +59,7 @@ export function catalogObservation<T extends z.ZodType>(schema: T) {
   ]);
 }
 
-const TERM_SET_OBSERVATION_SCHEMA = catalogObservation(z.array(TERM_SCHEMA).max(64));
+const TERM_SET_OBSERVATION_SCHEMA = catalogObservation(z.array(TERM_SCHEMA));
 const TEXT_OBSERVATION_SCHEMA = catalogObservation(PROSE_SCHEMA);
 const TERM_OBSERVATION_SCHEMA = catalogObservation(TERM_SCHEMA);
 
@@ -221,8 +221,8 @@ export const CATALOG_SEARCH_METADATA_REQUEST_SET_SCHEMA = z
     sourceNameHintSetHash: HASH_SCHEMA,
     promptTemplateHash: HASH_SCHEMA,
     preprocessingImplementationHash: HASH_SCHEMA,
-    requests: z.array(ASSET_SEARCH_METADATA_REQUEST_SCHEMA).max(200_000),
-    diagnostics: z.array(z.string().trim().min(1).max(2_048)).max(100_000),
+    requests: z.array(ASSET_SEARCH_METADATA_REQUEST_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1).max(2_048)),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })
@@ -275,16 +275,16 @@ export const ASSET_SEARCH_METADATA_RECEIPT_SCHEMA = z
     promptHash: HASH_SCHEMA,
     rawOutputHash: HASH_SCHEMA.optional(),
     metadata: CATALOG_SEARCH_METADATA_SCHEMA.optional(),
-    diagnostics: z.array(RECEIPT_DIAGNOSTIC_SCHEMA).max(256),
+    diagnostics: z.array(RECEIPT_DIAGNOSTIC_SCHEMA),
     resourceUsage: z
       .object({
         inputImageCount: z.number().int().nonnegative().max(12),
-        inputPixels: z.number().int().nonnegative().max(100_000_000),
-        inputTokens: z.number().int().nonnegative().max(10_000_000),
-        outputTokens: z.number().int().nonnegative().max(10_000_000),
-        elapsedMilliseconds: z.number().int().nonnegative().max(86_400_000),
+        inputPixels: z.number().int().nonnegative().safe(),
+        inputTokens: z.number().int().nonnegative().safe(),
+        outputTokens: z.number().int().nonnegative().safe(),
+        elapsedMilliseconds: z.number().int().nonnegative().safe(),
         peakResidentBytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-        gpuMilliseconds: z.number().int().nonnegative().max(86_400_000),
+        gpuMilliseconds: z.number().int().nonnegative().safe(),
       })
       .strict(),
     compilerAuthority: z.literal(false),
@@ -315,10 +315,10 @@ export const CATALOG_SEARCH_METADATA_SET_SCHEMA = z
     kind: z.literal("CatalogSearchMetadataSet"),
     status: COMPILATION_STATUS_SCHEMA,
     requestSetHash: HASH_SCHEMA,
-    requestedHashes: z.array(HASH_SCHEMA).max(100_000),
-    receipts: z.array(ASSET_SEARCH_METADATA_RECEIPT_SCHEMA).max(100_000),
-    missingRequestHashes: z.array(HASH_SCHEMA).max(100_000),
-    diagnostics: z.array(RECEIPT_DIAGNOSTIC_SCHEMA).max(100_000),
+    requestedHashes: z.array(HASH_SCHEMA),
+    receipts: z.array(ASSET_SEARCH_METADATA_RECEIPT_SCHEMA),
+    missingRequestHashes: z.array(HASH_SCHEMA),
+    diagnostics: z.array(RECEIPT_DIAGNOSTIC_SCHEMA),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
   })

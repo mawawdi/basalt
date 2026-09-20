@@ -20,43 +20,28 @@ export const CONSTRAINT_MODEL_SCHEMA = z
     kind: z.literal("ConstraintModel"),
     seed: z.number().int().min(0).max(0xffff_ffff),
     cells: z
-      .array(
-        z
-          .object({ cellId: entityId, candidates: z.array(weightedCandidate).min(1).max(4096) })
-          .strict(),
-      )
-      .min(1)
-      .max(65_536),
-    edges: z
-      .array(
-        z
-          .object({
-            edgeId: entityId,
-            fromCellId: entityId,
-            toCellId: entityId,
-            relationId,
-            policy: z.literal("directed"),
-          })
-          .strict(),
-      )
-      .max(262_144),
-    relations: z
-      .array(
-        z
-          .object({
-            relationId,
-            allowed: z
-              .array(z.tuple([candidateId, candidateId]))
-              .min(1)
-              .max(1_000_000),
-          })
-          .strict(),
-      )
-      .max(65_536),
+      .array(z.object({ cellId: entityId, candidates: z.array(weightedCandidate).min(1) }).strict())
+      .min(1),
+    edges: z.array(
+      z
+        .object({
+          edgeId: entityId,
+          fromCellId: entityId,
+          toCellId: entityId,
+          relationId,
+          policy: z.literal("directed"),
+        })
+        .strict(),
+    ),
+    relations: z.array(
+      z
+        .object({ relationId, allowed: z.array(z.tuple([candidateId, candidateId])).min(1) })
+        .strict(),
+    ),
     policy: z
       .object({
-        maximumDecisions: z.number().int().positive().max(10_000_000),
-        maximumBacktracks: z.number().int().nonnegative().max(10_000_000),
+        maximumDecisions: z.number().int().positive().safe(),
+        maximumBacktracks: z.number().int().nonnegative().safe(),
       })
       .strict(),
     hash: hashSchema,
@@ -96,7 +81,7 @@ const contradictionSchema = z
     cellId: entityId,
     edgeId: entityId.optional(),
     relationId: relationId.optional(),
-    eliminatedCandidateIds: z.array(candidateId).max(4096),
+    eliminatedCandidateIds: z.array(candidateId),
     depth: z.number().int().nonnegative(),
   })
   .strict();
@@ -107,12 +92,12 @@ export const CONSTRAINT_SOLUTION_SCHEMA = z
     id: entityId,
     modelHash: hashSchema,
     status: COMPILATION_STATUS_SCHEMA,
-    assignments: z.array(z.object({ cellId: entityId, candidateId }).strict()).max(65_536),
+    assignments: z.array(z.object({ cellId: entityId, candidateId }).strict()),
     decisions: z.number().int().nonnegative(),
     propagations: z.number().int().nonnegative(),
     backtracks: z.number().int().nonnegative(),
-    contradictions: z.array(contradictionSchema).max(65_536),
-    diagnostics: z.array(z.string().min(1).max(1024)).max(1024),
+    contradictions: z.array(contradictionSchema),
+    diagnostics: z.array(z.string().min(1).max(1024)),
     hash: hashSchema,
   })
   .strict()

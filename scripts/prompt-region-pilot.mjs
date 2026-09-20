@@ -8,17 +8,34 @@ import {
   writePrivateWorkspaceText,
 } from "@basalt/artifact-store";
 import { contentHash, stableJson } from "@basalt/contracts";
+import { REGION_EXECUTION_POLICY_SCHEMA } from "@basalt/cli/world-authoring";
 const execFile = promisify(execFileCallback),
   root = process.cwd();
 const outputIndex = process.argv.indexOf("--output");
 const output = outputIndex < 0 ? ".basalt/evals/prompt-region" : process.argv[outputIndex + 1];
 if (!output || output.startsWith("--")) throw new Error("Missing pilot output directory");
+const suiteIndex = process.argv.indexOf("--suite");
+const suitePath =
+  suiteIndex < 0 ? "test/fixtures/prompt-region-briefs.json" : process.argv[suiteIndex + 1];
+if (!suitePath || suitePath.startsWith("--")) throw new Error("Missing pilot suite path");
+const readExact = async (path) => {
+  const source = await lstat(path);
+  return Buffer.from(
+    await readBoundedWorkspaceBytes(root, path, Math.max(1, source.size)),
+  ).toString();
+};
+const suite = JSON.parse(await readExact(suitePath));
+for (const brief of suite.cases)
+  if (!Number.isSafeInteger(brief.seed) || brief.seed < 0)
+    throw new Error(`Pilot case ${brief.id} must declare a nonnegative safe-integer seed`);
+const executionPolicy = REGION_EXECUTION_POLICY_SCHEMA.parse(
+  JSON.parse(await readExact(suite.executionPolicyPath)),
+);
+const artifactBytes = executionPolicy.workspace.maximumArtifactBytes;
 const read = async (path) =>
-  JSON.parse(
-    Buffer.from(await readBoundedWorkspaceBytes(root, path, 128 * 1024 * 1024)).toString(),
-  );
+  JSON.parse(Buffer.from(await readBoundedWorkspaceBytes(root, path, artifactBytes)).toString());
 const write = (path, value) =>
-  writeCanonicalWorkspaceJson(root, path, value, { maxBytes: 128 * 1024 * 1024 });
+  writeCanonicalWorkspaceJson(root, path, value, { maxBytes: artifactBytes });
 const readOptional = async (path) => {
   try {
     await lstat(path);
@@ -28,7 +45,6 @@ const readOptional = async (path) => {
   }
   return read(path);
 };
-const suite = await read("test/fixtures/prompt-region-briefs.json");
 const reasoningIndex = process.argv.indexOf("--reasoning-effort");
 const reasoningEffort =
   reasoningIndex < 0 ? suite.reasoningEffort : process.argv[reasoningIndex + 1];
@@ -56,19 +72,23 @@ if (action === "report") {
           if (error.code !== "ENOENT") throw error;
         }
         const attempts = [];
-        let modelCalls = 0;
+        let modelCalls =
+          phase === "edited" &&
+          (await readOptional(`${path}/edit-request/extract-request.json`)) !== undefined
+            ? 1
+            : 0;
         for (const directory of directories.sort((a, b) => Number(a) - Number(b))) {
           if (!/^\d+$/u.test(directory)) continue;
-          const event = await readOptional(`${path}/attempts/${directory}/event.json`);
+          const attemptPath = `${path}/attempts/${directory}`;
+          const event = await readOptional(`${attemptPath}/event.json`);
           attempts.push(
             event ?? {
               attempt: Number(directory),
               failure: "Interrupted before a completed attempt; unscored",
             },
           );
-          for (const call of ["proposal", "review"])
-            if (await readOptional(`${path}/attempts/${directory}/${call}-request.json`))
-              modelCalls++;
+          for (const entry of await readdir(attemptPath, { withFileTypes: true }))
+            if (entry.isFile() && entry.name.endsWith("-request.json")) modelCalls++;
         }
         runs.push({
           phase,
@@ -103,13 +123,13 @@ if (action === "report") {
     try {
       await lstat(path);
       previous = contentHash(
-        Buffer.from(await readBoundedWorkspaceBytes(root, path, 128 * 1024 * 1024)).toString(),
+        Buffer.from(await readBoundedWorkspaceBytes(root, path, artifactBytes)).toString(),
       );
     } catch (e) {
       if (e.code !== "ENOENT") throw e;
     }
     return (text ? writePrivateWorkspaceText : writeCanonicalWorkspaceJson)(root, path, value, {
-      maxBytes: 128 * 1024 * 1024,
+      maxBytes: artifactBytes,
       ...(previous ? { expectedExistingHash: previous } : {}),
     });
   };
@@ -160,22 +180,37 @@ if (action === "report") {
     "package-lock.json",
   ]);
   const files = [];
+  const deletedFiles = [];
   for (const path of [
-    ...new Set([
-      ...stdout.split("\0").filter(Boolean),
-      "registry/catalog.json",
-      "test/fixtures/prompt-region-briefs.json",
-    ]),
+    ...new Set([...stdout.split("\0").filter(Boolean), "registry/catalog.json", suitePath]),
   ].sort()) {
-    const bytes = Buffer.from(await readBoundedWorkspaceBytes(root, path, 128 * 1024 * 1024));
+    try {
+      await lstat(path);
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        deletedFiles.push(path);
+        continue;
+      }
+      throw error;
+    }
+    const bytes = Buffer.from(await readBoundedWorkspaceBytes(root, path, artifactBytes));
     const hash = contentHash(bytes.toString());
     files.push({ path, hash });
     await writePrivateWorkspaceText(root, `${folder}/source/${path}`, bytes.toString(), {
-      maxBytes: 128 * 1024 * 1024,
+      maxBytes: artifactBytes,
     });
   }
-  const sourceHash = contentHash(stableJson(files));
-  await write(`${folder}/baseline.json`, { sourceHash, files, brief, suite, reasoningEffort });
+  const sourceHash = contentHash(stableJson({ files, deletedFiles }));
+  await write(`${folder}/baseline.json`, {
+    sourceHash,
+    files,
+    deletedFiles,
+    suitePath,
+    brief,
+    suite,
+    reasoningEffort,
+    executionPolicyHash: contentHash(stableJson(executionPolicy)),
+  });
   const started = Date.now();
   let failure = null;
   try {
@@ -190,16 +225,24 @@ if (action === "report") {
         suite.model,
         "--reasoning-effort",
         reasoningEffort,
-        "--budget-seconds",
-        String(suite.generationBudgetSeconds),
+        "--seed",
+        String(brief.seed),
+        "--execution-policy",
+        suite.executionPolicyPath,
         "--output",
         `${folder}/generated`,
       ],
-      { timeout: (suite.generationBudgetSeconds + 60) * 1000, maxBuffer: 4 * 1024 * 1024 },
+      {
+        timeout: suite.operatorTimeoutMilliseconds,
+        maxBuffer: executionPolicy.transport.maximumResponseBytes,
+      },
     );
     await write(`${folder}/generate-command.json`, generated);
     const world = await readOptional(`${folder}/generated/world-build.json`);
-    if (world?.status !== "eligible") throw new Error("No geometrically eligible world to edit");
+    if (world?.status !== "eligible") throw new Error("No eligible generated world to edit");
+    const generatedReport = await readOptional(`${folder}/generated/report.json`);
+    if (generatedReport?.status !== "eligible")
+      throw new Error(`Generated phase ended ${generatedReport?.status ?? "without a report"}`);
     const edited = await execFile(
       process.execPath,
       [
@@ -213,16 +256,22 @@ if (action === "report") {
         suite.model,
         "--reasoning-effort",
         reasoningEffort,
-        "--budget-seconds",
-        String(suite.editBudgetSeconds),
+        "--execution-policy",
+        suite.executionPolicyPath,
         "--output",
         `${folder}/edited`,
       ],
-      { timeout: (suite.editBudgetSeconds + 60) * 1000, maxBuffer: 4 * 1024 * 1024 },
+      {
+        timeout: suite.operatorTimeoutMilliseconds,
+        maxBuffer: executionPolicy.transport.maximumResponseBytes,
+      },
     );
     await write(`${folder}/edit-command.json`, edited);
+    const editedReport = await readOptional(`${folder}/edited/report.json`);
+    if (editedReport?.status !== "eligible")
+      throw new Error(`Edited phase ended ${editedReport?.status ?? "without a report"}`);
   } catch (error) {
-    failure = String(error.message ?? error).slice(0, 8000);
+    failure = String(error.message ?? error);
     if (error.stdout || error.stderr)
       await write(`${folder}/failed-command.json`, {
         stdout: error.stdout ?? "",
@@ -234,7 +283,7 @@ if (action === "report") {
   for (const file of files)
     if (
       contentHash(
-        Buffer.from(await readBoundedWorkspaceBytes(root, file.path, 128 * 1024 * 1024)).toString(),
+        Buffer.from(await readBoundedWorkspaceBytes(root, file.path, artifactBytes)).toString(),
       ) !== file.hash
     )
       changed.push(file.path);
@@ -242,6 +291,7 @@ if (action === "report") {
     id: brief.id,
     prompt: brief.prompt,
     edit: brief.edit,
+    seed: brief.seed,
     sourceHash,
     reasoningEffort,
     elapsedSeconds: (Date.now() - started) / 1000,

@@ -5,7 +5,7 @@ import { WORLD_CAMERA_SCHEMA } from "@basalt/world-planning";
 const packetSchema = z
   .object({
     worldBuildHash: HASH_SCHEMA,
-    cameras: z.array(WORLD_CAMERA_SCHEMA).min(1).max(16),
+    cameras: z.array(WORLD_CAMERA_SCHEMA).min(1),
   })
   .strict();
 

@@ -31,9 +31,12 @@ export function measureCatalogGlb(
   source: CatalogGlbSource,
 ): CatalogAssetArtifact {
   const report = inspectGlb(bytes, {
-    maximumBytes: 512 * 1024 * 1024,
-    maximumTriangles: 20_000_000,
-    maximumTrianglesPerMesh: 20_000_000,
+    maximumBytes: bytes.byteLength,
+    maximumTriangles: Number.MAX_SAFE_INTEGER,
+    maximumTrianglesPerMesh: Number.MAX_SAFE_INTEGER,
+    maximumNodes: Number.MAX_SAFE_INTEGER,
+    maximumMaterials: Number.MAX_SAFE_INTEGER,
+    maximumTextures: Number.MAX_SAFE_INTEGER,
     assetUnitsToMeters: source.metersPerSourceUnit,
     allowDeformableGeometry: true,
   });
@@ -78,7 +81,7 @@ export function measureCatalogGlb(
       : undefined;
   const sockets =
     jointResult.status === "fit"
-      ? jointResult.fits.slice(0, 4096).map((fit, index) => {
+      ? jointResult.fits.map((fit, index) => {
           const up = socketUp(fit.normal);
           const evidenceHash = contentHash(stableJson({ policy: MEASUREMENT_POLICY_HASH, fit }));
           return {

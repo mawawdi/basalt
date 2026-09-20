@@ -76,10 +76,7 @@ async function prepareContext(
   const attributedRaw = options.get("--assembly-evidence")
     ? await context.readJson(options.get("--assembly-evidence")!)
     : [];
-  const attributed = z
-    .array(ATTRIBUTED_ASSEMBLY_CONTEXT_EVIDENCE_SCHEMA)
-    .max(100_000)
-    .parse(attributedRaw);
+  const attributed = z.array(ATTRIBUTED_ASSEMBLY_CONTEXT_EVIDENCE_SCHEMA).parse(attributedRaw);
   const metadataBySource = firstMetadataBySource(metadata?.receipts ?? []);
   const renderBySource = new Map(
     renders.items.map((entry) => [entry.sourceContentHash, entry] as const),

@@ -23,8 +23,8 @@ export const REFERENCE_IMAGE_REQUEST_SCHEMA = z
     artDirectionHash: HASH_SCHEMA,
     semanticDependencyClosureHash: HASH_SCHEMA,
     prompt: z.string().trim().min(1).max(16_384),
-    negativeConstraints: z.array(z.string().trim().min(1).max(1024)).max(128),
-    inputArtifactHashes: z.array(HASH_SCHEMA).max(64),
+    negativeConstraints: z.array(z.string().trim().min(1).max(1024)),
+    inputArtifactHashes: z.array(HASH_SCHEMA),
     image: imageConstraintSchema,
     requestHash: HASH_SCHEMA,
   })

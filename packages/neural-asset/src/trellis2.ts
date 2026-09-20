@@ -29,7 +29,6 @@ const modalImageId = z.string().regex(/^im-[A-Za-z0-9]+$/u);
 const canonicalHashes = z
   .array(HASH_SCHEMA)
   .min(3)
-  .max(16)
   .superRefine((values, context) => {
     if (
       new Set(values).size !== values.length ||

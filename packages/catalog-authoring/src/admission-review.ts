@@ -32,7 +32,7 @@ const REVIEW_EVIDENCE_SCHEMA = z
     contactSheetRelativePath: z
       .string()
       .regex(/^\.basalt\/catalog\/review\/previews\/[a-f0-9]{64}\/contact-sheet\.png$/u),
-    rgbViewHashes: z.array(HASH_SCHEMA).min(4).max(16),
+    rgbViewHashes: z.array(HASH_SCHEMA).min(4),
   })
   .strict()
   .superRefine((value, context) =>
@@ -60,7 +60,7 @@ const REVIEW_METRIC_SUMMARY_SCHEMA = z
     sourceBytes: z.number().int().positive(),
     partCount: z.number().int().positive(),
     materialCount: z.number().int().nonnegative(),
-    pbrChannels: z.array(z.string().trim().min(1).max(64)).max(16),
+    pbrChannels: z.array(z.string().trim().min(1).max(64)),
     primaryContact: z.enum(["bottom", "lateral_wall", "top_ceiling", "socket_only", "unknown"]),
     contactAreaSquareMeters: z.number().finite().nonnegative(),
     supportMeasurementMethod: z.enum(["planar_patch_fit", "lower_extrema", "refused"]),
@@ -96,7 +96,7 @@ const CREATOR_REVIEW_CANDIDATE_SCHEMA = z
     evidence: REVIEW_EVIDENCE_SCHEMA,
     metricSummary: REVIEW_METRIC_SUMMARY_SCHEMA,
     proposal: ADMISSION_PROPOSAL_SCHEMA,
-    criterionIds: z.array(ASCII_ID_SCHEMA).min(1).max(64),
+    criterionIds: z.array(ASCII_ID_SCHEMA).min(1),
     reviewStatus: z.literal("pending_creator_review"),
   })
   .strict()
@@ -123,8 +123,8 @@ export const CATALOG_CREATOR_REVIEW_PACKET_SCHEMA = z
     admissionRubricHash: HASH_SCHEMA,
     proposedStyleProfile: STYLE_PROFILE_DECLARATION_SCHEMA,
     selectionRationale: z.string().trim().min(1).max(2_048),
-    reviewProcedure: z.array(z.string().trim().min(1).max(2_048)).min(1).max(32),
-    candidates: z.array(CREATOR_REVIEW_CANDIDATE_SCHEMA).min(1).max(128),
+    reviewProcedure: z.array(z.string().trim().min(1).max(2_048)).min(1),
+    candidates: z.array(CREATOR_REVIEW_CANDIDATE_SCHEMA).min(1),
     reviewerAuthorityRequired: z.enum(["creator", "delegated_ai"]),
     compilerAuthority: z.literal(false),
     hash: HASH_SCHEMA,
@@ -155,7 +155,7 @@ const CRITERION_DECISION_SCHEMA = z
   .object({
     criterionId: ASCII_ID_SCHEMA,
     outcome: z.enum(["pass", "fail", "uncertain"]),
-    evidenceHashes: z.array(HASH_SCHEMA).min(1).max(64),
+    evidenceHashes: z.array(HASH_SCHEMA).min(1),
     note: z.string().trim().min(1).max(2_048),
   })
   .strict()
@@ -168,7 +168,7 @@ const SOURCE_REVIEW_DECISION_SCHEMA = z
     sourceContentHash: HASH_SCHEMA,
     outcome: z.enum(["eligible", "incomplete", "rejected"]),
     proposalApproved: z.boolean(),
-    criteria: z.array(CRITERION_DECISION_SCHEMA).min(1).max(64),
+    criteria: z.array(CRITERION_DECISION_SCHEMA).min(1),
     note: z.string().trim().min(1).max(2_048),
   })
   .strict()
@@ -225,7 +225,7 @@ export const CATALOG_CREATOR_REVIEW_DECISION_SCHEMA = z
     reviewerStatement: z.string().trim().min(32).max(2_048),
     reviewedAt: z.string().datetime({ offset: true }),
     styleProfileDecision: z.enum(["approved", "rejected"]),
-    decisions: z.array(SOURCE_REVIEW_DECISION_SCHEMA).min(1).max(128),
+    decisions: z.array(SOURCE_REVIEW_DECISION_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -279,7 +279,7 @@ export const CATALOG_ACCEPTANCE_AUDIT_SCHEMA = z
     memberId: MEMBER_ID_SCHEMA,
     entryDeclarationHash: HASH_SCHEMA,
     styleProfileHandle: STYLE_PROFILE_HANDLE_SCHEMA,
-    criteria: z.array(CRITERION_DECISION_SCHEMA).min(1).max(64),
+    criteria: z.array(CRITERION_DECISION_SCHEMA).min(1),
     outcome: z.literal("eligible"),
     hash: HASH_SCHEMA,
   })

@@ -13,6 +13,7 @@ import {
 } from "@basalt/world-refinement";
 import { loadSemanticRegistry } from "./helpers/semantic-registry.js";
 import { worldFixture } from "./helpers/world-fixture.js";
+import { TEST_DIAGNOSTIC_RENDER_EXECUTION_POLICY } from "./helpers/execution-policy.js";
 
 test("bounded route alternatives repair an overlap while preserving tolerances and unrelated inputs", async () => {
   const semanticModule = await loadSemanticRegistry(),
@@ -97,6 +98,7 @@ test("bounded route alternatives repair an overlap while preserving tolerances a
               heightPixels: 32,
             },
           ],
+          diagnosticRenderExecutionPolicy: TEST_DIAGNOSTIC_RENDER_EXECUTION_POLICY,
         }),
     });
     if (alternatives.length) {

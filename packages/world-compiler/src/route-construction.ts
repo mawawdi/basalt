@@ -37,7 +37,7 @@ const MAXIMUM_PROFILE_REFINEMENT_ITERATIONS = 12;
 
 export const ROUTE_PROFILE_STATION_SCHEMA = z
   .object({
-    stationIndex: z.number().int().nonnegative().max(1_000_000),
+    stationIndex: z.number().int().nonnegative().safe(),
     stationMeters: nonnegative,
     fraction: finite.min(0).max(1),
     centerTopMeters: SPATIAL_VECTOR3_SCHEMA,
@@ -53,7 +53,7 @@ const routeVertex = z
 export const ROUTE_SURFACE_SEGMENT_SCHEMA = z
   .object({
     segmentId: WORLD_ENTITY_ID_SCHEMA,
-    sourceSpanIndex: z.number().int().nonnegative().max(65_535),
+    sourceSpanIndex: z.number().int().nonnegative().safe(),
     kind: z.enum(["surface_span", "step_tread", "step_landing"]),
     startStationMeters: nonnegative,
     endStationMeters: nonnegative,
@@ -75,7 +75,7 @@ export type RouteSurfaceSegment = z.output<typeof ROUTE_SURFACE_SEGMENT_SCHEMA>;
 export const ROUTE_BEND_SCHEMA = z
   .object({
     bendId: WORLD_ENTITY_ID_SCHEMA,
-    sourceVertexIndex: z.number().int().nonnegative().max(65_535),
+    sourceVertexIndex: z.number().int().nonnegative().safe(),
     startStationMeters: nonnegative,
     endStationMeters: nonnegative,
     centerMeters: WORLD_POINT2_SCHEMA,
@@ -179,9 +179,9 @@ export const ROUTE_TERRAIN_TREATMENT_SCHEMA = z.discriminatedUnion("kind", [
       maximumCutDepthMeters: nonnegative,
       maximumFillDepthMeters: nonnegative,
       groundingToleranceMeters: nonnegative,
-      crossfallRatio: finite.min(-0.25).max(0.25),
+      crossfallRatio: finite,
       terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
-      priority: z.number().int().min(-1_000_000).max(1_000_000),
+      priority: z.number().int().safe(),
     })
     .strict(),
 ]);
@@ -195,7 +195,7 @@ export const ROUTE_JUNCTION_TERRAIN_TREATMENT_SCHEMA = z.discriminatedUnion("kin
       surfaceRevealMeters: nonnegative,
       groundingToleranceMeters: nonnegative,
       terrainMaterialId: WORLD_ENTITY_ID_SCHEMA,
-      priority: z.number().int().min(-1_000_000).max(1_000_000),
+      priority: z.number().int().safe(),
     })
     .strict(),
 ]);
@@ -236,20 +236,20 @@ export const ROUTE_CONSTRUCTION_ARTIFACT_SCHEMA = z
     thicknessMeters: finite.positive(),
     widthMeters: finite.positive(),
     maximumGradeRatio: finite.positive().optional(),
-    profile: z.array(ROUTE_PROFILE_STATION_SCHEMA).min(2).max(1_000_000),
+    profile: z.array(ROUTE_PROFILE_STATION_SCHEMA).min(2),
     profileHash: HASH_SCHEMA,
-    travelSegments: z.array(ROUTE_SURFACE_SEGMENT_SCHEMA).max(1_000_000),
-    bends: z.array(ROUTE_BEND_SCHEMA).max(65_536),
-    supports: z.array(ROUTE_SUPPORT_SCHEMA).max(1_000_000),
-    edgeRails: z.array(ROUTE_EDGE_RAIL_SCHEMA).max(1_000_000),
-    edgePosts: z.array(ROUTE_EDGE_POST_SCHEMA).max(1_000_000),
+    travelSegments: z.array(ROUTE_SURFACE_SEGMENT_SCHEMA),
+    bends: z.array(ROUTE_BEND_SCHEMA),
+    supports: z.array(ROUTE_SUPPORT_SCHEMA),
+    edgeRails: z.array(ROUTE_EDGE_RAIL_SCHEMA),
+    edgePosts: z.array(ROUTE_EDGE_POST_SCHEMA),
     terrainTreatment: ROUTE_TERRAIN_TREATMENT_SCHEMA,
     materialMask: ROUTE_MATERIAL_MASK_SCHEMA.optional(),
     vegetationMask: ROUTE_VEGETATION_MASK_SCHEMA,
-    junctions: z
-      .array(z.object({ junctionId: WORLD_ENTITY_ID_SCHEMA, junctionHash: HASH_SCHEMA }).strict())
-      .max(65_536),
-    diagnostics: z.array(z.string().trim().min(1).max(1_024)).max(65_536),
+    junctions: z.array(
+      z.object({ junctionId: WORLD_ENTITY_ID_SCHEMA, junctionHash: HASH_SCHEMA }).strict(),
+    ),
+    diagnostics: z.array(z.string().trim().min(1)),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -724,8 +724,6 @@ function refineVerticalProfile(
     spans = spans.flatMap((span, index) =>
       splitIndices.has(index) ? subdivideRouteAlignmentSpan(span, 2) : [span],
     );
-    if (spans.length > 1_000_000)
-      throw new Error(`Route ${routeId} vertical profile exceeds the segment budget`);
     profile = buildProfile(spans);
   }
   throw new Error(`Route ${routeId} vertical profile refinement terminated unexpectedly`);

@@ -1,6 +1,7 @@
 import { renderWorldDiagnostics } from "./diagnostic-render.js";
 import {
   sealRefinementObservationExecution,
+  type DiagnosticRenderExecutionPolicy,
   type WorldDiagnosticCamera,
   type WorldObservationReport,
 } from "./contracts.js";
@@ -17,6 +18,7 @@ export function observeWorldBuild(input: {
   readonly policy: RefinementPolicy;
   readonly expectations: WorldVerifierExpectations;
   readonly cameras: readonly WorldDiagnosticCamera[];
+  readonly diagnosticRenderExecutionPolicy?: DiagnosticRenderExecutionPolicy;
   readonly affectedTaskIds: readonly string[];
   readonly previousObservation?: WorldObservationReport;
   readonly visualAssessment?: WorldObservationReport["visualAssessment"];
@@ -25,10 +27,17 @@ export function observeWorldBuild(input: {
   const rendered =
     input.cameras.length === 0
       ? { renders: [], payloads: new Map<string, Uint8Array>() }
-      : renderWorldDiagnostics({
-          worldBuild: input.worldBuild,
-          cameras: input.cameras,
-        });
+      : input.diagnosticRenderExecutionPolicy
+        ? renderWorldDiagnostics({
+            worldBuild: input.worldBuild,
+            cameras: input.cameras,
+            executionPolicy: input.diagnosticRenderExecutionPolicy,
+          })
+        : (() => {
+            throw new Error(
+              "Diagnostic cameras require an explicit diagnostic render execution policy",
+            );
+          })();
   if (input.persistRender)
     for (const [hash, bytes] of rendered.payloads) input.persistRender(hash, bytes);
   const report = verifyWorldBuild({

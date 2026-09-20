@@ -22,20 +22,18 @@ const BINDING_DECISION_INPUT_SCHEMA = z
       .strict(),
     reviewerStatement: z.string().trim().min(32).max(2_048),
     recordedAt: z.string().datetime({ offset: true }),
-    bindings: z
-      .array(
-        z
-          .object({
-            assetHash: HASH_SCHEMA,
-            robloxAssetId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-            sourceArtifactHash: HASH_SCHEMA,
-            uploadArtifactHash: HASH_SCHEMA,
-            publicationEvidenceHash: HASH_SCHEMA,
-            materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA).min(1).max(100_000),
-          })
-          .strict(),
-      )
-      .max(100_000),
+    bindings: z.array(
+      z
+        .object({
+          assetHash: HASH_SCHEMA,
+          robloxAssetId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+          sourceArtifactHash: HASH_SCHEMA,
+          uploadArtifactHash: HASH_SCHEMA,
+          publicationEvidenceHash: HASH_SCHEMA,
+          materialExpectations: z.array(ROBLOX_MATERIAL_EXPECTATION_SCHEMA).min(1),
+        })
+        .strict(),
+    ),
   })
   .strict();
 

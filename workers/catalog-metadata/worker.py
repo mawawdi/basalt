@@ -24,15 +24,9 @@ from pathlib import Path
 from typing import Any, Iterable
 
 MAX_JOB_BYTES = 64 * 1024 * 1024
-MAX_EVIDENCE_BYTES = 64 * 1024 * 1024
 MAX_OUTPUT_BYTES = 512 * 1024 * 1024
-MAX_ITEMS = 8
 MAX_VIEWS = 12
-MAX_CONTEXT_CANDIDATES = 32
 IMAGE_LONG_EDGE = 384
-MAX_EVIDENCE_FILES = 192
-MAX_EVIDENCE_TOTAL_BYTES = 64 * 1024 * 1024
-MAX_PREPROCESSED_PIXELS = MAX_EVIDENCE_FILES * IMAGE_LONG_EDGE * IMAGE_LONG_EDGE
 VLM_MAX_MODEL_TOKENS = 8_192
 VLM_MAX_OUTPUT_TOKENS = 4_096
 VLM_GPU_MEMORY_UTILIZATION = 0.96
@@ -105,7 +99,7 @@ def bounded_evidence(root: Path, raw: str, expected_hash: str, expected_size: in
     if candidate != root and root not in candidate.parents:
         raise ValueError(f"Evidence path escapes the workspace: {raw}")
     status = candidate.lstat()
-    if candidate.is_symlink() or not candidate.is_file() or status.st_size <= 0 or status.st_size > MAX_EVIDENCE_BYTES:
+    if candidate.is_symlink() or not candidate.is_file() or status.st_size <= 0:
         raise ValueError(f"Evidence is not a bounded regular file: {raw}")
     if status.st_size != expected_size:
         raise ValueError(f"Evidence size differs from the sealed input budget: {raw}")
@@ -285,7 +279,6 @@ def load_vllm(model: dict[str, Any], output_schema: dict[str, Any]):
         trust_remote_code=False,
         max_model_len=VLM_MAX_MODEL_TOKENS,
         gpu_memory_utilization=VLM_GPU_MEMORY_UTILIZATION,
-        limit_mm_per_prompt={"image": MAX_CONTEXT_CANDIDATES},
     )
     sampling = SamplingParams(
         temperature=0.0,
@@ -862,8 +855,8 @@ def validate_worker_input_budget(job: dict[str, Any]) -> None:
         return
     if kind == "CatalogContextWorkerJob":
         candidates = job.get("candidateEvidence", [])
-        if not 2 <= len(candidates) <= MAX_CONTEXT_CANDIDATES:
-            raise ValueError("Context candidate count is outside its bounded range")
+        if len(candidates) < 2:
+            raise ValueError("Context interpretation requires at least two candidates")
         sizes = [entry["contactSheetSizeBytes"] for entry in candidates]
         expected = {
             "candidateCount": len(candidates),
@@ -873,12 +866,10 @@ def validate_worker_input_budget(job: dict[str, Any]) -> None:
         }
         if job.get("inputBudget") != expected:
             raise ValueError("Context worker input budget differs from its sealed evidence")
-        if expected["evidenceBytes"] > MAX_EVIDENCE_TOTAL_BYTES:
-            raise ValueError("Context worker evidence exceeds its aggregate byte bound")
         return
     items = job.get("items", [])
-    if not 1 <= len(items) <= MAX_ITEMS:
-        raise ValueError("Worker shard asset count is outside its bounded range")
+    if len(items) < 1:
+        raise ValueError("Worker checkpoint contains no assets")
     embedding_job = kind == "CatalogEmbeddingWorkerJob"
     purposes: list[str] = []
     if embedding_job:
@@ -944,12 +935,6 @@ def validate_worker_input_budget(job: dict[str, Any]) -> None:
     }
     if job.get("inputBudget") != expected:
         raise ValueError("Worker input budget differs from its sealed evidence")
-    if expected["evidenceFileCount"] > MAX_EVIDENCE_FILES:
-        raise ValueError("Worker shard exceeds its evidence file-count bound")
-    if expected["evidenceBytes"] > MAX_EVIDENCE_TOTAL_BYTES:
-        raise ValueError("Worker shard exceeds its aggregate evidence-byte bound")
-    if expected["preprocessedPixelCeiling"] > MAX_PREPROCESSED_PIXELS:
-        raise ValueError("Worker shard exceeds its preprocessed-pixel bound")
 
 
 def main() -> None:

@@ -12,6 +12,7 @@ import {
   type ConstructionProgram,
   type WorldRoute,
 } from "@basalt/world-planning";
+import { TEST_WORLD_EXECUTION_POLICY } from "./execution-policy.js";
 import { catalogFirstUseFixture } from "./catalog-first-use-fixture.js";
 import { observationTowerProgram } from "./observation-tower-fixture.js";
 
@@ -548,6 +549,7 @@ export async function firstFinishedRegionFixture(module: SemanticModule) {
       catalogSnapshot: catalogFixture.catalogCommit.snapshot,
       catalogAssets: catalogFixture.measurements.assets,
       spatialPlan: plan,
+      executionPolicy: TEST_WORLD_EXECUTION_POLICY,
     },
   };
 }
@@ -585,6 +587,7 @@ function regionRoutes(): WorldRoute[] {
     }),
     groundedRoute({
       routeId: "RidgeTrail",
+      treatment: "cut_fill",
       alignmentMeters: [
         { x: 52, z: 52 },
         { x: 49, z: 57 },
@@ -957,23 +960,27 @@ function groundedRoute(input: {
   readonly startClearanceMeters: number;
   readonly endClearanceMeters: number;
   readonly terrainPriority: number;
+  readonly treatment?: "follow_surface" | "cut_fill";
 }): WorldRoute {
+  const common = {
+    surfaceRevealMeters: 0.08,
+    crossfallRatio: 0,
+    maximumGradeRatio: 0.82,
+    shoulderWidthMeters: 0.35,
+    blendWidthMeters: 0.8,
+    maximumCutDepthMeters: 5,
+    maximumFillDepthMeters: 5,
+    groundingToleranceMeters: 0.12,
+    vegetationClearanceMeters: 0.7,
+    terrainMaterialId: "Ground",
+  };
   return {
     ...commonRoute(input),
     appearance: appearance("Ground", { red: 88, green: 65, blue: 42 }),
-    construction: {
-      kind: "follow_surface",
-      surfaceRevealMeters: 0.08,
-      crossfallRatio: 0,
-      maximumGradeRatio: 0.82,
-      shoulderWidthMeters: 0.35,
-      blendWidthMeters: 0.8,
-      maximumCutDepthMeters: 5,
-      maximumFillDepthMeters: 5,
-      groundingToleranceMeters: 0.12,
-      vegetationClearanceMeters: 0.7,
-      terrainMaterialId: "Ground",
-    },
+    construction:
+      input.treatment === "cut_fill"
+        ? { kind: "cut_fill", ...common, maximumGradeChangePerMeter: 0.12 }
+        : { kind: "follow_surface", ...common },
   };
 }
 
@@ -997,7 +1004,7 @@ function elevatedRoute(input: {
     construction: {
       kind: "elevated",
       maximumGradeRatio: 0.55,
-      minimumGroundClearanceMeters: 0.15,
+      minimumGroundClearanceMeters: 0.1,
       supportSpacingMeters: 2.8,
       supportRadiusMeters: 0.17,
       maximumSupportHeightMeters: 12,
@@ -1097,17 +1104,17 @@ function constructionAppearance(
 
 function expandedCatalogRequirements(module: SemanticModule): CatalogRequirement[] {
   return [
-    catalogRequirement(module, "OutdoorTrees", "bsc_000003", 28),
-    catalogRequirement(module, "OutdoorPines", "bsc_000003", 34, [2.46, 7.54, 2.35]),
-    catalogRequirement(module, "OutdoorUnderstoryTrees", "bsc_000003", 22, [2.34, 3.85, 1.83]),
-    catalogRequirement(module, "OutdoorMonumentTrees", "bsc_000003", 8, [5.82, 9.63, 6.36]),
-    catalogRequirement(module, "OutdoorBushes", "bsc_000004", 34, [2.1, 2.05, 2.02]),
-    catalogRequirement(module, "OutdoorRocks", "bsc_000012", 22),
-    catalogRequirement(module, "OutdoorRoundedRocks", "bsc_000012", 18, [1.37, 0.51, 1.58]),
-    catalogRequirement(module, "OutdoorBoulders", "bsc_000013", 18),
-    catalogRequirement(module, "OutdoorGroundcover", "bsc_000005", 60),
-    catalogRequirement(module, "OutdoorGrass", "bsc_000005", 60, [0.83, 0.7, 0.38]),
-    catalogRequirement(module, "OutdoorProps", "bsc_000018", 8),
+    catalogRequirement(module, "OutdoorTrees", "bsc_000003"),
+    catalogRequirement(module, "OutdoorPines", "bsc_000003", [2.46, 7.54, 2.35]),
+    catalogRequirement(module, "OutdoorUnderstoryTrees", "bsc_000003", [2.34, 3.85, 1.83]),
+    catalogRequirement(module, "OutdoorMonumentTrees", "bsc_000003", [5.82, 9.63, 6.36]),
+    catalogRequirement(module, "OutdoorBushes", "bsc_000004", [2.1, 2.05, 2.02]),
+    catalogRequirement(module, "OutdoorRocks", "bsc_000012"),
+    catalogRequirement(module, "OutdoorRoundedRocks", "bsc_000012", [1.37, 0.51, 1.58]),
+    catalogRequirement(module, "OutdoorBoulders", "bsc_000013"),
+    catalogRequirement(module, "OutdoorGroundcover", "bsc_000005"),
+    catalogRequirement(module, "OutdoorGrass", "bsc_000005", [0.83, 0.7, 0.38]),
+    catalogRequirement(module, "OutdoorProps", "bsc_000018"),
   ];
 }
 
@@ -1115,7 +1122,6 @@ function catalogRequirement(
   module: SemanticModule,
   requirementId: string,
   conceptId: string,
-  maximumInstances: number,
   maximumSizeMeters?: readonly [number, number, number],
 ): CatalogRequirement {
   const concept = requireConcept(module, conceptId);
@@ -1154,7 +1160,6 @@ function catalogRequirement(
     budget: {
       maximumTriangles: 5_000_000,
       maximumSourceBytes: 512 * 1024 * 1024,
-      maximumInstances,
     },
     required: true,
   };

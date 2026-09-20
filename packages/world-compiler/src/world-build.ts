@@ -54,7 +54,7 @@ const assemblyConnection = z
     child: endpoint,
     hostInterfaceId: ENTRY_HANDLE_SCHEMA,
     childInterfaceId: ENTRY_HANDLE_SCHEMA,
-    evidenceHashes: z.array(HASH_SCHEMA).min(1).max(128),
+    evidenceHashes: z.array(HASH_SCHEMA).min(1),
   })
   .strict();
 
@@ -93,7 +93,7 @@ export const REALIZED_INSTANCE_SCHEMA = z
       .object({ host: endpoint, child: endpoint, interfaceId: ENTRY_HANDLE_SCHEMA })
       .strict()
       .optional(),
-    evidenceHashes: z.array(HASH_SCHEMA).max(8192),
+    evidenceHashes: z.array(HASH_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -147,13 +147,13 @@ export const COMPILED_WORLD_FOUNDATION_SCHEMA = z
     status: COMPILATION_STATUS_SCHEMA,
     foundationInputHash: HASH_SCHEMA,
     boundsMeters: SPATIAL_AABB_SCHEMA,
-    baseTerrainFields: z.array(BASE_TERRAIN_FIELD_ARTIFACT_SCHEMA).max(4096),
-    terrainFields: z.array(TERRAIN_FIELD_ARTIFACT_SCHEMA).max(4096),
-    routeConstructions: z.array(ROUTE_CONSTRUCTION_ARTIFACT_SCHEMA).max(65_536),
-    routeJunctions: z.array(ROUTE_JUNCTION_ARTIFACT_SCHEMA).max(65_536),
-    lotSubdivisions: z.array(LOT_SUBDIVISION_SCHEMA).max(4096),
-    placementSurfaces: z.array(PLACEMENT_SURFACE_SCHEMA).max(65_536),
-    diagnostics: z.array(z.string().trim().min(1).max(1024)).max(65_536),
+    baseTerrainFields: z.array(BASE_TERRAIN_FIELD_ARTIFACT_SCHEMA),
+    terrainFields: z.array(TERRAIN_FIELD_ARTIFACT_SCHEMA),
+    routeConstructions: z.array(ROUTE_CONSTRUCTION_ARTIFACT_SCHEMA),
+    routeJunctions: z.array(ROUTE_JUNCTION_ARTIFACT_SCHEMA),
+    lotSubdivisions: z.array(LOT_SUBDIVISION_SCHEMA),
+    placementSurfaces: z.array(PLACEMENT_SURFACE_SCHEMA),
+    diagnostics: z.array(z.string().trim().min(1)),
     foundationHash: HASH_SCHEMA,
   })
   .strict()
@@ -256,7 +256,7 @@ export function sealCompiledWorldFoundationArtifacts(
 }
 
 export const CONSTRUCTED_SURFACE_SCHEMA = PLACEMENT_SURFACE_SCHEMA.extend({
-  floorIndex: z.number().int().nonnegative().max(255),
+  floorIndex: z.number().int().nonnegative().safe(),
   assemblyHash: HASH_SCHEMA,
   sourceComponentInstanceId: WORLD_ENTITY_ID_SCHEMA,
   hash: HASH_SCHEMA,
@@ -266,7 +266,7 @@ export const CONSTRUCTED_SURFACE_SCHEMA = PLACEMENT_SURFACE_SCHEMA.extend({
 export const PORTAL_ARTIFACT_SCHEMA = z
   .object({
     portalId: WORLD_ENTITY_ID_SCHEMA,
-    floorIndex: z.number().int().nonnegative().max(255),
+    floorIndex: z.number().int().nonnegative().safe(),
     regionId: WORLD_ENTITY_ID_SCHEMA,
     assemblyHash: HASH_SCHEMA,
     opening: endpoint,
@@ -281,7 +281,7 @@ export const PORTAL_ARTIFACT_SCHEMA = z
     widthMeters: z.number().finite().positive(),
     heightMeters: z.number().finite().positive(),
     clearanceMeters: z.number().finite().nonnegative(),
-    evidenceHashes: z.array(HASH_SCHEMA).min(1).max(128),
+    evidenceHashes: z.array(HASH_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -299,7 +299,7 @@ export const PROCEDURAL_STAIR_ARTIFACT_SCHEMA = z
     widthMeters: z.number().finite().positive(),
     treadDepthMeters: z.number().finite().positive(),
     maximumRiserHeightMeters: z.number().finite().positive(),
-    stepBoundsMeters: z.array(SPATIAL_AABB_SCHEMA).min(1).max(65_536),
+    stepBoundsMeters: z.array(SPATIAL_AABB_SCHEMA).min(1),
     generatorEvidenceHash: HASH_SCHEMA,
     hash: HASH_SCHEMA,
   })
@@ -315,7 +315,7 @@ export const ASSEMBLY_ARTIFACT_SCHEMA = z
     constraintModelHash: HASH_SCHEMA,
     constraintSolutionHash: HASH_SCHEMA,
     componentInstanceIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
-    connections: z.array(assemblyConnection).max(262_144),
+    connections: z.array(assemblyConnection),
     constructedSurfaceIds: z.array(WORLD_ENTITY_ID_SCHEMA),
     portalIds: z.array(WORLD_ENTITY_ID_SCHEMA),
     proceduralStairIds: z.array(WORLD_ENTITY_ID_SCHEMA),
@@ -326,7 +326,7 @@ export const ASSEMBLY_ARTIFACT_SCHEMA = z
 export const ROOM_ARTIFACT_SCHEMA = z
   .object({
     roomId: WORLD_ENTITY_ID_SCHEMA,
-    floorIndex: z.number().int().nonnegative().max(255),
+    floorIndex: z.number().int().nonnegative().safe(),
     regionId: WORLD_ENTITY_ID_SCHEMA,
     semanticDependencyClosureHash: HASH_SCHEMA,
     assemblyHash: HASH_SCHEMA,
@@ -359,7 +359,7 @@ const constructedGeometry = z.discriminatedUnion("kind", [
       centerMeters: SPATIAL_VECTOR3_SCHEMA,
       radiusMeters: z.number().finite().positive(),
       heightMeters: z.number().finite().positive(),
-      sides: z.number().int().min(8).max(128),
+      sides: z.number().int().min(3).safe(),
     })
     .strict(),
 ]);
@@ -370,7 +370,7 @@ export const CONSTRUCTED_ELEMENT_SCHEMA = z
     elementId: WORLD_ENTITY_ID_SCHEMA,
     constructionProgramHash: HASH_SCHEMA,
     operationId: WORLD_ENTITY_ID_SCHEMA,
-    repetitionIndex: z.number().int().nonnegative().max(65_535).optional(),
+    repetitionIndex: z.number().int().nonnegative().safe().optional(),
     elementRole: z.enum(["opening_panel", "solid", "stair_step"]),
     geometry: constructedGeometry,
     boundsMeters: SPATIAL_AABB_SCHEMA,
@@ -387,7 +387,7 @@ export const CONSTRUCTED_ELEMENT_SCHEMA = z
       })
       .strict(),
     styleProfileHash: HASH_SCHEMA,
-    evidenceHashes: z.array(HASH_SCHEMA).min(1).max(64),
+    evidenceHashes: z.array(HASH_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -478,7 +478,7 @@ export const CONSTRUCTED_ACCESS_PATH_SCHEMA = z
     stairOperationId: WORLD_ENTITY_ID_SCHEMA,
     entryRouteId: WORLD_ENTITY_ID_SCHEMA,
     landingElementId: WORLD_ENTITY_ID_SCHEMA,
-    stepElementIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1).max(65_536),
+    stepElementIds: z.array(WORLD_ENTITY_ID_SCHEMA).min(1),
     entryMeters: SPATIAL_VECTOR3_SCHEMA,
     exitMeters: SPATIAL_VECTOR3_SCHEMA,
     widthMeters: z.number().finite().positive(),
@@ -504,15 +504,15 @@ export const CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA = z
     resolvedAnchorMeters: SPATIAL_VECTOR3_SCHEMA,
     placementEvidenceHash: HASH_SCHEMA,
     placementSurfaceId: WORLD_ENTITY_ID_SCHEMA.optional(),
-    elements: z.array(CONSTRUCTED_ELEMENT_SCHEMA).min(1).max(65_536),
-    surfaces: z.array(DECLARATIVE_CONSTRUCTED_SURFACE_SCHEMA).max(393_216),
-    openings: z.array(CONSTRUCTED_OPENING_ARTIFACT_SCHEMA).max(8_192),
-    portals: z.array(CONSTRUCTED_PORTAL_ARTIFACT_SCHEMA).max(8_192),
-    attachments: z.array(CONSTRUCTED_ATTACHMENT_ARTIFACT_SCHEMA).max(8_192),
-    accessPaths: z.array(CONSTRUCTED_ACCESS_PATH_SCHEMA).max(8_192),
-    occupancyReservations: z.array(OCCUPANCY_RESERVATION_SCHEMA).min(1).max(65_536),
+    elements: z.array(CONSTRUCTED_ELEMENT_SCHEMA).min(1),
+    surfaces: z.array(DECLARATIVE_CONSTRUCTED_SURFACE_SCHEMA),
+    openings: z.array(CONSTRUCTED_OPENING_ARTIFACT_SCHEMA),
+    portals: z.array(CONSTRUCTED_PORTAL_ARTIFACT_SCHEMA),
+    attachments: z.array(CONSTRUCTED_ATTACHMENT_ARTIFACT_SCHEMA),
+    accessPaths: z.array(CONSTRUCTED_ACCESS_PATH_SCHEMA),
+    occupancyReservations: z.array(OCCUPANCY_RESERVATION_SCHEMA).min(1),
     boundsMeters: SPATIAL_AABB_SCHEMA,
-    evidenceHashes: z.array(HASH_SCHEMA).min(1).max(65_536),
+    evidenceHashes: z.array(HASH_SCHEMA).min(1),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -534,14 +534,14 @@ export const MESO_LAYOUT_SCHEMA = z
     status: COMPILATION_STATUS_SCHEMA,
     foundationHash: HASH_SCHEMA,
     catalogResolutionHash: HASH_SCHEMA,
-    instances: z.array(REALIZED_INSTANCE_SCHEMA).max(1_000_000),
-    assemblies: z.array(ASSEMBLY_ARTIFACT_SCHEMA).max(65_536),
-    constructedStructures: z.array(CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA).max(65_536),
-    constructedSurfaces: z.array(CONSTRUCTED_SURFACE_SCHEMA).max(65_536),
-    portals: z.array(PORTAL_ARTIFACT_SCHEMA).max(65_536),
-    rooms: z.array(ROOM_ARTIFACT_SCHEMA).max(65_536),
-    proceduralStairs: z.array(PROCEDURAL_STAIR_ARTIFACT_SCHEMA).max(65_536),
-    diagnostics: z.array(z.string().min(1).max(1024)).max(65_536),
+    instances: z.array(REALIZED_INSTANCE_SCHEMA),
+    assemblies: z.array(ASSEMBLY_ARTIFACT_SCHEMA),
+    constructedStructures: z.array(CONSTRUCTED_STRUCTURE_ARTIFACT_SCHEMA),
+    constructedSurfaces: z.array(CONSTRUCTED_SURFACE_SCHEMA),
+    portals: z.array(PORTAL_ARTIFACT_SCHEMA),
+    rooms: z.array(ROOM_ARTIFACT_SCHEMA),
+    proceduralStairs: z.array(PROCEDURAL_STAIR_ARTIFACT_SCHEMA),
+    diagnostics: z.array(z.string().min(1)),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -557,9 +557,9 @@ export const MICRO_REALIZATION_SCHEMA = z
     foundationHash: HASH_SCHEMA,
     catalogResolutionHash: HASH_SCHEMA,
     mesoLayoutHash: HASH_SCHEMA,
-    instances: z.array(REALIZED_INSTANCE_SCHEMA).max(1_000_000),
-    measuredOccupancy: z.array(OCCUPANCY_RESERVATION_SCHEMA).max(1_000_000).optional(),
-    diagnostics: z.array(z.string().min(1).max(1024)).max(65_536),
+    instances: z.array(REALIZED_INSTANCE_SCHEMA),
+    measuredOccupancy: z.array(OCCUPANCY_RESERVATION_SCHEMA).optional(),
+    diagnostics: z.array(z.string().min(1)),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -612,7 +612,7 @@ export const COMPILATION_TASK_RESULT_SCHEMA = z
       "micro",
       "world_build",
     ]),
-    dependencyTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA).max(65_536),
+    dependencyTaskIds: z.array(WORLD_ENTITY_ID_SCHEMA),
     inputHashes: z.array(HASH_SCHEMA).min(1),
     policyHash: HASH_SCHEMA,
     outputHashes: z.array(HASH_SCHEMA),
@@ -624,7 +624,7 @@ export const COMPILATION_TASK_RESULT_SCHEMA = z
         backtracks: z.number().int().nonnegative(),
       })
       .strict(),
-    diagnostics: z.array(z.string().min(1).max(1024)),
+    diagnostics: z.array(z.string().min(1)),
     taskHash: HASH_SCHEMA,
   })
   .strict()
@@ -691,16 +691,16 @@ export const WORLD_BUILD_SCHEMA = z
     coordinateSystem: z.literal("right_handed_y_up_meters"),
     status: COMPILATION_STATUS_SCHEMA,
     semanticKernelHash: HASH_SCHEMA,
-    semanticClosureHashes: z.array(HASH_SCHEMA).max(100_000),
+    semanticClosureHashes: z.array(HASH_SCHEMA),
     catalogSnapshotHash: HASH_SCHEMA,
     visualEnvironment: WORLD_VISUAL_ENVIRONMENT_SCHEMA,
     foundation: COMPILED_WORLD_FOUNDATION_SCHEMA,
     catalogResolution: CATALOG_RESOLUTION_PLAN_SCHEMA,
     meso: MESO_LAYOUT_SCHEMA,
     micro: MICRO_REALIZATION_SCHEMA,
-    tasks: z.array(COMPILATION_TASK_RESULT_SCHEMA).max(1_000_000),
-    instances: z.array(REALIZED_INSTANCE_SCHEMA).max(1_000_000),
-    diagnostics: z.array(z.string().min(1).max(1024)).max(100_000),
+    tasks: z.array(COMPILATION_TASK_RESULT_SCHEMA),
+    instances: z.array(REALIZED_INSTANCE_SCHEMA),
+    diagnostics: z.array(z.string().min(1)),
     worldBuildHash: HASH_SCHEMA,
   })
   .strict()

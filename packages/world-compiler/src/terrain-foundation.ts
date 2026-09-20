@@ -45,7 +45,7 @@ export const BASE_TERRAIN_FIELD_ARTIFACT_SCHEMA = z
     terrainPlanId: WORLD_ENTITY_ID_SCHEMA,
     terrainPlanHash: HASH_SCHEMA,
     surfaceId: WORLD_ENTITY_ID_SCHEMA,
-    samples: z.array(TERRAIN_FIELD_SAMPLE_SCHEMA).min(4).max(4_000_000),
+    samples: z.array(TERRAIN_FIELD_SAMPLE_SCHEMA).min(4),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -59,8 +59,8 @@ export const TERRAIN_FIELD_ARTIFACT_SCHEMA = z
     terrainPlanHash: HASH_SCHEMA,
     surfaceId: WORLD_ENTITY_ID_SCHEMA,
     baseTerrainFieldHash: HASH_SCHEMA,
-    routeConstructionHashes: z.array(HASH_SCHEMA).max(65_536),
-    routeJunctionHashes: z.array(HASH_SCHEMA).max(65_536),
+    routeConstructionHashes: z.array(HASH_SCHEMA),
+    routeJunctionHashes: z.array(HASH_SCHEMA),
     hash: HASH_SCHEMA,
   })
   .strict()
@@ -315,11 +315,7 @@ export function terrainFieldMinimumSpacing(field: BaseTerrainFieldArtifact): num
   return result;
 }
 
-/**
- * Verify the sealed surface/terrain composition over the complete realized
- * footprint. This is a compilation gate, not a test helper: clearance and
- * grounding claims are unavailable when the bounded probe budget is exceeded.
- */
+/** Verify the sealed surface/terrain composition over the complete realized footprint. */
 export function verifyTerrainConstruction(
   fields: readonly TerrainFieldArtifact[],
   bases: readonly BaseTerrainFieldArtifact[],
@@ -327,18 +323,6 @@ export function verifyTerrainConstruction(
   junctions: readonly RouteJunctionArtifact[],
 ): readonly string[] {
   const diagnostics: string[] = [];
-  const requiredProbes =
-    routes.reduce(
-      (count, route) =>
-        count +
-        (route.status === "eligible" && route.terrainTreatment.kind === "grade"
-          ? route.travelSegments.length * 25
-          : 0),
-      0,
-    ) +
-    junctions.filter((entry) => entry.terrainTreatment.kind === "grade").length * 17;
-  if (requiredProbes > 2_000_000)
-    return [`terrain_construction:probe_budget:${requiredProbes.toString()} exceeds 2000000`];
   for (const route of routes) {
     if (route.status !== "eligible" || route.terrainTreatment.kind !== "grade") continue;
     const field = fields.find((entry) => entry.surfaceId === route.surfaceId);
@@ -351,37 +335,29 @@ export function verifyTerrainConstruction(
     }
     const minimum = route.terrainTreatment.surfaceRevealMeters;
     const maximumBodyGap = route.terrainTreatment.groundingToleranceMeters;
+    const maximumProbeSpacingMeters = terrainFieldMinimumSpacing(base) / 2;
     routeProbe: for (const segment of route.travelSegments)
-      for (let longitudinal = 0; longitudinal <= 4; longitudinal += 1)
-        for (let lateral = 0; lateral <= 4; lateral += 1) {
-          const start = interpolateRouteVertex(
-            segment.vertices[0]!.positionMeters,
-            segment.vertices[1]!.positionMeters,
-            lateral / 4,
+      for (const surface of routeSegmentSurfaceProbes(
+        segment.vertices.map((entry) => entry.positionMeters),
+        maximumProbeSpacingMeters,
+      )) {
+        const terrain = sampleTerrainFieldSurface(
+          field,
+          base,
+          routes,
+          junctions,
+          surface.x,
+          surface.z,
+        );
+        const clearance = surface.y - terrain.elevationMeters;
+        const bodyGap = Math.max(0, clearance - route.thicknessMeters);
+        if (clearance < minimum - 1e-8 || bodyGap > maximumBodyGap + 1e-8) {
+          diagnostics.push(
+            `route:${route.routeId}:terrain_contact:top ${clearance.toFixed(6)}m, body gap ${bodyGap.toFixed(6)}m outside reveal >= ${minimum.toFixed(6)}m and body gap <= ${maximumBodyGap.toFixed(6)}m at ${surface.x.toFixed(6)},${surface.z.toFixed(6)}`,
           );
-          const end = interpolateRouteVertex(
-            segment.vertices[2]!.positionMeters,
-            segment.vertices[3]!.positionMeters,
-            lateral / 4,
-          );
-          const surface = interpolateRouteVertex(start, end, longitudinal / 4);
-          const terrain = sampleTerrainFieldSurface(
-            field,
-            base,
-            routes,
-            junctions,
-            surface.x,
-            surface.z,
-          );
-          const clearance = surface.y - terrain.elevationMeters;
-          const bodyGap = Math.max(0, clearance - route.thicknessMeters);
-          if (clearance < minimum - 1e-8 || bodyGap > maximumBodyGap + 1e-8) {
-            diagnostics.push(
-              `route:${route.routeId}:terrain_contact:top ${clearance.toFixed(6)}m, body gap ${bodyGap.toFixed(6)}m outside reveal >= ${minimum.toFixed(6)}m and body gap <= ${maximumBodyGap.toFixed(6)}m at ${surface.x.toFixed(6)},${surface.z.toFixed(6)}`,
-            );
-            break routeProbe;
-          }
+          break routeProbe;
         }
+      }
   }
   for (const junction of junctions) {
     if (junction.terrainTreatment.kind !== "grade") continue;
@@ -395,9 +371,16 @@ export function verifyTerrainConstruction(
     }
     const minimum = junction.terrainTreatment.surfaceRevealMeters;
     const maximumBodyGap = junction.terrainTreatment.groundingToleranceMeters;
-    for (let index = 0; index <= 16; index += 1) {
-      const radius = index === 16 ? 0 : junction.radiusMeters;
-      const angle = (Math.PI * 2 * index) / 16;
+    const maximumProbeSpacingMeters = terrainFieldMinimumSpacing(base) / 2;
+    const perimeterSections = Math.max(
+      4,
+      Math.ceil((Math.PI * 2 * junction.radiusMeters) / maximumProbeSpacingMeters),
+    );
+    if (!Number.isSafeInteger(perimeterSections))
+      throw new Error("Junction terrain probe count exceeds exact integer representation");
+    for (let index = 0; index <= perimeterSections; index += 1) {
+      const radius = index === perimeterSections ? 0 : junction.radiusMeters;
+      const angle = (Math.PI * 2 * index) / perimeterSections;
       const x = junction.centerTopMeters.x + Math.cos(angle) * radius;
       const z = junction.centerTopMeters.z + Math.sin(angle) * radius;
       const terrain = sampleTerrainFieldSurface(field, base, routes, junctions, x, z);
@@ -412,6 +395,56 @@ export function verifyTerrainConstruction(
     }
   }
   return [...new Set(diagnostics)].sort(compareCanonicalStrings);
+}
+
+function* routeSegmentSurfaceProbes(
+  vertices: readonly { readonly x: number; readonly y: number; readonly z: number }[],
+  maximumSpacingMeters: number,
+) {
+  if (vertices.length !== 4) throw new Error("Route travel segment requires four vertices");
+  if (!Number.isFinite(maximumSpacingMeters) || maximumSpacingMeters <= 0)
+    throw new Error("Route terrain probe spacing must be positive");
+  const [startLeft, startRight, endLeft, endRight] = vertices as readonly [
+    (typeof vertices)[number],
+    (typeof vertices)[number],
+    (typeof vertices)[number],
+    (typeof vertices)[number],
+  ];
+  const longitudinalSections = Math.max(
+    1,
+    Math.ceil(
+      Math.max(routeVertexDistance(startLeft, endLeft), routeVertexDistance(startRight, endRight)) /
+        maximumSpacingMeters,
+    ),
+  );
+  const lateralSections = Math.max(
+    1,
+    Math.ceil(
+      Math.max(routeVertexDistance(startLeft, startRight), routeVertexDistance(endLeft, endRight)) /
+        maximumSpacingMeters,
+    ),
+  );
+  const probeCount = (longitudinalSections + 1) * (lateralSections + 1);
+  if (
+    !Number.isSafeInteger(longitudinalSections) ||
+    !Number.isSafeInteger(lateralSections) ||
+    !Number.isSafeInteger(probeCount)
+  )
+    throw new Error("Route terrain probe count exceeds exact integer representation");
+  for (let longitudinal = 0; longitudinal <= longitudinalSections; longitudinal += 1) {
+    const amount = longitudinal / longitudinalSections;
+    const left = interpolateRouteVertex(startLeft, endLeft, amount);
+    const right = interpolateRouteVertex(startRight, endRight, amount);
+    for (let lateral = 0; lateral <= lateralSections; lateral += 1)
+      yield interpolateRouteVertex(left, right, lateral / lateralSections);
+  }
+}
+
+function routeVertexDistance(
+  first: { readonly x: number; readonly y: number; readonly z: number },
+  second: { readonly x: number; readonly y: number; readonly z: number },
+): number {
+  return Math.hypot(first.x - second.x, first.y - second.y, first.z - second.z);
 }
 
 function sampleTerrainElevation(

@@ -183,14 +183,8 @@ export async function runCatalogSearchCommand(
       commercialUseRequired: parseBoolean(options.get("--commercial-use") ?? "false"),
       redistributionRequired: parseBoolean(options.get("--redistribution") ?? "false"),
     },
-    limit: Math.min(
-      policy.maximumResults,
-      requireInteger(options.get("--limit") ?? "20", "result limit"),
-    ),
-    validationLimit: Math.min(
-      policy.maximumValidationCandidates,
-      requireInteger(options.get("--validate") ?? "0", "validation limit"),
-    ),
+    limit: requireInteger(options.get("--limit") ?? "20", "result limit"),
+    validationLimit: requireInteger(options.get("--validate") ?? "0", "validation limit"),
   });
   const imageTextMatrix = await readOptionalMatrix(
     options.get("--image-text-matrix") ??
@@ -430,7 +424,7 @@ async function readMatrixBytes(
   context: CatalogCommandContext,
 ): Promise<Uint8Array> {
   const store = new ImmutableBinaryArtifactStore(absolute(context.root, CATALOG_CAS_ROOT), {
-    maxBytes: 512 * 1024 * 1024,
+    maxBytes: Math.max(1, matrix.blob.sizeBytes),
   });
   return store.read({
     locator: `binary-artifacts/${matrix.blob.contentHash}.bin`,
